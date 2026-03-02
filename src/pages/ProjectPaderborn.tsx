@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle } from "lucide-react";
-import flyerImg from "@/assets/project-paderborn-feed.png";
+import headerImg from "@/assets/pp-header.png";
 import clubinioImg from "@/assets/clubinio.webp";
 
 /* ─── Ticket Data (from nachtaktivevents.app/eventDetails/6839) ─── */
@@ -226,10 +226,9 @@ const PPHeroSection = () => (
     transition={{ duration: 0.8, ease: "easeOut" }}
   >
     <img
-      src={flyerImg}
+      src={headerImg}
       alt="Project Paderborn – Sonntag 05.04 – Capitol Paderborn"
-      className="w-[85%] sm:w-[75%] md:w-[90%] lg:w-full max-w-lg mx-auto rounded-2xl"
-      style={{ boxShadow: "0 10px 50px hsl(0 70% 30% / 0.5)" }}
+      className="w-full max-w-xl mx-auto"
     />
   </motion.div>
 );
