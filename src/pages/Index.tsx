@@ -6,9 +6,9 @@ import Footer from "@/components/Footer";
 const Index = () => {
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-sky)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        {/* Desktop: two columns */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Desktop / Tablet landscape: two columns */}
+        <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
           <HeroSection />
           <motion.div
             initial={{ opacity: 0, x: 60 }}
@@ -19,8 +19,8 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Mobile: stacked */}
-        <div className="lg:hidden space-y-8">
+        {/* Mobile / Tablet portrait: stacked */}
+        <div className="md:hidden space-y-6">
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
