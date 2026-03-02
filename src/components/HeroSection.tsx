@@ -13,13 +13,12 @@ const HeroSection = () => {
       <img
         src={headerImg}
         alt="City Madness Open Air Festival"
-        className="w-full max-w-md mx-auto mb-4"
+        className="w-[70%] sm:w-[60%] md:w-[80%] lg:w-full max-w-md mx-auto mb-2 sm:mb-4"
       />
       <img
         src={kybbaImg}
         alt="KYBBA Live on Stage"
-        className="w-full max-w-lg mx-auto"
-        style={{ marginTop: "-20px" }}
+        className="w-[85%] sm:w-[75%] md:w-[90%] lg:w-full max-w-lg mx-auto -mt-2 sm:-mt-4 lg:-mt-5"
       />
     </motion.div>
   );
