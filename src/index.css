@@ -160,4 +160,105 @@
     text-decoration: line-through;
     opacity: 0.5;
   }
+
+  /* ─── Project Paderborn Theme ─── */
+  .pp-bg {
+    background: linear-gradient(180deg, hsl(0, 10%, 6%) 0%, hsl(0, 20%, 10%) 50%, hsl(0, 10%, 5%) 100%);
+  }
+
+  .pp-ticket-item {
+    @apply py-3;
+    border-bottom: 1px solid hsl(0 0% 100% / 0.1);
+  }
+
+  .pp-ticket-item:last-child {
+    border-bottom: none;
+  }
+
+  .pp-ticket-title {
+    @apply text-sm font-bold uppercase;
+    color: hsl(0 0% 100%);
+  }
+
+  .pp-ticket-desc {
+    @apply text-xs;
+    color: hsl(0 0% 100% / 0.55);
+  }
+
+  .pp-ticket-price {
+    @apply text-sm font-bold;
+    color: hsl(0 0% 100%);
+  }
+
+  .pp-ticket-tax {
+    @apply text-[10px];
+    color: hsl(0 0% 100% / 0.45);
+  }
+
+  .pp-sold-out {
+    @apply text-xs font-bold uppercase tracking-wide;
+    color: hsl(0, 70%, 55%);
+  }
+
+  .pp-category-title {
+    @apply text-sm font-extrabold uppercase tracking-widest;
+    color: hsl(0, 70%, 55%);
+    opacity: 0.9;
+  }
+
+  .pp-qty-btn {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200;
+    background: hsl(0 0% 100% / 0.1);
+    color: hsl(0 0% 100%);
+    border: 1px solid hsl(0 0% 100% / 0.15);
+  }
+
+  .pp-qty-btn:hover {
+    background: hsl(0, 70%, 55% / 0.3);
+    border-color: hsl(0, 70%, 55%);
+  }
+
+  .pp-qty-input {
+    @apply w-10 h-8 text-center text-sm font-semibold rounded-lg;
+    background: hsl(0 0% 100% / 0.08);
+    color: hsl(0 0% 100%);
+    border: none;
+    outline: none;
+  }
+
+  .pp-cart-btn {
+    @apply w-full py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300;
+    background: hsl(0, 70%, 50%);
+    color: hsl(0 0% 100%);
+    border: none;
+    box-shadow: 0 4px 20px hsl(0, 70%, 50% / 0.4);
+  }
+
+  .pp-cart-btn:hover {
+    background: hsl(0, 70%, 55%);
+    box-shadow: 0 6px 25px hsl(0, 70%, 50% / 0.5);
+    transform: translateY(-1px);
+  }
+
+  .pp-accordion {
+    background: hsl(0 0% 100% / 0.05);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    @apply rounded-xl overflow-hidden;
+  }
+
+  .pp-accordion:hover {
+    background: hsl(0 0% 100% / 0.08);
+  }
+
+  .pp-whatsapp-btn {
+    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50;
+    background: hsl(142, 70%, 45%);
+    color: white;
+  }
+
+  .pp-whatsapp-btn:hover {
+    background: hsl(142, 70%, 50%);
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px hsl(142, 70%, 45% / 0.5);
+  }
 }
