@@ -281,6 +281,16 @@ const PPFooter = () => (
 const ProjectPaderborn = () => {
   return (
     <div className="min-h-screen pp-bg">
+      {/* Confetti & Smoke Particles */}
+      <div className="pp-confetti-container">
+        {Array.from({ length: 12 }, (_, i) => (
+          <div key={`c${i}`} className={`pp-confetti pp-confetti--${i + 1}`} />
+        ))}
+        <div className="pp-smoke pp-smoke--1" />
+        <div className="pp-smoke pp-smoke--2" />
+        <div className="pp-smoke pp-smoke--3" />
+        <div className="pp-smoke pp-smoke--4" />
+      </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {/* Desktop: two columns */}
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
