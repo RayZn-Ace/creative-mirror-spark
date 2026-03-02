@@ -217,7 +217,7 @@ const PPTicketWidget = () => (
   </div>
 );
 
-/* ─── Hero Section (flyer as the main visual, like header+kybba on city-madness) ─── */
+/* ─── Hero Section (structured like city-madness: title + subtitle + info row + image) ─── */
 const PPHeroSection = () => (
   <motion.div
     className="flex flex-col items-center text-center relative"
@@ -225,10 +225,29 @@ const PPHeroSection = () => (
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.8, ease: "easeOut" }}
   >
+    {/* Event Name */}
+    <h1 className="text-4xl sm:text-5xl md:text-4xl lg:text-5xl font-black uppercase leading-none tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+      <span className="block">PROJECT</span>
+      <span className="block" style={{ color: "hsl(0, 70%, 50%)" }}>PADERBORN</span>
+    </h1>
+
+    {/* Subtitle */}
+    <p className="text-sm sm:text-base md:text-sm lg:text-base font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+      IM CAPITOL
+    </p>
+
+    {/* Info Row */}
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-xs sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(var(--foreground) / 0.9)" }}>
+      <span>05. APRIL</span>
+      <span>AB 22 UHR</span>
+      <span>PADERBORN</span>
+    </div>
+
+    {/* Header Image */}
     <img
       src={headerImg}
-      alt="Project Paderborn – Sonntag 05.04 – Capitol Paderborn"
-      className="w-full max-w-xl mx-auto"
+      alt="Project Paderborn"
+      className="w-[90%] sm:w-[80%] md:w-full max-w-lg mx-auto mt-4 sm:mt-6"
     />
   </motion.div>
 );
