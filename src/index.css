@@ -163,10 +163,50 @@
 
   /* ─── Project Paderborn Theme ─── */
   .pp-bg {
-    background: linear-gradient(0deg, hsl(0 0% 0% / 0.75), hsl(0 0% 0% / 0.75)), url('/images/pp-background.png') no-repeat center center;
-    background-size: cover;
-    background-attachment: fixed;
+    position: relative;
+    overflow: hidden;
     background-color: hsl(0, 10%, 5%);
+  }
+
+  .pp-bg::before {
+    content: '';
+    position: fixed;
+    inset: -20px;
+    background: url('/images/pp-background.png') no-repeat center center;
+    background-size: cover;
+    filter: brightness(0.3);
+    z-index: 0;
+    animation: pp-bg-drift 25s ease-in-out infinite alternate;
+  }
+
+  .pp-bg::after {
+    content: '';
+    position: fixed;
+    inset: -30px;
+    background: url('/images/pp-background.png') no-repeat center center;
+    background-size: cover;
+    filter: brightness(0.15) blur(2px);
+    z-index: 0;
+    opacity: 0.5;
+    animation: pp-bg-pulse 8s ease-in-out infinite alternate;
+  }
+
+  .pp-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes pp-bg-drift {
+    0% { transform: scale(1.05) translate(0, 0); }
+    33% { transform: scale(1.08) translate(-8px, 4px); }
+    66% { transform: scale(1.06) translate(5px, -3px); }
+    100% { transform: scale(1.05) translate(-3px, 6px); }
+  }
+
+  @keyframes pp-bg-pulse {
+    0% { opacity: 0.4; transform: scale(1.1); }
+    50% { opacity: 0.6; transform: scale(1.12); }
+    100% { opacity: 0.4; transform: scale(1.1); }
   }
 
   .pp-ticket-item {
