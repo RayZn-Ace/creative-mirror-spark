@@ -163,7 +163,7 @@
 
   /* ─── Project Paderborn Theme ─── */
   .pp-bg {
-    background: url('/images/pp-background.png') no-repeat center center;
+    background: linear-gradient(0deg, hsl(0 0% 0% / 0.75), hsl(0 0% 0% / 0.75)), url('/images/pp-background.png') no-repeat center center;
     background-size: cover;
     background-attachment: fixed;
     background-color: hsl(0, 10%, 5%);
