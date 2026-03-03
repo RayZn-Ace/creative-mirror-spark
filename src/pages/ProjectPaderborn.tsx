@@ -233,6 +233,11 @@ const useCartTimer = (onExpire?: () => void) => {
     setIsActive(true);
   }, []);
 
+  const stopTimer = useCallback(() => {
+    setTimeLeft(null);
+    setIsActive(false);
+  }, []);
+
   const formatTime = () => {
     if (timeLeft === null) return "";
     const mins = Math.floor(timeLeft / 60);
@@ -240,7 +245,7 @@ const useCartTimer = (onExpire?: () => void) => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  return { timeLeft, isActive, startTimer, formatTime };
+  return { timeLeft, isActive, startTimer, stopTimer, formatTime };
 };
 
 /* ─── Event Date Tiles ─── */
@@ -479,7 +484,7 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
     setDiscountCode("");
     setDiscountApplied(false);
   }, []);
-  const { timeLeft, isActive, startTimer, formatTime } = useCartTimer(resetCart);
+  const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
 
   // Reset quantities when event changes
   useEffect(() => {
@@ -492,8 +497,14 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
 
   const handleQtyChange = (id: string, val: number) => {
     const prev = quantities[id] || 0;
-    setQuantities((q) => ({ ...q, [id]: val }));
-    if (val > prev && !isActive) startTimer();
+    const newQuantities = { ...quantities, [id]: val };
+    setQuantities(newQuantities);
+    const newTotal = Object.values(newQuantities).reduce((a, b) => a + b, 0);
+    if (newTotal === 0 && isActive) {
+      stopTimer();
+    } else if (val > prev && !isActive) {
+      startTimer();
+    }
   };
 
   const handleApplyDiscount = () => {
