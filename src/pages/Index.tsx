@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, ArrowRight, Instagram, MessageCircle, Clock, Music, Sparkles, Users, Heart, Star } from "lucide-react";
@@ -5,8 +6,9 @@ import eventHeaderImg from "@/assets/gimme-event-header.jpg";
 import gimmeImg2 from "@/assets/gimme-img2.jpg";
 import gimmeImg3 from "@/assets/gimme-img3.jpg";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
 
-/* ─── Event Data ─── */
+/* ─── Event Data from DB ─── */
 interface Event {
   id: string;
   slug: string;
@@ -23,49 +25,7 @@ interface Event {
   status?: string;
 }
 
-const events: Event[] = [
-  {
-    id: "1",
-    slug: "hannover",
-    title: "HANNOVER",
-    subtitle: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
-    date: "10. Oktober 2026",
-    dateShort: "10. OKT",
-    time: "20:00 Uhr",
-    location: "Baggi Hannover",
-    city: "Hannover",
-    image: eventHeaderImg,
-    tag: "Fast ausverkauft",
-    highlight: true,
-    status: "Fast ausverkauft!",
-  },
-  {
-    id: "2",
-    slug: "",
-    title: "NEUSS",
-    subtitle: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
-    date: "Bald verfügbar",
-    dateShort: "TBA",
-    time: "20:00 Uhr",
-    location: "TBA",
-    city: "Neuss",
-    image: gimmeImg2,
-    tag: "Coming Soon",
-  },
-  {
-    id: "3",
-    slug: "",
-    title: "POTSDAM",
-    subtitle: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
-    date: "Bald verfügbar",
-    dateShort: "TBA",
-    time: "20:00 Uhr",
-    location: "TBA",
-    city: "Potsdam",
-    image: gimmeImg3,
-    tag: "Coming Soon",
-  },
-];
+const fallbackImages = [eventHeaderImg, gimmeImg2, gimmeImg3];
 
 /* ─── Animations ─── */
 const fadeUp = {
@@ -138,7 +98,7 @@ const VideoHero = () => {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/hannover"
+              to="#events"
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
               style={{
                 background: "hsl(330 80% 50%)",
@@ -421,32 +381,77 @@ const EventCard = ({ event, index }: { event: Event; index: number }) => {
 };
 
 /* ─── Events Section ─── */
-const EventsSection = () => (
-  <section id="events" className="py-16 sm:py-24" style={{ background: "hsl(220 50% 6%)" }}>
-    <div className="max-w-7xl mx-auto px-4 sm:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="flex items-end justify-between mb-8 sm:mb-12"
-      >
-        <div>
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2" style={{ color: "hsl(330 80% 55%)" }}>
-            Kommende
-          </p>
-          <h2 className="text-2xl sm:text-4xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-            Events & Tickets
-          </h2>
+const EventsSection = () => {
+  const [cityEvents, setCityEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      const { data: series } = await supabase
+        .from("event_series")
+        .select("id, slug, title, city, image_url")
+        .eq("status", "published")
+        .order("sort_order")
+        .limit(12);
+
+      if (!series) return;
+
+      // For each series, get the next upcoming event
+      const mapped: Event[] = [];
+      for (const s of series) {
+        const { data: ev } = await supabase
+          .from("events")
+          .select("date, time, location_name, highlight, tag")
+          .eq("series_id", s.id)
+          .eq("status", "published")
+          .gte("date", new Date().toISOString().split("T")[0])
+          .order("date")
+          .limit(1);
+
+        const firstEvent = ev?.[0];
+        const dateObj = firstEvent?.date ? new Date(firstEvent.date + "T00:00:00") : null;
+
+        mapped.push({
+          id: s.id,
+          slug: s.slug,
+          title: (s.city || s.title).toUpperCase(),
+          subtitle: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
+          date: dateObj ? `${dateObj.getDate()}. ${["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][dateObj.getMonth()]} ${dateObj.getFullYear()}` : "Bald verfügbar",
+          dateShort: dateObj ? `${dateObj.getDate()}. ${["JAN", "FEB", "MÄR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"][dateObj.getMonth()]}` : "TBA",
+          time: firstEvent?.time || "20:00 Uhr",
+          location: firstEvent?.location_name || "TBA",
+          city: s.city || s.title,
+          image: s.image_url || fallbackImages[mapped.length % fallbackImages.length],
+          tag: firstEvent ? (firstEvent.highlight ? "Fast ausverkauft" : firstEvent.tag || "Konzert") : "Coming Soon",
+          highlight: firstEvent?.highlight || false,
+          status: firstEvent?.highlight ? "Fast ausverkauft!" : undefined,
+        });
+      }
+
+      setCityEvents(mapped);
+    };
+
+    fetchCities();
+  }, []);
+
+  return (
+    <section id="events" className="py-16 sm:py-24" style={{ background: "hsl(220 50% 6%)" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="flex items-end justify-between mb-8 sm:mb-12">
+          <div>
+            <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2" style={{ color: "hsl(330 80% 55%)" }}>Kommende</p>
+            <h2 className="text-2xl sm:text-4xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events & Tickets</h2>
+          </div>
+        </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {cityEvents.map((event, i) => (
+            <EventCard key={event.id} event={event} index={i} />
+          ))}
         </div>
-      </motion.div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {events.map((event, i) => (
-          <EventCard key={event.id} event={event} index={i} />
-        ))}
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ─── Dresscode CTA ─── */
 const DresscodeCTA = () => (
@@ -474,7 +479,7 @@ const DresscodeCTA = () => (
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link
-            to="/hannover"
+            to="#events"
             className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
             style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}
           >

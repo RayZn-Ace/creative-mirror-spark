@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
-const GimmeHannover = lazy(() => import("./pages/ProjectPaderborn"));
+const CityPage = lazy(() => import("./pages/CityPage"));
 import NotFound from "./pages/NotFound";
 
 const Impressum = lazy(() => import("./pages/Impressum"));
@@ -44,7 +44,7 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/hannover" element={<GimmeHannover />} />
+              
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/agb" element={<AGB />} />
@@ -69,6 +69,7 @@ const App = () => (
                 <Route path="pages" element={<PagesAdmin />} />
               </Route>
 
+              <Route path="/:citySlug" element={<CityPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
