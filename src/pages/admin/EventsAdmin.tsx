@@ -821,14 +821,18 @@ const EventsAdmin = () => {
       />
     );
   }
-  const filteredEvents = search.trim()
+  const isSearching = !!search.trim();
+  const filteredEvents = isSearching
     ? events.filter((e) => {
         const q = search.toLowerCase();
+        const city = e.series_id ? seriesCityMap[e.series_id] : e.city;
+        const country = getCountry(city || null);
         return (
           e.title.toLowerCase().includes(q) ||
           (e.city || "").toLowerCase().includes(q) ||
           (e.tag || "").toLowerCase().includes(q) ||
           (e.slug || "").toLowerCase().includes(q) ||
+          country.toLowerCase().includes(q) ||
           (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
         );
       })
@@ -908,6 +912,35 @@ const EventsAdmin = () => {
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Events vorhanden</p>
           <button onClick={() => setEditing({ ...emptyEvent })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>Jetzt erstes Event erstellen</button>
+        </div>
+      ) : isSearching ? (
+        <div className="space-y-2">
+          <p className="text-xs mb-3" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{filteredEvents.length} Ergebnis{filteredEvents.length !== 1 ? "se" : ""}</p>
+          {filteredEvents.length === 0 ? (
+            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Events gefunden</p>
+          ) : filteredEvents.map((event) => (
+            <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
+              {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
+                  {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+                    {event.status}
+                  </span>
+                </div>
+                <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
+              </div>
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-8">
