@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/mamma-mia-logo-clean.png";
+
 
 /* ─── Event Data ─── */
 interface EventData {
@@ -682,13 +682,6 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-2 sm:mt-12">
-      <img
-        src={headerImg}
-        alt="Mamma Mia Party"
-        className="max-w-[220px] sm:max-w-[440px] lg:max-w-[500px] object-contain mix-blend-multiply"
-      />
-    </div>
 
     {/* Event Date Tiles - below the logo/header image */}
     <div className="mt-2 sm:mt-8">
