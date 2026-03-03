@@ -278,11 +278,11 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
               <Sun className="w-2.5 h-2.5" />
             </span>
           )}
-          <span className="text-base sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
-          <span className="text-[10px] sm:text-xs font-bold uppercase mt-0.5" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+          <span className="text-base sm:text-lg font-black leading-none" style={{ textShadow: "0 1px 4px hsl(210 60% 15% / 0.5)" }}>{event.dateShort.split(".")[0]}</span>
+          <span className="text-[10px] sm:text-xs font-extrabold uppercase mt-0.5" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 15% / 0.4)" }}>
             {["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][parseInt(event.dateShort.split(".")[1])]}
           </span>
-          <span className="text-[9px] sm:text-[11px] font-medium mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.75)" }}>{event.venue.split("/")[0].trim()}</span>
+          <span className="text-[9px] sm:text-[11px] font-bold mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 60% 15% / 0.4)" }}>{event.venue.split("/")[0].trim()}</span>
         </motion.button>
       );
     })}
@@ -834,6 +834,18 @@ const ProjectPaderborn = () => {
     const onScroll = () => {
       const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
       setShowWhatsapp(scrollPercent > 0.5);
+
+      // Smooth background gradient shift on scroll
+      const bg = document.querySelector('.pp-bg::before') as HTMLElement | null;
+      const root = document.querySelector('.pp-bg') as HTMLElement | null;
+      if (root) {
+        const hue = 210 - scrollPercent * 15; // 210 → 195
+        const light = 62 + scrollPercent * 16; // 62% → 78%
+        const sat = 70 - scrollPercent * 15;   // 70% → 55%
+        root.style.setProperty('--pp-hue', `${hue}`);
+        root.style.setProperty('--pp-light', `${light}%`);
+        root.style.setProperty('--pp-sat', `${sat}%`);
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
