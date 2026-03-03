@@ -552,7 +552,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7)" }}>
       {cityName}
     </h1>
-    <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3"
+    <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-0.5 sm:mt-3"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7)" }}>
       {t.tourSubtitle}
     </p>
@@ -563,17 +563,17 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
         <Sun className="w-3.5 h-3.5" /> Open Air
       </motion.div>
     )}
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider"
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-0.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>
       <span>{event.dateShort}</span>
       <span>{t.from} {event.time} {t.clock}</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
-    <div className="w-full flex justify-center mt-1 sm:mt-6">
-      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[260px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+    <div className="w-full flex justify-center -mt-1 sm:mt-4">
+      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[220px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
     </div>
     {events.length > 1 && (
-      <div className="mt-1 sm:mt-6">
+      <div className="mt-0 sm:mt-6">
         <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
           {t.selectDate}
         </h2>
@@ -722,14 +722,14 @@ const CityPage = () => {
         <div className="pp-smoke pp-smoke--4" />
         <div className="pp-smoke pp-smoke--5" />
       </div>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-12">
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
           <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
         </div>
-        <div className="md:hidden space-y-4">
+        <div className="md:hidden space-y-2">
           <motion.div key={`hero-${selectedEvent.id}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
           </motion.div>

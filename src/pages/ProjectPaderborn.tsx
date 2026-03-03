@@ -761,18 +761,18 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       </motion.div>
     )}
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-0.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>
       <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
       <span>AB {event.time} UHR</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-1 sm:mt-6">
-      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[260px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+    <div className="w-full flex justify-center -mt-1 sm:mt-4">
+      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[220px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
-    <div className="mt-1 sm:mt-6">
+    <div className="mt-0 sm:mt-6">
       <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.6)" }}>
         Wähle deinen Termin
       </h2>
@@ -864,7 +864,7 @@ const ProjectPaderborn = () => {
         <div className="pp-smoke pp-smoke--4" />
         <div className="pp-smoke pp-smoke--5" />
       </div>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-12">
         {/* Desktop: two columns */}
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
           <PPHeroSection event={selectedEvent} selectedEventId={selectedEventId} onSelectEvent={setSelectedEventId} />
@@ -879,7 +879,7 @@ const ProjectPaderborn = () => {
         </div>
 
         {/* Mobile: stacked */}
-        <div className="md:hidden space-y-4">
+        <div className="md:hidden space-y-2">
           <motion.div
             key={`hero-${selectedEvent.id}`}
             initial={{ opacity: 0, y: -20 }}
