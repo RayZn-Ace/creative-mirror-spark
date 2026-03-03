@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 const GimmeHannover = lazy(() => import("./pages/ProjectPaderborn"));
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,14 @@ const VergangeneEvents = lazy(() => import("./pages/VergangeneEvents"));
 const Abiklasse = lazy(() => import("./pages/Abiklasse"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 
+// Admin
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const EventsAdmin = lazy(() => import("./pages/admin/EventsAdmin"));
+const TicketsAdmin = lazy(() => import("./pages/admin/TicketsAdmin"));
+const PagesAdmin = lazy(() => import("./pages/admin/PagesAdmin"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -30,26 +39,38 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/hannover" element={<GimmeHannover />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
-            <Route path="/agb" element={<AGB />} />
-            <Route path="/kontakt" element={<Kontakt />} />
-            <Route path="/ueber-uns" element={<UeberUns />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/promoter" element={<Promoter />} />
-            <Route path="/fotos" element={<Fotos />} />
-            <Route path="/meine-tickets" element={<MeineTickets />} />
-            <Route path="/muttizettel" element={<Muttizettel />} />
-            <Route path="/vergangene-events" element={<VergangeneEvents />} />
-            <Route path="/abiklasse" element={<Abiklasse />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <AuthProvider>
+          <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/hannover" element={<GimmeHannover />} />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/datenschutz" element={<Datenschutz />} />
+              <Route path="/agb" element={<AGB />} />
+              <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/ueber-uns" element={<UeberUns />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/promoter" element={<Promoter />} />
+              <Route path="/fotos" element={<Fotos />} />
+              <Route path="/meine-tickets" element={<MeineTickets />} />
+              <Route path="/muttizettel" element={<Muttizettel />} />
+              <Route path="/vergangene-events" element={<VergangeneEvents />} />
+              <Route path="/abiklasse" element={<Abiklasse />} />
+              <Route path="/jobs" element={<Jobs />} />
+
+              {/* Admin */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="events" element={<EventsAdmin />} />
+                <Route path="tickets" element={<TicketsAdmin />} />
+                <Route path="pages" element={<PagesAdmin />} />
+              </Route>
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
