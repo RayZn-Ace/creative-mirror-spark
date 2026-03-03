@@ -266,8 +266,8 @@ const PPFooter = () => (
     </div>
     <div className="hidden md:flex items-start justify-between gap-6 lg:gap-8">
       <div className="flex-1">
-        <a href="https://clubinio.de/" target="_blank" rel="noopener noreferrer">
-          <img src={clubinioImg} alt="Clubinio" className="h-8 lg:h-10 opacity-80 hover:opacity-100 transition-opacity" />
+        <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+          powered by smea
         </a>
         <p className="text-[9px] lg:text-[10px] mt-2 lg:mt-3 max-w-xs lg:max-w-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
           Veranstalter: Nachtaktiv Events. Der Ticketverkauf erfolgt über unsere eigene Plattform.
@@ -280,8 +280,8 @@ const PPFooter = () => (
       </div>
     </div>
     <div className="md:hidden text-center space-y-3">
-      <a href="https://clubinio.de/" target="_blank" rel="noopener noreferrer">
-        <img src={clubinioImg} alt="Clubinio" className="h-7 mx-auto opacity-80" />
+      <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+        powered by smea
       </a>
       <p className="text-[9px] px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
         Veranstalter: Nachtaktiv Events. Der Ticketverkauf erfolgt über unsere eigene Plattform.
