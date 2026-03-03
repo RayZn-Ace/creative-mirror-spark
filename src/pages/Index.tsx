@@ -215,19 +215,6 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-      >
-        <div
-          className="w-6 h-10 rounded-full border-2 flex items-start justify-center pt-2"
-          style={{ borderColor: "hsl(0 0% 100% / 0.3)" }}
-        >
-          <div className="w-1 h-2 rounded-full" style={{ background: "hsl(0 0% 100% / 0.5)" }} />
-        </div>
-      </motion.div>
     </section>
   );
 };
