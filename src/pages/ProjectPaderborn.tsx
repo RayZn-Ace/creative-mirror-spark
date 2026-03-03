@@ -506,7 +506,7 @@ const PPHeroSection = () => (
   >
     {/* Titel testweise ausgeblendet */}
 
-    <p className="text-xl sm:text-2xl md:text-xl lg:text-2xl font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+    <p className="text-2xl sm:text-3xl md:text-2xl lg:text-3xl font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
       IM CAPITOL
     </p>
 
