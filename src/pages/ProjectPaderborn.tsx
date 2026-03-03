@@ -233,7 +233,7 @@ const useCartTimer = () => {
 
 /* ─── Event Date Tiles ─── */
 const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[]; selectedId: string; onSelect: (id: string) => void }) => (
-  <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap">
+  <div className="flex gap-2 sm:gap-3 pb-2 scrollbar-hide justify-center flex-wrap overflow-visible">
     {events.map((event) => {
       const isSelected = event.id === selectedId;
       return (
