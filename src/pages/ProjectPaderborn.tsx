@@ -462,7 +462,7 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
       </AnimatePresence>
 
       {/* Location info */}
-      <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-1" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+      <div className="flex items-center gap-2 text-sm sm:text-base font-medium px-1" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
         <MapPin className="w-3.5 h-3.5 shrink-0" />
         <span>{event.venue} · {event.address}</span>
       </div>
@@ -576,7 +576,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       HANNOVER
     </h1>
 
-    <p className="text-lg sm:text-xl md:text-lg lg:text-xl font-bold uppercase tracking-[0.15em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+    <p className="text-base sm:text-lg md:text-xl font-bold uppercase tracking-[0.15em] mt-2 sm:mt-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
       MAMMA MIA / ABBA TOUR
     </p>
 
@@ -592,7 +592,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       </motion.div>
     )}
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-xs sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
       <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
       <span>AB {event.time} UHR</span>
       <span>{event.city.toUpperCase()}</span>
@@ -609,7 +609,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
 
     {/* Event Date Tiles - below the logo/header image */}
     <div className="mt-6 sm:mt-8">
-      <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+      <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
         Wähle deinen Termin
       </h2>
       <EventDateTiles events={events} selectedId={selectedEventId} onSelect={onSelectEvent} />
@@ -620,7 +620,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
 /* ─── Footer ─── */
 const PPFooter = () => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
-    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base" style={{ color: "hsl(0 0% 100%)" }}>
+    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
       <p>Fragen, Probleme oder Reservierungsanfragen?</p>
       <p>
         Kontaktiere uns:{" "}
@@ -634,7 +634,7 @@ const PPFooter = () => (
         <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100%)" }}>
           powered by smea
         </a>
-        <p className="text-[10px] lg:text-xs mt-2 lg:mt-3 max-w-xs lg:max-w-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+        <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
           Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
         </p>
       </div>
@@ -648,7 +648,7 @@ const PPFooter = () => (
       <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100%)" }}>
         powered by smea
       </a>
-      <p className="text-[10px] px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
         Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
       </p>
       <div className="flex justify-center gap-4 text-xs">
