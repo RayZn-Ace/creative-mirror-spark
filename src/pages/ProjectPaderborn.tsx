@@ -686,7 +686,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <img
         src={headerImg}
         alt="Mamma Mia Party"
-        className="max-w-[280px] sm:max-w-[400px] lg:max-w-[460px] object-contain"
+        className="max-w-[280px] sm:max-w-[400px] lg:max-w-[460px] object-contain mix-blend-multiply"
       />
     </div>
 
