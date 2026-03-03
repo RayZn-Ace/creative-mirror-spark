@@ -327,49 +327,27 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
 
   if (item.soldOut) {
     return (
-      <div className="pp-ticket-item relative overflow-hidden" style={{ opacity: 0.55 }}>
-        {/* Diagonal SOLD OUT stripe */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div
-            className="px-12 py-1 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] rotate-[-8deg]"
-            style={{
-              background: "hsl(0 70% 50%)",
-              color: "hsl(0 0% 100%)",
-              boxShadow: "0 0 20px hsl(0 70% 50% / 0.4)",
-            }}
-          >
-            SOLD OUT
-          </div>
-        </div>
+      <div className="pp-ticket-item relative overflow-hidden" style={{ opacity: 0.5, padding: "8px 12px" }}>
         {/* Desktop */}
-        <div className="hidden sm:flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h4 className="pp-ticket-title text-base line-through decoration-2" style={{ textDecorationColor: "hsl(0 70% 50% / 0.6)" }}>{item.name}</h4>
-            <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
-          </div>
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="text-right">
-              <div className="pp-ticket-price text-base line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
-                <span className="text-xs font-normal mr-1">EUR</span>{item.price}
-              </div>
-              <div className="pp-ticket-tax text-xs">inkl. MwSt.</div>
-            </div>
+        <div className="hidden sm:flex items-center justify-between gap-4">
+          <h4 className="pp-ticket-title text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>{item.name}</h4>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="pp-ticket-price text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
+              <span className="text-xs font-normal mr-1">EUR</span>{item.price}
+            </span>
+            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+              SOLD OUT
+            </span>
           </div>
         </div>
-        {/* Mobile */}
-        <div className="sm:hidden space-y-2">
-          <div>
-            <h4 className="pp-ticket-title text-sm line-through decoration-2" style={{ textDecorationColor: "hsl(0 70% 50% / 0.6)" }}>{item.name}</h4>
-            <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="pp-ticket-price text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
-                <span className="text-[10px] font-normal mr-1">EUR</span>{item.price}
-              </div>
-              <div className="pp-ticket-tax">inkl. MwSt.</div>
-            </div>
-          </div>
+        {/* Mobile - kompakt */}
+        <div className="sm:hidden flex items-center justify-between gap-2">
+          <h4 className="pp-ticket-title text-xs line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>{item.name}</h4>
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0"
+            style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+            SOLD OUT
+          </span>
         </div>
       </div>
     );
