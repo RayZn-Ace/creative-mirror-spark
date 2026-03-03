@@ -39,18 +39,17 @@ const menuItems: MenuItem[] = [
     icon: Users,
     children: [
       { label: "Wer wir sind", href: "/ueber-uns", icon: Users },
-      { label: "Promoter werden", href: "/promoter", icon: Megaphone },
       { label: "FAQ", href: "/faq", icon: HelpCircle },
       { label: "Kontakt", href: "/kontakt", icon: Mail },
     ],
   },
   {
-    label: "Rechtliches",
-    icon: Scale,
+    label: "Zusammenarbeiten",
+    icon: Megaphone,
     children: [
-      { label: "Impressum", href: "/impressum", icon: FileText },
-      { label: "Datenschutz", href: "/datenschutz", icon: Shield },
-      { label: "AGB", href: "/agb", icon: Scale },
+      { label: "Promoter werden", href: "/promoter", icon: Megaphone },
+      { label: "Abiklasse anfragen", href: "/abiklasse", icon: Users },
+      { label: "Jobs", href: "/jobs", icon: FileText },
     ],
   },
 ];
