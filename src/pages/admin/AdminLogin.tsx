@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -8,8 +8,15 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect when user is authenticated and admin
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,10 +25,9 @@ const AdminLogin = () => {
     const { error } = await signIn(email, password);
     if (error) {
       setError("Ungültige Anmeldedaten");
-    } else {
-      navigate("/admin");
+      setLoading(false);
     }
-    setLoading(false);
+    // Don't setLoading(false) on success - the useEffect will navigate
   };
 
   return (

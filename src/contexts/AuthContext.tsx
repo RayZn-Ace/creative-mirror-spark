@@ -19,43 +19,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkAdmin = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!!data);
-    } catch (err) {
-      console.error("Error checking admin role:", err);
-      setIsAdmin(false);
-    }
+  const checkAdmin = (userId: string) => {
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error checking admin role:", error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data);
+        }
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await checkAdmin(session.user.id);
-        } else {
-          setIsAdmin(false);
-        }
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // First get existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await checkAdmin(session.user.id);
+        checkAdmin(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
+
+    // Then listen for changes - DO NOT use await inside this callback
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          checkAdmin(session.user.id);
+        } else {
+          setIsAdmin(false);
+          setLoading(false);
+        }
+      }
+    );
 
     return () => subscription.unsubscribe();
   }, []);
