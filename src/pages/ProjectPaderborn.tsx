@@ -209,7 +209,7 @@ const whatsappNumber = "49123456789";
 /* ─── Cart Timer Hook ─── */
 const CART_TIMER_SECONDS = 600;
 
-const useCartTimer = () => {
+const useCartTimer = (onExpire?: () => void) => {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -219,13 +219,14 @@ const useCartTimer = () => {
       setTimeLeft((prev) => {
         if (prev === null || prev <= 1) {
           setIsActive(false);
+          onExpire?.();
           return null;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+  }, [isActive, timeLeft, onExpire]);
 
   const startTimer = useCallback(() => {
     setTimeLeft(CART_TIMER_SECONDS);
@@ -341,13 +342,18 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
             </span>
           </div>
         </div>
-        {/* Mobile - kompakt */}
+        {/* Mobile - kompakt mit Preis */}
         <div className="sm:hidden flex items-center justify-between gap-2">
           <h4 className="pp-ticket-title text-xs line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>{item.name}</h4>
-          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0"
-            style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
-            SOLD OUT
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="pp-ticket-price text-xs line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
+              <span className="text-[9px] font-normal mr-0.5">EUR</span>{item.price}
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0"
+              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+              SOLD OUT
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -468,7 +474,12 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
-  const { timeLeft, isActive, startTimer, formatTime } = useCartTimer();
+  const resetCart = useCallback(() => {
+    setQuantities({});
+    setDiscountCode("");
+    setDiscountApplied(false);
+  }, []);
+  const { timeLeft, isActive, startTimer, formatTime } = useCartTimer(resetCart);
 
   // Reset quantities when event changes
   useEffect(() => {
