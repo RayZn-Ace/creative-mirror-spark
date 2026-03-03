@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Ticket, FileText, TrendingUp } from "lucide-react";
+import { Calendar, Ticket, FileText, TrendingUp, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({ events: 0, tickets: 0, pages: 0 });
+  const [stats, setStats] = useState({ series: 0, events: 0, tickets: 0, pages: 0 });
 
   useEffect(() => {
     const load = async () => {
-      const [eventsRes, ticketsRes, pagesRes] = await Promise.all([
+      const [seriesRes, eventsRes, ticketsRes, pagesRes] = await Promise.all([
+        supabase.from("event_series").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }),
         supabase.from("ticket_categories").select("id", { count: "exact", head: true }),
         supabase.from("page_contents").select("id", { count: "exact", head: true }),
       ]);
       setStats({
+        series: seriesRes.count ?? 0,
         events: eventsRes.count ?? 0,
         tickets: ticketsRes.count ?? 0,
         pages: pagesRes.count ?? 0,
@@ -23,6 +25,7 @@ const Dashboard = () => {
   }, []);
 
   const cards = [
+    { label: "Event-Serien", value: stats.series, icon: Layers, color: "hsl(270 60% 55%)" },
     { label: "Events", value: stats.events, icon: Calendar, color: "hsl(330 80% 55%)" },
     { label: "Ticket-Kategorien", value: stats.tickets, icon: Ticket, color: "hsl(200 80% 55%)" },
     { label: "Seiten-Inhalte", value: stats.pages, icon: FileText, color: "hsl(45 80% 55%)" },
@@ -37,7 +40,7 @@ const Dashboard = () => {
         Dashboard
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map((card, i) => (
           <motion.div
             key={card.label}
@@ -82,6 +85,13 @@ const Dashboard = () => {
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a
+            href="/admin/series"
+            className="px-4 py-3 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+            style={{ background: "hsl(270 60% 55% / 0.1)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.2)" }}
+          >
+            + Neue Event-Serie erstellen
+          </a>
           <a
             href="/admin/events"
             className="px-4 py-3 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"

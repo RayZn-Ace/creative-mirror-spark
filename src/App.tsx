@@ -27,6 +27,7 @@ const Jobs = lazy(() => import("./pages/Jobs"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const SeriesAdmin = lazy(() => import("./pages/admin/SeriesAdmin"));
 const EventsAdmin = lazy(() => import("./pages/admin/EventsAdmin"));
 const TicketsAdmin = lazy(() => import("./pages/admin/TicketsAdmin"));
 const PagesAdmin = lazy(() => import("./pages/admin/PagesAdmin"));
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="series" element={<SeriesAdmin />} />
                 <Route path="events" element={<EventsAdmin />} />
                 <Route path="tickets" element={<TicketsAdmin />} />
                 <Route path="pages" element={<PagesAdmin />} />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Star, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -21,6 +21,12 @@ interface EventRow {
   highlight: boolean | null;
   ticket_link: string | null;
   sort_order: number | null;
+  series_id: string | null;
+}
+
+interface SeriesOption {
+  id: string;
+  title: string;
 }
 
 const emptyEvent: Omit<EventRow, "id"> = {
@@ -39,16 +45,27 @@ const emptyEvent: Omit<EventRow, "id"> = {
   highlight: false,
   ticket_link: "",
   sort_order: 0,
+  series_id: null,
 };
 
 const EventsAdmin = () => {
   const [events, setEvents] = useState<EventRow[]>([]);
+  const [seriesOptions, setSeriesOptions] = useState<SeriesOption[]>([]);
+  const [seriesMap, setSeriesMap] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Partial<EventRow> | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data } = await supabase.from("events").select("*").order("sort_order");
-    setEvents((data as EventRow[]) || []);
+    const [eventsRes, seriesRes] = await Promise.all([
+      supabase.from("events").select("*").order("sort_order"),
+      supabase.from("event_series").select("id, title").order("title"),
+    ]);
+    setEvents((eventsRes.data as EventRow[]) || []);
+    const options = (seriesRes.data as SeriesOption[]) || [];
+    setSeriesOptions(options);
+    const map: Record<string, string> = {};
+    options.forEach((s) => { map[s.id] = s.title; });
+    setSeriesMap(map);
     setLoading(false);
   };
 
@@ -89,6 +106,25 @@ const EventsAdmin = () => {
     load();
   };
 
+  // Group events by series
+  const grouped = events.reduce<{ seriesId: string | null; seriesTitle: string; events: EventRow[] }[]>(
+    (acc, event) => {
+      const sid = event.series_id || "__none__";
+      let group = acc.find((g) => (g.seriesId || "__none__") === sid);
+      if (!group) {
+        group = {
+          seriesId: event.series_id,
+          seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie",
+          events: [],
+        };
+        acc.push(group);
+      }
+      group.events.push(event);
+      return acc;
+    },
+    []
+  );
+
   const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any) => (
     <div>
       <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
@@ -124,7 +160,6 @@ const EventsAdmin = () => {
         </button>
       </div>
 
-      {/* Event List */}
       {loading ? (
         <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
       ) : events.length === 0 ? (
@@ -135,44 +170,56 @@ const EventsAdmin = () => {
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className="rounded-xl p-4 flex items-center gap-4"
-              style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-            >
-              {event.image_url && (
-                <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
-                  {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
-                  <span
-                    className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{
-                      background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)",
-                      color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)",
-                    }}
-                  >
-                    {event.status}
-                  </span>
-                </div>
-                <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                  {event.city} · {event.date || "Kein Datum"}
+        <div className="space-y-6">
+          {grouped.map((group) => (
+            <div key={group.seriesId || "none"}>
+              <div className="flex items-center gap-2 mb-3">
+                {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                  {group.seriesTitle} ({group.events.length})
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                  {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-                <button onClick={() => setEditing(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
-                  <Trash2 className="w-4 h-4" />
-                </button>
+              <div className="space-y-2">
+                {group.events.map((event) => (
+                  <div
+                    key={event.id}
+                    className="rounded-xl p-4 flex items-center gap-4"
+                    style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
+                  >
+                    {event.image_url && (
+                      <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
+                        {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
+                        <span
+                          className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0"
+                          style={{
+                            background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)",
+                            color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+                          }}
+                        >
+                          {event.status}
+                        </span>
+                      </div>
+                      <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        {event.city} · {event.date || "Kein Datum"} · {event.tag}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      <button onClick={() => setEditing(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -196,9 +243,31 @@ const EventsAdmin = () => {
                   {editing.id ? "Event bearbeiten" : "Neues Event"}
                 </h2>
 
+                {/* Series selector */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                    Event-Serie
+                  </label>
+                  <select
+                    value={editing.series_id || ""}
+                    onChange={(e) => setEditing({ ...editing, series_id: e.target.value || null })}
+                    className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                    style={{
+                      background: "hsl(0 0% 100% / 0.08)",
+                      color: "hsl(0 0% 100%)",
+                      border: "1px solid hsl(0 0% 100% / 0.12)",
+                    }}
+                  >
+                    <option value="">Keine Serie</option>
+                    {seriesOptions.map((s) => (
+                      <option key={s.id} value={s.id}>{s.title}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Titel *" value={editing.title} onChange={(v: string) => setEditing({ ...editing, title: v })} />
-                  <Field label="Slug *" value={editing.slug} onChange={(v: string) => setEditing({ ...editing, slug: v })} placeholder="z.b. hannover" />
+                  <Field label="Slug *" value={editing.slug} onChange={(v: string) => setEditing({ ...editing, slug: v })} placeholder="z.b. hannover-10-04" />
                 </div>
                 <Field label="Untertitel" value={editing.subtitle} onChange={(v: string) => setEditing({ ...editing, subtitle: v })} />
                 <div className="grid grid-cols-2 gap-3">
@@ -241,18 +310,10 @@ const EventsAdmin = () => {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setEditing(null)}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                    style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
-                  >
+                  <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
                     Abbrechen
                   </button>
-                  <button
-                    onClick={save}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                    style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
-                  >
+                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_series: {
+        Row: {
+          city: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          slug: string
+          sort_order: number | null
+          status: string | null
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          slug: string
+          sort_order?: number | null
+          status?: string | null
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          slug?: string
+          sort_order?: number | null
+          status?: string | null
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           city: string | null
@@ -25,6 +67,7 @@ export type Database = {
           image_url: string | null
           location_address: string | null
           location_name: string | null
+          series_id: string | null
           slug: string
           sort_order: number | null
           status: string | null
@@ -45,6 +88,7 @@ export type Database = {
           image_url?: string | null
           location_address?: string | null
           location_name?: string | null
+          series_id?: string | null
           slug: string
           sort_order?: number | null
           status?: string | null
@@ -65,6 +109,7 @@ export type Database = {
           image_url?: string | null
           location_address?: string | null
           location_name?: string | null
+          series_id?: string | null
           slug?: string
           sort_order?: number | null
           status?: string | null
@@ -75,7 +120,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       page_contents: {
         Row: {
