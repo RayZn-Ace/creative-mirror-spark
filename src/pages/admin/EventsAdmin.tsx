@@ -26,6 +26,10 @@ interface EventRow {
   ticket_link: string | null;
   sort_order: number | null;
   series_id: string | null;
+  service_fee_enabled: boolean | null;
+  service_fee_type: string | null;
+  service_fee_value: number | null;
+  service_fee_vat: number | null;
 }
 
 interface TicketRow {
@@ -53,6 +57,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
   status: "draft", highlight: false, ticket_link: "", sort_order: 0, series_id: null,
+  service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
 };
 
 const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR" };
@@ -525,6 +530,71 @@ const EventEditView = ({
               Highlight-Event
             </label>
           </Section>
+
+          <Section title="Servicegebühr" icon={Ticket}>
+            <label className="flex items-center gap-3 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              <div
+                className="relative w-10 h-5 rounded-full cursor-pointer transition-colors"
+                style={{ background: editing.service_fee_enabled ? "hsl(142 70% 45%)" : "hsl(0 0% 100% / 0.15)" }}
+                onClick={() => setEditing({ ...editing, service_fee_enabled: !editing.service_fee_enabled })}
+              >
+                <div
+                  className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                  style={{
+                    background: "hsl(0 0% 100%)",
+                    left: editing.service_fee_enabled ? "calc(100% - 18px)" : "2px",
+                  }}
+                />
+              </div>
+              Servicegebühr aktivieren
+            </label>
+
+            {editing.service_fee_enabled && (
+              <div className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Gebührenart</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_type: "absolute" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: editing.service_fee_type === "absolute" ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_type === "absolute" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_type === "absolute" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Absolut (€)
+                    </button>
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_type: "percent" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_type === "percent" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Prozentual (%)
+                    </button>
+                  </div>
+                </div>
+                <Field
+                  label={editing.service_fee_type === "percent" ? "Gebühr (%)" : "Gebühr (€)"}
+                  value={editing.service_fee_value}
+                  onChange={(v: string) => setEditing({ ...editing, service_fee_value: parseFloat(v) || 0 })}
+                  type="number"
+                  placeholder={editing.service_fee_type === "percent" ? "z.B. 10" : "z.B. 2.50"}
+                />
+                <Field
+                  label="MwSt. (%)"
+                  value={editing.service_fee_vat}
+                  onChange={(v: string) => setEditing({ ...editing, service_fee_vat: parseFloat(v) || 0 })}
+                  type="number"
+                  placeholder="z.B. 19"
+                />
+              </div>
+            )}
+          </Section>
         </div>
       </div>
     </div>
@@ -570,11 +640,11 @@ const EventsAdmin = () => {
     const { id, ...rest } = editing as EventRow;
     if (!rest.title || !rest.slug) { toast.error("Titel und Slug sind Pflichtfelder"); return; }
     if (id) {
-      const { error } = await supabase.from("events").update(rest).eq("id", id);
+      const { error } = await supabase.from("events").update(rest as any).eq("id", id);
       if (error) { toast.error(error.message); return; }
       toast.success("Event aktualisiert");
     } else {
-      const { data, error } = await supabase.from("events").insert(rest).select().single();
+      const { data, error } = await supabase.from("events").insert(rest as any).select().single();
       if (error) { toast.error(error.message); return; }
       toast.success("Event erstellt");
       // Stay in edit mode with the new ID so tickets can be added
