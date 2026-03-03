@@ -242,11 +242,11 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
               <Sun className="w-2.5 h-2.5" />
             </span>
           )}
-          <span className="text-base sm:text-lg font-black leading-none" style={{ textShadow: "0 1px 4px hsl(210 60% 15% / 0.5)" }}>{event.dateShort.split(".")[0]}</span>
-          <span className="text-[10px] sm:text-xs font-extrabold uppercase mt-0.5" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 15% / 0.4)" }}>
+          <span className="text-base sm:text-lg font-black leading-none" style={{ textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>{event.dateShort.split(".")[0]}</span>
+          <span className="text-[10px] sm:text-xs font-extrabold uppercase mt-0.5" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>
             {["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][parseInt(event.dateShort.split(".")[1])]}
           </span>
-          <span className="text-[9px] sm:text-[11px] font-bold mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 60% 15% / 0.4)" }}>{event.venue.split("/")[0].trim()}</span>
+          <span className="text-[9px] sm:text-[11px] font-bold mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.95)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.6), 0 2px 6px hsl(210 60% 15% / 0.4)" }}>{event.venue.split("/")[0].trim()}</span>
         </motion.button>
       );
     })}
@@ -378,7 +378,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
-        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 60% 10% / 0.5)" }}>{title}</span>
+        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>{title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
@@ -497,10 +497,10 @@ const NearbyEvents = ({ currentEvent }: { currentEvent: EventData }) => {
   return (
     <div className="pt-6">
       <div className="text-center mb-4">
-        <h3 className="text-base sm:text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>
+        <h3 className="text-base sm:text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.8), 0 3px 10px hsl(210 60% 15% / 0.5)" }}>
           🎶 Weitere Events {userCity ? (userCity === "deiner Nähe" ? "in deiner Nähe" : `nahe ${userCity}`) : ""}
         </h3>
-        <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+        <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.95)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.6)" }}>
           Sichere dir jetzt Tickets für weitere Städte
         </p>
       </div>
@@ -740,12 +740,12 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
   >
     <h1
       className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
-      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 10px hsl(210 60% 20% / 0.5)" }}
+      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7), 0 4px 16px hsl(210 60% 15% / 0.5)" }}
     >
       HANNOVER
     </h1>
 
-    <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 60% 20% / 0.4)" }}>
+    <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7), 0 3px 10px hsl(210 60% 15% / 0.5)" }}>
       MAMMA MIA / ABBA TOUR
     </p>
 
@@ -761,7 +761,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       </motion.div>
     )}
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 60% 20% / 0.3)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7), 0 2px 8px hsl(210 60% 15% / 0.5)" }}>
       <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
       <span>AB {event.time} UHR</span>
       <span>{event.city.toUpperCase()}</span>
@@ -773,7 +773,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
 
     {/* Event Date Tiles - below the logo/header image */}
     <div className="mt-1 sm:mt-6">
-      <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+      <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.6)" }}>
         Wähle deinen Termin
       </h2>
       <EventDateTiles events={events} selectedId={selectedEventId} onSelect={onSelectEvent} />
@@ -784,7 +784,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
 /* ─── Footer ─── */
 const PPFooter = () => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
-    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.6)" }}>
       <p>Fragen, Probleme oder Reservierungsanfragen?</p>
       <p>
         Kontaktiere uns:{" "}
@@ -798,7 +798,7 @@ const PPFooter = () => (
         <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100%)" }}>
           powered by smea
         </a>
-        <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+        <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.5)" }}>
           Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
         </p>
       </div>
@@ -812,7 +812,7 @@ const PPFooter = () => (
       <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100%)" }}>
         powered by smea
       </a>
-      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.5)" }}>
         Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
       </p>
       <div className="flex justify-center gap-4 text-xs">
@@ -840,8 +840,8 @@ const ProjectPaderborn = () => {
       const root = document.querySelector('.pp-bg') as HTMLElement | null;
       if (root) {
         const hue = 210 - scrollPercent * 15; // 210 → 195
-        const light = 62 + scrollPercent * 16; // 62% → 78%
-        const sat = 70 - scrollPercent * 15;   // 70% → 55%
+        const light = 52 + scrollPercent * 14; // 52% → 66%
+        const sat = 55 - scrollPercent * 10;   // 55% → 45%
         root.style.setProperty('--pp-hue', `${hue}`);
         root.style.setProperty('--pp-light', `${light}%`);
         root.style.setProperty('--pp-sat', `${sat}%`);
