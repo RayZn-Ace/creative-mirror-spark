@@ -455,7 +455,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                 </>
               ) : isWhatsapp ? (
                 <>
-                  <p className="text-sm sm:text-base leading-relaxed font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 10% / 0.4)" }}>
+                  <p className="text-sm sm:text-base leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7), 0 0 2px hsl(210 60% 10% / 0.3)" }}>
                     Werde Teil unserer WhatsApp-Community.
                   </p>
                   <a
@@ -468,7 +468,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                   </a>
                 </>
               ) : (
-                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 10% / 0.4)" }}>
+                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7), 0 0 2px hsl(210 60% 10% / 0.3)" }}>
                   {content}
                 </p>
               )}
