@@ -606,11 +606,11 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
 
       {/* Cart Button */}
       <motion.button
-        className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4"
+        className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4 flex items-center justify-center gap-2"
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98 }}
       >
-        IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
+        WEITER {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
       </motion.button>
       </>
       )}
