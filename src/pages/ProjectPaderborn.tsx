@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/mamma-mia-banner.png";
+import headerImg from "@/assets/mamma-mia-logo.png";
 
 /* ─── Event Data ─── */
 interface EventData {
@@ -685,8 +685,8 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     <div className="w-full flex justify-center mt-4 sm:mt-12 overflow-visible">
       <img
         src={headerImg}
-        alt="Gimme Gimme Party Hannover"
-        className="w-full rounded-2xl object-cover max-h-[180px] sm:max-h-[350px]"
+        alt="Mamma Mia Party"
+        className="max-w-[220px] sm:max-w-[320px] lg:max-w-[380px] object-contain drop-shadow-2xl"
       />
     </div>
 
