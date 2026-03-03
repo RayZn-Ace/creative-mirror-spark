@@ -458,12 +458,12 @@ const PPTicketWidget = () => {
           IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
         </motion.button>
 
-        {/* Instagram – subtle, below cart */}
+        {/* Instagram – subtle button, below cart */}
         <a
           href={instagramUrl}
           target="_blank" rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-100"
-          style={{ color: "hsl(0 0% 100% / 0.45)" }}
+          className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all hover:opacity-100"
+          style={{ color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.12)", background: "hsl(0 0% 100% / 0.04)" }}
         >
           <Instagram className="w-3.5 h-3.5" />
           {instagramHandle}
