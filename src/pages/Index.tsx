@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { MapPin, Calendar, ArrowRight, Instagram, MessageCircle } from "lucide-react";
 import heroImg from "@/assets/hero-home.jpg";
 import ppFeedImg from "@/assets/project-paderborn-feed.png";
+import cityMadnessImg from "@/assets/city-madness-feed.jpg";
+import neonNightsImg from "@/assets/neon-nights-feed.jpg";
+import summerBashImg from "@/assets/summer-bash-feed.jpg";
 
 /* ─── Event Data (placeholder – later from backend) ─── */
 interface Event {
@@ -45,7 +48,7 @@ const events: Event[] = [
     time: "16:00 Uhr",
     location: "Stadtpark",
     city: "Bielefeld",
-    image: null,
+    image: cityMadnessImg,
     tag: "Festival",
   },
   {
@@ -58,7 +61,7 @@ const events: Event[] = [
     time: "23:00 Uhr",
     location: "Club XO",
     city: "Dortmund",
-    image: null,
+    image: neonNightsImg,
     tag: "Club",
   },
   {
@@ -71,7 +74,7 @@ const events: Event[] = [
     time: "20:00 Uhr",
     location: "Strandbar",
     city: "Paderborn",
-    image: null,
+    image: summerBashImg,
     tag: "Open Air",
   },
 ];
