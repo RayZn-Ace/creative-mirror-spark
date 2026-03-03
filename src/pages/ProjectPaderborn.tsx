@@ -414,7 +414,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
-        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)" }}>{title}</span>
+        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 60% 10% / 0.5)" }}>{title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
@@ -455,7 +455,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                 </>
               ) : isWhatsapp ? (
                 <>
-                  <p className="text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+                  <p className="text-sm sm:text-base leading-relaxed font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 10% / 0.4)" }}>
                     Werde Teil unserer WhatsApp-Community.
                   </p>
                   <a
@@ -468,7 +468,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                   </a>
                 </>
               ) : (
-                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 60% 10% / 0.4)" }}>
                   {content}
                 </p>
               )}
