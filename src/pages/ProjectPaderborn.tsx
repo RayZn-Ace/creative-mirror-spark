@@ -1,10 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight } from "lucide-react";
+import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
 import headerImg from "@/assets/gimme-event-header.jpg";
 
-/* ─── Ticket Data ─── */
+/* ─── Event Data ─── */
+interface EventData {
+  id: string;
+  date: string;
+  dateShort: string;
+  weekday: string;
+  time: string;
+  venue: string;
+  address: string;
+  city: string;
+  openAir: boolean;
+  ticketData: TicketCategory[];
+  infoSections: { id: string; title: string; content: string }[];
+}
+
 interface TicketItem {
   id: string;
   name: string;
@@ -19,29 +33,49 @@ interface TicketCategory {
   items: TicketItem[];
 }
 
-const ticketData: TicketCategory[] = [
+const defaultTickets: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
-      { id: "gg-lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
+      { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
     ],
   },
   {
     title: "DELUXE",
     items: [
-      { id: "gg-deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "41,99", soldOut: false, badge: "84% schon weg" },
+      { id: "deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "41,99", soldOut: false, badge: "84% schon weg" },
     ],
   },
   {
     title: "FAN",
     items: [
-      { id: "gg-fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "46,99", soldOut: false, badge: "FANLIEBLING" },
+      { id: "fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "46,99", soldOut: false, badge: "FANLIEBLING" },
     ],
   },
 ];
 
-/* ─── Info Sections ─── */
-const infoSections = [
+const openAirTickets: TicketCategory[] = [
+  {
+    title: "REGULAR",
+    items: [
+      { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "31,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
+    ],
+  },
+  {
+    title: "DELUXE",
+    items: [
+      { id: "deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "36,99", soldOut: false, badge: "84% schon weg" },
+    ],
+  },
+  {
+    title: "FAN",
+    items: [
+      { id: "fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "41,99", soldOut: false, badge: "FANLIEBLING" },
+    ],
+  },
+];
+
+const makeInfoSections = (event: EventData) => [
   {
     id: "eventinfo",
     title: "Eventinformationen",
@@ -51,9 +85,9 @@ Bei der Mamma Mia Party feiern wir die größten Songs von ABBA – und zwar gem
 
 Von „Dancing Queen" über „Mamma Mia" bis „Waterloo" – wir spielen alle Kult-Hits live vom DJ-Pult zum Mitsingen, Tanzen und Feiern.
 
-📅 Freitag, 10.04.2025
-📍 Baggi / Osho – Raschpl. 7L, 30161 Hannover
-🕐 Beginn: 20:00 Uhr
+📅 ${event.weekday}, ${event.date}
+📍 ${event.venue} – ${event.address}
+🕐 Beginn: ${event.time} Uhr
 
 🪩 DRESSCODE:
 Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
@@ -84,6 +118,77 @@ Komm in unsere kostenlose WhatsApp-Gruppe für weitere Infos & Aktionen:
 👉 Hier klicken: http://bit.ly/mammamiacommunity`,
   },
 ];
+
+const events: EventData[] = [
+  {
+    id: "388",
+    date: "10.04.2025",
+    dateShort: "10.04",
+    weekday: "Freitag",
+    time: "20:00",
+    venue: "Baggi / Osho",
+    address: "Raschpl. 7L, 30161 Hannover",
+    city: "Hannover",
+    openAir: false,
+    ticketData: defaultTickets,
+    infoSections: [],
+  },
+  {
+    id: "440",
+    date: "19.06.2025",
+    dateShort: "19.06",
+    weekday: "Donnerstag",
+    time: "20:00",
+    venue: "Azzurro Beach",
+    address: "Am Blauen See 119, 30823 Garbsen",
+    city: "Garbsen",
+    openAir: true,
+    ticketData: openAirTickets,
+    infoSections: [],
+  },
+  {
+    id: "410",
+    date: "21.08.2025",
+    dateShort: "21.08",
+    weekday: "Donnerstag",
+    time: "20:00",
+    venue: "Baggi / Osho",
+    address: "Raschpl. 7L, 30161 Hannover",
+    city: "Hannover",
+    openAir: false,
+    ticketData: defaultTickets,
+    infoSections: [],
+  },
+  {
+    id: "411",
+    date: "23.10.2025",
+    dateShort: "23.10",
+    weekday: "Donnerstag",
+    time: "20:00",
+    venue: "Baggi / Osho",
+    address: "Raschpl. 7L, 30161 Hannover",
+    city: "Hannover",
+    openAir: false,
+    ticketData: defaultTickets,
+    infoSections: [],
+  },
+  {
+    id: "412",
+    date: "04.12.2025",
+    dateShort: "04.12",
+    weekday: "Donnerstag",
+    time: "20:00",
+    venue: "Baggi / Osho",
+    address: "Raschpl. 7L, 30161 Hannover",
+    city: "Hannover",
+    openAir: false,
+    ticketData: defaultTickets,
+    infoSections: [],
+  },
+];
+
+// Fill infoSections dynamically
+events.forEach((e) => { e.infoSections = makeInfoSections(e); });
 
 /* ─── Instagram handle ─── */
 const instagramHandle = "@gimmegimmeparty";
@@ -125,6 +230,42 @@ const useCartTimer = () => {
 
   return { timeLeft, isActive, startTimer, formatTime };
 };
+
+/* ─── Event Date Tiles ─── */
+const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[]; selectedId: string; onSelect: (id: string) => void }) => (
+  <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center flex-wrap">
+    {events.map((event) => {
+      const isSelected = event.id === selectedId;
+      return (
+        <motion.button
+          key={event.id}
+          onClick={() => onSelect(event.id)}
+          className="relative flex flex-col items-center px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-center shrink-0 transition-all"
+          style={{
+            background: isSelected ? "hsl(0 0% 100% / 0.3)" : "hsl(0 0% 100% / 0.1)",
+            border: `2px solid ${isSelected ? "hsl(0 0% 100% / 0.7)" : "hsl(0 0% 100% / 0.2)"}`,
+            color: "hsl(0 0% 100%)",
+            minWidth: "72px",
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {event.openAir && (
+            <span className="absolute -top-2 -right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase"
+              style={{ background: "hsl(45 100% 50%)", color: "hsl(0 0% 10%)" }}>
+              <Sun className="w-2.5 h-2.5" /> Open Air
+            </span>
+          )}
+          <span className="text-base sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
+          <span className="text-[10px] sm:text-xs font-medium uppercase opacity-80 mt-0.5">
+            {["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][parseInt(event.dateShort.split(".")[1])]}
+          </span>
+          <span className="text-[9px] sm:text-[10px] opacity-60 mt-0.5">{event.venue.split("/")[0].trim()}</span>
+        </motion.button>
+      );
+    })}
+  </div>
+);
 
 /* ─── Quantity Selector ─── */
 const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: number) => void }) => (
@@ -253,34 +394,30 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   );
 };
 
-/* ─── Weitere Events ─── */
-const upcomingEvents = [
-  { id: 1, name: "NEUSS", date: "06. März 2025", location: "Neuss" },
-  { id: 2, name: "POTSDAM", date: "06. März 2025", location: "Potsdam" },
-  { id: 3, name: "ST. GALLEN", date: "TBA", location: "St. Gallen" },
-];
-
 /* ─── Ticket Widget ─── */
-const PPTicketWidget = () => {
+const PPTicketWidget = ({ event }: { event: EventData }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
   const { timeLeft, isActive, startTimer, formatTime } = useCartTimer();
+
+  // Reset quantities when event changes
+  useEffect(() => {
+    setQuantities({});
+    setDiscountCode("");
+    setDiscountApplied(false);
+  }, [event.id]);
 
   const totalItems = Object.values(quantities).reduce((a, b) => a + b, 0);
 
   const handleQtyChange = (id: string, val: number) => {
     const prev = quantities[id] || 0;
     setQuantities((q) => ({ ...q, [id]: val }));
-    if (val > prev && !isActive) {
-      startTimer();
-    }
+    if (val > prev && !isActive) startTimer();
   };
 
   const handleApplyDiscount = () => {
-    if (discountCode.trim().length > 0) {
-      setDiscountApplied(true);
-    }
+    if (discountCode.trim().length > 0) setDiscountApplied(true);
   };
 
   return (
@@ -305,7 +442,13 @@ const PPTicketWidget = () => {
         )}
       </AnimatePresence>
 
-      {ticketData.map((category) => (
+      {/* Location info */}
+      <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-1" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+        <MapPin className="w-3.5 h-3.5 shrink-0" />
+        <span>{event.venue} · {event.address}</span>
+      </div>
+
+      {event.ticketData.map((category) => (
         <div key={category.title}>
           <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
           <div>
@@ -369,13 +512,8 @@ const PPTicketWidget = () => {
 
       {/* Info Accordions */}
       <div className="space-y-2 pt-2">
-        {infoSections.map((s) => (
-          <InfoAccordion
-            key={s.id}
-            id={s.id}
-            title={s.title}
-            content={s.content}
-          />
+        {event.infoSections.map((s) => (
+          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} />
         ))}
       </div>
 
@@ -392,7 +530,7 @@ const PPTicketWidget = () => {
 };
 
 /* ─── Hero Section ─── */
-const PPHeroSection = () => (
+const PPHeroSection = ({ event }: { event: EventData }) => (
   <motion.div
     className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }}
@@ -410,10 +548,22 @@ const PPHeroSection = () => (
       MAMMA MIA / ABBA TOUR
     </p>
 
+    {event.openAir && (
+      <motion.div
+        className="flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs sm:text-sm font-bold uppercase"
+        style={{ background: "hsl(45 100% 50%)", color: "hsl(0 0% 10%)" }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+      >
+        <Sun className="w-3.5 h-3.5" /> Open Air
+      </motion.div>
+    )}
+
     <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-      <span>10. APRIL</span>
-      <span>AB 20 UHR</span>
-      <span>HANNOVER</span>
+      <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
+      <span>AB {event.time} UHR</span>
+      <span>{event.city.toUpperCase()}</span>
     </div>
 
     <div className="w-full flex justify-center mt-8 sm:mt-12 -mb-4 overflow-visible">
@@ -425,48 +575,6 @@ const PPHeroSection = () => (
       />
     </div>
   </motion.div>
-);
-
-/* ─── Weitere Events ─── */
-const WeitereEvents = () => (
-  <motion.section
-    className="mt-12 sm:mt-16"
-    initial={{ opacity: 0, y: 40 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.6 }}
-  >
-    <h2 className="pp-neon-title text-2xl sm:text-3xl font-black uppercase text-center mb-6 sm:mb-8">
-      Weitere Events
-    </h2>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-      {upcomingEvents.map((event) => (
-        <motion.div
-          key={event.id}
-          className="rounded-2xl overflow-hidden cursor-pointer"
-          style={{ background: "hsl(0 0% 100% / 0.12)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
-          whileHover={{ scale: 1.02, borderColor: "hsl(0 0% 100% / 0.4)" }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="h-32 sm:h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(210 60% 50%) 0%, hsl(205 55% 60%) 100%)" }}>
-            <span className="text-2xl sm:text-3xl font-black uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.5)", fontFamily: "'Orbitron', sans-serif" }}>
-              {event.name}
-            </span>
-          </div>
-          <div className="p-4 sm:p-5">
-            <h3 className="text-base sm:text-lg font-bold uppercase" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-              {event.name}
-            </h3>
-            <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>MAMMA MIA / ABBA TOUR KONZERT</p>
-            <div className="flex items-center gap-3 mt-2 text-xs sm:text-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-              <span>{event.date}</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{event.location}</span>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  </motion.section>
 );
 
 /* ─── Footer ─── */
@@ -514,6 +622,9 @@ const PPFooter = () => (
 
 /* ─── Page Layout ─── */
 const ProjectPaderborn = () => {
+  const [selectedEventId, setSelectedEventId] = useState(events[0].id);
+  const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
+
   return (
     <div className="min-h-screen pp-bg">
       {/* Glitter Particles */}
@@ -528,37 +639,47 @@ const ProjectPaderborn = () => {
         <div className="pp-smoke pp-smoke--5" />
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Event Date Tiles - above everything */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            Wähle deinen Termin
+          </h2>
+          <EventDateTiles events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} />
+        </div>
+
         {/* Desktop: two columns */}
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
-          <PPHeroSection />
+          <PPHeroSection event={selectedEvent} />
           <motion.div
+            key={selectedEvent.id}
             initial={{ opacity: 0, x: 60 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <PPTicketWidget />
+            <PPTicketWidget event={selectedEvent} />
           </motion.div>
         </div>
 
         {/* Mobile: stacked */}
         <div className="md:hidden space-y-6">
           <motion.div
-            initial={{ opacity: 0, y: -30 }}
+            key={`hero-${selectedEvent.id}`}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.4 }}
           >
-            <PPHeroSection />
+            <PPHeroSection event={selectedEvent} />
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            key={`tickets-${selectedEvent.id}`}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <PPTicketWidget />
+            <PPTicketWidget event={selectedEvent} />
           </motion.div>
         </div>
 
-        <WeitereEvents />
         <PPFooter />
       </div>
 
