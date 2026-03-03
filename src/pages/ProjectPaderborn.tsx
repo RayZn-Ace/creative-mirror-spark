@@ -143,7 +143,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
         <div className="flex items-center gap-2">
           <h4 className={`pp-ticket-title text-base ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
           {item.badge && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(330 80% 50% / 0.2)", color: "hsl(330 80% 60%)" }}>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
               {item.badge}
             </span>
           )}
@@ -169,7 +169,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
         <div className="flex items-center gap-2">
           <h4 className={`pp-ticket-title text-sm ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
           {item.badge && (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(330 80% 50% / 0.2)", color: "hsl(330 80% 60%)" }}>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
               {item.badge}
             </span>
           )}
@@ -203,7 +203,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
         <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(var(--foreground))" }}>{title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
-          <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(330, 80%, 55%)" }} />
+          <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -294,9 +294,9 @@ const PPTicketWidget = () => {
             exit={{ opacity: 0, y: -10 }}
             className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold"
             style={{
-              background: timeLeft < 60 ? "hsl(330 80% 50% / 0.2)" : "hsl(0 0% 100% / 0.08)",
-              border: `1px solid ${timeLeft < 60 ? "hsl(330 80% 50% / 0.4)" : "hsl(0 0% 100% / 0.12)"}`,
-              color: timeLeft < 60 ? "hsl(330 80% 60%)" : "hsl(0 0% 100% / 0.9)",
+              background: timeLeft < 60 ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.15)",
+              border: `1px solid ${timeLeft < 60 ? "hsl(0 70% 50% / 0.5)" : "hsl(0 0% 100% / 0.25)"}`,
+              color: "hsl(0 0% 100%)",
             }}
           >
             <Timer className="w-4 h-4" />
@@ -334,7 +334,7 @@ const PPTicketWidget = () => {
         <motion.button
           onClick={handleApplyDiscount}
           className="px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0"
-          style={{ background: "hsl(330, 80%, 50%)", color: "white" }}
+          style={{ background: "hsl(0 0% 100% / 0.25)", color: "white", border: "1px solid hsl(0 0% 100% / 0.35)" }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -342,7 +342,7 @@ const PPTicketWidget = () => {
         </motion.button>
       </div>
       {discountApplied && (
-        <p className="text-xs" style={{ color: "hsl(142, 70%, 55%)" }}>
+        <p className="text-xs" style={{ color: "hsl(0 0% 100%)" }}>
           ✓ Code wird beim Checkout geprüft
         </p>
       )}
@@ -361,7 +361,7 @@ const PPTicketWidget = () => {
         href={instagramUrl}
         target="_blank" rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all hover:opacity-100"
-        style={{ color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.12)", background: "hsl(0 0% 100% / 0.04)" }}
+        style={{ color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.25)", background: "hsl(0 0% 100% / 0.1)" }}
       >
         <Instagram className="w-3.5 h-3.5" />
         {instagramHandle}
@@ -383,7 +383,7 @@ const PPTicketWidget = () => {
       <Link
         to="/#events"
         className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02]"
-        style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.8)" }}
+        style={{ background: "hsl(0 0% 100% / 0.15)", border: "1px solid hsl(0 0% 100% / 0.25)", color: "hsl(0 0% 100%)" }}
       >
         Weitere Events entdecken <ArrowRight className="w-4 h-4" />
       </Link>
@@ -401,7 +401,7 @@ const PPHeroSection = () => (
   >
     <h1
       className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
-      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}
+      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
     >
       HANNOVER
     </h1>
@@ -410,7 +410,7 @@ const PPHeroSection = () => (
       MAMMA MIA / ABBA TOUR
     </p>
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(330, 80%, 55%)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
       <span>10. APRIL</span>
       <span>AB 20 UHR</span>
       <span>HANNOVER</span>
@@ -444,12 +444,12 @@ const WeitereEvents = () => (
         <motion.div
           key={event.id}
           className="rounded-2xl overflow-hidden cursor-pointer"
-          style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-          whileHover={{ scale: 1.02, borderColor: "hsl(330 80% 55% / 0.4)" }}
+          style={{ background: "hsl(0 0% 100% / 0.12)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
+          whileHover={{ scale: 1.02, borderColor: "hsl(0 0% 100% / 0.4)" }}
           transition={{ duration: 0.2 }}
         >
-          <div className="h-32 sm:h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(220 40% 20%) 0%, hsl(225 35% 12%) 100%)" }}>
-            <span className="text-2xl sm:text-3xl font-black uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.3)", fontFamily: "'Orbitron', sans-serif" }}>
+          <div className="h-32 sm:h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(210 60% 50%) 0%, hsl(205 55% 60%) 100%)" }}>
+            <span className="text-2xl sm:text-3xl font-black uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.5)", fontFamily: "'Orbitron', sans-serif" }}>
               {event.name}
             </span>
           </div>
@@ -457,8 +457,8 @@ const WeitereEvents = () => (
             <h3 className="text-base sm:text-lg font-bold uppercase" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
               {event.name}
             </h3>
-            <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>MAMMA MIA / ABBA TOUR KONZERT</p>
-            <div className="flex items-center gap-3 mt-2 text-xs sm:text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>MAMMA MIA / ABBA TOUR KONZERT</p>
+            <div className="flex items-center gap-3 mt-2 text-xs sm:text-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
               <span>{event.date}</span>
               <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{event.location}</span>
             </div>
@@ -472,7 +472,7 @@ const WeitereEvents = () => (
 /* ─── Footer ─── */
 const PPFooter = () => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
-    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base" style={{ color: "hsl(0 0% 100%)" }}>
       <p>Fragen, Probleme oder Reservierungsanfragen?</p>
       <p>
         Kontaktiere uns:{" "}
@@ -483,10 +483,10 @@ const PPFooter = () => (
     </div>
     <div className="hidden md:flex items-start justify-between gap-6 lg:gap-8">
       <div className="flex-1">
-        <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+        <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100%)" }}>
           powered by smea
         </a>
-        <p className="text-[10px] lg:text-xs mt-2 lg:mt-3 max-w-xs lg:max-w-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+        <p className="text-[10px] lg:text-xs mt-2 lg:mt-3 max-w-xs lg:max-w-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
           Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
         </p>
       </div>
@@ -497,10 +497,10 @@ const PPFooter = () => (
       </div>
     </div>
     <div className="md:hidden text-center space-y-3">
-      <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+      <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100%)" }}>
         powered by smea
       </a>
-      <p className="text-[10px] px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+      <p className="text-[10px] px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
         Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
       </p>
       <div className="flex justify-center gap-4 text-xs">
