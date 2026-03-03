@@ -110,11 +110,6 @@ Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
 ✅ Dein Ticket brauchst du nicht auszudrucken – es reicht digital auf deinem Handy.`,
   },
   {
-    id: "promoter",
-    title: "Promoter melden",
-    content: "promoter",
-  },
-  {
     id: "whatsapp",
     title: "Freikarten & mehr?",
     content: "whatsapp",
