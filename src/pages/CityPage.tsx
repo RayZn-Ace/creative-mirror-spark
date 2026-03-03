@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { getTranslations, translateBadge, translateTicketDesc, type Translations } from "@/lib/i18n";
+import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
 interface CityEvent {
@@ -170,7 +170,7 @@ const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: 
 );
 
 /* ─── Ticket Row ─── */
-const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void; t: Translations }) => {
+const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void; t: Translations; currency: string }) => {
   if (item.comingSoon) {
     return (
       <div className="pp-ticket-item" style={{ opacity: 0.7 }}>
@@ -195,7 +195,7 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
         <div className="flex items-center justify-between gap-2">
           <h4 className="pp-ticket-title text-xs sm:text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>{item.name}</h4>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="pp-ticket-price text-xs sm:text-sm line-through decoration-1"><span className="text-[9px] sm:text-xs font-normal mr-0.5">EUR</span>{item.price}</span>
+            <span className="pp-ticket-price text-xs sm:text-sm line-through decoration-1"><span className="text-[9px] sm:text-xs font-normal mr-0.5">{currency}</span>{item.price}</span>
             <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase" style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>{t.soldOutBadge}</span>
           </div>
         </div>
@@ -215,7 +215,7 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
         </div>
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-right">
-            <div className="pp-ticket-price text-base"><span className="text-xs font-normal mr-1">EUR</span>{item.price}</div>
+            <div className="pp-ticket-price text-base"><span className="text-xs font-normal mr-1">{currency}</span>{item.price}</div>
             <div className="pp-ticket-tax text-xs">{t.inclVat}</div>
           </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
@@ -231,7 +231,7 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <div className="pp-ticket-price text-sm"><span className="text-[10px] font-normal mr-1">EUR</span>{item.price}</div>
+            <div className="pp-ticket-price text-sm"><span className="text-[10px] font-normal mr-1">{currency}</span>{item.price}</div>
             <div className="pp-ticket-tax">{t.inclVat}</div>
           </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
@@ -498,7 +498,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
               <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
               <div>
                 {category.items.map((item) => (
-                  <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} t={t} />
+                  <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} t={t} currency={getCurrencyForCity(event.city)} />
                 ))}
               </div>
             </div>

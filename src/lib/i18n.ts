@@ -933,29 +933,51 @@ export const getTranslations = (city: string): Translations => {
 };
 
 export const getCurrencyForCity = (city: string): string => {
+  // City-specific overrides first (some countries share languages but differ in currency)
+  const cityUpper = city.toUpperCase();
+  if (["ZÜRICH", "ZURICH", "BERN", "BASEL", "GENF", "GENEVA", "LUZERN", "LUCERNE", "LAUSANNE", "WINTERTHUR", "ST. GALLEN"].some(c => cityUpper.includes(c))) return "CHF";
+  if (["LONDON", "MANCHESTER", "BIRMINGHAM", "LIVERPOOL", "EDINBURGH", "GLASGOW", "BRISTOL", "LEEDS", "CARDIFF", "BELFAST"].some(c => cityUpper.includes(c))) return "GBP";
+  if (["SÃO PAULO", "SAO PAULO", "RIO DE JANEIRO", "BRASILIA", "SALVADOR", "FORTALEZA", "CURITIBA", "BELO HORIZONTE"].some(c => cityUpper.includes(c))) return "BRL";
+  if (["NEW YORK", "LOS ANGELES", "CHICAGO", "MIAMI", "SAN FRANCISCO", "HOUSTON", "DALLAS", "BOSTON", "SEATTLE", "LAS VEGAS", "WASHINGTON"].some(c => cityUpper.includes(c))) return "USD";
+  if (["TORONTO", "MONTREAL", "VANCOUVER", "CALGARY", "OTTAWA"].some(c => cityUpper.includes(c))) return "CAD";
+  if (["SYDNEY", "MELBOURNE", "BRISBANE", "PERTH", "ADELAIDE"].some(c => cityUpper.includes(c))) return "AUD";
+  if (["TOKYO", "OSAKA", "KYOTO", "YOKOHAMA"].some(c => cityUpper.includes(c))) return "JPY";
+  if (["DUBAI", "ABU DHABI"].some(c => cityUpper.includes(c))) return "AED";
+
   const lang = getLangForCity(city);
   switch (lang) {
     case "pl": return "PLN";
-    case "hr": case "bs": case "sr": return "EUR";
-    case "pt": return "BRL";
     case "cs": return "CZK";
     case "hu": return "HUF";
     case "ro": return "RON";
     case "bg": return "BGN";
-    case "da": case "no": case "sv": return "SEK";
+    case "da": return "DKK";
+    case "no": return "NOK";
+    case "sv": return "SEK";
     case "tr": return "TRY";
     case "ru": return "RUB";
     case "uk": return "UAH";
     case "ja": return "JPY";
     case "ko": return "KRW";
     case "zh": return "CNY";
-    case "ar": return "AED";
     case "th": return "THB";
     case "sq": return "ALL";
     case "ka": return "GEL";
-    case "en": return "GBP";
+    case "hr": case "bs": case "sr": case "sl": case "sk": case "lt": case "lv": case "et": case "fi":
+    case "el": case "pt": case "it": case "es": case "fr": case "nl": case "de": case "en":
+      return "EUR";
     default: return "EUR";
   }
+};
+
+export const getCurrencySymbol = (currency: string): string => {
+  const symbols: Record<string, string> = {
+    EUR: "€", USD: "$", GBP: "£", CHF: "CHF", PLN: "zł", CZK: "Kč", HUF: "Ft",
+    RON: "lei", BGN: "лв", DKK: "kr", NOK: "kr", SEK: "kr", TRY: "₺", RUB: "₽",
+    UAH: "₴", JPY: "¥", KRW: "₩", CNY: "¥", AED: "د.إ", THB: "฿", ALL: "L",
+    GEL: "₾", BRL: "R$", CAD: "CA$", AUD: "A$",
+  };
+  return symbols[currency] || currency;
 };
 
 export const translateBadge = (badge: string, t: Translations): string => {
