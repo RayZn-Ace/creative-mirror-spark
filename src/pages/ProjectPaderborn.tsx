@@ -116,12 +116,8 @@ Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
   },
   {
     id: "whatsapp",
-    title: "WhatsApp Community",
-    content: `👑 LUST AUF FREIKARTEN?
-
-Komm in unsere kostenlose WhatsApp-Gruppe für weitere Infos & Aktionen:
-
-👉 Hier klicken: http://bit.ly/mammamiacommunity`,
+    title: "Freikarten & mehr?",
+    content: "whatsapp",
   },
 ];
 
@@ -419,7 +415,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
 const InfoAccordion = ({ id, title, content }: { id: string; title: string; content: string }) => {
   const [open, setOpen] = useState(false);
   const isPromoter = id === "promoter";
-
+  const isWhatsapp = content === "whatsapp";
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
@@ -461,6 +457,20 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                       <Instagram className="w-4 h-4" /> Instagram
                     </a>
                   </div>
+                </>
+              ) : isWhatsapp ? (
+                <>
+                  <p className="text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+                    Werde Teil unserer WhatsApp-Community.
+                  </p>
+                  <a
+                    href="http://bit.ly/mammamiacommunity"
+                    target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all mt-2 hover:scale-[1.02]"
+                    style={{ background: "hsl(142, 70%, 45%)", color: "white" }}
+                  >
+                    <MessageCircle className="w-4 h-4" /> Jetzt beitreten
+                  </a>
                 </>
               ) : (
                 <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
