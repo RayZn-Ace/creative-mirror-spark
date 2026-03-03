@@ -292,21 +292,109 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   );
 };
 
+/* ─── City Coordinates for distance calc ─── */
+const CITY_COORDS: Record<string, [number, number]> = {
+  Aachen:[50.7753,6.0839],Aalen:[48.8375,10.0933],Albstadt:[48.2106,9.0254],Amsterdam:[52.3676,4.9041],
+  Antwerpen:[51.2194,4.4025],Apolda:[51.0260,11.5152],Aschaffenburg:[49.9757,9.1539],Augsburg:[48.3705,10.8978],
+  Balingen:[48.2753,8.8501],Bautzen:[51.1814,14.4244],Berlin:[52.5200,13.4050],Bielefeld:[52.0302,8.5325],
+  Bochum:[51.4818,7.2162],Bonn:[50.7374,7.0982],Bottrop:[51.5247,6.9227],Braunschweig:[52.2689,10.5268],
+  Bremen:[53.0793,8.8017],Bremervörde:[53.4856,9.1408],Buxtehude:[53.4677,9.6861],Celle:[52.6224,10.0805],
+  Cloppenburg:[52.8476,8.0445],Cuxhaven:[53.8617,8.6907],Darmstadt:[49.8728,8.6512],Detmold:[51.9386,8.8789],
+  Dornbirn:[47.4125,9.7417],Dortmund:[51.5136,7.4653],Dresden:[51.0504,13.7373],Düsseldorf:[51.2277,6.7735],
+  Erfurt:[50.9787,11.0328],Essen:[51.4556,7.0116],Frankfurt:[50.1109,8.6821],Freiburg:[47.9990,7.8421],
+  Freilassing:[47.8396,12.9822],Fulda:[50.5558,9.6808],Geldern:[51.5178,6.3225],Gera:[50.8810,12.0836],
+  Gießen:[50.5840,8.6784],Gotha:[50.9489,10.7018],Göttingen:[51.5413,9.9158],Gralla:[46.7333,15.5333],
+  Hagen:[51.3671,7.4633],Halle:[51.4969,11.9688],Hamburg:[53.5511,9.9937],Hamm:[51.6739,7.8160],
+  Hanau:[50.1337,8.9167],Hannover:[52.3759,9.7320],Heide:[54.1961,9.0939],Ingolstadt:[48.7665,11.4258],
+  Innsbruck:[47.2692,11.4041],Kaiserslautern:[49.4401,7.7491],Karlsruhe:[49.0069,8.4037],Kiel:[54.3233,10.1228],
+  Kitzbühel:[47.4493,12.3922],Koblenz:[50.3569,7.5890],Kollerschlag:[48.6000,13.8333],Köln:[50.9375,6.9603],
+  Krakow:[50.0647,19.9450],Krefeld:[51.3388,6.5853],LeHavre:[49.4944,0.1079],Leingarten:[49.1500,9.1167],
+  Leipzig:[51.3397,12.3731],Linz:[48.3069,14.2858],Lörrach:[47.6151,7.6614],Lübeck:[53.8655,10.6866],
+  Luxembourg:[49.6117,6.1300],Lyss:[47.0743,7.3069],Magdeburg:[52.1205,11.6276],Mainz:[49.9929,8.2473],
+  Mathay:[47.4333,6.7833],Melle:[52.2036,8.3381],Merenberg:[50.5167,8.1833],Mönchengladbach:[51.1805,6.4428],
+  Monheim:[51.0917,6.8917],München:[48.1351,11.5820],Münster:[51.9607,7.6261],Nabburg:[49.4542,12.1789],
+  Naumburg:[51.1521,11.8097],Neuss:[51.2042,6.6879],Nürnberg:[49.4521,11.0767],Oberhausen:[51.4963,6.8634],
+  Offenburg:[48.4738,7.9452],Oldenburg:[53.1435,8.2146],Olpe:[51.0289,7.8514],Olten:[47.3500,7.9000],
+  Osnabrück:[52.2799,8.0472],Paderborn:[51.7189,8.7575],Paris:[48.8566,2.3522],Pforzheim:[48.8922,8.6947],
+  Potsdam:[52.3906,13.0645],Rastatt:[48.8583,8.2039],Ravensburg:[47.7811,9.6122],Recklinghausen:[51.6139,7.1979],
+  Regensburg:[49.0134,12.1016],Reutlingen:[48.4914,9.2108],Rosenheim:[47.8561,12.1283],Rostock:[54.0924,12.0991],
+  Rotterdam:[51.9244,4.4777],Saarbrücken:[49.2402,6.9969],Salzburg:[47.8095,13.0550],SãoPaulo:[-23.5505,-46.6333],
+  Schwerin:[53.6355,11.4015],Siegen:[50.8748,8.0243],Singen:[47.7600,8.8400],Sinsheim:[49.2528,8.8789],
+  StGallen:[47.4245,9.3767],StMartin:[47.1167,14.4833],Stollberg:[50.7097,12.7789],Stuttgart:[48.7758,9.1829],
+  Trier:[49.7490,6.6371],Ulm:[48.4011,9.9876],Utrecht:[52.0907,5.1214],Verl:[51.8833,8.5167],
+  Vöcklabruck:[48.0025,13.6578],Wien:[48.2082,16.3738],Winterthur:[47.5006,8.7234],Wuppertal:[51.2562,7.1508],
+  Würzburg:[49.7913,9.9534],Zadar:[44.1194,15.2314],Zürich:[47.3769,8.5417],Zwickau:[50.7183,12.4964],
+};
+
+const getCityCoords = (city: string): [number, number] | null => {
+  if (CITY_COORDS[city]) return CITY_COORDS[city];
+  // Try without spaces/special chars
+  const normalized = city.replace(/\s+/g, "").replace("ö", "ö").replace("ü", "ü").replace("ä", "ä");
+  for (const [key, val] of Object.entries(CITY_COORDS)) {
+    if (key.replace(/\s+/g, "") === normalized) return val;
+  }
+  return null;
+};
+
+const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 /* ─── Nearby Events (from DB) ─── */
-const NearbyEvents = ({ currentSlug }: { currentSlug: string }) => {
-  const [nearby, setNearby] = useState<{ slug: string; city: string; eventCount: number }[]>([]);
+const NearbyEvents = ({ currentSlug, currentCity }: { currentSlug: string; currentCity: string }) => {
+  const [nearby, setNearby] = useState<{ slug: string; city: string; km: number | null }[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const loadAndSort = async (refLat: number, refLon: number, allSeries: { slug: string; city: string }[]) => {
+      const withDist = allSeries
+        .map((s) => {
+          const coords = getCityCoords(s.city);
+          const km = coords ? Math.round(haversineKm(refLat, refLon, coords[0], coords[1])) : null;
+          return { slug: s.slug, city: s.city, km };
+        })
+        .sort((a, b) => (a.km ?? 99999) - (b.km ?? 99999));
+      if (!cancelled) setNearby(withDist.slice(0, 4));
+    };
+
     supabase
       .from("event_series")
       .select("slug, city, title")
       .eq("status", "published")
       .neq("slug", currentSlug)
-      .limit(6)
       .then(({ data }) => {
-        if (data) setNearby(data.map((s) => ({ slug: s.slug, city: s.city || s.title, eventCount: 0 })));
+        if (!data || cancelled) return;
+        const series = data.map((s) => ({ slug: s.slug, city: s.city || s.title }));
+
+        // Try user geolocation first
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              loadAndSort(pos.coords.latitude, pos.coords.longitude, series);
+            },
+            () => {
+              // Fallback: use current event city coords
+              const fallback = getCityCoords(currentCity);
+              if (fallback) loadAndSort(fallback[0], fallback[1], series);
+              else if (!cancelled) setNearby(series.slice(0, 4).map((s) => ({ ...s, km: null })));
+            },
+            { timeout: 5000, maximumAge: 300000 }
+          );
+        } else {
+          const fallback = getCityCoords(currentCity);
+          if (fallback) loadAndSort(fallback[0], fallback[1], series);
+          else if (!cancelled) setNearby(series.slice(0, 4).map((s) => ({ ...s, km: null })));
+        }
       });
-  }, [currentSlug]);
+
+    return () => { cancelled = true; };
+  }, [currentSlug, currentCity]);
 
   if (nearby.length === 0) return null;
 
@@ -319,12 +407,17 @@ const NearbyEvents = ({ currentSlug }: { currentSlug: string }) => {
         <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.95)" }}>Sichere dir jetzt Tickets für weitere Städte</p>
       </div>
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-        {nearby.slice(0, 4).map((ev) => (
+        {nearby.map((ev) => (
           <Link key={ev.slug} to={`/${ev.slug}`}
             className="group flex flex-col items-center py-4 sm:py-5 px-3 rounded-2xl text-center transition-all hover:scale-[1.03] backdrop-blur-sm"
             style={{ background: "linear-gradient(135deg, hsl(210 70% 45% / 0.35), hsl(200 60% 55% / 0.2))", border: "1px solid hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
             <MapPin className="w-4 h-4 mb-1.5 opacity-60 group-hover:opacity-100 transition-opacity" />
             <span className="text-sm sm:text-base font-black uppercase tracking-wide">{ev.city}</span>
+            {ev.km !== null && (
+              <span className="text-[10px] sm:text-xs mt-1 font-semibold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                ~{ev.km} km entfernt
+              </span>
+            )}
           </Link>
         ))}
       </div>
@@ -457,7 +550,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
         ))}
       </div>
 
-      <NearbyEvents currentSlug={citySlug} />
+      <NearbyEvents currentSlug={citySlug} currentCity={event.city} />
     </div>
   );
 };
