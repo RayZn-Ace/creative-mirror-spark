@@ -69,6 +69,10 @@ export type Database = {
           location_address: string | null
           location_name: string | null
           series_id: string | null
+          service_fee_enabled: boolean | null
+          service_fee_type: string | null
+          service_fee_value: number | null
+          service_fee_vat: number | null
           slug: string
           sort_order: number | null
           status: string | null
@@ -91,6 +95,10 @@ export type Database = {
           location_address?: string | null
           location_name?: string | null
           series_id?: string | null
+          service_fee_enabled?: boolean | null
+          service_fee_type?: string | null
+          service_fee_value?: number | null
+          service_fee_vat?: number | null
           slug: string
           sort_order?: number | null
           status?: string | null
@@ -113,6 +121,10 @@ export type Database = {
           location_address?: string | null
           location_name?: string | null
           series_id?: string | null
+          service_fee_enabled?: boolean | null
+          service_fee_type?: string | null
+          service_fee_value?: number | null
+          service_fee_vat?: number | null
           slug?: string
           sort_order?: number | null
           status?: string | null
