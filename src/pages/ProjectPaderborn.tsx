@@ -304,13 +304,22 @@ const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: 
 const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void }) => {
   if (item.comingSoon) {
     return (
-      <div className="pp-ticket-item" style={{ opacity: 0.5 }}>
+      <div className="pp-ticket-item" style={{ opacity: 0.7 }}>
         <div className="flex items-center justify-between gap-4">
           <h4 className="pp-ticket-title text-sm sm:text-base">{item.name}</h4>
-          <span className="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider shrink-0"
-            style={{ background: "hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100% / 0.7)", border: "1px dashed hsl(0 0% 100% / 0.3)" }}>
+          <motion.span
+            className="px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest shrink-0"
+            style={{
+              background: "linear-gradient(135deg, hsl(280 60% 50% / 0.3), hsl(200 80% 50% / 0.3))",
+              color: "hsl(0 0% 100%)",
+              border: "1px solid hsl(200 80% 60% / 0.5)",
+              boxShadow: "0 0 12px hsl(200 80% 50% / 0.2)",
+            }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
             COMING SOON
-          </span>
+          </motion.span>
         </div>
       </div>
     );
@@ -527,7 +536,7 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
       {/* Location info */}
       {/* Location info - clickable to Google Maps */}
       <a
-        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`}
+        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue + ", " + event.address)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-sm sm:text-base font-medium px-3 py-2.5 rounded-xl transition-all hover:scale-[1.01]"
