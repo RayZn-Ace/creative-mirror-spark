@@ -7,6 +7,12 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
+interface InfoBlock {
+  id: string;
+  title: string;
+  content: string;
+}
+
 interface EventRow {
   id: string;
   title: string;
@@ -30,6 +36,7 @@ interface EventRow {
   service_fee_type: string | null;
   service_fee_value: number | null;
   service_fee_vat: number | null;
+  info_sections: InfoBlock[] | null;
 }
 
 interface TicketRow {
@@ -58,6 +65,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
   status: "draft", highlight: false, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
+  info_sections: [],
 };
 
 const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR" };
@@ -395,17 +403,6 @@ const EventEditView = ({
           <Section title="Eventbeschreibung" icon={Pencil}>
             <Field label="Titel *" value={editing.title} onChange={(v: string) => setEditing({ ...editing, title: v })} />
             <Field label="Untertitel" value={editing.subtitle} onChange={(v: string) => setEditing({ ...editing, subtitle: v })} />
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Beschreibung & Informationen</label>
-              <textarea
-                value={editing.description || ""}
-                onChange={(e) => setEditing({ ...editing, description: e.target.value })}
-                rows={8}
-                placeholder="Event-Beschreibung, Dresscode, wichtige Hinweise..."
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-y transition-all focus:ring-1"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "160px" }}
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Event Kategorie</label>
@@ -449,6 +446,96 @@ const EventEditView = ({
                 Speichere das Event zuerst, um Ticket-Varianten hinzuzufügen.
               </p>
             )}
+          </Section>
+
+          <Section title="Info-Blöcke (Akkordeons)" icon={Layers}>
+            <p className="text-[10px] mb-2" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+              Diese Blöcke erscheinen als aufklappbare Akkordeons auf der Eventseite.
+            </p>
+            <div className="space-y-3">
+              {(editing.info_sections || []).map((block, idx) => (
+                <div key={block.id} className="rounded-xl p-4 space-y-2" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <div className="flex items-center justify-between gap-2">
+                    <input
+                      value={block.title}
+                      onChange={(e) => {
+                        const updated = [...(editing.info_sections || [])];
+                        updated[idx] = { ...updated[idx], title: e.target.value };
+                        setEditing({ ...editing, info_sections: updated });
+                      }}
+                      placeholder="Block-Titel (z.B. Eventinformationen)"
+                      className="flex-1 px-3 py-2 rounded-lg text-sm font-bold outline-none"
+                      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                    />
+                    <div className="flex items-center gap-1">
+                      {idx > 0 && (
+                        <button
+                          onClick={() => {
+                            const updated = [...(editing.info_sections || [])];
+                            [updated[idx - 1], updated[idx]] = [updated[idx], updated[idx - 1]];
+                            setEditing({ ...editing, info_sections: updated });
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/5"
+                          style={{ color: "hsl(0 0% 100% / 0.4)" }}
+                          title="Nach oben"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+                        </button>
+                      )}
+                      {idx < (editing.info_sections || []).length - 1 && (
+                        <button
+                          onClick={() => {
+                            const updated = [...(editing.info_sections || [])];
+                            [updated[idx], updated[idx + 1]] = [updated[idx + 1], updated[idx]];
+                            setEditing({ ...editing, info_sections: updated });
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-white/5"
+                          style={{ color: "hsl(0 0% 100% / 0.4)" }}
+                          title="Nach unten"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          const updated = (editing.info_sections || []).filter((_, i) => i !== idx);
+                          setEditing({ ...editing, info_sections: updated });
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-white/5"
+                        style={{ color: "hsl(0 70% 55%)" }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    value={block.content}
+                    onChange={(e) => {
+                      const updated = [...(editing.info_sections || [])];
+                      updated[idx] = { ...updated[idx], content: e.target.value };
+                      setEditing({ ...editing, info_sections: updated });
+                    }}
+                    rows={5}
+                    placeholder="Inhalt des Blocks..."
+                    className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "80px" }}
+                  />
+                  <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                    Tipp: „whatsapp" als Inhalt zeigt den WhatsApp-Block an.
+                  </p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                const newBlock: InfoBlock = { id: `block-${Date.now()}`, title: "", content: "" };
+                setEditing({ ...editing, info_sections: [...(editing.info_sections || []), newBlock] });
+              }}
+              className="w-full py-2.5 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
+              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)", border: "1px dashed hsl(0 0% 100% / 0.15)" }}
+            >
+              <Plus className="w-3.5 h-3.5" /> Neuen Block hinzufügen
+            </button>
           </Section>
         </div>
 
@@ -619,7 +706,7 @@ const EventsAdmin = () => {
       supabase.from("events").select("*").order("sort_order"),
       supabase.from("event_series").select("id, title, city").order("title"),
     ]);
-    setEvents((eventsRes.data as EventRow[]) || []);
+    setEvents((eventsRes.data as unknown as EventRow[]) || []);
     const options = (seriesRes.data as SeriesOption[]) || [];
     setSeriesOptions(options);
     const map: Record<string, string> = {};
@@ -651,7 +738,7 @@ const EventsAdmin = () => {
       if (error) { toast.error(error.message); return; }
       toast.success("Event erstellt");
       // Stay in edit mode with the new ID so tickets can be added
-      setEditing(data as EventRow);
+      setEditing(data as unknown as EventRow);
       load();
       return;
     }
