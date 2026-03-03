@@ -15,6 +15,7 @@ interface EventData {
   address: string;
   city: string;
   openAir: boolean;
+  soldOut: boolean;
   ticketData: TicketCategory[];
   infoSections: { id: string; title: string; content: string }[];
 }
@@ -130,6 +131,7 @@ const events: EventData[] = [
     address: "Raschpl. 7L, 30161 Hannover",
     city: "Hannover",
     openAir: false,
+    soldOut: false,
     ticketData: defaultTickets,
     infoSections: [],
   },
@@ -143,6 +145,7 @@ const events: EventData[] = [
     address: "Am Blauen See 119, 30823 Garbsen",
     city: "Garbsen",
     openAir: true,
+    soldOut: false,
     ticketData: openAirTickets,
     infoSections: [],
   },
@@ -156,6 +159,7 @@ const events: EventData[] = [
     address: "Raschpl. 7L, 30161 Hannover",
     city: "Hannover",
     openAir: false,
+    soldOut: false,
     ticketData: defaultTickets,
     infoSections: [],
   },
@@ -169,6 +173,7 @@ const events: EventData[] = [
     address: "Raschpl. 7L, 30161 Hannover",
     city: "Hannover",
     openAir: false,
+    soldOut: true,
     ticketData: defaultTickets,
     infoSections: [],
   },
@@ -182,6 +187,7 @@ const events: EventData[] = [
     address: "Raschpl. 7L, 30161 Hannover",
     city: "Hannover",
     openAir: false,
+    soldOut: false,
     ticketData: defaultTickets,
     infoSections: [],
   },
@@ -242,18 +248,31 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
           onClick={() => onSelect(event.id)}
           className="relative flex flex-col items-center px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-center shrink-0 transition-all"
           style={{
-            background: isSelected ? "hsl(0 0% 100% / 0.3)" : "hsl(0 0% 100% / 0.1)",
+            background: isSelected ? "hsl(0 0% 100% / 0.3)" : event.soldOut ? "hsl(0 0% 100% / 0.05)" : "hsl(0 0% 100% / 0.1)",
             border: `2px solid ${isSelected ? "hsl(0 0% 100% / 0.7)" : "hsl(0 0% 100% / 0.2)"}`,
             color: "hsl(0 0% 100%)",
             minWidth: "72px",
+            opacity: event.soldOut ? 0.6 : 1,
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {event.openAir && (
+          {event.soldOut && (
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase whitespace-nowrap"
+              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+              Ausverkauft
+            </span>
+          )}
+          {event.openAir && !event.soldOut && (
             <span className="absolute -top-2 -right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase"
               style={{ background: "hsl(45 100% 50%)", color: "hsl(0 0% 10%)" }}>
               <Sun className="w-2.5 h-2.5" /> Open Air
+            </span>
+          )}
+          {event.openAir && event.soldOut && (
+            <span className="absolute -top-2 -right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase"
+              style={{ background: "hsl(45 100% 50%)", color: "hsl(0 0% 10%)" }}>
+              <Sun className="w-2.5 h-2.5" />
             </span>
           )}
           <span className="text-base sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
@@ -448,6 +467,17 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
         <span>{event.venue} · {event.address}</span>
       </div>
 
+      {event.soldOut ? (
+        <div className="text-center py-8 sm:py-12">
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
+            AUSVERKAUFT
+          </div>
+          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            Dieses Event ist leider ausverkauft. Schau dir unsere anderen Termine an!
+          </p>
+        </div>
+      ) : (
+      <>
       {event.ticketData.map((category) => (
         <div key={category.title}>
           <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
@@ -498,6 +528,8 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
       >
         IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
       </motion.button>
+      </>
+      )}
 
       {/* Instagram */}
       <a
