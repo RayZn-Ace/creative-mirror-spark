@@ -251,23 +251,23 @@
   }
 
   .pp-ticket-title {
-    @apply text-sm font-bold uppercase;
+    @apply text-sm sm:text-base font-bold uppercase;
     color: hsl(0 0% 100%);
   }
 
   .pp-ticket-desc {
-    @apply text-xs;
-    color: hsl(0 0% 100% / 0.7);
+    @apply text-xs sm:text-sm leading-relaxed;
+    color: hsl(0 0% 100% / 0.8);
   }
 
   .pp-ticket-price {
-    @apply text-sm font-bold;
+    @apply text-sm sm:text-base font-bold;
     color: hsl(0 0% 100%);
   }
 
   .pp-ticket-tax {
-    @apply text-[10px];
-    color: hsl(0 0% 100% / 0.6);
+    @apply text-[10px] sm:text-xs;
+    color: hsl(0 0% 100% / 0.7);
   }
 
   .pp-sold-out {
@@ -276,9 +276,9 @@
   }
 
   .pp-category-title {
-    @apply text-sm font-extrabold uppercase tracking-widest;
+    @apply text-sm sm:text-base font-extrabold uppercase tracking-widest;
     color: hsl(0 0% 100%);
-    opacity: 0.85;
+    opacity: 0.9;
   }
 
   .pp-qty-btn {
