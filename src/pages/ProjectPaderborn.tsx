@@ -682,12 +682,11 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-2 sm:mt-12 overflow-visible">
+    <div className="w-full flex justify-center mt-2 sm:mt-12">
       <img
         src={headerImg}
         alt="Mamma Mia Party"
-        className="max-w-[220px] sm:max-w-[440px] lg:max-w-[500px] object-contain"
-        style={{ mixBlendMode: "multiply" }}
+        className="max-w-[220px] sm:max-w-[440px] lg:max-w-[500px] object-contain mix-blend-multiply"
       />
     </div>
 
@@ -748,6 +747,16 @@ const PPFooter = () => (
 const ProjectPaderborn = () => {
   const [selectedEventId, setSelectedEventId] = useState(events[0].id);
   const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
+  const [showWhatsapp, setShowWhatsapp] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      setShowWhatsapp(scrollPercent > 0.5);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div className="min-h-screen pp-bg">
@@ -799,16 +808,24 @@ const ProjectPaderborn = () => {
         <PPFooter />
       </div>
 
-      {/* WhatsApp Floating Button */}
-      <a
-        href={`https://wa.me/${whatsappNumber}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pp-whatsapp-btn"
-        aria-label="WhatsApp Chat"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </a>
+      {/* WhatsApp Floating Button - shows after scrolling 50% */}
+      <AnimatePresence>
+        {showWhatsapp && (
+          <motion.a
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pp-whatsapp-btn"
+            aria-label="WhatsApp Chat"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <MessageCircle className="w-6 h-6" />
+          </motion.a>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
