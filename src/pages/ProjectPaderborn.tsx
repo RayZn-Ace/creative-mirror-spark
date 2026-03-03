@@ -654,19 +654,19 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     transition={{ duration: 0.8, ease: "easeOut" }}
   >
     <h1
-      className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
+      className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
       style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
     >
       HANNOVER
     </h1>
 
-    <p className="text-base sm:text-lg md:text-xl font-bold uppercase tracking-[0.15em] mt-2 sm:mt-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+    <p className="text-sm sm:text-lg md:text-xl font-bold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
       MAMMA MIA / ABBA TOUR
     </p>
 
     {event.openAir && (
       <motion.div
-        className="flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-xs sm:text-sm font-bold uppercase"
+        className="flex items-center gap-1.5 mt-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-bold uppercase"
         style={{ background: "hsl(45 100% 50%)", color: "hsl(0 0% 10%)" }}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -676,14 +676,14 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       </motion.div>
     )}
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-xs sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[10px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
       <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
       <span>AB {event.time} UHR</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-4 sm:mt-12 overflow-visible" style={{ isolation: "isolate" }}>
-      <div className="relative max-w-[280px] sm:max-w-[400px] lg:max-w-[460px]" style={{ background: "linear-gradient(180deg, hsl(210, 70%, 62%) 0%, hsl(205, 65%, 72%) 50%, hsl(200, 55%, 78%) 100%)", borderRadius: "12px", padding: "0" }}>
+    <div className="w-full flex justify-center mt-2 sm:mt-12 overflow-visible" style={{ isolation: "isolate" }}>
+      <div className="relative max-w-[160px] sm:max-w-[400px] lg:max-w-[460px]" style={{ background: "linear-gradient(180deg, hsl(210, 70%, 62%) 0%, hsl(205, 65%, 72%) 50%, hsl(200, 55%, 78%) 100%)", borderRadius: "12px", padding: "0" }}>
         <img
           src={headerImg}
           alt="Mamma Mia Party"
@@ -694,8 +694,8 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
-    <div className="mt-3 sm:mt-8">
-      <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+    <div className="mt-2 sm:mt-8">
+      <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
         Wähle deinen Termin
       </h2>
       <EventDateTiles events={events} selectedId={selectedEventId} onSelect={onSelectEvent} />
