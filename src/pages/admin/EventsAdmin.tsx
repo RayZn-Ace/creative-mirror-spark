@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
-  ArrowLeft, ImageIcon, MapPin, Clock, Ticket,
+  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ interface EventRow {
   description: string | null;
   date: string | null;
   time: string | null;
+  end_time: string | null;
   location_name: string | null;
   location_address: string | null;
   city: string | null;
@@ -42,15 +43,20 @@ interface TicketRow {
 interface SeriesOption {
   id: string;
   title: string;
+  city: string | null;
 }
 
 const emptyEvent: Omit<EventRow, "id"> = {
-  title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00",
+  title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
   status: "draft", highlight: false, ticket_link: "", sort_order: 0, series_id: null,
 };
 
-/* ─── Shared Field Components ─── */
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[] };
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+/* ─── Shared Components ─── */
 const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any) => (
   <div>
     <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
@@ -62,20 +68,13 @@ const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any)
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-1"
-      style={{
-        background: "hsl(0 0% 100% / 0.06)",
-        color: "hsl(0 0% 100%)",
-        border: "1px solid hsl(0 0% 100% / 0.1)",
-      }}
+      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
     />
   </div>
 );
 
 const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
-  <div
-    className="rounded-2xl p-5 sm:p-6 space-y-4"
-    style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.07)" }}
-  >
+  <div className="rounded-2xl p-5 sm:p-6 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.07)" }}>
     <div className="flex items-center gap-2.5 pb-2" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
       <Icon className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
       <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{title}</h3>
@@ -84,15 +83,221 @@ const Section = ({ title, icon: Icon, children }: { title: string; icon: any; ch
   </div>
 );
 
+/* ─── Ticket Editor Inline ─── */
+const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets: TicketRow[]; onReload: () => void }) => {
+  const [editingTicket, setEditingTicket] = useState<Partial<TicketRow> | null>(null);
+  const [featuresInput, setFeaturesInput] = useState("");
+
+  const saveTicket = async () => {
+    if (!editingTicket?.name) { toast.error("Ticketname ist Pflicht"); return; }
+    const payload = {
+      name: editingTicket.name,
+      description: editingTicket.description || null,
+      price: editingTicket.price || 0,
+      currency: editingTicket.currency || "EUR",
+      sold_out: editingTicket.sold_out || false,
+      sort_order: editingTicket.sort_order || 0,
+      features: editingTicket.features || [],
+      event_id: eventId,
+    };
+    if (editingTicket.id) {
+      const { error } = await supabase.from("ticket_categories").update(payload).eq("id", editingTicket.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Ticket aktualisiert");
+    } else {
+      const { error } = await supabase.from("ticket_categories").insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Ticket erstellt");
+    }
+    setEditingTicket(null);
+    onReload();
+  };
+
+  const removeTicket = async (id: string) => {
+    if (!confirm("Ticket-Variante löschen?")) return;
+    await supabase.from("ticket_categories").delete().eq("id", id);
+    toast.success("Ticket gelöscht");
+    onReload();
+  };
+
+  const addFeature = () => {
+    if (!featuresInput.trim() || !editingTicket) return;
+    setEditingTicket({ ...editingTicket, features: [...(editingTicket.features || []), featuresInput.trim()] });
+    setFeaturesInput("");
+  };
+
+  return (
+    <div className="space-y-3">
+      {tickets.map((t) => (
+        <div
+          key={t.id}
+          className="rounded-xl p-4 flex items-center justify-between"
+          style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>
+                Standard-Ticket
+              </span>
+              <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
+              {t.sold_out && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
+                  Ausverkauft
+                </span>
+              )}
+            </div>
+            {t.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t.description}</p>}
+            {t.features && t.features.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {t.features.map((f, i) => (
+                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.1)", color: "hsl(142 70% 55%)" }}>
+                    ✅ {f}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+            <div className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+              {t.price.toFixed(2)} €
+            </div>
+            <button onClick={() => { setEditingTicket(t); setFeaturesInput(""); }} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => removeTicket(t.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Create / Edit Ticket Form */}
+      {editingTicket ? (
+        <div className="rounded-xl p-4 space-y-3" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+          <h4 className="text-xs font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            {editingTicket.id ? "Ticket bearbeiten" : "Neues Ticket erstellen"}
+          </h4>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Name *" value={editingTicket.name} onChange={(v: string) => setEditingTicket({ ...editingTicket, name: v })} placeholder="z.B. LAST CHANCE TICKET" />
+            <Field label="Preis (€)" value={editingTicket.price} onChange={(v: string) => setEditingTicket({ ...editingTicket, price: parseFloat(v) || 0 })} type="number" />
+          </div>
+          <Field label="Beschreibung" value={editingTicket.description} onChange={(v: string) => setEditingTicket({ ...editingTicket, description: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Sortierung" value={editingTicket.sort_order} onChange={(v: string) => setEditingTicket({ ...editingTicket, sort_order: parseInt(v) || 0 })} type="number" />
+            <div className="flex items-end pb-1">
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                <input type="checkbox" checked={editingTicket.sold_out || false} onChange={(e) => setEditingTicket({ ...editingTicket, sold_out: e.target.checked })} className="rounded w-4 h-4" />
+                Ausverkauft
+              </label>
+            </div>
+          </div>
+          {/* Features */}
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Features</label>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {(editingTicket.features || []).map((f, i) => (
+                <span key={i} className="text-xs px-2 py-1 rounded-lg flex items-center gap-1" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.7)" }}>
+                  {f}
+                  <button onClick={() => setEditingTicket({ ...editingTicket, features: (editingTicket.features || []).filter((_, j) => j !== i) })} className="ml-1">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={featuresInput}
+                onChange={(e) => setFeaturesInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addFeature())}
+                placeholder="z.B. VERGÜNSTIGTER EINTRITT"
+                className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+              />
+              <button onClick={addFeature} className="px-3 py-2 rounded-lg text-xs font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
+                +
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => setEditingTicket(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
+              Abbrechen
+            </button>
+            <button onClick={saveTicket} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+              Speichern
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setEditingTicket({ ...emptyTicket })}
+          className="w-full rounded-xl p-6 flex flex-col items-center gap-2 transition-all hover:border-white/15"
+          style={{ border: "2px dashed hsl(0 0% 100% / 0.1)", background: "transparent" }}
+        >
+          <Ticket className="w-6 h-6" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+          <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Weiteres Ticket erstellen</span>
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.25)" }}>Du kannst beliebig viele Ticket-Varianten erstellen.</span>
+        </button>
+      )}
+    </div>
+  );
+};
+
+/* ─── Image Upload ─── */
+const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange: (url: string) => void }) => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file);
+    if (error) { toast.error("Upload fehlgeschlagen: " + error.message); setUploading(false); return; }
+    const url = `${SUPABASE_URL}/storage/v1/object/public/event-images/${path}`;
+    onChange(url);
+    setUploading(false);
+    toast.success("Bild hochgeladen");
+  };
+
+  return (
+    <div>
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+      {imageUrl ? (
+        <div className="relative group">
+          <img src={imageUrl} alt="Titelbild" className="w-full aspect-[16/9] rounded-xl object-cover" />
+          <button
+            onClick={() => onChange("")}
+            className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: "hsl(0 0% 0% / 0.7)", color: "hsl(0 0% 100%)" }}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="w-full aspect-[16/9] rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:border-white/20"
+          style={{ background: "hsl(0 0% 100% / 0.04)", border: "2px dashed hsl(0 0% 100% / 0.12)" }}
+        >
+          {uploading ? (
+            <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Hochladen...</span>
+          ) : (
+            <>
+              <Upload className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+              <span className="text-xs font-bold" style={{ color: "hsl(330 80% 55%)" }}>Eigene Datei hochladen</span>
+              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>PNG oder JPEG (1200 x 640px)</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+};
+
 /* ─── Event Edit View ─── */
 const EventEditView = ({
-  editing,
-  setEditing,
-  seriesOptions,
-  tickets,
-  onSave,
-  onDelete,
-  onBack,
+  editing, setEditing, seriesOptions, tickets, onSave, onDelete, onBack, onReloadTickets, onSeriesCreated,
 }: {
   editing: Partial<EventRow>;
   setEditing: (e: Partial<EventRow>) => void;
@@ -101,238 +306,206 @@ const EventEditView = ({
   onSave: () => void;
   onDelete?: () => void;
   onBack: () => void;
-}) => (
-  <div className="space-y-6">
-    {/* Header */}
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-105"
-          style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)" }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-        <h1 className="text-lg sm:text-xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-          {editing.id ? "Event bearbeiten" : "Neues Event"}
-        </h1>
-      </div>
-      <div className="flex items-center gap-2">
-        {editing.id && onDelete && (
-          <button
-            onClick={onDelete}
-            className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-            style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 55%)", border: "1px solid hsl(0 70% 50% / 0.2)" }}
-          >
-            Event löschen
-          </button>
-        )}
-        <button
-          onClick={onSave}
-          className="px-6 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-          style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
-        >
-          Speichern
-        </button>
-      </div>
-    </div>
+  onReloadTickets: () => void;
+  onSeriesCreated: () => void;
+}) => {
+  const [newSeriesName, setNewSeriesName] = useState("");
+  const [creatingSeries, setCreatingSeries] = useState(false);
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left column - Main content */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Eventbeschreibung */}
-        <Section title="Eventbeschreibung" icon={Pencil}>
-          <Field label="Titel *" value={editing.title} onChange={(v: string) => setEditing({ ...editing, title: v })} />
-          <Field label="Untertitel" value={editing.subtitle} onChange={(v: string) => setEditing({ ...editing, subtitle: v })} />
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-              Beschreibung & Informationen
-            </label>
-            <textarea
-              value={editing.description || ""}
-              onChange={(e) => setEditing({ ...editing, description: e.target.value })}
-              rows={8}
-              placeholder="Event-Beschreibung, Dresscode, wichtige Hinweise..."
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-y transition-all focus:ring-1"
-              style={{
-                background: "hsl(0 0% 100% / 0.06)",
-                color: "hsl(0 0% 100%)",
-                border: "1px solid hsl(0 0% 100% / 0.1)",
-                minHeight: "160px",
-              }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+  // Auto-detect city and suggest series
+  const cityValue = editing.city?.trim() || "";
+  const matchingSeries = seriesOptions.find(
+    (s) => s.city?.toLowerCase() === cityValue.toLowerCase() || s.title.toLowerCase() === cityValue.toLowerCase()
+  );
+
+  const createSeriesFromCity = async () => {
+    const name = newSeriesName.trim() || cityValue;
+    if (!name) { toast.error("Bitte Stadt oder Serienname eingeben"); return; }
+    setCreatingSeries(true);
+    const slug = name.toLowerCase().replace(/[^a-z0-9äöü]/g, "-").replace(/-+/g, "-");
+    const { data, error } = await supabase
+      .from("event_series")
+      .insert({ title: name, slug, city: cityValue || name, status: "published", sort_order: 0 })
+      .select("id")
+      .single();
+    if (error) { toast.error(error.message); setCreatingSeries(false); return; }
+    toast.success(`Serie "${name}" erstellt`);
+    setEditing({ ...editing, series_id: data.id });
+    setNewSeriesName("");
+    setCreatingSeries(false);
+    onSeriesCreated();
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:scale-105" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)" }}>
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <h1 className="text-lg sm:text-xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
+            {editing.id ? "Event bearbeiten" : "Neues Event"}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {editing.id && onDelete && (
+            <button onClick={onDelete} className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 55%)", border: "1px solid hsl(0 70% 50% / 0.2)" }}>
+              Event löschen
+            </button>
+          )}
+          <button onClick={onSave} className="px-6 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+            Speichern
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column */}
+        <div className="lg:col-span-2 space-y-6">
+          <Section title="Eventbeschreibung" icon={Pencil}>
+            <Field label="Titel *" value={editing.title} onChange={(v: string) => setEditing({ ...editing, title: v })} />
+            <Field label="Untertitel" value={editing.subtitle} onChange={(v: string) => setEditing({ ...editing, subtitle: v })} />
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-                Event Kategorie
-              </label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Beschreibung & Informationen</label>
+              <textarea
+                value={editing.description || ""}
+                onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                rows={8}
+                placeholder="Event-Beschreibung, Dresscode, wichtige Hinweise..."
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-y transition-all focus:ring-1"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "160px" }}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Event Kategorie</label>
+                <select
+                  value={editing.tag || "Konzert"}
+                  onChange={(e) => setEditing({ ...editing, tag: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                >
+                  <option value="Konzert">Konzert</option>
+                  <option value="Party">Party</option>
+                  <option value="Open Air">Open Air</option>
+                  <option value="Festival">Festival</option>
+                  <option value="Club">Club</option>
+                </select>
+              </div>
+              <Field label="Slug *" value={editing.slug} onChange={(v: string) => setEditing({ ...editing, slug: v })} placeholder="z.b. hannover-10-04" />
+            </div>
+          </Section>
+
+          <Section title="Zeit & Ort" icon={MapPin}>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Event-Start (Datum)" value={editing.date} onChange={(v: string) => setEditing({ ...editing, date: v })} type="date" />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Startzeit" value={editing.time} onChange={(v: string) => setEditing({ ...editing, time: v })} placeholder="20:00" />
+                <Field label="Endzeit" value={editing.end_time} onChange={(v: string) => setEditing({ ...editing, end_time: v })} placeholder="23:00" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Stadt" value={editing.city} onChange={(v: string) => setEditing({ ...editing, city: v })} placeholder="z.B. Hannover" />
+              <Field label="Location" value={editing.location_name} onChange={(v: string) => setEditing({ ...editing, location_name: v })} placeholder="z.B. Baggi / Osho" />
+            </div>
+            <Field label="Location (Komplette Adresse)" value={editing.location_address} onChange={(v: string) => setEditing({ ...editing, location_address: v })} placeholder="Raschpl. 7L, 30161 Hannover" />
+          </Section>
+
+          <Section title="Tickets" icon={Ticket}>
+            {editing.id ? (
+              <TicketEditor eventId={editing.id} tickets={tickets} onReload={onReloadTickets} />
+            ) : (
+              <p className="text-xs py-4 text-center" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                Speichere das Event zuerst, um Ticket-Varianten hinzuzufügen.
+              </p>
+            )}
+          </Section>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-6">
+          <Section title="Titelbild" icon={ImageIcon}>
+            <ImageUpload imageUrl={editing.image_url || null} onChange={(url) => setEditing({ ...editing, image_url: url })} />
+          </Section>
+
+          <Section title="Event-Serie" icon={Layers}>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Serie zuweisen</label>
               <select
-                value={editing.tag || "Konzert"}
-                onChange={(e) => setEditing({ ...editing, tag: e.target.value })}
+                value={editing.series_id || ""}
+                onChange={(e) => setEditing({ ...editing, series_id: e.target.value || null })}
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
               >
-                <option value="Konzert">Konzert</option>
-                <option value="Party">Party</option>
-                <option value="Open Air">Open Air</option>
-                <option value="Festival">Festival</option>
-                <option value="Club">Club</option>
+                <option value="">Keine Serie</option>
+                {seriesOptions.map((s) => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
               </select>
             </div>
-            <Field label="Slug *" value={editing.slug} onChange={(v: string) => setEditing({ ...editing, slug: v })} placeholder="z.b. hannover-10-04" />
-          </div>
-        </Section>
 
-        {/* Zeit & Ort */}
-        <Section title="Zeit & Ort" icon={MapPin}>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Event-Start (Datum)" value={editing.date} onChange={(v: string) => setEditing({ ...editing, date: v })} type="date" />
-            <Field label="Uhrzeit" value={editing.time} onChange={(v: string) => setEditing({ ...editing, time: v })} placeholder="20:00" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Stadt" value={editing.city} onChange={(v: string) => setEditing({ ...editing, city: v })} placeholder="z.B. Hannover" />
-            <Field label="Location" value={editing.location_name} onChange={(v: string) => setEditing({ ...editing, location_name: v })} placeholder="z.B. Baggi / Osho" />
-          </div>
-          <Field label="Location (Komplette Adresse)" value={editing.location_address} onChange={(v: string) => setEditing({ ...editing, location_address: v })} placeholder="Raschpl. 7L, 30161 Hannover" />
-        </Section>
-
-        {/* Tickets */}
-        <Section title="Tickets" icon={Ticket}>
-          <Field label="Ticket-Link" value={editing.ticket_link} onChange={(v: string) => setEditing({ ...editing, ticket_link: v })} placeholder="https://tickets.example.com/..." />
-          {editing.id && tickets.length > 0 ? (
-            <div className="space-y-3 pt-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-                Aktuelle Ticket-Varianten
-              </span>
-              {tickets.map((t) => (
-                <div
-                  key={t.id}
-                  className="rounded-xl p-4 flex items-center justify-between"
-                  style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      {t.sold_out && (
-                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
-                          Ausverkauft
-                        </span>
-                      )}
-                      <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
-                    </div>
-                    {t.description && (
-                      <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t.description}</p>
-                    )}
-                    {t.features && t.features.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {t.features.map((f, i) => (
-                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.1)", color: "hsl(142 70% 55%)" }}>
-                            ✓ {f}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div
-                    className="px-4 py-2 rounded-xl text-sm font-bold"
-                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                  >
-                    {t.price.toFixed(2)} {t.currency || "€"}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : editing.id ? (
-            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-              Keine Ticket-Varianten vorhanden. Erstelle sie unter "Ticket-Kategorien".
-            </p>
-          ) : null}
-        </Section>
-      </div>
-
-      {/* Right column - Sidebar */}
-      <div className="space-y-6">
-        {/* Titelbild */}
-        <Section title="Titelbild" icon={ImageIcon}>
-          {editing.image_url ? (
-            <div className="relative group">
-              <img
-                src={editing.image_url}
-                alt="Titelbild"
-                className="w-full aspect-[16/9] rounded-xl object-cover"
-              />
+            {/* Auto-detect or create new series */}
+            {!editing.series_id && cityValue && matchingSeries && (
               <button
-                onClick={() => setEditing({ ...editing, image_url: "" })}
-                className="absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: "hsl(0 0% 0% / 0.7)", color: "hsl(0 0% 100%)" }}
+                onClick={() => setEditing({ ...editing, series_id: matchingSeries.id })}
+                className="w-full px-4 py-2.5 rounded-xl text-xs font-bold text-left transition-all hover:scale-[1.01]"
+                style={{ background: "hsl(270 60% 55% / 0.1)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.2)" }}
               >
-                ×
+                💡 Serie „{matchingSeries.title}" erkannt – Klicke zum Zuweisen
               </button>
+            )}
+
+            {!editing.series_id && !matchingSeries && (
+              <div className="space-y-2 pt-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                  Oder neue Serie erstellen
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    value={newSeriesName}
+                    onChange={(e) => setNewSeriesName(e.target.value)}
+                    placeholder={cityValue || "Serienname"}
+                    className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                  />
+                  <button
+                    onClick={createSeriesFromCity}
+                    disabled={creatingSeries}
+                    className="px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap"
+                    style={{ background: "hsl(270 60% 55%)", color: "hsl(0 0% 100%)" }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </Section>
+
+          <Section title="Einstellungen" icon={Clock}>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Status</label>
+              <select
+                value={editing.status || "draft"}
+                onChange={(e) => setEditing({ ...editing, status: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+              >
+                <option value="draft">Entwurf</option>
+                <option value="published">Veröffentlicht</option>
+              </select>
             </div>
-          ) : (
-            <div
-              className="w-full aspect-[16/9] rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:border-white/20"
-              style={{ background: "hsl(0 0% 100% / 0.04)", border: "2px dashed hsl(0 0% 100% / 0.12)" }}
-            >
-              <ImageIcon className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-              <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                Kein Bild
-              </span>
-            </div>
-          )}
-          <Field label="Bild-URL" value={editing.image_url} onChange={(v: string) => setEditing({ ...editing, image_url: v })} placeholder="https://..." />
-        </Section>
-
-        {/* Event-Serie & Einstellungen */}
-        <Section title="Einstellungen" icon={Clock}>
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-              Event-Serie
+            <Field label="Sortierung" value={editing.sort_order} onChange={(v: string) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
+            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              <input type="checkbox" checked={editing.highlight || false} onChange={(e) => setEditing({ ...editing, highlight: e.target.checked })} className="rounded w-4 h-4" />
+              Highlight-Event
             </label>
-            <select
-              value={editing.series_id || ""}
-              onChange={(e) => setEditing({ ...editing, series_id: e.target.value || null })}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-            >
-              <option value="">Keine Serie</option>
-              {seriesOptions.map((s) => (
-                <option key={s.id} value={s.id}>{s.title}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-              Status
-            </label>
-            <select
-              value={editing.status || "draft"}
-              onChange={(e) => setEditing({ ...editing, status: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-            >
-              <option value="draft">Entwurf</option>
-              <option value="published">Veröffentlicht</option>
-            </select>
-          </div>
-
-          <Field label="Sortierung" value={editing.sort_order} onChange={(v: string) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
-
-          <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            <input
-              type="checkbox"
-              checked={editing.highlight || false}
-              onChange={(e) => setEditing({ ...editing, highlight: e.target.checked })}
-              className="rounded w-4 h-4"
-            />
-            Highlight-Event
-          </label>
-        </Section>
+          </Section>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ─── Main Component ─── */
 const EventsAdmin = () => {
@@ -347,7 +520,7 @@ const EventsAdmin = () => {
   const load = async () => {
     const [eventsRes, seriesRes] = await Promise.all([
       supabase.from("events").select("*").order("sort_order"),
-      supabase.from("event_series").select("id, title").order("title"),
+      supabase.from("event_series").select("id, title, city").order("title"),
     ]);
     setEvents((eventsRes.data as EventRow[]) || []);
     const options = (seriesRes.data as SeriesOption[]) || [];
@@ -358,37 +531,32 @@ const EventsAdmin = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
-
-  // Load tickets when editing an event
-  useEffect(() => {
+  const loadTickets = () => {
     if (editing?.id) {
-      supabase
-        .from("ticket_categories")
-        .select("*")
-        .eq("event_id", editing.id)
-        .order("sort_order")
+      supabase.from("ticket_categories").select("*").eq("event_id", editing.id).order("sort_order")
         .then(({ data }) => setTickets((data as TicketRow[]) || []));
-    } else {
-      setTickets([]);
     }
-  }, [editing?.id]);
+  };
+
+  useEffect(() => { load(); }, []);
+  useEffect(() => { loadTickets(); setTickets([]); }, [editing?.id]);
 
   const save = async () => {
     if (!editing) return;
     const { id, ...rest } = editing as EventRow;
-    if (!rest.title || !rest.slug) {
-      toast.error("Titel und Slug sind Pflichtfelder");
-      return;
-    }
+    if (!rest.title || !rest.slug) { toast.error("Titel und Slug sind Pflichtfelder"); return; }
     if (id) {
       const { error } = await supabase.from("events").update(rest).eq("id", id);
       if (error) { toast.error(error.message); return; }
       toast.success("Event aktualisiert");
     } else {
-      const { error } = await supabase.from("events").insert(rest);
+      const { data, error } = await supabase.from("events").insert(rest).select().single();
       if (error) { toast.error(error.message); return; }
       toast.success("Event erstellt");
+      // Stay in edit mode with the new ID so tickets can be added
+      setEditing(data as EventRow);
+      load();
+      return;
     }
     setEditing(null);
     load();
@@ -409,7 +577,6 @@ const EventsAdmin = () => {
     load();
   };
 
-  // If editing, show the edit view
   if (editing) {
     return (
       <EventEditView
@@ -420,21 +587,18 @@ const EventsAdmin = () => {
         onSave={save}
         onDelete={editing.id ? () => remove(editing.id!) : undefined}
         onBack={() => setEditing(null)}
+        onReloadTickets={loadTickets}
+        onSeriesCreated={load}
       />
     );
   }
 
-  // Group events by series
   const grouped = events.reduce<{ seriesId: string | null; seriesTitle: string; events: EventRow[] }[]>(
     (acc, event) => {
       const sid = event.series_id || "__none__";
       let group = acc.find((g) => (g.seriesId || "__none__") === sid);
       if (!group) {
-        group = {
-          seriesId: event.series_id,
-          seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie",
-          events: [],
-        };
+        group = { seriesId: event.series_id, seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie", events: [] };
         acc.push(group);
       }
       group.events.push(event);
@@ -446,14 +610,8 @@ const EventsAdmin = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-          Events
-        </h1>
-        <button
-          onClick={() => setEditing({ ...emptyEvent })}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-          style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
-        >
+        <h1 className="text-xl sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events</h1>
+        <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
           <Plus className="w-4 h-4" /> Neues Event
         </button>
       </div>
@@ -463,69 +621,32 @@ const EventsAdmin = () => {
       ) : events.length === 0 ? (
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Events vorhanden</p>
-          <button onClick={() => setEditing({ ...emptyEvent })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>
-            Jetzt erstes Event erstellen
-          </button>
+          <button onClick={() => setEditing({ ...emptyEvent })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>Jetzt erstes Event erstellen</button>
         </div>
       ) : (
         <div className="space-y-6">
           {grouped.map((group) => (
             <div key={group.seriesId || "none"}>
-              <button
-                onClick={() => {
-                  const key = group.seriesId || "__none__";
-                  setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
-                }}
-                className="flex items-center gap-2 mb-3 w-full text-left group"
-              >
-                {group.seriesId ? (
-                  <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />
-                ) : null}
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                  {group.seriesTitle} ({group.events.length})
-                </span>
-                {collapsed[group.seriesId || "__none__"] ? (
-                  <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-                )}
+              <button onClick={() => { const key = group.seriesId || "__none__"; setCollapsed((prev) => ({ ...prev, [key]: !prev[key] })); }} className="flex items-center gap-2 mb-3 w-full text-left group">
+                {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{group.seriesTitle} ({group.events.length})</span>
+                {collapsed[group.seriesId || "__none__"] ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
               </button>
               <AnimatePresence initial={false}>
                 {!collapsed[group.seriesId || "__none__"] && (
-                  <motion.div
-                    className="space-y-2 overflow-hidden"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
                     {group.events.map((event) => (
-                      <div
-                        key={event.id}
-                        className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15"
-                        style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                        onClick={() => setEditing(event)}
-                      >
-                        {event.image_url && (
-                          <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
-                        )}
+                      <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
+                        {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
                             {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
-                            <span
-                              className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0"
-                              style={{
-                                background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)",
-                                color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)",
-                              }}
-                            >
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
                               {event.status}
                             </span>
                           </div>
-                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                            {event.city} · {event.date || "Kein Datum"} · {event.tag}
-                          </span>
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
                         </div>
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
