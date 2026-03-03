@@ -19,6 +19,8 @@ const Fotos = lazy(() => import("./pages/Fotos"));
 const MeineTickets = lazy(() => import("./pages/MeineTickets"));
 const Muttizettel = lazy(() => import("./pages/Muttizettel"));
 const VergangeneEvents = lazy(() => import("./pages/VergangeneEvents"));
+const Abiklasse = lazy(() => import("./pages/Abiklasse"));
+const Jobs = lazy(() => import("./pages/Jobs"));
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/meine-tickets" element={<MeineTickets />} />
             <Route path="/muttizettel" element={<Muttizettel />} />
             <Route path="/vergangene-events" element={<VergangeneEvents />} />
+            <Route path="/abiklasse" element={<Abiklasse />} />
+            <Route path="/jobs" element={<Jobs />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
