@@ -474,6 +474,81 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   );
 };
 
+/* ─── Nearby Events ─── */
+const nearbyEventsList = [
+  { id: "pb", name: "MAMMA MIA PARTY", city: "Paderborn", date: "15.05.2025", lat: 51.7189, lng: 8.7544, url: "/paderborn" },
+  { id: "bi", name: "MAMMA MIA PARTY", city: "Bielefeld", date: "22.05.2025", lat: 52.0302, lng: 8.5325, url: "/bielefeld" },
+  { id: "os", name: "MAMMA MIA PARTY", city: "Osnabrück", date: "29.05.2025", lat: 52.2799, lng: 8.0472, url: "/osnabrueck" },
+  { id: "hh", name: "MAMMA MIA PARTY", city: "Hamburg", date: "05.06.2025", lat: 53.5511, lng: 9.9937, url: "/hamburg" },
+  { id: "hb", name: "MAMMA MIA PARTY", city: "Bremen", date: "12.06.2025", lat: 53.0793, lng: 8.8017, url: "/bremen" },
+  { id: "bs", name: "MAMMA MIA PARTY", city: "Braunschweig", date: "26.06.2025", lat: 52.2689, lng: 10.5268, url: "/braunschweig" },
+];
+
+const cityCoords: Record<string, { lat: number; lng: number }> = {
+  "Hannover": { lat: 52.3759, lng: 9.7320 },
+  "Garbsen": { lat: 52.4182, lng: 9.5988 },
+};
+
+const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const NearbyEvents = ({ currentEvent }: { currentEvent: EventData }) => {
+  const [sortedEvents, setSortedEvents] = useState(nearbyEventsList);
+  const [userCity, setUserCity] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fallback = cityCoords[currentEvent.city] || { lat: 52.3759, lng: 9.7320 };
+
+    const sortByLocation = (lat: number, lng: number, label?: string) => {
+      if (label) setUserCity(label);
+      const sorted = [...nearbyEventsList]
+        .map((e) => ({ ...e, distance: getDistance(lat, lng, e.lat, e.lng) }))
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 4);
+      setSortedEvents(sorted);
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => sortByLocation(pos.coords.latitude, pos.coords.longitude, "deiner Nähe"),
+        () => sortByLocation(fallback.lat, fallback.lng, currentEvent.city),
+        { timeout: 5000 }
+      );
+    } else {
+      sortByLocation(fallback.lat, fallback.lng, currentEvent.city);
+    }
+  }, [currentEvent.city]);
+
+  return (
+    <div className="pt-4">
+      <h3 className="text-sm sm:text-base font-bold uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100%)" }}>
+        Weitere Events {userCity ? (userCity === "deiner Nähe" ? "in deiner Nähe" : `nahe ${userCity}`) : ""}
+      </h3>
+      <div className="space-y-2">
+        {sortedEvents.map((ev) => (
+          <Link
+            key={ev.id}
+            to={ev.url}
+            className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl transition-all hover:scale-[1.01]"
+            style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="text-xs sm:text-sm font-bold uppercase">{ev.city}</div>
+              <div className="text-[10px] sm:text-xs opacity-70">{ev.date}</div>
+            </div>
+            <ArrowRight className="w-4 h-4 opacity-50 shrink-0" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 /* ─── Ticket Widget ─── */
 const PPTicketWidget = ({ event }: { event: EventData }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -633,14 +708,8 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
         ))}
       </div>
 
-      {/* Weitere Events Button */}
-      <Link
-        to="/#events"
-        className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02]"
-        style={{ background: "hsl(0 0% 100% / 0.15)", border: "1px solid hsl(0 0% 100% / 0.25)", color: "hsl(0 0% 100%)" }}
-      >
-        Weitere Events entdecken <ArrowRight className="w-4 h-4" />
-      </Link>
+      {/* Weitere Events in deiner Nähe */}
+      <NearbyEvents currentEvent={event} />
     </div>
   );
 };
@@ -682,12 +751,12 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-2 sm:mt-8">
+    <div className="w-full flex justify-center mt-1 sm:mt-6">
       <img src={headerImg} alt="Mamma Mia Party" className="max-w-[200px] sm:max-w-[400px] lg:max-w-[480px] object-contain" />
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
-    <div className="mt-2 sm:mt-8">
+    <div className="mt-1 sm:mt-6">
       <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
         Wähle deinen Termin
       </h2>
