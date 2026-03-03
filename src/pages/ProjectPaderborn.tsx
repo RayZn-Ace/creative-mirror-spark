@@ -519,7 +519,7 @@ const PPHeroSection = () => (
     <img
       src={headerImg}
       alt="Project Paderborn"
-      className="w-full md:w-[120%] max-w-none mx-auto mt-8 sm:mt-12 -mb-4"
+      className="w-[130%] sm:w-[120%] md:w-[120%] max-w-none mx-auto mt-8 sm:mt-12 -mb-4"
     />
   </motion.div>
 );
