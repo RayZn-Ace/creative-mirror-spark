@@ -504,10 +504,7 @@ const PPHeroSection = () => (
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.8, ease: "easeOut" }}
   >
-    <h1 className="pp-neon-title text-5xl sm:text-6xl md:text-5xl lg:text-6xl font-black uppercase leading-none tracking-tight">
-      <span className="block">PROJECT</span>
-      <span className="block" style={{ color: "hsl(0, 70%, 50%)" }}>PADERBORN</span>
-    </h1>
+    {/* Titel testweise ausgeblendet */}
 
     <p className="text-base sm:text-lg md:text-base lg:text-lg font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
       IM CAPITOL
