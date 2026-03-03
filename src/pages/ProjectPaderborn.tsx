@@ -407,7 +407,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
-        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(var(--foreground))" }}>{title}</span>
+        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)" }}>{title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
@@ -424,7 +424,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
             <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-3">
               {isPromoter ? (
                 <>
-                  <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
                     Du willst als Promoter für unsere Events arbeiten und dir etwas dazuverdienen?{"\n\n"}Melde dich direkt bei uns!
                   </p>
                   <div className="flex flex-wrap gap-3 mt-3">
@@ -447,7 +447,7 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
                   </div>
                 </>
               ) : (
-                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
                   {content}
                 </p>
               )}
