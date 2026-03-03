@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
 import headerImg from "@/assets/mamma-mia-logo.png";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ─── Event Data ─── */
 interface EventData {
@@ -35,51 +36,14 @@ interface TicketCategory {
   items: TicketItem[];
 }
 
-const defaultTickets: TicketCategory[] = [
-  {
-    title: "REGULAR",
-    items: [
-      { id: "earlybird", name: "EARLY BIRD TICKET", description: "", price: "29,99", soldOut: true },
-      { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
-      { id: "lastminute", name: "LAST MINUTE TICKET", description: "", price: "", soldOut: false, badge: "COMING SOON", comingSoon: true },
-    ],
-  },
-  {
-    title: "DELUXE",
-    items: [
-      { id: "deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "41,99", soldOut: false, badge: "84% schon weg" },
-    ],
-  },
-  {
-    title: "FAN",
-    items: [
-      { id: "fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "46,99", soldOut: false, badge: "FANLIEBLING" },
-    ],
-  },
-];
-
-const openAirTickets: TicketCategory[] = [
-  {
-    title: "REGULAR",
-    items: [
-      { id: "earlybird", name: "EARLY BIRD TICKET", description: "", price: "24,99", soldOut: true },
-      { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "31,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
-      { id: "lastminute", name: "LAST MINUTE TICKET", description: "", price: "", soldOut: false, badge: "COMING SOON", comingSoon: true },
-    ],
-  },
-  {
-    title: "DELUXE",
-    items: [
-      { id: "deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "36,99", soldOut: false, badge: "84% schon weg" },
-    ],
-  },
-  {
-    title: "FAN",
-    items: [
-      { id: "fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "41,99", soldOut: false, badge: "FANLIEBLING" },
-    ],
-  },
-];
+/* DB event ID mapping */
+const eventDbIds: Record<string, string> = {
+  "388": "287d328d-6e36-4e96-b03a-b771ddccc3ec",
+  "440": "768f3cf0-7528-4605-9abb-64d0e246d2c8",
+  "410": "5a0db3d3-822f-4fb8-80fd-bff41f7a4fe0",
+  "411": "b667d01b-fa51-49db-86a5-c8b4340aa875",
+  "412": "838a6c36-5c1d-4f10-b9b1-3663e346a443",
+};
 
 const makeInfoSections = (event: EventData) => [
   {
@@ -128,7 +92,7 @@ const events: EventData[] = [
     city: "Hannover",
     openAir: false,
     soldOut: false,
-    ticketData: defaultTickets,
+    ticketData: [],
     infoSections: [],
   },
   {
@@ -142,7 +106,7 @@ const events: EventData[] = [
     city: "Garbsen",
     openAir: true,
     soldOut: false,
-    ticketData: openAirTickets,
+    ticketData: [],
     infoSections: [],
   },
   {
@@ -156,7 +120,7 @@ const events: EventData[] = [
     city: "Hannover",
     openAir: false,
     soldOut: false,
-    ticketData: defaultTickets,
+    ticketData: [],
     infoSections: [],
   },
   {
@@ -170,7 +134,7 @@ const events: EventData[] = [
     city: "Hannover",
     openAir: false,
     soldOut: true,
-    ticketData: defaultTickets,
+    ticketData: [],
     infoSections: [],
   },
   {
@@ -184,7 +148,7 @@ const events: EventData[] = [
     city: "Hannover",
     openAir: false,
     soldOut: false,
-    ticketData: defaultTickets,
+    ticketData: [],
     infoSections: [],
   },
 ];
@@ -570,6 +534,8 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(true);
   const resetCart = useCallback(() => {
     setQuantities({});
     setDiscountCode("");
@@ -577,11 +543,41 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
   }, []);
   const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
 
-  // Reset quantities when event changes
+  // Fetch tickets from DB
   useEffect(() => {
     setQuantities({});
     setDiscountCode("");
     setDiscountApplied(false);
+    setLoadingTickets(true);
+
+    const dbId = eventDbIds[event.id];
+    if (!dbId) { setTicketCategories([]); setLoadingTickets(false); return; }
+
+    supabase
+      .from("ticket_categories")
+      .select("*")
+      .eq("event_id", dbId)
+      .order("sort_order")
+      .then(({ data }) => {
+        if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
+        // Group by category_group
+        const groups: Record<string, TicketItem[]> = {};
+        for (const row of data) {
+          const group = (row as any).category_group || "TICKETS";
+          if (!groups[group]) groups[group] = [];
+          groups[group].push({
+            id: row.id,
+            name: row.name,
+            description: row.description || "",
+            price: row.price > 0 ? row.price.toFixed(2).replace(".", ",") : "",
+            soldOut: row.sold_out || false,
+            badge: (row as any).badge || undefined,
+            comingSoon: (row as any).coming_soon || false,
+          });
+        }
+        setTicketCategories(Object.entries(groups).map(([title, items]) => ({ title, items })));
+        setLoadingTickets(false);
+      });
   }, [event.id]);
 
   const totalItems = Object.values(quantities).reduce((a, b) => a + b, 0);
@@ -651,9 +647,13 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
             Dieses Event ist leider ausverkauft. Schau dir unsere anderen Termine an!
           </p>
         </div>
+      ) : loadingTickets ? (
+        <div className="text-center py-8">
+          <div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Tickets laden...</div>
+        </div>
       ) : (
       <>
-      {event.ticketData.map((category) => (
+      {ticketCategories.map((category) => (
         <div key={category.title}>
           <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
           <div>

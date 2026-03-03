@@ -189,6 +189,9 @@ export type Database = {
       }
       ticket_categories: {
         Row: {
+          badge: string | null
+          category_group: string | null
+          coming_soon: boolean | null
           created_at: string
           currency: string | null
           description: string | null
@@ -202,6 +205,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          badge?: string | null
+          category_group?: string | null
+          coming_soon?: boolean | null
           created_at?: string
           currency?: string | null
           description?: string | null
@@ -215,6 +221,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          badge?: string | null
+          category_group?: string | null
+          coming_soon?: boolean | null
           created_at?: string
           currency?: string | null
           description?: string | null
