@@ -573,7 +573,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       <img src={headerImg} alt="Mamma Mia Party" className="max-w-[220px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
     </div>
     {events.length > 1 && (
-      <div className="mt-0 sm:mt-6">
+      <div className="-mt-2 sm:mt-6">
         <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
           {t.selectDate}
         </h2>
