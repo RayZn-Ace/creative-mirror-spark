@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, ArrowRight, Instagram, MessageCircle } from "lucide-react";
-import heroImg from "@/assets/hero-home.jpg";
-import ppFeedImg from "@/assets/project-paderborn-feed.png";
-import cityMadnessImg from "@/assets/city-madness-feed.jpg";
-import neonNightsImg from "@/assets/neon-nights-feed.jpg";
-import summerBashImg from "@/assets/summer-bash-feed.jpg";
+import heroImg from "@/assets/gimme-hero.jpg";
+import gimmeImg2 from "@/assets/gimme-img2.jpg";
+import gimmeImg3 from "@/assets/gimme-img3.jpg";
+import eventHeaderImg from "@/assets/gimme-event-header.jpg";
 import Navbar from "@/components/Navbar";
 
 /* ─── Event Data ─── */
@@ -27,56 +26,43 @@ interface Event {
 const events: Event[] = [
   {
     id: "1",
-    slug: "project-paderborn",
-    title: "PROJECT PADERBORN",
-    subtitle: "DIE GRÖßTE HAUSPARTY DER REGION!",
-    date: "05. April 2025",
-    dateShort: "05. APR",
-    time: "22:00 Uhr",
-    location: "Capitol Paderborn",
-    city: "Paderborn",
-    image: ppFeedImg,
-    tag: "Club",
+    slug: "hannover",
+    title: "HANNOVER",
+    subtitle: "MAMMA MIA / ABBA TOUR KONZERT",
+    date: "10. April 2025",
+    dateShort: "10. APR",
+    time: "20:00 Uhr",
+    location: "Baggi / Osho",
+    city: "Hannover",
+    image: eventHeaderImg,
+    tag: "Konzert",
     highlight: true,
   },
   {
     id: "2",
     slug: "",
-    title: "CITY MADNESS",
-    subtitle: "OPEN AIR FESTIVAL",
-    date: "19. April 2025",
-    dateShort: "19. APR",
-    time: "16:00 Uhr",
-    location: "Stadtpark",
-    city: "Bielefeld",
-    image: cityMadnessImg,
-    tag: "Festival",
+    title: "NEUSS",
+    subtitle: "MAMMA MIA / ABBA TOUR KONZERT",
+    date: "06. März 2025",
+    dateShort: "06. MÄR",
+    time: "20:00 Uhr",
+    location: "TBA",
+    city: "Neuss",
+    image: gimmeImg2,
+    tag: "Konzert",
   },
   {
     id: "3",
     slug: "",
-    title: "NEON NIGHTS",
-    subtitle: "UV PARTY EXPERIENCE",
-    date: "03. Mai 2025",
-    dateShort: "03. MAI",
-    time: "23:00 Uhr",
-    location: "Club XO",
-    city: "Dortmund",
-    image: neonNightsImg,
-    tag: "Club",
-  },
-  {
-    id: "4",
-    slug: "",
-    title: "SUMMER BASH",
-    subtitle: "DIE ULTIMATIVE SOMMER PARTY",
-    date: "17. Mai 2025",
-    dateShort: "17. MAI",
+    title: "POTSDAM",
+    subtitle: "MAMMA MIA / ABBA TOUR KONZERT",
+    date: "06. März 2025",
+    dateShort: "06. MÄR",
     time: "20:00 Uhr",
-    location: "Strandbar",
-    city: "Paderborn",
-    image: summerBashImg,
-    tag: "Open Air",
+    location: "TBA",
+    city: "Potsdam",
+    image: gimmeImg3,
+    tag: "Konzert",
   },
 ];
 
@@ -102,7 +88,7 @@ const HeroSection = () => {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, hsl(0 0% 0% / 0.3) 0%, hsl(0 0% 0% / 0.1) 40%, hsl(0 0% 0% / 0.7) 70%, hsl(0 5% 5%) 100%)",
+              "linear-gradient(180deg, hsl(220 50% 10% / 0.4) 0%, hsl(220 50% 10% / 0.1) 40%, hsl(220 50% 10% / 0.7) 70%, hsl(220 50% 8%) 100%)",
           }}
         />
       </div>
@@ -112,32 +98,30 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(0 70% 55%)" }}>
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>
             Nächstes Highlight
           </p>
           <h1
             className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.9] mb-4"
             style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
           >
-            {highlightEvent?.title || "NACHTAKTIV"}
+            GIMME GIMME
             <br />
-            <span style={{ color: "hsl(0 70% 50%)" }}>EVENTS</span>
+            <span style={{ color: "hsl(330 80% 55%)" }}>PARTY!</span>
           </h1>
-          {highlightEvent && (
-            <p className="text-sm sm:text-lg font-semibold uppercase tracking-wider mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-              {highlightEvent.subtitle}
-            </p>
-          )}
+          <p className="text-sm sm:text-lg font-semibold uppercase tracking-wider mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            DAS MAMMA MIA FANKONZERT – DIE GROßE EUROPA-TOUR
+          </p>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-8">
             {highlightEvent && (
               <>
                 <span className="flex items-center gap-1.5 text-xs sm:text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                  <Calendar className="w-4 h-4" style={{ color: "hsl(0 70% 55%)" }} />
+                  <Calendar className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
                   {highlightEvent.date} · {highlightEvent.time}
                 </span>
                 <span className="flex items-center gap-1.5 text-xs sm:text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                  <MapPin className="w-4 h-4" style={{ color: "hsl(0 70% 55%)" }} />
-                  {highlightEvent.location}
+                  <MapPin className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+                  {highlightEvent.location}, {highlightEvent.city}
                 </span>
               </>
             )}
@@ -146,7 +130,7 @@ const HeroSection = () => {
             <Link
               to={`/${highlightEvent.slug}`}
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
-              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(0 70% 50% / 0.4)" }}
+              style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}
             >
               Tickets sichern
               <ArrowRight className="w-4 h-4" />
@@ -175,7 +159,7 @@ const EventCard = ({ event, index }: { event: Event; index: number }) => {
             {event.image ? (
               <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(0 40% 15%) 0%, hsl(0 20% 8%) 100%)" }}>
+              <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(220 40% 20%) 0%, hsl(220 30% 10%) 100%)" }}>
                 <span className="text-xl sm:text-2xl font-black uppercase opacity-20" style={{ fontFamily: "'Orbitron', sans-serif" }}>{event.title}</span>
               </div>
             )}
@@ -185,7 +169,7 @@ const EventCard = ({ event, index }: { event: Event; index: number }) => {
             >
               {event.tag}
             </span>
-            <div className="absolute bottom-3 left-3 px-3 py-2 rounded-xl text-center leading-tight" style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+            <div className="absolute bottom-3 left-3 px-3 py-2 rounded-xl text-center leading-tight" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
               <div className="text-[10px] font-bold uppercase">{event.dateShort.split(" ")[1]}</div>
               <div className="text-lg font-black">{event.dateShort.split(" ")[0]}</div>
             </div>
@@ -198,8 +182,8 @@ const EventCard = ({ event, index }: { event: Event; index: number }) => {
               {event.subtitle}
             </p>
             <div className="flex items-center gap-4 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" style={{ color: "hsl(0 70% 55%)" }} />{event.date}</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: "hsl(0 70% 55%)" }} />{event.city}</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" style={{ color: "hsl(330 80% 55%)" }} />{event.date}</span>
+              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" style={{ color: "hsl(330 80% 55%)" }} />{event.city}</span>
             </div>
           </div>
         </div>
@@ -210,12 +194,12 @@ const EventCard = ({ event, index }: { event: Event; index: number }) => {
 
 /* ─── Events Section ─── */
 const EventsSection = () => (
-  <section className="py-16 sm:py-24">
+  <section id="events" className="py-16 sm:py-24">
     <div className="max-w-7xl mx-auto px-4 sm:px-8">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-end justify-between mb-8 sm:mb-12">
         <div>
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2" style={{ color: "hsl(0 70% 55%)" }}>Kommende</p>
-          <h2 className="text-2xl sm:text-4xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events</h2>
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2" style={{ color: "hsl(330 80% 55%)" }}>Kommende</p>
+          <h2 className="text-2xl sm:text-4xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events & Tickets</h2>
         </div>
       </motion.div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -227,16 +211,53 @@ const EventsSection = () => (
   </section>
 );
 
+/* ─── About Teaser ─── */
+const AboutTeaser = () => (
+  <section className="py-16 sm:py-24">
+    <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
+      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <h2 className="text-2xl sm:text-4xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
+          Was ist die <span style={{ color: "hsl(330 80% 55%)" }}>Gimme Gimme Party?</span>
+        </h2>
+        <p className="text-sm sm:text-base leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+          Du liebst ABBA, Mamma Mia ist für dich mehr als nur ein Film und du tanzt bei jedem „Gimme! Gimme!" los? Dann ist das deine Bühne!
+        </p>
+        <p className="text-sm sm:text-base leading-relaxed mb-8" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+          Dich erwartet eine mitreißende 2,5-stündige Show voller Hits, Glitzer und Emotionen – wie ein echter Mamma Mia Film, nur live! 
+          Hier feiern Dancing Queens und Super Troupers aus allen Generationen gemeinsam.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8">
+          <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+            <div className="text-3xl mb-3">💃</div>
+            <h3 className="text-sm font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)" }}>Die größten Hits</h3>
+            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>ABBA-Hits & Kultsongs zum Mitsingen – eine musikalische Zeitreise!</p>
+          </div>
+          <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+            <div className="text-3xl mb-3">🪩</div>
+            <h3 className="text-sm font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)" }}>Einzigartige Atmosphäre</h3>
+            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Unsere eigene Mamma Mia Welt mit Akteuren, Fotospots und vielem mehr.</p>
+          </div>
+          <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+            <div className="text-3xl mb-3">✨</div>
+            <h3 className="text-sm font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)" }}>Unvergesslich</h3>
+            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Mädelsabend, JGA oder Mutter-Tochter-Erlebnis – magische Momente!</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
 /* ─── Footer ─── */
 const HomeFooter = () => (
   <footer className="pb-8 sm:pb-12 pt-8 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
     <div className="max-w-7xl mx-auto px-4 sm:px-8">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="text-center sm:text-left">
-          <span className="text-sm font-black uppercase tracking-wider" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100% / 0.6)" }}>
-            NACHTAKTIV <span style={{ color: "hsl(0 70% 50% / 0.6)" }}>EVENTS</span>
+          <span className="text-sm font-black uppercase tracking-wider" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55% / 0.8)" }}>
+            GIMME GIMME <span style={{ color: "hsl(0 0% 100% / 0.6)" }}>PARTY</span>
           </span>
-          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>© 2025 Nachtaktiv Events. Alle Rechte vorbehalten.</p>
+          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>© 2025 Gimme Gimme Party. Alle Rechte vorbehalten.</p>
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs font-medium transition-opacity hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.35)" }}>powered by smea</a>
@@ -251,10 +272,11 @@ const HomeFooter = () => (
 
 /* ─── Page ─── */
 const Index = () => (
-  <div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }}>
+  <div className="min-h-screen" style={{ background: "hsl(220 50% 8%)" }}>
     <Navbar />
     <HeroSection />
     <EventsSection />
+    <AboutTeaser />
     <HomeFooter />
   </div>
 );

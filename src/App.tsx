@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import ProjectPaderborn from "./pages/ProjectPaderborn";
+const GimmeHannover = lazy(() => import("./pages/ProjectPaderborn"));
 import NotFound from "./pages/NotFound";
 
 const Impressum = lazy(() => import("./pages/Impressum"));
@@ -33,7 +33,7 @@ const App = () => (
         <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/project-paderborn" element={<ProjectPaderborn />} />
+            <Route path="/hannover" element={<GimmeHannover />} />
             <Route path="/impressum" element={<Impressum />} />
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/agb" element={<AGB />} />
