@@ -529,19 +529,16 @@ const NearbyEvents = ({ currentEvent }: { currentEvent: EventData }) => {
       <h3 className="text-sm sm:text-base font-bold uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100%)" }}>
         Weitere Events {userCity ? (userCity === "deiner Nähe" ? "in deiner Nähe" : `nahe ${userCity}`) : ""}
       </h3>
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {sortedEvents.map((ev) => (
           <Link
             key={ev.id}
             to={ev.url}
-            className="flex items-center justify-between gap-3 py-3 px-4 rounded-xl transition-all hover:scale-[1.01]"
+            className="flex flex-col items-center py-3 sm:py-4 px-3 rounded-xl text-center transition-all hover:scale-[1.03]"
             style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
           >
-            <div className="flex-1 min-w-0">
-              <div className="text-xs sm:text-sm font-bold uppercase">{ev.city}</div>
-              <div className="text-[10px] sm:text-xs opacity-70">{ev.date}</div>
-            </div>
-            <ArrowRight className="w-4 h-4 opacity-50 shrink-0" />
+            <span className="text-sm sm:text-base font-black uppercase">{ev.city}</span>
+            <span className="text-[10px] sm:text-xs opacity-70 mt-0.5">{ev.date}</span>
           </Link>
         ))}
       </div>
