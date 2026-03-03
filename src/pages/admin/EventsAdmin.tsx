@@ -412,11 +412,11 @@ const EventEditView = ({
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                   style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
                 >
-                  <option value="Konzert">Konzert</option>
-                  <option value="Party">Party</option>
-                  <option value="Open Air">Open Air</option>
-                  <option value="Festival">Festival</option>
-                  <option value="Club">Club</option>
+                  <option value="Konzert" style={{ background: "#1a1a1a", color: "#fff" }}>Konzert</option>
+                  <option value="Party" style={{ background: "#1a1a1a", color: "#fff" }}>Party</option>
+                  <option value="Open Air" style={{ background: "#1a1a1a", color: "#fff" }}>Open Air</option>
+                  <option value="Festival" style={{ background: "#1a1a1a", color: "#fff" }}>Festival</option>
+                  <option value="Club" style={{ background: "#1a1a1a", color: "#fff" }}>Club</option>
                 </select>
               </div>
               <Field label="Slug *" value={editing.slug} onChange={(v: string) => setEditing({ ...editing, slug: v })} placeholder="z.b. hannover-10-04" />
@@ -554,9 +554,9 @@ const EventEditView = ({
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
               >
-                <option value="">Keine Serie</option>
+                <option value="" style={{ background: "#1a1a1a", color: "#fff" }}>Keine Serie</option>
                 {seriesOptions.map((s) => (
-                  <option key={s.id} value={s.id}>{s.title}</option>
+                  <option key={s.id} value={s.id} style={{ background: "#1a1a1a", color: "#fff" }}>{s.title}</option>
                 ))}
               </select>
             </div>
@@ -607,8 +607,8 @@ const EventEditView = ({
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
               >
-                <option value="draft">Entwurf</option>
-                <option value="published">Veröffentlicht</option>
+                <option value="draft" style={{ background: "#1a1a1a", color: "#fff" }}>Entwurf</option>
+                <option value="published" style={{ background: "#1a1a1a", color: "#fff" }}>Veröffentlicht</option>
               </select>
             </div>
             <Field label="Sortierung" value={editing.sort_order} onChange={(v: string) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
