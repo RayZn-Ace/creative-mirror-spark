@@ -506,11 +506,11 @@ const PPHeroSection = () => (
   >
     {/* Titel testweise ausgeblendet */}
 
-    <p className="text-base sm:text-lg md:text-base lg:text-lg font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+    <p className="text-xl sm:text-2xl md:text-xl lg:text-2xl font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
       IM CAPITOL
     </p>
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(var(--foreground) / 0.9)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(0, 70%, 50%)" }}>
       <span>05. APRIL</span>
       <span>AB 22 UHR</span>
       <span>PADERBORN</span>
