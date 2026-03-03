@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -54,6 +54,7 @@ const EventsAdmin = () => {
   const [seriesMap, setSeriesMap] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Partial<EventRow> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const load = async () => {
     const [eventsRes, seriesRes] = await Promise.all([
@@ -173,13 +174,34 @@ const EventsAdmin = () => {
         <div className="space-y-6">
           {grouped.map((group) => (
             <div key={group.seriesId || "none"}>
-              <div className="flex items-center gap-2 mb-3">
-                {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
+              <button
+                onClick={() => {
+                  const key = group.seriesId || "__none__";
+                  setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+                }}
+                className="flex items-center gap-2 mb-3 w-full text-left group"
+              >
+                {group.seriesId ? (
+                  <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />
+                ) : null}
                 <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
                   {group.seriesTitle} ({group.events.length})
                 </span>
-              </div>
-              <div className="space-y-2">
+                {collapsed[group.seriesId || "__none__"] ? (
+                  <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+                )}
+              </button>
+              <AnimatePresence initial={false}>
+                {!collapsed[group.seriesId || "__none__"] && (
+                  <motion.div
+                    className="space-y-2 overflow-hidden"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                 {group.events.map((event) => (
                   <div
                     key={event.id}
@@ -220,7 +242,9 @@ const EventsAdmin = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
