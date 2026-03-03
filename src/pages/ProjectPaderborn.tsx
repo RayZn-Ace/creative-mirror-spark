@@ -27,6 +27,7 @@ interface TicketItem {
   price: string;
   soldOut: boolean;
   badge?: string;
+  comingSoon?: boolean;
 }
 
 interface TicketCategory {
@@ -38,8 +39,9 @@ const defaultTickets: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
-      { id: "earlybird", name: "EARLY BIRD TICKET", description: "Vergünstigter Eintritt zum Frühbucher-Preis", price: "29,99", soldOut: true },
+      { id: "earlybird", name: "EARLY BIRD TICKET", description: "", price: "29,99", soldOut: true },
       { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
+      { id: "lastminute", name: "LAST MINUTE TICKET", description: "", price: "", soldOut: false, badge: "COMING SOON", comingSoon: true },
     ],
   },
   {
@@ -60,8 +62,9 @@ const openAirTickets: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
-      { id: "earlybird", name: "EARLY BIRD TICKET", description: "Vergünstigter Eintritt zum Frühbucher-Preis", price: "24,99", soldOut: true },
+      { id: "earlybird", name: "EARLY BIRD TICKET", description: "", price: "24,99", soldOut: true },
       { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "31,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
+      { id: "lastminute", name: "LAST MINUTE TICKET", description: "", price: "", soldOut: false, badge: "COMING SOON", comingSoon: true },
     ],
   },
   {
@@ -299,6 +302,20 @@ const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: 
 
 /* ─── Ticket Row ─── */
 const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void }) => {
+  if (item.comingSoon) {
+    return (
+      <div className="pp-ticket-item" style={{ opacity: 0.5 }}>
+        <div className="flex items-center justify-between gap-4">
+          <h4 className="pp-ticket-title text-sm sm:text-base">{item.name}</h4>
+          <span className="px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider shrink-0"
+            style={{ background: "hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100% / 0.7)", border: "1px dashed hsl(0 0% 100% / 0.3)" }}>
+            COMING SOON
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (item.soldOut) {
     return (
       <div className="pp-ticket-item relative overflow-hidden" style={{ opacity: 0.55 }}>
