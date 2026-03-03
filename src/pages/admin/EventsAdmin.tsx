@@ -38,6 +38,9 @@ interface TicketRow {
   sold_out: boolean | null;
   sort_order: number | null;
   features: string[] | null;
+  badge: string | null;
+  coming_soon: boolean | null;
+  category_group: string | null;
 }
 
 interface SeriesOption {
@@ -52,7 +55,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   status: "draft", highlight: false, ticket_link: "", sort_order: 0, series_id: null,
 };
 
-const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[] };
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR" };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -90,7 +93,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
 
   const saveTicket = async () => {
     if (!editingTicket?.name) { toast.error("Ticketname ist Pflicht"); return; }
-    const payload = {
+    const payload: any = {
       name: editingTicket.name,
       description: editingTicket.description || null,
       price: editingTicket.price || 0,
@@ -98,6 +101,9 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       sold_out: editingTicket.sold_out || false,
       sort_order: editingTicket.sort_order || 0,
       features: editingTicket.features || [],
+      badge: editingTicket.badge || null,
+      coming_soon: editingTicket.coming_soon || false,
+      category_group: editingTicket.category_group || "REGULAR",
       event_id: eventId,
     };
     if (editingTicket.id) {
@@ -135,11 +141,21 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
           style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>
-                Standard-Ticket
+                {t.category_group || "REGULAR"}
               </span>
               <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
+              {t.badge && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
+                  {t.badge}
+                </span>
+              )}
+              {t.coming_soon && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>
+                  COMING SOON
+                </span>
+              )}
               {t.sold_out && (
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
                   Ausverkauft
@@ -181,13 +197,21 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             <Field label="Name *" value={editingTicket.name} onChange={(v: string) => setEditingTicket({ ...editingTicket, name: v })} placeholder="z.B. LAST CHANCE TICKET" />
             <Field label="Preis (€)" value={editingTicket.price} onChange={(v: string) => setEditingTicket({ ...editingTicket, price: parseFloat(v) || 0 })} type="number" />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Kategorie-Gruppe" value={editingTicket.category_group} onChange={(v: string) => setEditingTicket({ ...editingTicket, category_group: v })} placeholder="z.B. REGULAR, DELUXE, FAN" />
+            <Field label="Badge" value={editingTicket.badge} onChange={(v: string) => setEditingTicket({ ...editingTicket, badge: v })} placeholder="z.B. FAST AUSVERKAUFT" />
+          </div>
           <Field label="Beschreibung" value={editingTicket.description} onChange={(v: string) => setEditingTicket({ ...editingTicket, description: v })} />
           <div className="grid grid-cols-2 gap-3">
             <Field label="Sortierung" value={editingTicket.sort_order} onChange={(v: string) => setEditingTicket({ ...editingTicket, sort_order: parseInt(v) || 0 })} type="number" />
-            <div className="flex items-end pb-1">
+            <div className="flex items-end pb-1 gap-4">
               <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
                 <input type="checkbox" checked={editingTicket.sold_out || false} onChange={(e) => setEditingTicket({ ...editingTicket, sold_out: e.target.checked })} className="rounded w-4 h-4" />
                 Ausverkauft
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                <input type="checkbox" checked={editingTicket.coming_soon || false} onChange={(e) => setEditingTicket({ ...editingTicket, coming_soon: e.target.checked })} className="rounded w-4 h-4" />
+                Coming Soon
               </label>
             </div>
           </div>
