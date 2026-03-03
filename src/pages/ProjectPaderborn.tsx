@@ -449,17 +449,6 @@ const PPTicketWidget = () => {
           </p>
         )}
 
-        {/* Instagram */}
-        <a
-          href={instagramUrl}
-          target="_blank" rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)", color: "white" }}
-        >
-          <Instagram className="w-4 h-4" />
-          Folge uns auf Instagram
-        </a>
-
         {/* Cart Button */}
         <motion.button
           className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4"
@@ -468,6 +457,17 @@ const PPTicketWidget = () => {
         >
           IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
         </motion.button>
+
+        {/* Instagram – subtle, below cart */}
+        <a
+          href={instagramUrl}
+          target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-100"
+          style={{ color: "hsl(0 0% 100% / 0.45)" }}
+        >
+          <Instagram className="w-3.5 h-3.5" />
+          {instagramHandle}
+        </a>
 
         {/* Info Accordions */}
         <div className="space-y-2 pt-2">
