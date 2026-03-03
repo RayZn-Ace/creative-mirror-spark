@@ -682,15 +682,13 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-2 sm:mt-12 overflow-visible" style={{ isolation: "isolate" }}>
-      <div className="relative max-w-[220px] sm:max-w-[440px] lg:max-w-[500px]" style={{ background: "linear-gradient(180deg, hsl(210, 70%, 62%) 0%, hsl(205, 65%, 72%) 50%, hsl(200, 55%, 78%) 100%)", borderRadius: "12px", padding: "0" }}>
-        <img
-          src={headerImg}
-          alt="Mamma Mia Party"
-          className="w-full object-contain rounded-xl"
-          style={{ mixBlendMode: "multiply" }}
-        />
-      </div>
+    <div className="w-full flex justify-center mt-2 sm:mt-12 overflow-visible">
+      <img
+        src={headerImg}
+        alt="Mamma Mia Party"
+        className="max-w-[220px] sm:max-w-[440px] lg:max-w-[500px] object-contain"
+        style={{ mixBlendMode: "multiply" }}
+      />
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
