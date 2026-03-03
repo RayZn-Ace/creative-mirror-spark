@@ -772,7 +772,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
-    <div className="mt-0 sm:mt-6">
+    <div className="-mt-2 sm:mt-6">
       <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.6)" }}>
         Wähle deinen Termin
       </h2>
