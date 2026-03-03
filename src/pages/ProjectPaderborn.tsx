@@ -257,13 +257,14 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
         <motion.button
           key={event.id}
           onClick={() => onSelect(event.id)}
-          className="relative flex flex-col items-center px-2 sm:px-4 py-1.5 sm:py-3 rounded-xl text-center shrink-0 transition-all"
+          className="relative flex flex-col items-center px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-center shrink-0 transition-all backdrop-blur-sm"
           style={{
-            background: isSelected ? "hsl(0 0% 100% / 0.3)" : event.soldOut ? "hsl(0 0% 100% / 0.05)" : "hsl(0 0% 100% / 0.1)",
-            border: `2px solid ${isSelected ? "hsl(0 0% 100% / 0.7)" : "hsl(0 0% 100% / 0.2)"}`,
+            background: isSelected ? "hsl(210 80% 30% / 0.5)" : event.soldOut ? "hsl(0 0% 100% / 0.08)" : "hsl(0 0% 100% / 0.15)",
+            border: `2px solid ${isSelected ? "hsl(0 0% 100% / 0.8)" : "hsl(0 0% 100% / 0.25)"}`,
             color: "hsl(0 0% 100%)",
-            minWidth: "48px",
-            opacity: event.soldOut ? 0.6 : 1,
+            minWidth: "56px",
+            opacity: event.soldOut ? 0.5 : 1,
+            boxShadow: isSelected ? "0 4px 20px hsl(210 80% 40% / 0.3)" : "none",
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -286,11 +287,11 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
               <Sun className="w-2.5 h-2.5" />
             </span>
           )}
-          <span className="text-sm sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
-          <span className="text-[9px] sm:text-xs font-medium uppercase opacity-80 mt-0.5">
+          <span className="text-base sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
+          <span className="text-[10px] sm:text-xs font-bold uppercase mt-0.5" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
             {["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][parseInt(event.dateShort.split(".")[1])]}
           </span>
-          <span className="text-[8px] sm:text-[10px] opacity-60 mt-0.5 leading-tight">{event.venue.split("/")[0].trim()}</span>
+          <span className="text-[9px] sm:text-[11px] font-medium mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.75)" }}>{event.venue.split("/")[0].trim()}</span>
         </motion.button>
       );
     })}
@@ -525,20 +526,33 @@ const NearbyEvents = ({ currentEvent }: { currentEvent: EventData }) => {
   }, [currentEvent.city]);
 
   return (
-    <div className="pt-4">
-      <h3 className="text-sm sm:text-base font-bold uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100%)" }}>
-        Weitere Events {userCity ? (userCity === "deiner Nähe" ? "in deiner Nähe" : `nahe ${userCity}`) : ""}
-      </h3>
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+    <div className="pt-6">
+      <div className="text-center mb-4">
+        <h3 className="text-base sm:text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>
+          🎶 Weitere Events {userCity ? (userCity === "deiner Nähe" ? "in deiner Nähe" : `nahe ${userCity}`) : ""}
+        </h3>
+        <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+          Sichere dir jetzt Tickets für weitere Städte
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         {sortedEvents.map((ev) => (
           <Link
             key={ev.id}
             to={ev.url}
-            className="flex flex-col items-center py-3 sm:py-4 px-3 rounded-xl text-center transition-all hover:scale-[1.03]"
-            style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
+            className="group flex flex-col items-center py-4 sm:py-5 px-3 rounded-2xl text-center transition-all hover:scale-[1.03] backdrop-blur-sm"
+            style={{
+              background: "linear-gradient(135deg, hsl(210 70% 45% / 0.35), hsl(200 60% 55% / 0.2))",
+              border: "1px solid hsl(0 0% 100% / 0.2)",
+              color: "hsl(0 0% 100%)",
+              boxShadow: "0 4px 16px hsl(210 80% 30% / 0.15)",
+            }}
           >
-            <span className="text-sm sm:text-base font-black uppercase">{ev.city}</span>
-            <span className="text-[10px] sm:text-xs opacity-70 mt-0.5">{ev.date}</span>
+            <MapPin className="w-4 h-4 mb-1.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+            <span className="text-sm sm:text-base font-black uppercase tracking-wide">{ev.city}</span>
+            <span className="text-[10px] sm:text-xs font-medium mt-1 px-2.5 py-0.5 rounded-full" style={{ background: "hsl(0 0% 100% / 0.15)" }}>
+              {ev.date}
+            </span>
           </Link>
         ))}
       </div>
