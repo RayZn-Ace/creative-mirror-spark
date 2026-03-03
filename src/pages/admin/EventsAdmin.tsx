@@ -2,10 +2,38 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
-  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X,
+  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+
+/* ─── City → Country mapping ─── */
+const CITY_COUNTRY: Record<string, string> = {
+  // Austria
+  Dornbirn: "Österreich", Gralla: "Österreich", Innsbruck: "Österreich", Kitzbühel: "Österreich",
+  Kollerschlag: "Österreich", Linz: "Österreich", Salzburg: "Österreich", "St. Martin": "Österreich",
+  Vöcklabruck: "Österreich", Wien: "Österreich",
+  // Switzerland
+  Lyss: "Schweiz", Olten: "Schweiz", "St. Gallen": "Schweiz", Winterthur: "Schweiz", Zürich: "Schweiz",
+  // Netherlands
+  Amsterdam: "Niederlande", Rotterdam: "Niederlande", Utrecht: "Niederlande",
+  // Belgium
+  Antwerpen: "Belgien",
+  // France
+  "Le Havre": "Frankreich", Mathay: "Frankreich", Paris: "Frankreich",
+  // Luxembourg
+  Luxembourg: "Luxemburg",
+  // Poland
+  Krakow: "Polen",
+  // Croatia
+  Zadar: "Kroatien",
+  // Brazil
+  "São Paulo": "Brasilien",
+};
+const getCountry = (city: string | null) => {
+  if (!city) return "Unbekannt";
+  return CITY_COUNTRY[city] || "Deutschland";
+};
 
 interface InfoBlock {
   id: string;
@@ -709,6 +737,7 @@ const EventsAdmin = () => {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [seriesOptions, setSeriesOptions] = useState<SeriesOption[]>([]);
   const [seriesMap, setSeriesMap] = useState<Record<string, string>>({});
+  const [seriesCityMap, setSeriesCityMap] = useState<Record<string, string | null>>({});
   const [editing, setEditing] = useState<Partial<EventRow> | null>(null);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -723,8 +752,10 @@ const EventsAdmin = () => {
     const options = (seriesRes.data as SeriesOption[]) || [];
     setSeriesOptions(options);
     const map: Record<string, string> = {};
-    options.forEach((s) => { map[s.id] = s.title; });
+    const cityMap: Record<string, string | null> = {};
+    options.forEach((s) => { map[s.id] = s.title; cityMap[s.id] = (s as any).city || null; });
     setSeriesMap(map);
+    setSeriesCityMap(cityMap);
     setLoading(false);
   };
 
@@ -790,12 +821,13 @@ const EventsAdmin = () => {
     );
   }
 
-  const grouped = events.reduce<{ seriesId: string | null; seriesTitle: string; events: EventRow[] }[]>(
+  const grouped = events.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
     (acc, event) => {
       const sid = event.series_id || "__none__";
       let group = acc.find((g) => (g.seriesId || "__none__") === sid);
       if (!group) {
-        group = { seriesId: event.series_id, seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie", events: [] };
+        const city = event.series_id ? seriesCityMap[event.series_id] : event.city;
+        group = { seriesId: event.series_id, seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie", country: getCountry(city || null), events: [] };
         acc.push(group);
       }
       group.events.push(event);
@@ -806,6 +838,18 @@ const EventsAdmin = () => {
 
   // Sort groups alphabetically by series title
   grouped.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
+
+  // Group by country
+  const countryGroups = grouped.reduce<Record<string, typeof grouped>>((acc, g) => {
+    if (!acc[g.country]) acc[g.country] = [];
+    acc[g.country].push(g);
+    return acc;
+  }, {});
+  const sortedCountries = Object.keys(countryGroups).sort((a, b) => {
+    if (a === "Deutschland") return -1;
+    if (b === "Deutschland") return 1;
+    return a.localeCompare(b, "de");
+  });
 
   // Helper: check if a group is collapsed (default = true = collapsed)
   const isCollapsed = (key: string) => collapsed[key] !== false;
@@ -835,45 +879,64 @@ const EventsAdmin = () => {
           <button onClick={() => setEditing({ ...emptyEvent })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>Jetzt erstes Event erstellen</button>
         </div>
       ) : (
-        <div className="space-y-6">
-          {grouped.map((group) => (
-            <div key={group.seriesId || "none"}>
-              <button onClick={() => toggleCollapse(group.seriesId || "__none__")} className="flex items-center gap-2 mb-3 w-full text-left group">
-                {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{group.seriesTitle} ({group.events.length})</span>
-                {isCollapsed(group.seriesId || "__none__") ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-              </button>
-              <AnimatePresence initial={false}>
-                {!isCollapsed(group.seriesId || "__none__") && (
-                  <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    {group.events.map((event) => (
-                      <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
-                        {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
-                            {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
-                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
-                              {event.status}
-                            </span>
-                          </div>
-                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
-                        </div>
-                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                            {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        <div className="space-y-8">
+          {sortedCountries.map((country) => {
+            const countryKey = `country__${country}`;
+            const countryEventCount = countryGroups[country].reduce((sum, g) => sum + g.events.length, 0);
+            return (
+              <div key={country}>
+                <button onClick={() => toggleCollapse(countryKey)} className="flex items-center gap-2 mb-4 w-full text-left">
+                  <Globe className="w-4 h-4" style={{ color: "hsl(200 70% 55%)" }} />
+                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{country} ({countryEventCount})</span>
+                  {isCollapsed(countryKey) ? <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+                </button>
+                <AnimatePresence initial={false}>
+                  {!isCollapsed(countryKey) && (
+                    <motion.div className="space-y-4 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(200 70% 55% / 0.2)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      {countryGroups[country].map((group) => (
+                        <div key={group.seriesId || "none"}>
+                          <button onClick={() => toggleCollapse(group.seriesId || "__none__")} className="flex items-center gap-2 mb-3 w-full text-left group">
+                            {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
+                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{group.seriesTitle} ({group.events.length})</span>
+                            {isCollapsed(group.seriesId || "__none__") ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
                           </button>
-                          <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <AnimatePresence initial={false}>
+                            {!isCollapsed(group.seriesId || "__none__") && (
+                              <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                {group.events.map((event) => (
+                                  <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
+                                    {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
+                                        {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
+                                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+                                          {event.status}
+                                        </span>
+                                      </div>
+                                      <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                                        {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                      </button>
+                                      <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
