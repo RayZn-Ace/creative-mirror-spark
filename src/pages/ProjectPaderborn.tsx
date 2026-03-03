@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X } from "lucide-react";
+import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import headerImg from "@/assets/pp-header.png";
 
 /* ─── Ticket Data ─── */
@@ -481,6 +482,15 @@ const PPTicketWidget = () => {
             />
           ))}
         </div>
+
+        {/* Weitere Events Button */}
+        <Link
+          to="/#events"
+          className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02]"
+          style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.8)" }}
+        >
+          Weitere Events entdecken <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
     </>
   );
