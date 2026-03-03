@@ -980,6 +980,25 @@ export const getCurrencySymbol = (currency: string): string => {
   return symbols[currency] || currency;
 };
 
+// Approximate exchange rates from EUR (updated periodically)
+const EUR_RATES: Record<string, number> = {
+  EUR: 1, USD: 1.08, GBP: 0.86, CHF: 0.94, PLN: 4.32, CZK: 25.2, HUF: 395,
+  RON: 4.97, BGN: 1.96, DKK: 7.46, NOK: 11.5, SEK: 11.2, TRY: 35.5, RUB: 98,
+  UAH: 43, JPY: 163, KRW: 1450, CNY: 7.85, AED: 3.97, THB: 37.5, ALL: 104,
+  GEL: 2.95, BRL: 5.45, CAD: 1.48, AUD: 1.66,
+};
+
+/** Convert EUR price to local currency and format with local decimal separator */
+export const convertPrice = (eurPrice: number, currency: string, lang: LangCode): string => {
+  if (currency === "EUR") return eurPrice.toFixed(2).replace(".", ",");
+  const rate = EUR_RATES[currency] || 1;
+  const converted = eurPrice * rate;
+  // Use comma for most European languages, dot for English/Asian
+  const useDot = ["en", "ja", "ko", "zh", "th"].includes(lang);
+  if (currency === "JPY" || currency === "KRW") return Math.round(converted).toLocaleString("de-DE");
+  return useDot ? converted.toFixed(2) : converted.toFixed(2).replace(".", ",");
+};
+
 export const translateBadge = (badge: string, t: Translations): string => {
   return t.badgeMap[badge] || badge;
 };

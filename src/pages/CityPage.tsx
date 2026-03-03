@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, type Translations } from "@/lib/i18n";
+import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
 interface CityEvent {
@@ -27,6 +27,7 @@ interface TicketItem {
   name: string;
   description: string;
   price: string;
+  priceEur: number;
   soldOut: boolean;
   badge?: string;
   comingSoon?: boolean;
@@ -437,11 +438,14 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         for (const row of data) {
           const group = row.category_group || "TICKETS";
           if (!groups[group]) groups[group] = [];
+          const currency = getCurrencyForCity(event.city);
+          const lang = getLangForCity(event.city);
           groups[group].push({
             id: row.id,
             name: row.name,
             description: row.description || "",
-            price: row.price > 0 ? row.price.toFixed(2).replace(".", ",") : "",
+            priceEur: row.price,
+            price: row.price > 0 ? convertPrice(row.price, currency, lang) : "",
             soldOut: row.sold_out || false,
             badge: row.badge || undefined,
             comingSoon: row.coming_soon || false,
