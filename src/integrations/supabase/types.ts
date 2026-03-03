@@ -66,6 +66,7 @@ export type Database = {
           highlight: boolean | null
           id: string
           image_url: string | null
+          info_sections: Json | null
           location_address: string | null
           location_name: string | null
           series_id: string | null
@@ -92,6 +93,7 @@ export type Database = {
           highlight?: boolean | null
           id?: string
           image_url?: string | null
+          info_sections?: Json | null
           location_address?: string | null
           location_name?: string | null
           series_id?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           highlight?: boolean | null
           id?: string
           image_url?: string | null
+          info_sections?: Json | null
           location_address?: string | null
           location_name?: string | null
           series_id?: string | null
