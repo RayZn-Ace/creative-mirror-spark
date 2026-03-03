@@ -692,6 +692,19 @@ const EventEditView = ({
 };
 
 /* ─── Main Component ─── */
+const COLLAPSE_STORAGE_KEY = "admin_events_collapsed";
+
+const loadCollapsedState = (): Record<string, boolean> => {
+  try {
+    const stored = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch { return {}; }
+};
+
+const saveCollapsedState = (state: Record<string, boolean>) => {
+  try { localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(state)); } catch {}
+};
+
 const EventsAdmin = () => {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [seriesOptions, setSeriesOptions] = useState<SeriesOption[]>([]);
@@ -699,7 +712,7 @@ const EventsAdmin = () => {
   const [editing, setEditing] = useState<Partial<EventRow> | null>(null);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsedState());
 
   const load = async () => {
     const [eventsRes, seriesRes] = await Promise.all([
@@ -791,6 +804,20 @@ const EventsAdmin = () => {
     []
   );
 
+  // Sort groups alphabetically by series title
+  grouped.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
+
+  // Helper: check if a group is collapsed (default = true = collapsed)
+  const isCollapsed = (key: string) => collapsed[key] !== false;
+
+  const toggleCollapse = (key: string) => {
+    setCollapsed((prev) => {
+      const next = { ...prev, [key]: !isCollapsed(key) };
+      saveCollapsedState(next);
+      return next;
+    });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -811,13 +838,13 @@ const EventsAdmin = () => {
         <div className="space-y-6">
           {grouped.map((group) => (
             <div key={group.seriesId || "none"}>
-              <button onClick={() => { const key = group.seriesId || "__none__"; setCollapsed((prev) => ({ ...prev, [key]: !prev[key] })); }} className="flex items-center gap-2 mb-3 w-full text-left group">
+              <button onClick={() => toggleCollapse(group.seriesId || "__none__")} className="flex items-center gap-2 mb-3 w-full text-left group">
                 {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
                 <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{group.seriesTitle} ({group.events.length})</span>
-                {collapsed[group.seriesId || "__none__"] ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+                {isCollapsed(group.seriesId || "__none__") ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
               </button>
               <AnimatePresence initial={false}>
-                {!collapsed[group.seriesId || "__none__"] && (
+                {!isCollapsed(group.seriesId || "__none__") && (
                   <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
                     {group.events.map((event) => (
                       <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
