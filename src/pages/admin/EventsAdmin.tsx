@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
-  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe,
+  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -742,6 +742,7 @@ const EventsAdmin = () => {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsedState());
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     const [eventsRes, seriesRes] = await Promise.all([
@@ -820,8 +821,20 @@ const EventsAdmin = () => {
       />
     );
   }
+  const filteredEvents = search.trim()
+    ? events.filter((e) => {
+        const q = search.toLowerCase();
+        return (
+          e.title.toLowerCase().includes(q) ||
+          (e.city || "").toLowerCase().includes(q) ||
+          (e.tag || "").toLowerCase().includes(q) ||
+          (e.slug || "").toLowerCase().includes(q) ||
+          (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
+        );
+      })
+    : events;
 
-  const grouped = events.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
+  const grouped = filteredEvents.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
     (acc, event) => {
       const sid = event.series_id || "__none__";
       let group = acc.find((g) => (g.seriesId || "__none__") === sid);
@@ -869,6 +882,24 @@ const EventsAdmin = () => {
         <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
           <Plus className="w-4 h-4" /> Neues Event
         </button>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Event, Stadt oder Serie suchen..."
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-1"
+          style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", caretColor: "hsl(330 80% 55%)" }}
+        />
+        {search && (
+          <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-white/10">
+            <X className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+          </button>
+        )}
       </div>
 
       {loading ? (
