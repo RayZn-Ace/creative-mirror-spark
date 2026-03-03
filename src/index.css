@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
@@ -337,5 +337,33 @@
     background: hsl(142, 70%, 50%);
     transform: scale(1.1);
     box-shadow: 0 6px 25px hsl(142, 70%, 45% / 0.5);
+  }
+
+  /* ─── Neon Title ─── */
+  .pp-neon-title {
+    font-family: 'Orbitron', sans-serif;
+    color: hsl(0 0% 100%);
+    text-shadow:
+      0 0 10px hsl(0 70% 50% / 0.5),
+      0 0 30px hsl(0 70% 50% / 0.3),
+      0 0 60px hsl(0 70% 50% / 0.15);
+  }
+
+  /* ─── Form Input ─── */
+  .pp-form-input {
+    @apply w-full px-4 py-2.5 rounded-xl text-sm;
+    background: hsl(0 0% 100% / 0.08);
+    color: hsl(0 0% 100%);
+    border: 1px solid hsl(0 0% 100% / 0.12);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .pp-form-input:focus {
+    border-color: hsl(0 70% 50% / 0.5);
+  }
+
+  .pp-form-input::placeholder {
+    color: hsl(0 0% 100% / 0.35);
   }
 }
