@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { getTranslations, type Translations } from "@/lib/i18n";
+import { getTranslations, translateBadge, translateTicketDesc, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
 interface CityEvent {
@@ -182,7 +182,7 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            COMING SOON
+            {t.comingSoonLabel}
           </motion.span>
         </div>
       </div>
@@ -196,7 +196,7 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
           <h4 className="pp-ticket-title text-xs sm:text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>{item.name}</h4>
           <div className="flex items-center gap-2 shrink-0">
             <span className="pp-ticket-price text-xs sm:text-sm line-through decoration-1"><span className="text-[9px] sm:text-xs font-normal mr-0.5">EUR</span>{item.price}</span>
-            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase" style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>SOLD OUT</span>
+            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase" style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>{t.soldOutBadge}</span>
           </div>
         </div>
       </div>
@@ -209,9 +209,9 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h4 className="pp-ticket-title text-base">{item.name}</h4>
-            {item.badge && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{item.badge}</span>}
+            {item.badge && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{translateBadge(item.badge, t)}</span>}
           </div>
-          <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
+          <p className="pp-ticket-desc mt-0.5 text-sm">{translateTicketDesc(item.name, item.description, t)}</p>
         </div>
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-right">
@@ -225,9 +225,9 @@ const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: numbe
         <div>
           <div className="flex items-center gap-2">
             <h4 className="pp-ticket-title text-sm">{item.name}</h4>
-            {item.badge && <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{item.badge}</span>}
+            {item.badge && <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{translateBadge(item.badge, t)}</span>}
           </div>
-          <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
+          <p className="pp-ticket-desc mt-0.5 text-xs">{translateTicketDesc(item.name, item.description, t)}</p>
         </div>
         <div className="flex items-center justify-between">
           <div>
@@ -331,7 +331,7 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 /* ─── Nearby Events (from DB) ─── */
-const NearbyEvents = ({ currentSlug, currentCity }: { currentSlug: string; currentCity: string }) => {
+const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; currentCity: string; t: Translations }) => {
   const [nearby, setNearby] = useState<{ slug: string; city: string; km: number | null }[]>([]);
 
   useEffect(() => {
@@ -387,9 +387,9 @@ const NearbyEvents = ({ currentSlug, currentCity }: { currentSlug: string; curre
     <div className="pt-6">
       <div className="text-center mb-4">
         <h3 className="text-base sm:text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.8)" }}>
-          🎶 Weitere Städte
+          {t.moreCities}
         </h3>
-        <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.95)" }}>Sichere dir jetzt Tickets für weitere Städte</p>
+        <p className="text-[11px] sm:text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.95)" }}>{t.moreCitiesDesc}</p>
       </div>
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         {nearby.map((ev) => (
@@ -400,7 +400,7 @@ const NearbyEvents = ({ currentSlug, currentCity }: { currentSlug: string; curre
             <span className="text-sm sm:text-base font-black uppercase tracking-wide">{ev.city}</span>
             {ev.km !== null && (
               <span className="text-[10px] sm:text-xs mt-1 font-semibold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                ~{ev.km} km entfernt
+                ~{ev.km} {t.kmAway}
               </span>
             )}
           </Link>
@@ -535,7 +535,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         ))}
       </div>
 
-      <NearbyEvents currentSlug={citySlug} currentCity={event.city} />
+      <NearbyEvents currentSlug={citySlug} currentCity={event.city} t={t} />
     </div>
   );
 };

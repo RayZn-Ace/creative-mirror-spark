@@ -5,8 +5,8 @@ export type LangCode = "de" | "nl" | "fr" | "pl" | "hr" | "pt" | "en";
 export interface Translations {
   // Hero
   tourSubtitle: string;
-  from: string; // "AB"
-  clock: string; // "UHR"
+  from: string;
+  clock: string;
   selectDate: string;
   // Date tiles
   soldOutLabel: string;
@@ -14,6 +14,8 @@ export interface Translations {
   reservedFor: string;
   soldOutTitle: string;
   soldOutDesc: string;
+  soldOutBadge: string;
+  comingSoonLabel: string;
   ticketsLoading: string;
   discountPlaceholder: string;
   discountApply: string;
@@ -45,6 +47,10 @@ export interface Translations {
   weekdays: string[];
   // Months short
   monthsShort: string[];
+  // Badge translations (German badge → localized)
+  badgeMap: Record<string, string>;
+  // Ticket description translations (German ticket name key → localized description)
+  ticketDescMap: Record<string, string>;
 }
 
 const de: Translations = {
@@ -56,6 +62,8 @@ const de: Translations = {
   reservedFor: "Reserviert für:",
   soldOutTitle: "AUSVERKAUFT",
   soldOutDesc: "Dieses Event ist leider ausverkauft. Schau dir unsere anderen Termine an!",
+  soldOutBadge: "SOLD OUT",
+  comingSoonLabel: "COMING SOON",
   ticketsLoading: "Tickets laden...",
   discountPlaceholder: "Rabattcode eingeben",
   discountApply: "Einlösen",
@@ -82,6 +90,18 @@ const de: Translations = {
   loading: "Laden...",
   weekdays: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
   monthsShort: ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "FAST AUSVERKAUFT",
+    "84% schon weg": "84% schon weg",
+    "FANLIEBLING": "FANLIEBLING",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Eintrittspreis",
+    "LAST CHANCE TICKET": "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events",
+    "LAST MINUTE TICKET": "Regulärer Eintritt",
+    "DELUXE TICKET": "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang",
+    "FAN TICKET": "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz",
+  },
 };
 
 const nl: Translations = {
@@ -93,6 +113,8 @@ const nl: Translations = {
   reservedFor: "Gereserveerd voor:",
   soldOutTitle: "UITVERKOCHT",
   soldOutDesc: "Dit evenement is helaas uitverkocht. Bekijk onze andere data!",
+  soldOutBadge: "UITVERKOCHT",
+  comingSoonLabel: "BINNENKORT",
   ticketsLoading: "Tickets laden...",
   discountPlaceholder: "Kortingscode invoeren",
   discountApply: "Toepassen",
@@ -119,6 +141,18 @@ const nl: Translations = {
   loading: "Laden...",
   weekdays: ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"],
   monthsShort: ["", "Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "BIJNA UITVERKOCHT",
+    "84% schon weg": "84% al weg",
+    "FANLIEBLING": "FAVORIET",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Toegangsprijs",
+    "LAST CHANCE TICKET": "Voordelig toegang · Toegang ook bij uitverkochte evenementen",
+    "LAST MINUTE TICKET": "Reguliere toegang",
+    "DELUXE TICKET": "Geldig ticket + Toegang zonder wachtrij via de VIP-ingang",
+    "FAN TICKET": "VIP-ingang + Exclusieve stoffen verzamelband + LED-haarkrans",
+  },
 };
 
 const fr: Translations = {
@@ -130,6 +164,8 @@ const fr: Translations = {
   reservedFor: "Réservé pour :",
   soldOutTitle: "ÉPUISÉ",
   soldOutDesc: "Cet événement est malheureusement complet. Découvre nos autres dates !",
+  soldOutBadge: "ÉPUISÉ",
+  comingSoonLabel: "BIENTÔT",
   ticketsLoading: "Chargement des billets...",
   discountPlaceholder: "Entrer un code promo",
   discountApply: "Appliquer",
@@ -156,6 +192,18 @@ const fr: Translations = {
   loading: "Chargement...",
   weekdays: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
   monthsShort: ["", "Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "PRESQUE ÉPUISÉ",
+    "84% schon weg": "84% déjà partis",
+    "FANLIEBLING": "COUP DE CŒUR",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Prix d'entrée",
+    "LAST CHANCE TICKET": "Entrée à prix réduit · Accès même en cas de sold out",
+    "LAST MINUTE TICKET": "Entrée standard",
+    "DELUXE TICKET": "Billet valide + Entrée sans file d'attente par l'entrée VIP",
+    "FAN TICKET": "Entrée VIP + Bracelet collector exclusif + Couronne LED",
+  },
 };
 
 const pl: Translations = {
@@ -167,6 +215,8 @@ const pl: Translations = {
   reservedFor: "Zarezerwowano na:",
   soldOutTitle: "WYPRZEDANE",
   soldOutDesc: "To wydarzenie jest niestety wyprzedane. Sprawdź inne terminy!",
+  soldOutBadge: "WYPRZEDANE",
+  comingSoonLabel: "WKRÓTCE",
   ticketsLoading: "Ładowanie biletów...",
   discountPlaceholder: "Wpisz kod rabatowy",
   discountApply: "Zastosuj",
@@ -193,6 +243,18 @@ const pl: Translations = {
   loading: "Ładowanie...",
   weekdays: ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"],
   monthsShort: ["", "Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "PRAWIE WYPRZEDANE",
+    "84% schon weg": "84% już sprzedane",
+    "FANLIEBLING": "ULUBIENIEC FANÓW",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Cena wejścia",
+    "LAST CHANCE TICKET": "Zniżkowe wejście · Wejście także na wyprzedane wydarzenia",
+    "LAST MINUTE TICKET": "Regularne wejście",
+    "DELUXE TICKET": "Ważny bilet + Wejście bez kolejki przez wejście VIP",
+    "FAN TICKET": "Wejście VIP + Ekskluzywna opaska kolekcjonerska + Wianek LED",
+  },
 };
 
 const hr: Translations = {
@@ -204,6 +266,8 @@ const hr: Translations = {
   reservedFor: "Rezervirano za:",
   soldOutTitle: "RASPRODANO",
   soldOutDesc: "Ovaj događaj je nažalost rasprodan. Pogledaj naše druge termine!",
+  soldOutBadge: "RASPRODANO",
+  comingSoonLabel: "USKORO",
   ticketsLoading: "Učitavanje ulaznica...",
   discountPlaceholder: "Unesi kod za popust",
   discountApply: "Primijeni",
@@ -230,6 +294,18 @@ const hr: Translations = {
   loading: "Učitavanje...",
   weekdays: ["Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota"],
   monthsShort: ["", "Sij", "Velj", "Ožu", "Tra", "Svi", "Lip", "Srp", "Kol", "Ruj", "Lis", "Stu", "Pro"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "GOTOVO RASPRODANO",
+    "84% schon weg": "84% već prodano",
+    "FANLIEBLING": "OMILJENO",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Cijena ulaznice",
+    "LAST CHANCE TICKET": "Sniženi ulaz · Ulaz i na rasprodane događaje",
+    "LAST MINUTE TICKET": "Redovni ulaz",
+    "DELUXE TICKET": "Valjana ulaznica + Ulaz bez čekanja kroz VIP ulaz",
+    "FAN TICKET": "VIP ulaz + Ekskluzivna kolekcionarska traka + LED vijenac",
+  },
 };
 
 const pt: Translations = {
@@ -241,6 +317,8 @@ const pt: Translations = {
   reservedFor: "Reservado por:",
   soldOutTitle: "ESGOTADO",
   soldOutDesc: "Este evento está esgotado. Confira nossas outras datas!",
+  soldOutBadge: "ESGOTADO",
+  comingSoonLabel: "EM BREVE",
   ticketsLoading: "Carregando ingressos...",
   discountPlaceholder: "Inserir código de desconto",
   discountApply: "Aplicar",
@@ -267,6 +345,18 @@ const pt: Translations = {
   loading: "Carregando...",
   weekdays: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
   monthsShort: ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "QUASE ESGOTADO",
+    "84% schon weg": "84% já vendidos",
+    "FANLIEBLING": "FAVORITO DOS FÃS",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Preço de entrada",
+    "LAST CHANCE TICKET": "Entrada com desconto · Acesso mesmo em eventos esgotados",
+    "LAST MINUTE TICKET": "Entrada regular",
+    "DELUXE TICKET": "Ingresso válido + Entrada sem fila pela entrada VIP",
+    "FAN TICKET": "Entrada VIP + Pulseira colecionável exclusiva + Coroa de LED",
+  },
 };
 
 const en: Translations = {
@@ -278,6 +368,8 @@ const en: Translations = {
   reservedFor: "Reserved for:",
   soldOutTitle: "SOLD OUT",
   soldOutDesc: "This event is unfortunately sold out. Check out our other dates!",
+  soldOutBadge: "SOLD OUT",
+  comingSoonLabel: "COMING SOON",
   ticketsLoading: "Loading tickets...",
   discountPlaceholder: "Enter discount code",
   discountApply: "Apply",
@@ -304,6 +396,18 @@ const en: Translations = {
   loading: "Loading...",
   weekdays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
   monthsShort: ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  badgeMap: {
+    "FAST AUSVERKAUFT": "ALMOST SOLD OUT",
+    "84% schon weg": "84% already gone",
+    "FANLIEBLING": "FAN FAVORITE",
+  },
+  ticketDescMap: {
+    "EARLY BIRD TICKET": "Entry price",
+    "LAST CHANCE TICKET": "Discounted entry · Access even at sold-out events",
+    "LAST MINUTE TICKET": "Regular entry",
+    "DELUXE TICKET": "Valid ticket + Skip-the-line access via VIP entrance",
+    "FAN TICKET": "VIP entrance + Exclusive collectible wristband + LED flower crown",
+  },
 };
 
 const translations: Record<LangCode, Translations> = { de, nl, fr, pl, hr, pt, en };
@@ -334,4 +438,14 @@ export const getCurrencyForCity = (city: string): string => {
     case "pt": return "BRL";
     default: return "EUR";
   }
+};
+
+/* ─── Translate badge from DB (German) to local language ─── */
+export const translateBadge = (badge: string, t: Translations): string => {
+  return t.badgeMap[badge] || badge;
+};
+
+/* ─── Translate ticket description from DB (German) to local language ─── */
+export const translateTicketDesc = (ticketName: string, fallbackDesc: string, t: Translations): string => {
+  return t.ticketDescMap[ticketName] || fallbackDesc;
 };
