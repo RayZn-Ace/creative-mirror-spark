@@ -38,6 +38,7 @@ const defaultTickets: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
+      { id: "earlybird", name: "EARLY BIRD TICKET", description: "Vergünstigter Eintritt zum Frühbucher-Preis", price: "29,99", soldOut: true },
       { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
     ],
   },
@@ -59,6 +60,7 @@ const openAirTickets: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
+      { id: "earlybird", name: "EARLY BIRD TICKET", description: "Vergünstigter Eintritt zum Frühbucher-Preis", price: "24,99", soldOut: true },
       { id: "lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "31,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
     ],
   },
@@ -296,62 +298,106 @@ const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: 
 );
 
 /* ─── Ticket Row ─── */
-const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void }) => (
-  <div className="pp-ticket-item">
-    <div className="hidden sm:flex items-start justify-between gap-4">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h4 className={`pp-ticket-title text-base ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
-          {item.badge && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
-              {item.badge}
-            </span>
-          )}
-        </div>
-        <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
-      </div>
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="text-right">
-          <div className="pp-ticket-price text-base">
-            <span className="text-xs font-normal mr-1">EUR</span>{item.price}
+const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void }) => {
+  if (item.soldOut) {
+    return (
+      <div className="pp-ticket-item relative overflow-hidden" style={{ opacity: 0.55 }}>
+        {/* Diagonal SOLD OUT stripe */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div
+            className="px-12 py-1 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] rotate-[-8deg]"
+            style={{
+              background: "hsl(0 70% 50%)",
+              color: "hsl(0 0% 100%)",
+              boxShadow: "0 0 20px hsl(0 70% 50% / 0.4)",
+            }}
+          >
+            SOLD OUT
           </div>
-          <div className="pp-ticket-tax text-xs">inkl. MwSt.</div>
         </div>
-        {item.soldOut ? (
-          <div className="pp-sold-out w-[88px] text-center">SOLD OUT</div>
-        ) : (
+        {/* Desktop */}
+        <div className="hidden sm:flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h4 className="pp-ticket-title text-base line-through decoration-2" style={{ textDecorationColor: "hsl(0 70% 50% / 0.6)" }}>{item.name}</h4>
+            <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
+          </div>
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="text-right">
+              <div className="pp-ticket-price text-base line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
+                <span className="text-xs font-normal mr-1">EUR</span>{item.price}
+              </div>
+              <div className="pp-ticket-tax text-xs">inkl. MwSt.</div>
+            </div>
+          </div>
+        </div>
+        {/* Mobile */}
+        <div className="sm:hidden space-y-2">
+          <div>
+            <h4 className="pp-ticket-title text-sm line-through decoration-2" style={{ textDecorationColor: "hsl(0 70% 50% / 0.6)" }}>{item.name}</h4>
+            <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="pp-ticket-price text-sm line-through decoration-1" style={{ textDecorationColor: "hsl(0 0% 100% / 0.4)" }}>
+                <span className="text-[10px] font-normal mr-1">EUR</span>{item.price}
+              </div>
+              <div className="pp-ticket-tax">inkl. MwSt.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pp-ticket-item">
+      <div className="hidden sm:flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="pp-ticket-title text-base">{item.name}</h4>
+            {item.badge && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
+                {item.badge}
+              </span>
+            )}
+          </div>
+          <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
+        </div>
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="text-right">
+            <div className="pp-ticket-price text-base">
+              <span className="text-xs font-normal mr-1">EUR</span>{item.price}
+            </div>
+            <div className="pp-ticket-tax text-xs">inkl. MwSt.</div>
+          </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
-        )}
-      </div>
-    </div>
-    <div className="sm:hidden space-y-2">
-      <div>
-        <div className="flex items-center gap-2">
-          <h4 className={`pp-ticket-title text-sm ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
-          {item.badge && (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
-              {item.badge}
-            </span>
-          )}
         </div>
-        <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="sm:hidden space-y-2">
         <div>
-          <div className="pp-ticket-price text-sm">
-            <span className="text-[10px] font-normal mr-1">EUR</span>{item.price}
+          <div className="flex items-center gap-2">
+            <h4 className="pp-ticket-title text-sm">{item.name}</h4>
+            {item.badge && (
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
+                {item.badge}
+              </span>
+            )}
           </div>
-          <div className="pp-ticket-tax">inkl. MwSt.</div>
+          <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
         </div>
-        {item.soldOut ? (
-          <div className="pp-sold-out text-[10px]">SOLD OUT</div>
-        ) : (
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="pp-ticket-price text-sm">
+              <span className="text-[10px] font-normal mr-1">EUR</span>{item.price}
+            </div>
+            <div className="pp-ticket-tax">inkl. MwSt.</div>
+          </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
-        )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ─── Collapsible ─── */
 const InfoAccordion = ({ id, title, content }: { id: string; title: string; content: string }) => {
@@ -462,10 +508,22 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
       </AnimatePresence>
 
       {/* Location info */}
-      <div className="flex items-center gap-2 text-sm sm:text-base font-medium px-1" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-        <MapPin className="w-3.5 h-3.5 shrink-0" />
-        <span>{event.venue} · {event.address}</span>
-      </div>
+      {/* Location info - clickable to Google Maps */}
+      <a
+        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.address)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 text-sm sm:text-base font-medium px-3 py-2.5 rounded-xl transition-all hover:scale-[1.01]"
+        style={{
+          color: "hsl(0 0% 100% / 0.9)",
+          background: "hsl(0 0% 100% / 0.08)",
+          border: "1px solid hsl(0 0% 100% / 0.15)",
+        }}
+      >
+        <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(0 80% 60%)" }} />
+        <span className="flex-1">{event.venue} · {event.address}</span>
+        <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-50" />
+      </a>
 
       {event.soldOut ? (
         <div className="text-center py-8 sm:py-12">
