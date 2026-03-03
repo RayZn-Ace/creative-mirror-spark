@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/pp-header.png";
+import headerImg from "@/assets/gimme-event-header.jpg";
 
 /* ─── Ticket Data ─── */
 interface TicketItem {
@@ -11,6 +11,7 @@ interface TicketItem {
   description: string;
   price: string;
   soldOut: boolean;
+  badge?: string;
 }
 
 interface TicketCategory {
@@ -22,19 +23,19 @@ const ticketData: TicketCategory[] = [
   {
     title: "REGULAR",
     items: [
-      { id: "pp-early", name: "EARLY BIRD TICKET", description: "Vergünstigte Eintrittskarte · bevorzugter Gast · Einlass auch bei ausverkauften Events", price: "11,99", soldOut: false },
+      { id: "gg-lastchance", name: "LAST CHANCE TICKET", description: "Vergünstigter Eintritt · Einlass auch bei ausverkauften Events", price: "36,99", soldOut: false, badge: "FAST AUSVERKAUFT" },
     ],
   },
   {
-    title: "FAST LANE",
+    title: "DELUXE",
     items: [
-      { id: "pp-deluxe", name: "EARLY DELUXE TICKET", description: "Alle Inhalte des Early Bird Tickets + VIP-Eingang (kein Anstehen)", price: "16,99", soldOut: false },
+      { id: "gg-deluxe", name: "DELUXE TICKET", description: "Gültiges Ticket + Einlass ohne Anstehen über den VIP-Eingang", price: "41,99", soldOut: false, badge: "84% schon weg" },
     ],
   },
   {
-    title: "PREMIUM",
+    title: "FAN",
     items: [
-      { id: "pp-premium", name: "PREMIUM TICKET", description: "Alle Inhalte der Eintrittskarte und des Deluxe-Tickets + Premium Stoffband, 5 Knicklichter, 2 süße Shots", price: "21,99", soldOut: false },
+      { id: "gg-fan", name: "FAN TICKET", description: "VIP-Eingang + Exklusives Stoff-Sammelband + LED-Haarkranz", price: "46,99", soldOut: false, badge: "FANLIEBLING" },
     ],
   },
 ];
@@ -44,51 +45,53 @@ const infoSections = [
   {
     id: "eventinfo",
     title: "Eventinformationen",
-    content: `👉 PROJECT PADERBORN - DIE GRÖßTE HAUSPARTY IM CLUB! 🔥
+    content: `🎉 MAMMA MIA PARTY – DAS FANKONZERT! 🎶
 
-❌ MISSION - HAUSVERBOT! ❌
+Bei der Mamma Mia Party feiern wir die größten Songs von ABBA – und zwar gemeinsam mit EUCH! 🎤 ✨
 
-Jeder von uns träumt von dieser einen Party, worüber jeder redet, an die man sich ein Leben lang zurück erinnert und man mit Stolz sagen kann: „ICH WAR DABEI!"
+Von „Dancing Queen" über „Mamma Mia" bis „Waterloo" – wir spielen alle Kult-Hits live vom DJ-Pult zum Mitsingen, Tanzen und Feiern.
 
-📅 Sonntag, 05.04.2025
-📍 Capitol Paderborn – Leostraße 39, 33098 Paderborn
-🕐 Beginn: 22:00 Uhr | VVK: 17:00 Uhr
+📅 Freitag, 10.04.2025
+📍 Baggi / Osho – Raschpl. 7L, 30161 Hannover
+🕐 Beginn: 20:00 Uhr
 
-🍔 GRATIS HAMBURGER
-🍺 BEERPONG-KING mit GRATIS BIER
-🔥 VERRÜCKTER FLAMMENWERFER
-🎉 KONFETTI EXPLOSION, XXL-BALLONS, CO2 EFFECT & vieles Mehr!`,
+🪩 DRESSCODE:
+Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
   },
   {
     id: "einlass",
     title: "Einlassinformationen",
-    content: `✅ Der Gast muss sich ausweisen können (Personalausweis oder Reisepass)
-✅ Einlass ab 16 Jahren
-✅ Unter 18 nur mit gültigem Muttizettel
+    content: `✅ Einlass ab 18 Jahren – Ausnahmen nur nach Absprache mit der Location.
 
-Das Ticket muss nicht ausgedruckt werden, sondern kann digital am Handy vorgezeigt werden. Bitte beim Vorzeigen des QR Codes diesen "größer zoomen".
+✅ Wir starten mit der Show, sobald der größte Teil des Einlasses durch ist. Bis dahin laufen bekannte Partysongs zum Mitsingen.
 
-Mit einem "sauberen & passendem" Outfit und einem normalen "Auftreten" – freuen wir uns mit dir gemeinsam zu feiern.`,
+✅ Der Einlass dauert in der Regel nicht länger als 30 Minuten.
+
+✅ Dein Ticket brauchst du nicht auszudrucken – es reicht digital auf deinem Handy.`,
   },
   {
     id: "promoter",
     title: "Promoter melden",
-    content: "promoter", // special handling
+    content: "promoter",
   },
   {
-    id: "muttizettel",
-    title: "Muttizettel",
-    content: "muttizettel", // special handling
+    id: "whatsapp",
+    title: "WhatsApp Community",
+    content: `👑 LUST AUF FREIKARTEN?
+
+Komm in unsere kostenlose WhatsApp-Gruppe für weitere Infos & Aktionen:
+
+👉 Hier klicken: http://bit.ly/mammamiacommunity`,
   },
 ];
 
-/* ─── Instagram handle (default fallback) ─── */
-const instagramHandle = "@nachtaktiv.events";
-const instagramUrl = `https://instagram.com/${instagramHandle.replace("@", "")}`;
+/* ─── Instagram handle ─── */
+const instagramHandle = "@gimmegimmeparty";
+const instagramUrl = "https://instagram.com/gimmegimmeparty";
 const whatsappNumber = "49123456789";
 
 /* ─── Cart Timer Hook ─── */
-const CART_TIMER_SECONDS = 600; // 10 minutes
+const CART_TIMER_SECONDS = 600;
 
 const useCartTimer = () => {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -137,7 +140,14 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
   <div className="pp-ticket-item">
     <div className="hidden sm:flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
-        <h4 className={`pp-ticket-title text-base ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
+        <div className="flex items-center gap-2">
+          <h4 className={`pp-ticket-title text-base ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
+          {item.badge && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(330 80% 50% / 0.2)", color: "hsl(330 80% 60%)" }}>
+              {item.badge}
+            </span>
+          )}
+        </div>
         <p className="pp-ticket-desc mt-0.5 text-sm">{item.description}</p>
       </div>
       <div className="flex items-center gap-4 shrink-0">
@@ -156,7 +166,14 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
     </div>
     <div className="sm:hidden space-y-2">
       <div>
-        <h4 className={`pp-ticket-title text-sm ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
+        <div className="flex items-center gap-2">
+          <h4 className={`pp-ticket-title text-sm ${item.soldOut ? "sold-out-line" : ""}`}>{item.name}</h4>
+          {item.badge && (
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(330 80% 50% / 0.2)", color: "hsl(330 80% 60%)" }}>
+              {item.badge}
+            </span>
+          )}
+        </div>
         <p className="pp-ticket-desc mt-0.5 text-xs">{item.description}</p>
       </div>
       <div className="flex items-center justify-between">
@@ -176,134 +193,21 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
   </div>
 );
 
-/* ─── Muttizettel Modal Form ─── */
-const MutttizettelForm = ({ onClose }: { onClose: () => void }) => {
-  const [formData, setFormData] = useState({
-    childName: "",
-    childBirthdate: "",
-    parentName: "",
-    parentPhone: "",
-    parentEmail: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: send to backend
-    alert("Muttizettel wurde eingereicht! Du erhältst eine Bestätigung per E-Mail.");
-    onClose();
-  };
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <motion.div
-        className="relative w-full max-w-md rounded-2xl p-6 sm:p-8 z-10"
-        style={{ background: "hsl(0 10% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-      >
-        <button onClick={onClose} className="absolute top-4 right-4 text-white/60 hover:text-white">
-          <X className="w-5 h-5" />
-        </button>
-        <h3 className="text-xl font-black uppercase tracking-wide mb-1" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-          Muttizettel
-        </h3>
-        <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-          Für Gäste unter 18 Jahren. Bitte vollständig ausfüllen.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase mb-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Name des Kindes</label>
-            <input
-              type="text" required maxLength={100}
-              value={formData.childName} onChange={(e) => setFormData({ ...formData, childName: e.target.value })}
-              className="pp-form-input"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase mb-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Geburtsdatum</label>
-            <input
-              type="date" required
-              value={formData.childBirthdate} onChange={(e) => setFormData({ ...formData, childBirthdate: e.target.value })}
-              className="pp-form-input"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase mb-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Name Erziehungsberechtigte/r</label>
-            <input
-              type="text" required maxLength={100}
-              value={formData.parentName} onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-              className="pp-form-input"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase mb-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Telefon Erziehungsberechtigte/r</label>
-            <input
-              type="tel" required maxLength={20}
-              value={formData.parentPhone} onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
-              className="pp-form-input"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase mb-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>E-Mail Erziehungsberechtigte/r</label>
-            <input
-              type="email" required maxLength={255}
-              value={formData.parentEmail} onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
-              className="pp-form-input"
-            />
-          </div>
-          <motion.button
-            type="submit"
-            className="pp-cart-btn mt-2 text-sm"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            MUTTIZETTEL EINREICHEN
-          </motion.button>
-        </form>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-/* ─── Collapsible with special handling ─── */
-const InfoAccordion = ({ id, title, content, onMuttizettelOpen }: { id: string; title: string; content: string; onMuttizettelOpen: () => void }) => {
+/* ─── Collapsible ─── */
+const InfoAccordion = ({ id, title, content }: { id: string; title: string; content: string }) => {
   const [open, setOpen] = useState(false);
-
   const isPromoter = id === "promoter";
-  const isMuttizettel = id === "muttizettel";
-
-  const handleClick = () => {
-    if (isMuttizettel) {
-      onMuttizettelOpen();
-      return;
-    }
-    setOpen(!open);
-  };
 
   return (
     <div className="pp-accordion">
-      <button onClick={handleClick} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
         <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(var(--foreground))" }}>{title}</span>
-        {!isMuttizettel && (
-          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
-            <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0, 70%, 55%)" }} />
-          </motion.div>
-        )}
-        {isMuttizettel && (
-          <span className="text-xs font-bold uppercase px-3 py-1 rounded-lg" style={{ background: "hsl(0, 70%, 50%)", color: "white" }}>
-            Öffnen
-          </span>
-        )}
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
+          <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(330, 80%, 55%)" }} />
+        </motion.div>
       </button>
       <AnimatePresence initial={false}>
-        {open && !isMuttizettel && (
+        {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -351,9 +255,9 @@ const InfoAccordion = ({ id, title, content, onMuttizettelOpen }: { id: string; 
 
 /* ─── Weitere Events ─── */
 const upcomingEvents = [
-  { id: 1, name: "CITY MADNESS", date: "19. April 2025", location: "Bielefeld", image: "" },
-  { id: 2, name: "NEON NIGHTS", date: "03. Mai 2025", location: "Paderborn", image: "" },
-  { id: 3, name: "SUMMER BASH", date: "17. Mai 2025", location: "Dortmund", image: "" },
+  { id: 1, name: "NEUSS", date: "06. März 2025", location: "Neuss" },
+  { id: 2, name: "POTSDAM", date: "06. März 2025", location: "Potsdam" },
+  { id: 3, name: "ST. GALLEN", date: "TBA", location: "St. Gallen" },
 ];
 
 /* ─── Ticket Widget ─── */
@@ -361,7 +265,6 @@ const PPTicketWidget = () => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
-  const [showMuttizettel, setShowMuttizettel] = useState(false);
   const { timeLeft, isActive, startTimer, formatTime } = useCartTimer();
 
   const totalItems = Object.values(quantities).reduce((a, b) => a + b, 0);
@@ -377,122 +280,114 @@ const PPTicketWidget = () => {
   const handleApplyDiscount = () => {
     if (discountCode.trim().length > 0) {
       setDiscountApplied(true);
-      // TODO: validate code against backend
     }
   };
 
   return (
-    <>
+    <div className="space-y-5 sm:space-y-7">
+      {/* Cart Timer */}
       <AnimatePresence>
-        {showMuttizettel && <MutttizettelForm onClose={() => setShowMuttizettel(false)} />}
+        {isActive && timeLeft !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold"
+            style={{
+              background: timeLeft < 60 ? "hsl(330 80% 50% / 0.2)" : "hsl(0 0% 100% / 0.08)",
+              border: `1px solid ${timeLeft < 60 ? "hsl(330 80% 50% / 0.4)" : "hsl(0 0% 100% / 0.12)"}`,
+              color: timeLeft < 60 ? "hsl(330 80% 60%)" : "hsl(0 0% 100% / 0.9)",
+            }}
+          >
+            <Timer className="w-4 h-4" />
+            <span>Reserviert für: {formatTime()}</span>
+          </motion.div>
+        )}
       </AnimatePresence>
 
-      <div className="space-y-5 sm:space-y-7">
-        {/* Cart Timer */}
-        <AnimatePresence>
-          {isActive && timeLeft !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold"
-              style={{
-                background: timeLeft < 60 ? "hsl(0 70% 50% / 0.2)" : "hsl(0 0% 100% / 0.08)",
-                border: `1px solid ${timeLeft < 60 ? "hsl(0 70% 50% / 0.4)" : "hsl(0 0% 100% / 0.12)"}`,
-                color: timeLeft < 60 ? "hsl(0 70% 60%)" : "hsl(0 0% 100% / 0.9)",
-              }}
-            >
-              <Timer className="w-4 h-4" />
-              <span>Reserviert für: {formatTime()}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {ticketData.map((category) => (
-          <div key={category.title}>
-            <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
-            <div>
-              {category.items.map((item) => (
-                <TicketRow
-                  key={item.id}
-                  item={item}
-                  qty={quantities[item.id] || 0}
-                  onQtyChange={(v) => handleQtyChange(item.id, v)}
-                />
-              ))}
-            </div>
+      {ticketData.map((category) => (
+        <div key={category.title}>
+          <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
+          <div>
+            {category.items.map((item) => (
+              <TicketRow
+                key={item.id}
+                item={item}
+                qty={quantities[item.id] || 0}
+                onQtyChange={(v) => handleQtyChange(item.id, v)}
+              />
+            ))}
           </div>
-        ))}
-
-        {/* Rabattcode */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Rabattcode eingeben"
-            value={discountCode}
-            onChange={(e) => { setDiscountCode(e.target.value); setDiscountApplied(false); }}
-            maxLength={30}
-            className="pp-form-input flex-1 text-sm"
-          />
-          <motion.button
-            onClick={handleApplyDiscount}
-            className="px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0"
-            style={{ background: "hsl(0, 70%, 50%)", color: "white" }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Einlösen
-          </motion.button>
         </div>
-        {discountApplied && (
-          <p className="text-xs" style={{ color: "hsl(142, 70%, 55%)" }}>
-            ✓ Code wird beim Checkout geprüft
-          </p>
-        )}
+      ))}
 
-        {/* Cart Button */}
+      {/* Rabattcode */}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          placeholder="Rabattcode eingeben"
+          value={discountCode}
+          onChange={(e) => { setDiscountCode(e.target.value); setDiscountApplied(false); }}
+          maxLength={30}
+          className="pp-form-input flex-1 text-sm"
+        />
         <motion.button
-          className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4"
-          whileHover={{ scale: 1.01 }}
+          onClick={handleApplyDiscount}
+          className="px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0"
+          style={{ background: "hsl(330, 80%, 50%)", color: "white" }}
+          whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
+          Einlösen
         </motion.button>
-
-        {/* Instagram – subtle button, below cart */}
-        <a
-          href={instagramUrl}
-          target="_blank" rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all hover:opacity-100"
-          style={{ color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.12)", background: "hsl(0 0% 100% / 0.04)" }}
-        >
-          <Instagram className="w-3.5 h-3.5" />
-          {instagramHandle}
-        </a>
-
-        {/* Info Accordions */}
-        <div className="space-y-2 pt-2">
-          {infoSections.map((s) => (
-            <InfoAccordion
-              key={s.id}
-              id={s.id}
-              title={s.title}
-              content={s.content}
-              onMuttizettelOpen={() => setShowMuttizettel(true)}
-            />
-          ))}
-        </div>
-
-        {/* Weitere Events Button */}
-        <Link
-          to="/#events"
-          className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02]"
-          style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.8)" }}
-        >
-          Weitere Events entdecken <ArrowRight className="w-4 h-4" />
-        </Link>
       </div>
-    </>
+      {discountApplied && (
+        <p className="text-xs" style={{ color: "hsl(142, 70%, 55%)" }}>
+          ✓ Code wird beim Checkout geprüft
+        </p>
+      )}
+
+      {/* Cart Button */}
+      <motion.button
+        className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4"
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        IN DEN WARENKORB {totalItems > 0 && `(${totalItems})`}
+      </motion.button>
+
+      {/* Instagram */}
+      <a
+        href={instagramUrl}
+        target="_blank" rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all hover:opacity-100"
+        style={{ color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.12)", background: "hsl(0 0% 100% / 0.04)" }}
+      >
+        <Instagram className="w-3.5 h-3.5" />
+        {instagramHandle}
+      </a>
+
+      {/* Info Accordions */}
+      <div className="space-y-2 pt-2">
+        {infoSections.map((s) => (
+          <InfoAccordion
+            key={s.id}
+            id={s.id}
+            title={s.title}
+            content={s.content}
+          />
+        ))}
+      </div>
+
+      {/* Weitere Events Button */}
+      <Link
+        to="/#events"
+        className="flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02]"
+        style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.8)" }}
+      >
+        Weitere Events entdecken <ArrowRight className="w-4 h-4" />
+      </Link>
+    </div>
   );
 };
 
@@ -504,23 +399,29 @@ const PPHeroSection = () => (
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.8, ease: "easeOut" }}
   >
-    {/* Titel testweise ausgeblendet */}
+    <h1
+      className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
+      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}
+    >
+      HANNOVER
+    </h1>
 
-    <p className="text-2xl sm:text-3xl md:text-2xl lg:text-3xl font-bold uppercase tracking-[0.25em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
-      IM CAPITOL
+    <p className="text-lg sm:text-xl md:text-lg lg:text-xl font-bold uppercase tracking-[0.15em] mt-2 sm:mt-3" style={{ color: "hsl(var(--foreground) / 0.8)" }}>
+      MAMMA MIA / ABBA TOUR
     </p>
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(0, 70%, 50%)" }}>
-      <span>05. APRIL</span>
-      <span>AB 22 UHR</span>
-      <span>PADERBORN</span>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-3 sm:mt-4 text-sm sm:text-base font-bold uppercase tracking-wider" style={{ color: "hsl(330, 80%, 55%)" }}>
+      <span>10. APRIL</span>
+      <span>AB 20 UHR</span>
+      <span>HANNOVER</span>
     </div>
 
     <div className="w-full flex justify-center mt-8 sm:mt-12 -mb-4 overflow-visible">
       <img
         src={headerImg}
-        alt="Project Paderborn"
-        className="w-[130%] sm:w-[120%] md:w-[120%] max-w-none"
+        alt="Gimme Gimme Party Hannover"
+        className="w-full rounded-2xl object-cover"
+        style={{ maxHeight: "350px" }}
       />
     </div>
   </motion.div>
@@ -536,7 +437,7 @@ const WeitereEvents = () => (
     transition={{ duration: 0.6 }}
   >
     <h2 className="pp-neon-title text-2xl sm:text-3xl font-black uppercase text-center mb-6 sm:mb-8">
-      Weitere Events in deiner Nähe
+      Weitere Events
     </h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
       {upcomingEvents.map((event) => (
@@ -544,10 +445,10 @@ const WeitereEvents = () => (
           key={event.id}
           className="rounded-2xl overflow-hidden cursor-pointer"
           style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-          whileHover={{ scale: 1.02, borderColor: "hsl(0 70% 50% / 0.4)" }}
+          whileHover={{ scale: 1.02, borderColor: "hsl(330 80% 55% / 0.4)" }}
           transition={{ duration: 0.2 }}
         >
-          <div className="h-32 sm:h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(0 50% 20%) 0%, hsl(0 30% 10%) 100%)" }}>
+          <div className="h-32 sm:h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(220 40% 20%) 0%, hsl(225 35% 12%) 100%)" }}>
             <span className="text-2xl sm:text-3xl font-black uppercase tracking-wide" style={{ color: "hsl(0 0% 100% / 0.3)", fontFamily: "'Orbitron', sans-serif" }}>
               {event.name}
             </span>
@@ -556,6 +457,7 @@ const WeitereEvents = () => (
             <h3 className="text-base sm:text-lg font-bold uppercase" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
               {event.name}
             </h3>
+            <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>MAMMA MIA / ABBA TOUR KONZERT</p>
             <div className="flex items-center gap-3 mt-2 text-xs sm:text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
               <span>{event.date}</span>
               <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{event.location}</span>
@@ -574,8 +476,8 @@ const PPFooter = () => (
       <p>Fragen, Probleme oder Reservierungsanfragen?</p>
       <p>
         Kontaktiere uns:{" "}
-        <a href="mailto:info@nachtaktiv-events.de" className="underline hover:opacity-80 transition-opacity">
-          info@nachtaktiv-events.de
+        <a href="mailto:info@gimmegimmeparty.com" className="underline hover:opacity-80 transition-opacity">
+          info@gimmegimmeparty.com
         </a>
       </p>
     </div>
@@ -585,7 +487,7 @@ const PPFooter = () => (
           powered by smea
         </a>
         <p className="text-[10px] lg:text-xs mt-2 lg:mt-3 max-w-xs lg:max-w-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-          Veranstalter: Nachtaktiv Events. Der Ticketverkauf erfolgt über unsere eigene Plattform.
+          Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
         </p>
       </div>
       <div className="flex flex-wrap gap-4 lg:gap-6 text-xs lg:text-sm">
@@ -599,7 +501,7 @@ const PPFooter = () => (
         powered by smea
       </a>
       <p className="text-[10px] px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-        Veranstalter: Nachtaktiv Events. Der Ticketverkauf erfolgt über unsere eigene Plattform.
+        Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
       </p>
       <div className="flex justify-center gap-4 text-xs">
         <a href="/impressum" className="footer-link">Impressum</a>
@@ -614,7 +516,7 @@ const PPFooter = () => (
 const ProjectPaderborn = () => {
   return (
     <div className="min-h-screen pp-bg">
-      {/* Confetti & Smoke Particles */}
+      {/* Glitter Particles */}
       <div className="pp-confetti-container">
         {Array.from({ length: 12 }, (_, i) => (
           <div key={`c${i}`} className={`pp-confetti pp-confetti--${i + 1}`} />

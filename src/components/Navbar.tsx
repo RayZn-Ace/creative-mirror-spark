@@ -21,7 +21,7 @@ const menuItems: MenuItem[] = [
     icon: Calendar,
     children: [
       { label: "Alle Events", href: "/", icon: Calendar },
-      { label: "Fotos & Galerien", href: "/fotos", icon: Camera },
+      { label: "Fotos & Media", href: "/fotos", icon: Camera },
       { label: "Vergangene Events", href: "/vergangene-events", icon: Calendar },
     ],
   },
@@ -31,7 +31,6 @@ const menuItems: MenuItem[] = [
     children: [
       { label: "Tickets kaufen", href: "/", icon: Ticket },
       { label: "Meine Tickets", href: "/meine-tickets", icon: Ticket },
-      { label: "Muttizettel", href: "/muttizettel", icon: FileText },
     ],
   },
   {
@@ -44,11 +43,10 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: "Zusammenarbeiten",
+    label: "Mitmachen",
     icon: Megaphone,
     children: [
       { label: "Promoter werden", href: "/promoter", icon: Megaphone },
-      { label: "Abiklasse auffüllen", href: "/abiklasse", icon: Users },
       { label: "Jobs", href: "/jobs", icon: FileText },
     ],
   },
@@ -89,7 +87,7 @@ const DesktopDropdown = ({ item }: { item: MenuItem }) => {
             transition={{ duration: 0.15 }}
             className="absolute top-full left-0 mt-1 min-w-[200px] rounded-xl overflow-hidden py-2"
             style={{
-              background: "hsl(0 5% 10%)",
+              background: "hsl(220 50% 12%)",
               border: "1px solid hsl(0 0% 100% / 0.08)",
               boxShadow: "0 20px 50px hsl(0 0% 0% / 0.5)",
               backdropFilter: "blur(20px)",
@@ -103,7 +101,7 @@ const DesktopDropdown = ({ item }: { item: MenuItem }) => {
                 style={{ color: "hsl(0 0% 100% / 0.75)" }}
                 onClick={() => setOpen(false)}
               >
-                {child.icon && <child.icon className="w-4 h-4" style={{ color: "hsl(0 70% 55%)" }} />}
+                {child.icon && <child.icon className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />}
                 {child.label}
               </Link>
             ))}
@@ -131,7 +129,7 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
           />
           <motion.div
             className="fixed top-0 right-0 bottom-0 w-[280px] sm:w-[320px] z-[100] overflow-y-auto"
-            style={{ background: "hsl(0 5% 8%)", borderLeft: "1px solid hsl(0 0% 100% / 0.08)" }}
+            style={{ background: "hsl(220 50% 10%)", borderLeft: "1px solid hsl(0 0% 100% / 0.08)" }}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -161,7 +159,7 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                     }}
                   >
                     <span className="flex items-center gap-3">
-                      {item.icon && <item.icon className="w-4 h-4" style={{ color: "hsl(0 70% 55%)" }} />}
+                      {item.icon && <item.icon className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />}
                       {item.label}
                     </span>
                     <ChevronDown
@@ -187,7 +185,7 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                               style={{ color: "hsl(0 0% 100% / 0.6)" }}
                               onClick={onClose}
                             >
-                              {child.icon && <child.icon className="w-3.5 h-3.5" style={{ color: "hsl(0 70% 55% / 0.6)" }} />}
+                              {child.icon && <child.icon className="w-3.5 h-3.5" style={{ color: "hsl(330 80% 55% / 0.6)" }} />}
                               {child.label}
                             </Link>
                           ))}
@@ -201,7 +199,7 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
               {/* Social links */}
               <div className="pt-6 px-3 flex gap-3">
                 <a
-                  href="https://instagram.com/nachtaktiv.events"
+                  href="https://instagram.com/gimmegimmeparty"
                   target="_blank" rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all"
                   style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)" }}
@@ -237,7 +235,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
@@ -247,7 +244,7 @@ const Navbar = () => {
       <nav
         className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 py-3 transition-all duration-300"
         style={{
-          background: scrolled ? "hsl(0 5% 5% / 0.95)" : "transparent",
+          background: scrolled ? "hsl(220 50% 10% / 0.95)" : "transparent",
           backdropFilter: scrolled ? "blur(20px)" : "none",
           borderBottom: scrolled ? "1px solid hsl(0 0% 100% / 0.06)" : "1px solid transparent",
         }}
@@ -257,12 +254,12 @@ const Navbar = () => {
           <Link to="/" className="flex items-center gap-2">
             <span
               className="text-base sm:text-lg font-black uppercase tracking-wider"
-              style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
+              style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}
             >
-              NACHTAKTIV
+              GIMME GIMME
             </span>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em]" style={{ color: "hsl(0 70% 50%)" }}>
-              EVENTS
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em]" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              PARTY
             </span>
           </Link>
 
@@ -276,7 +273,7 @@ const Navbar = () => {
           {/* Right side */}
           <div className="flex items-center gap-2 sm:gap-3">
             <a
-              href="https://instagram.com/nachtaktiv.events"
+              href="https://instagram.com/gimmegimmeparty"
               target="_blank" rel="noopener noreferrer"
               className="hidden sm:flex w-8 h-8 rounded-full items-center justify-center transition-all hover:scale-110"
               style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
