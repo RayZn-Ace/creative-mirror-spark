@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/mamma-mia-logo.png";
+import headerImg from "@/assets/mamma-mia-logo-clean.png";
 
 /* ─── Event Data ─── */
 interface EventData {
