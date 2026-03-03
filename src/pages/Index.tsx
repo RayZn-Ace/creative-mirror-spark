@@ -136,7 +136,7 @@ const HeroSection = () => {
   const highlightEvent = events.find((e) => e.highlight);
 
   return (
-    <section className="relative min-h-[90vh] sm:min-h-screen flex items-end overflow-hidden">
+    <section className="relative min-h-[55vh] sm:min-h-[65vh] flex items-end overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img src={heroImg} alt="" className="w-full h-full object-cover" />
