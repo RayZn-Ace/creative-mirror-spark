@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { getTranslations, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
 interface CityEvent {
@@ -37,7 +38,7 @@ interface TicketCategory {
 }
 
 /* ─── Helpers ─── */
-const WEEKDAYS_DE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+const WEEKDAYS_DE_UNUSED = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 
 const formatDateDE = (iso: string) => {
   const d = new Date(iso + "T00:00:00");
@@ -54,44 +55,28 @@ const formatDateShort = (iso: string) => {
   return `${dd}.${mm}`;
 };
 
-const getWeekday = (iso: string) => {
+const getWeekday = (iso: string, weekdays?: string[]) => {
   const d = new Date(iso + "T00:00:00");
-  return WEEKDAYS_DE[d.getDay()];
+  const wd = weekdays || WEEKDAYS_DE_UNUSED;
+  return wd[d.getDay()];
 };
 
-const MONTHS_SHORT = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const MONTHS_SHORT_DEFAULT = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-const makeInfoSections = (event: CityEvent) => [
+const makeInfoSections = (event: CityEvent, t: Translations) => [
   {
     id: "eventinfo",
-    title: "Eventinformationen",
-    content: `🎉 MAMMA MIA PARTY – DAS FANKONZERT! 🎶
-
-Bei der Mamma Mia Party feiern wir die größten Songs von ABBA – und zwar gemeinsam mit EUCH! 🎤 ✨
-
-Von „Dancing Queen" über „Mamma Mia" bis „Waterloo" – wir spielen alle Kult-Hits live vom DJ-Pult zum Mitsingen, Tanzen und Feiern.
-
-📅 ${event.weekday}, ${event.date}
-📍 ${event.venue} – ${event.address}
-🕐 Beginn: ${event.time} Uhr
-
-🪩 DRESSCODE:
-Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
+    title: t.eventInfoTitle,
+    content: t.eventInfoContent(event.weekday, event.date, event.venue, event.address, event.time),
   },
   {
     id: "einlass",
-    title: "Einlassinformationen",
-    content: `✅ Einlass ab 18 Jahren – Ausnahmen nur nach Absprache mit der Location.
-
-✅ Wir starten mit der Show, sobald der größte Teil des Einlasses durch ist. Bis dahin laufen bekannte Partysongs zum Mitsingen.
-
-✅ Der Einlass dauert in der Regel nicht länger als 30 Minuten.
-
-✅ Dein Ticket brauchst du nicht auszudrucken – es reicht digital auf deinem Handy.`,
+    title: t.admissionTitle,
+    content: t.admissionContent,
   },
   {
     id: "whatsapp",
-    title: "Freikarten & mehr?",
+    title: t.freeTicketsTitle,
     content: "whatsapp",
   },
 ];
@@ -132,7 +117,7 @@ const useCartTimer = (onExpire?: () => void) => {
 };
 
 /* ─── Event Date Tiles ─── */
-const EventDateTiles = ({ events, selectedId, onSelect }: { events: CityEvent[]; selectedId: string; onSelect: (id: string) => void }) => (
+const EventDateTiles = ({ events, selectedId, onSelect, t }: { events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations }) => (
   <div className="flex gap-1.5 sm:gap-3 pb-2 scrollbar-hide justify-center overflow-visible flex-wrap">
     {events.map((event) => {
       const isSelected = event.id === selectedId;
@@ -155,7 +140,7 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: CityEvent[];
           {event.soldOut && (
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase whitespace-nowrap"
               style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
-              Ausverkauft
+              {t.soldOutLabel}
             </span>
           )}
           {event.openAir && !event.soldOut && (
@@ -166,7 +151,7 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: CityEvent[];
           )}
           <span className="text-base sm:text-lg font-black leading-none" style={{ textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>{event.dateShort.split(".")[0]}</span>
           <span className="text-[10px] sm:text-xs font-extrabold uppercase mt-0.5" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>
-            {MONTHS_SHORT[parseInt(event.dateShort.split(".")[1])]}
+            {t.monthsShort[parseInt(event.dateShort.split(".")[1])]}
           </span>
           <span className="text-[9px] sm:text-[11px] font-bold mt-0.5 leading-tight" style={{ color: "hsl(0 0% 100% / 0.95)" }}>{event.venue.split("/")[0].trim().substring(0, 15)}</span>
         </motion.button>
@@ -185,7 +170,7 @@ const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: 
 );
 
 /* ─── Ticket Row ─── */
-const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void }) => {
+const TicketRow = ({ item, qty, onQtyChange, t }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void; t: Translations }) => {
   if (item.comingSoon) {
     return (
       <div className="pp-ticket-item" style={{ opacity: 0.7 }}>
@@ -231,7 +216,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
         <div className="flex items-center gap-4 shrink-0">
           <div className="text-right">
             <div className="pp-ticket-price text-base"><span className="text-xs font-normal mr-1">EUR</span>{item.price}</div>
-            <div className="pp-ticket-tax text-xs">inkl. MwSt.</div>
+            <div className="pp-ticket-tax text-xs">{t.inclVat}</div>
           </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
         </div>
@@ -247,7 +232,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
         <div className="flex items-center justify-between">
           <div>
             <div className="pp-ticket-price text-sm"><span className="text-[10px] font-normal mr-1">EUR</span>{item.price}</div>
-            <div className="pp-ticket-tax">inkl. MwSt.</div>
+            <div className="pp-ticket-tax">{t.inclVat}</div>
           </div>
           <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
         </div>
@@ -257,7 +242,7 @@ const TicketRow = ({ item, qty, onQtyChange }: { item: TicketItem; qty: number; 
 };
 
 /* ─── Info Accordion ─── */
-const InfoAccordion = ({ id, title, content }: { id: string; title: string; content: string }) => {
+const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; content: string; t: Translations }) => {
   const [open, setOpen] = useState(false);
   const isWhatsapp = content === "whatsapp";
   return (
@@ -274,11 +259,11 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
             <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-3">
               {isWhatsapp ? (
                 <>
-                  <p className="text-sm sm:text-base leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)" }}>Werde Teil unserer WhatsApp-Community.</p>
+                  <p className="text-sm sm:text-base leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)" }}>{t.whatsappDesc}</p>
                   <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide mt-2 hover:scale-[1.02]"
                     style={{ background: "hsl(142, 70%, 45%)", color: "white" }}>
-                    <MessageCircle className="w-4 h-4" /> Jetzt beitreten
+                    <MessageCircle className="w-4 h-4" /> {t.whatsappJoin}
                   </a>
                 </>
               ) : (
@@ -426,7 +411,7 @@ const NearbyEvents = ({ currentSlug, currentCity }: { currentSlug: string; curre
 };
 
 /* ─── Ticket Widget ─── */
-const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; allEvents: CityEvent[]; citySlug: string }) => {
+const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent; allEvents: CityEvent[]; citySlug: string; t: Translations }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
@@ -485,7 +470,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold"
             style={{ background: timeLeft < 60 ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.15)", border: `1px solid ${timeLeft < 60 ? "hsl(0 70% 50% / 0.5)" : "hsl(0 0% 100% / 0.25)"}`, color: "hsl(0 0% 100%)" }}>
-            <Timer className="w-4 h-4" /><span>Reserviert für: {formatTime()}</span>
+            <Timer className="w-4 h-4" /><span>{t.reservedFor} {formatTime()}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -501,11 +486,11 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
 
       {event.soldOut ? (
         <div className="text-center py-8 sm:py-12">
-          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>AUSVERKAUFT</div>
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Dieses Event ist leider ausverkauft. Schau dir unsere anderen Termine an!</p>
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>{t.soldOutTitle}</div>
+          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{t.soldOutDesc}</p>
         </div>
       ) : loadingTickets ? (
-        <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Tickets laden...</div></div>
+        <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{t.ticketsLoading}</div></div>
       ) : (
         <>
           {ticketCategories.map((category) => (
@@ -513,27 +498,27 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
               <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
               <div>
                 {category.items.map((item) => (
-                  <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} />
+                  <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} t={t} />
                 ))}
               </div>
             </div>
           ))}
 
           <div className="flex gap-2">
-            <input type="text" placeholder="Rabattcode eingeben" value={discountCode}
+            <input type="text" placeholder={t.discountPlaceholder} value={discountCode}
               onChange={(e) => { setDiscountCode(e.target.value); setDiscountApplied(false); }} maxLength={30} className="pp-form-input flex-1 text-sm" />
             <motion.button onClick={() => { if (discountCode.trim().length > 0) setDiscountApplied(true); }}
               className="px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0"
               style={{ background: "hsl(0 0% 100% / 0.25)", color: "white", border: "1px solid hsl(0 0% 100% / 0.35)" }}
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              Einlösen
+              {t.discountApply}
             </motion.button>
           </div>
-          {discountApplied && <p className="text-xs" style={{ color: "hsl(0 0% 100%)" }}>✓ Code wird beim Checkout geprüft</p>}
+          {discountApplied && <p className="text-xs" style={{ color: "hsl(0 0% 100%)" }}>{t.discountApplied}</p>}
 
           <motion.button className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4 flex items-center justify-center gap-2"
             whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-            WEITER {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
+            {t.continueBtn} {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
           </motion.button>
         </>
       )}
@@ -546,7 +531,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
 
       <div className="space-y-2 pt-2">
         {event.infoSections.map((s) => (
-          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} />
+          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} />
         ))}
       </div>
 
@@ -556,7 +541,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug }: { event: CityEvent; al
 };
 
 /* ─── Hero ─── */
-const CityHero = ({ cityName, event, events, selectedId, onSelect }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void }) => (
+const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations }) => (
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
     <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
@@ -565,7 +550,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect }: { cityName:
     </h1>
     <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7)" }}>
-      MAMMA MIA / ABBA TOUR
+      {t.tourSubtitle}
     </p>
     {event.openAir && (
       <motion.div className="flex items-center gap-1.5 mt-1.5 px-3 py-1 rounded-full text-xs sm:text-sm font-bold uppercase"
@@ -577,7 +562,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect }: { cityName:
     <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>
       <span>{event.dateShort}</span>
-      <span>AB {event.time} UHR</span>
+      <span>{t.from} {event.time} {t.clock}</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
     <div className="w-full flex justify-center mt-1 sm:mt-6">
@@ -586,41 +571,41 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect }: { cityName:
     {events.length > 1 && (
       <div className="mt-1 sm:mt-6">
         <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
-          Wähle deinen Termin
+          {t.selectDate}
         </h2>
-        <EventDateTiles events={events} selectedId={selectedId} onSelect={onSelect} />
+        <EventDateTiles events={events} selectedId={selectedId} onSelect={onSelect} t={t} />
       </div>
     )}
   </motion.div>
 );
 
 /* ─── Footer ─── */
-const CityFooter = () => (
+const CityFooter = ({ t }: { t: Translations }) => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
     <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100%)" }}>
-      <p>Fragen, Probleme oder Reservierungsanfragen?</p>
-      <p>Kontaktiere uns: <a href="mailto:info@gimmegimmeparty.com" className="underline hover:opacity-80">info@gimmegimmeparty.com</a></p>
+      <p>{t.footerQuestion}</p>
+      <p>{t.footerContact} <a href="mailto:info@gimmegimmeparty.com" className="underline hover:opacity-80">info@gimmegimmeparty.com</a></p>
     </div>
     <div className="hidden md:flex items-start justify-between gap-6 lg:gap-8">
       <div className="flex-1">
         <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100" style={{ color: "hsl(0 0% 100%)" }}>powered by smea</a>
         <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-          Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
+          {t.footerOrganizer}
         </p>
       </div>
       <div className="flex flex-wrap gap-4 lg:gap-6 text-xs lg:text-sm">
-        <a href="/impressum" className="footer-link">Impressum</a>
-        <a href="/datenschutz" className="footer-link">Datenschutzerklärung</a>
-        <a href="/agb" className="footer-link">AGB</a>
+        <a href="/impressum" className="footer-link">{t.imprint}</a>
+        <a href="/datenschutz" className="footer-link">{t.privacy}</a>
+        <a href="/agb" className="footer-link">{t.terms}</a>
       </div>
     </div>
     <div className="md:hidden text-center space-y-3">
       <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 inline-block" style={{ color: "hsl(0 0% 100%)" }}>powered by smea</a>
-      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>Veranstalter: Gimme Gimme Party.</p>
+      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>{t.footerOrganizer}</p>
       <div className="flex justify-center gap-4 text-xs">
-        <a href="/impressum" className="footer-link">Impressum</a>
-        <a href="/datenschutz" className="footer-link">Datenschutz</a>
-        <a href="/agb" className="footer-link">AGB</a>
+        <a href="/impressum" className="footer-link">{t.imprint}</a>
+        <a href="/datenschutz" className="footer-link">{t.privacy}</a>
+        <a href="/agb" className="footer-link">{t.terms}</a>
       </div>
     </div>
   </footer>
@@ -635,6 +620,7 @@ const CityPage = () => {
   const [events, setEvents] = useState<CityEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState("");
   const [showWhatsapp, setShowWhatsapp] = useState(false);
+  const [t, setT] = useState<Translations>(getTranslations("Berlin"));
 
   useEffect(() => {
     if (!citySlug) return;
@@ -651,7 +637,10 @@ const CityPage = () => {
 
       if (!series) { navigate("/", { replace: true }); return; }
 
-      setCityName(series.city || series.title);
+      const city = series.city || series.title;
+      setCityName(city);
+      const translations = getTranslations(city);
+      setT(translations);
 
       // Get events
       const { data: eventsData } = await supabase
@@ -667,7 +656,7 @@ const CityPage = () => {
         id: e.id,
         date: e.date ? formatDateDE(e.date) : "TBA",
         dateShort: e.date ? formatDateShort(e.date) : "TBA",
-        weekday: e.date ? getWeekday(e.date) : "",
+        weekday: e.date ? getWeekday(e.date, translations.weekdays) : "",
         time: e.time || "20:00",
         venue: e.location_name || "TBA",
         address: e.location_address || e.city || "",
@@ -678,7 +667,7 @@ const CityPage = () => {
         infoSections: [],
       }));
 
-      mapped.forEach((m) => { m.infoSections = makeInfoSections(m); });
+      mapped.forEach((m) => { m.infoSections = makeInfoSections(m, translations); });
 
       setEvents(mapped);
       setSelectedEventId(mapped[0].id);
@@ -710,7 +699,7 @@ const CityPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(210 55% 52%)" }}>
-        <div className="text-lg font-bold uppercase tracking-wider animate-pulse" style={{ color: "hsl(0 0% 100%)" }}>Laden...</div>
+        <div className="text-lg font-bold uppercase tracking-wider animate-pulse" style={{ color: "hsl(0 0% 100%)" }}>{t.loading}</div>
       </div>
     );
   }
@@ -731,20 +720,20 @@ const CityPage = () => {
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
-          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} />
+          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} />
+            <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
         </div>
         <div className="md:hidden space-y-4">
           <motion.div key={`hero-${selectedEvent.id}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} />
+            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
           </motion.div>
           <motion.div key={`tickets-${selectedEvent.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-            <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} />
+            <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
         </div>
-        <CityFooter />
+        <CityFooter t={t} />
       </div>
       <AnimatePresence>
         {showWhatsapp && (
