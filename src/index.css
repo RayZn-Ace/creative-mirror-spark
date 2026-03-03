@@ -187,58 +187,60 @@
   .pp-confetti-container {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: 2;
     pointer-events: none;
     overflow: hidden;
   }
 
   .pp-confetti {
     position: absolute;
-    width: 8px;
-    height: 12px;
     opacity: 0;
     animation: pp-confetti-fall linear infinite;
+    box-shadow: 0 0 4px hsl(0 70% 50% / 0.3);
   }
 
-  .pp-confetti--1 { left: 5%; width: 6px; height: 10px; background: hsl(0, 70%, 50%); animation-duration: 9s; animation-delay: 0s; }
-  .pp-confetti--2 { left: 12%; width: 8px; height: 6px; background: hsl(0, 60%, 40%); animation-duration: 11s; animation-delay: 1.5s; }
-  .pp-confetti--3 { left: 22%; width: 5px; height: 8px; background: hsl(0, 80%, 55%); animation-duration: 8s; animation-delay: 0.8s; }
-  .pp-confetti--4 { left: 30%; width: 7px; height: 11px; background: hsl(0, 50%, 35%); animation-duration: 12s; animation-delay: 3s; }
-  .pp-confetti--5 { left: 40%; width: 9px; height: 7px; background: hsl(0, 70%, 50%); animation-duration: 10s; animation-delay: 2s; }
-  .pp-confetti--6 { left: 55%; width: 6px; height: 9px; background: hsl(0, 65%, 45%); animation-duration: 9.5s; animation-delay: 0.5s; }
-  .pp-confetti--7 { left: 65%; width: 8px; height: 5px; background: hsl(0, 75%, 55%); animation-duration: 11.5s; animation-delay: 4s; }
-  .pp-confetti--8 { left: 75%; width: 5px; height: 10px; background: hsl(0, 55%, 40%); animation-duration: 8.5s; animation-delay: 1s; }
-  .pp-confetti--9 { left: 85%; width: 7px; height: 8px; background: hsl(0, 80%, 50%); animation-duration: 10.5s; animation-delay: 2.5s; }
-  .pp-confetti--10 { left: 92%; width: 6px; height: 11px; background: hsl(0, 60%, 45%); animation-duration: 13s; animation-delay: 3.5s; }
-  .pp-confetti--11 { left: 18%; width: 4px; height: 7px; background: hsl(0, 85%, 60%); animation-duration: 7.5s; animation-delay: 5s; }
-  .pp-confetti--12 { left: 48%; width: 10px; height: 6px; background: hsl(0, 50%, 30%); animation-duration: 14s; animation-delay: 1.2s; }
+  .pp-confetti--1 { left: 3%; width: 8px; height: 12px; background: hsl(0, 70%, 50%); animation-duration: 7s; animation-delay: 0s; }
+  .pp-confetti--2 { left: 10%; width: 10px; height: 7px; background: hsl(0, 60%, 45%); animation-duration: 9s; animation-delay: 0.5s; }
+  .pp-confetti--3 { left: 18%; width: 7px; height: 10px; background: hsl(0, 80%, 55%); animation-duration: 6s; animation-delay: 1s; }
+  .pp-confetti--4 { left: 27%; width: 9px; height: 14px; background: hsl(0, 50%, 40%); animation-duration: 10s; animation-delay: 2s; }
+  .pp-confetti--5 { left: 36%; width: 12px; height: 8px; background: hsl(0, 75%, 55%); animation-duration: 8s; animation-delay: 0.3s; }
+  .pp-confetti--6 { left: 45%; width: 8px; height: 11px; background: hsl(0, 65%, 50%); animation-duration: 7.5s; animation-delay: 1.5s; }
+  .pp-confetti--7 { left: 55%; width: 11px; height: 7px; background: hsl(0, 80%, 60%); animation-duration: 9.5s; animation-delay: 3s; }
+  .pp-confetti--8 { left: 64%; width: 7px; height: 13px; background: hsl(0, 55%, 45%); animation-duration: 6.5s; animation-delay: 0.8s; }
+  .pp-confetti--9 { left: 73%; width: 10px; height: 9px; background: hsl(0, 85%, 55%); animation-duration: 8.5s; animation-delay: 2.5s; }
+  .pp-confetti--10 { left: 82%; width: 9px; height: 12px; background: hsl(0, 60%, 50%); animation-duration: 11s; animation-delay: 1.2s; }
+  .pp-confetti--11 { left: 90%; width: 6px; height: 9px; background: hsl(0, 90%, 60%); animation-duration: 5.5s; animation-delay: 4s; }
+  .pp-confetti--12 { left: 96%; width: 11px; height: 8px; background: hsl(0, 50%, 35%); animation-duration: 12s; animation-delay: 0.2s; }
 
   @keyframes pp-confetti-fall {
-    0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.7; }
-    90% { opacity: 0.5; }
-    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    0% { transform: translateY(-5vh) rotate(0deg) scale(1); opacity: 0; }
+    5% { opacity: 0.9; }
+    50% { opacity: 0.8; transform: translateY(50vh) rotate(360deg) scale(0.9); }
+    95% { opacity: 0.6; }
+    100% { transform: translateY(105vh) rotate(720deg) scale(0.7); opacity: 0; }
   }
 
   /* ─── Smoke Wisps ─── */
   .pp-smoke {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, hsl(0 0% 100% / 0.06) 0%, transparent 70%);
-    filter: blur(30px);
+    background: radial-gradient(circle, hsl(0 20% 80% / 0.12) 0%, hsl(0 0% 100% / 0.04) 40%, transparent 70%);
+    filter: blur(25px);
     animation: pp-smoke-rise ease-in-out infinite;
   }
 
-  .pp-smoke--1 { width: 250px; height: 250px; left: 10%; bottom: -100px; animation-duration: 12s; animation-delay: 0s; }
-  .pp-smoke--2 { width: 350px; height: 350px; left: 50%; bottom: -150px; animation-duration: 15s; animation-delay: 3s; }
-  .pp-smoke--3 { width: 200px; height: 200px; left: 75%; bottom: -80px; animation-duration: 10s; animation-delay: 6s; }
-  .pp-smoke--4 { width: 300px; height: 300px; left: 30%; bottom: -120px; animation-duration: 18s; animation-delay: 2s; }
+  .pp-smoke--1 { width: 300px; height: 300px; left: 5%; bottom: -100px; animation-duration: 10s; animation-delay: 0s; }
+  .pp-smoke--2 { width: 400px; height: 400px; left: 40%; bottom: -150px; animation-duration: 13s; animation-delay: 2s; }
+  .pp-smoke--3 { width: 250px; height: 250px; left: 70%; bottom: -80px; animation-duration: 8s; animation-delay: 5s; }
+  .pp-smoke--4 { width: 350px; height: 350px; left: 25%; bottom: -120px; animation-duration: 15s; animation-delay: 1s; }
+  .pp-smoke--5 { width: 280px; height: 280px; left: 85%; bottom: -90px; animation-duration: 11s; animation-delay: 3.5s; }
 
   @keyframes pp-smoke-rise {
     0% { transform: translateY(0) scale(1); opacity: 0; }
-    15% { opacity: 0.4; }
-    50% { opacity: 0.2; transform: translateY(-40vh) scale(1.5); }
-    100% { transform: translateY(-80vh) scale(2); opacity: 0; }
+    10% { opacity: 0.6; }
+    40% { opacity: 0.35; transform: translateY(-30vh) scale(1.4); }
+    70% { opacity: 0.15; transform: translateY(-55vh) scale(1.8); }
+    100% { transform: translateY(-80vh) scale(2.2); opacity: 0; }
   }
 
   .pp-ticket-item {
