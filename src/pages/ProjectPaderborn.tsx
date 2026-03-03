@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/gimme-event-header.jpg";
+import headerImg from "@/assets/mamma-mia-banner.png";
 
 /* ─── Event Data ─── */
 interface EventData {
@@ -250,19 +250,19 @@ const useCartTimer = (onExpire?: () => void) => {
 
 /* ─── Event Date Tiles ─── */
 const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[]; selectedId: string; onSelect: (id: string) => void }) => (
-  <div className="flex gap-2 sm:gap-3 pb-2 scrollbar-hide justify-center flex-wrap overflow-visible">
+  <div className="flex gap-1.5 sm:gap-3 pb-2 scrollbar-hide justify-center overflow-visible">
     {events.map((event) => {
       const isSelected = event.id === selectedId;
       return (
         <motion.button
           key={event.id}
           onClick={() => onSelect(event.id)}
-          className="relative flex flex-col items-center px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-center shrink-0 transition-all"
+          className="relative flex flex-col items-center px-2 sm:px-4 py-1.5 sm:py-3 rounded-xl text-center shrink-0 transition-all"
           style={{
             background: isSelected ? "hsl(0 0% 100% / 0.3)" : event.soldOut ? "hsl(0 0% 100% / 0.05)" : "hsl(0 0% 100% / 0.1)",
             border: `2px solid ${isSelected ? "hsl(0 0% 100% / 0.7)" : "hsl(0 0% 100% / 0.2)"}`,
             color: "hsl(0 0% 100%)",
-            minWidth: "72px",
+            minWidth: "48px",
             opacity: event.soldOut ? 0.6 : 1,
           }}
           whileHover={{ scale: 1.05 }}
@@ -286,11 +286,11 @@ const EventDateTiles = ({ events, selectedId, onSelect }: { events: EventData[];
               <Sun className="w-2.5 h-2.5" />
             </span>
           )}
-          <span className="text-base sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
-          <span className="text-[10px] sm:text-xs font-medium uppercase opacity-80 mt-0.5">
+          <span className="text-sm sm:text-lg font-black leading-none">{event.dateShort.split(".")[0]}</span>
+          <span className="text-[9px] sm:text-xs font-medium uppercase opacity-80 mt-0.5">
             {["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][parseInt(event.dateShort.split(".")[1])]}
           </span>
-          <span className="text-[9px] sm:text-[10px] opacity-60 mt-0.5">{event.venue.split("/")[0].trim()}</span>
+          <span className="text-[8px] sm:text-[10px] opacity-60 mt-0.5 leading-tight">{event.venue.split("/")[0].trim()}</span>
         </motion.button>
       );
     })}
@@ -682,17 +682,16 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-8 sm:mt-12 overflow-visible">
+    <div className="w-full flex justify-center mt-4 sm:mt-12 overflow-visible">
       <img
         src={headerImg}
         alt="Gimme Gimme Party Hannover"
-        className="w-full rounded-2xl object-cover"
-        style={{ maxHeight: "350px" }}
+        className="w-full rounded-2xl object-cover max-h-[180px] sm:max-h-[350px]"
       />
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
-    <div className="mt-6 sm:mt-8">
+    <div className="mt-3 sm:mt-8">
       <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
         Wähle deinen Termin
       </h2>
@@ -777,7 +776,7 @@ const ProjectPaderborn = () => {
         </div>
 
         {/* Mobile: stacked */}
-        <div className="md:hidden space-y-6">
+        <div className="md:hidden space-y-4">
           <motion.div
             key={`hero-${selectedEvent.id}`}
             initial={{ opacity: 0, y: -20 }}
