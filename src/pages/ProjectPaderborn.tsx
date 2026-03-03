@@ -530,7 +530,7 @@ const PPTicketWidget = ({ event }: { event: EventData }) => {
 };
 
 /* ─── Hero Section ─── */
-const PPHeroSection = ({ event }: { event: EventData }) => (
+const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: EventData; selectedEventId: string; onSelectEvent: (id: string) => void }) => (
   <motion.div
     className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }}
@@ -566,13 +566,21 @@ const PPHeroSection = ({ event }: { event: EventData }) => (
       <span>{event.city.toUpperCase()}</span>
     </div>
 
-    <div className="w-full flex justify-center mt-8 sm:mt-12 -mb-4 overflow-visible">
+    <div className="w-full flex justify-center mt-8 sm:mt-12 overflow-visible">
       <img
         src={headerImg}
         alt="Gimme Gimme Party Hannover"
         className="w-full rounded-2xl object-cover"
         style={{ maxHeight: "350px" }}
       />
+    </div>
+
+    {/* Event Date Tiles - below the logo/header image */}
+    <div className="mt-6 sm:mt-8">
+      <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+        Wähle deinen Termin
+      </h2>
+      <EventDateTiles events={events} selectedId={selectedEventId} onSelect={onSelectEvent} />
     </div>
   </motion.div>
 );
@@ -639,17 +647,9 @@ const ProjectPaderborn = () => {
         <div className="pp-smoke pp-smoke--5" />
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* Event Date Tiles - above everything */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            Wähle deinen Termin
-          </h2>
-          <EventDateTiles events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} />
-        </div>
-
         {/* Desktop: two columns */}
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
-          <PPHeroSection event={selectedEvent} />
+          <PPHeroSection event={selectedEvent} selectedEventId={selectedEventId} onSelectEvent={setSelectedEventId} />
           <motion.div
             key={selectedEvent.id}
             initial={{ opacity: 0, x: 60 }}
@@ -668,7 +668,7 @@ const ProjectPaderborn = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <PPHeroSection event={selectedEvent} />
+            <PPHeroSection event={selectedEvent} selectedEventId={selectedEventId} onSelectEvent={setSelectedEventId} />
           </motion.div>
           <motion.div
             key={`tickets-${selectedEvent.id}`}
