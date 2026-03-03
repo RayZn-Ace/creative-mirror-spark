@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Instagram, PartyPopper, Users, Music, Star } from "lucide-react";
 
 const Abiklasse = () => (
-  <PageLayout title="Abiklasse anfragen" subtitle="Euer Abiball oder Abistreich mit uns">
+  <PageLayout title="Abiklasse auffüllen" subtitle="Euer Abiball oder Abistreich mit uns">
     <div className="space-y-8">
       <p className="text-base sm:text-lg" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
         Ihr plant euren <strong style={{ color: "hsl(0 0% 100%)" }}>Abiball, Abistreich oder eine Stufenparty</strong>? Wir organisieren für euch eine unvergessliche Nacht – komplett mit Sound, Licht, Konfetti und allem was dazugehört!
