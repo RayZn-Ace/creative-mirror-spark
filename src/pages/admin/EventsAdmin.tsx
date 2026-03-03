@@ -84,7 +84,7 @@ const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any)
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-1"
-      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
     />
   </div>
 );
@@ -410,7 +410,7 @@ const EventEditView = ({
                   value={editing.tag || "Konzert"}
                   onChange={(e) => setEditing({ ...editing, tag: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
                 >
                   <option value="Konzert">Konzert</option>
                   <option value="Party">Party</option>
@@ -552,7 +552,7 @@ const EventEditView = ({
                 value={editing.series_id || ""}
                 onChange={(e) => setEditing({ ...editing, series_id: e.target.value || null })}
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
               >
                 <option value="">Keine Serie</option>
                 {seriesOptions.map((s) => (
@@ -605,7 +605,7 @@ const EventEditView = ({
                 value={editing.status || "draft"}
                 onChange={(e) => setEditing({ ...editing, status: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
               >
                 <option value="draft">Entwurf</option>
                 <option value="published">Veröffentlicht</option>
