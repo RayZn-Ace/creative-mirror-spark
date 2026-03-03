@@ -585,15 +585,18 @@ const EventEditView = ({
                   type="number"
                   placeholder={editing.service_fee_type === "percent" ? "z.B. 10" : "z.B. 2.50"}
                 />
-                <Field
-                  label="MwSt. (%)"
-                  value={editing.service_fee_vat}
-                  onChange={(v: string) => setEditing({ ...editing, service_fee_vat: parseFloat(v) || 0 })}
-                  type="number"
-                  placeholder="z.B. 19"
-                />
               </div>
             )}
+          </Section>
+
+          <Section title="MwSt." icon={Ticket}>
+            <Field
+              label="MwSt.-Satz (%)"
+              value={editing.service_fee_vat}
+              onChange={(v: string) => setEditing({ ...editing, service_fee_vat: parseFloat(v) || 0 })}
+              type="number"
+              placeholder="z.B. 19"
+            />
           </Section>
         </div>
       </div>
