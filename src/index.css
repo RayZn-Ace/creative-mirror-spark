@@ -252,23 +252,26 @@
   }
 
   .pp-ticket-title {
-    @apply text-sm sm:text-base font-bold uppercase;
+    @apply text-sm sm:text-base font-extrabold uppercase;
     color: hsl(0 0% 100%);
+    text-shadow: 0 1px 4px hsl(210 60% 20% / 0.4);
   }
 
   .pp-ticket-desc {
-    @apply text-xs sm:text-sm leading-relaxed;
-    color: hsl(0 0% 100% / 0.8);
+    @apply text-xs sm:text-sm leading-relaxed font-medium;
+    color: hsl(0 0% 100% / 0.9);
+    text-shadow: 0 1px 3px hsl(210 60% 20% / 0.3);
   }
 
   .pp-ticket-price {
-    @apply text-sm sm:text-base font-bold;
+    @apply text-sm sm:text-base font-extrabold;
     color: hsl(0 0% 100%);
+    text-shadow: 0 1px 4px hsl(210 60% 20% / 0.4);
   }
 
   .pp-ticket-tax {
-    @apply text-[10px] sm:text-xs;
-    color: hsl(0 0% 100% / 0.7);
+    @apply text-[10px] sm:text-xs font-medium;
+    color: hsl(0 0% 100% / 0.85);
   }
 
   .pp-sold-out {
@@ -277,9 +280,9 @@
   }
 
   .pp-category-title {
-    @apply text-sm sm:text-base font-extrabold uppercase tracking-widest;
+    @apply text-sm sm:text-base font-black uppercase tracking-widest;
     color: hsl(0 0% 100%);
-    opacity: 0.9;
+    text-shadow: 0 1px 6px hsl(210 60% 20% / 0.4);
   }
 
   .pp-qty-btn {
@@ -317,14 +320,14 @@
   }
 
   .pp-accordion {
-    background: hsl(0 0% 100% / 0.12);
-    border: 1px solid hsl(0 0% 100% / 0.2);
+    background: hsl(0 0% 100% / 0.15);
+    border: 1px solid hsl(0 0% 100% / 0.25);
     backdrop-filter: blur(8px);
     @apply rounded-xl overflow-hidden;
   }
 
   .pp-accordion:hover {
-    background: hsl(0 0% 100% / 0.18);
+    background: hsl(0 0% 100% / 0.22);
   }
 
   .pp-whatsapp-btn {

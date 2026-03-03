@@ -735,12 +735,12 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
   >
     <h1
       className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
-      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
+      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 10px hsl(210 60% 20% / 0.5)" }}
     >
       HANNOVER
     </h1>
 
-    <p className="text-sm sm:text-lg md:text-xl font-bold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+    <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 60% 20% / 0.4)" }}>
       MAMMA MIA / ABBA TOUR
     </p>
 
@@ -756,7 +756,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
       </motion.div>
     )}
 
-    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[10px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+    <div className="flex items-center justify-center gap-4 sm:gap-8 mt-1.5 sm:mt-4 text-[11px] sm:text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 60% 20% / 0.3)" }}>
       <span>{event.date.slice(0, 5).replace(".", ". ")}</span>
       <span>AB {event.time} UHR</span>
       <span>{event.city.toUpperCase()}</span>
