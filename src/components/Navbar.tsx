@@ -48,7 +48,7 @@ const menuItems: MenuItem[] = [
     icon: Megaphone,
     children: [
       { label: "Promoter werden", href: "/promoter", icon: Megaphone },
-      { label: "Abiklasse anfragen", href: "/abiklasse", icon: Users },
+      { label: "Abiklasse auffüllen", href: "/abiklasse", icon: Users },
       { label: "Jobs", href: "/jobs", icon: FileText },
     ],
   },
