@@ -521,7 +521,6 @@ const PPHeroSection = () => (
         src={headerImg}
         alt="Project Paderborn"
         className="w-[130%] sm:w-[120%] md:w-[120%] max-w-none"
-        style={{ transform: "translateX(-50%)", position: "relative", left: "50%" }}
       />
     </div>
   </motion.div>
