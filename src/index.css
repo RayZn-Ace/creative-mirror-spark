@@ -326,14 +326,14 @@
   }
 
   .pp-accordion {
-    background: hsl(210 50% 20% / 0.55);
-    border: 1px solid hsl(0 0% 100% / 0.3);
+    background: hsl(0 0% 100% / 0.2);
+    border: 1px solid hsl(0 0% 100% / 0.35);
     backdrop-filter: blur(12px);
     @apply rounded-xl overflow-hidden;
   }
 
   .pp-accordion:hover {
-    background: hsl(210 50% 20% / 0.65);
+    background: hsl(0 0% 100% / 0.28);
   }
 
   .pp-whatsapp-btn {
