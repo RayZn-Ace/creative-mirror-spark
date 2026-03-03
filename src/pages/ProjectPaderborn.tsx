@@ -516,11 +516,14 @@ const PPHeroSection = () => (
       <span>PADERBORN</span>
     </div>
 
-    <img
-      src={headerImg}
-      alt="Project Paderborn"
-      className="w-[130%] sm:w-[120%] md:w-[120%] max-w-none mx-auto mt-8 sm:mt-12 -mb-4"
-    />
+    <div className="w-full flex justify-center mt-8 sm:mt-12 -mb-4 overflow-visible">
+      <img
+        src={headerImg}
+        alt="Project Paderborn"
+        className="w-[130%] sm:w-[120%] md:w-[120%] max-w-none"
+        style={{ transform: "translateX(-50%)", position: "relative", left: "50%" }}
+      />
+    </div>
   </motion.div>
 );
 
