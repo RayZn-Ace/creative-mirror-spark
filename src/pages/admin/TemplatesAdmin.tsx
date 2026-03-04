@@ -44,8 +44,8 @@ type EmailBlock =
   | { type: "text"; id: string; content: string }
   | { type: "heading"; id: string; content: string }
   | { type: "divider"; id: string }
-  | { type: "event_highlight"; id: string; title: string; date: string; time: string; location: string; image_url: string }
-  | { type: "event_list"; id: string; heading: string; events: Array<{ title: string; date: string; location: string }> }
+  | { type: "event_highlight"; id: string; title: string; date: string; time: string; location: string; image_url: string; city_based?: boolean }
+  | { type: "event_list"; id: string; heading: string; events: Array<{ title: string; date: string; location: string }>; city_based?: boolean }
   | { type: "cta_button"; id: string; text: string; url: string }
   | { type: "image"; id: string; url: string; alt: string }
   | { type: "spacer"; id: string; height: number };
@@ -431,34 +431,28 @@ const EmailTab = () => {
   };
 
   const magicFillHighlight = async (blockId: string) => {
-    const events = await loadEvents();
-    const now = new Date().toISOString().split("T")[0];
-    const next = events.find(e => e.date && e.date >= now) || events[0];
-    if (!next) { toast.error("Keine Events gefunden"); return; }
     updateBlock(blockId, {
-      title: next.title,
-      date: next.date ? format(new Date(next.date), "dd.MM.yyyy") : "",
-      time: next.time || "",
-      location: next.location_name || "",
-      image_url: next.image_url || "",
+      title: "{{next_event_title}}",
+      date: "{{next_event_date}}",
+      time: "{{next_event_time}}",
+      location: "{{next_event_location}}",
+      image_url: "{{next_event_image}}",
+      city_based: true,
     });
-    toast.success(`✨ "${next.title}" eingefügt`);
+    toast.success("✨ Dynamisch – zeigt das nächste Event in der Stadt des Empfängers");
   };
 
   const magicFillList = async (blockId: string) => {
-    const events = await loadEvents();
-    const now = new Date().toISOString().split("T")[0];
-    const upcoming = events.filter(e => e.date && e.date >= now).slice(0, 6);
-    if (upcoming.length === 0) { toast.error("Keine kommenden Events gefunden"); return; }
     updateBlock(blockId, {
-      heading: "Unsere nächsten Events",
-      events: upcoming.map(e => ({
-        title: e.title,
-        date: e.date ? format(new Date(e.date), "dd.MM.yyyy") : "",
-        location: e.location_name || "",
-      })),
+      heading: "Events in deiner Stadt",
+      city_based: true,
+      events: [
+        { title: "{{event_1_title}}", date: "{{event_1_date}}", location: "{{event_1_location}}" },
+        { title: "{{event_2_title}}", date: "{{event_2_date}}", location: "{{event_2_location}}" },
+        { title: "{{event_3_title}}", date: "{{event_3_date}}", location: "{{event_3_location}}" },
+      ],
     });
-    toast.success(`✨ ${upcoming.length} Events eingefügt`);
+    toast.success("✨ Dynamisch – zeigt Events aus der Stadt des Empfängers");
   };
 
   useEffect(() => {
@@ -554,13 +548,24 @@ const EmailTab = () => {
       case "event_highlight":
         return wrapper(
           <div className="space-y-2">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              {block.city_based && (
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                  style={{ background: "hsl(280 80% 55% / 0.15)", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.2)" }}>
+                  🏙️ Personalisiert nach Stadt
+                </span>
+              )}
               <button onClick={() => magicFillHighlight(block.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105 ml-auto"
                 style={{ background: "linear-gradient(135deg, hsl(280 80% 55% / 0.2), hsl(330 80% 55% / 0.2))", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.3)" }}>
-                <Sparkles className="w-3 h-3" /> Magic – Nächstes Event laden
+                <Sparkles className="w-3 h-3" /> Magic – Events nach Stadt
               </button>
             </div>
+            {block.city_based && (
+              <div className="text-[10px] px-2 py-1.5 rounded-lg" style={{ background: "hsl(280 80% 55% / 0.08)", color: "hsl(280 80% 65% / 0.8)" }}>
+                💡 Zeigt automatisch das nächste Event in der Stadt des Empfängers. Falls kein Event in seiner Stadt → nächstgelegenes Event.
+              </div>
+            )}
             <input type="text" value={block.title} onChange={(e) => updateBlock(block.id, { title: e.target.value })} placeholder="Event-Titel" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
             <div className="grid grid-cols-3 gap-2">
               <input type="text" value={block.date} onChange={(e) => updateBlock(block.id, { date: e.target.value })} placeholder="Datum" className="text-sm px-3 py-2 rounded-lg" style={inputStyle} />
@@ -578,9 +583,20 @@ const EmailTab = () => {
               <button onClick={() => magicFillList(block.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105 shrink-0"
                 style={{ background: "linear-gradient(135deg, hsl(280 80% 55% / 0.2), hsl(330 80% 55% / 0.2))", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.3)" }}>
-                <Sparkles className="w-3 h-3" /> Magic – Alle Events laden
+                <Sparkles className="w-3 h-3" /> Magic – Events nach Stadt
               </button>
             </div>
+            {block.city_based && (
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold"
+                  style={{ background: "hsl(280 80% 55% / 0.15)", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.2)" }}>
+                  🏙️ Personalisiert nach Stadt
+                </span>
+                <span className="text-[10px]" style={{ color: "hsl(280 80% 65% / 0.7)" }}>
+                  Zeigt Events aus der Stadt des Empfängers
+                </span>
+              </div>
+            )}
             {block.events.map((ev, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <input type="text" value={ev.title} onChange={(e) => { const evs = [...block.events]; evs[i] = { ...evs[i], title: e.target.value }; updateBlock(block.id, { events: evs }); }}
@@ -637,16 +653,33 @@ const EmailTab = () => {
       case "event_highlight":
         return (
           <div key={block.id} style={{ background: tpl.card_bg, borderRadius: "10px", padding: "14px", marginBottom: "12px", borderLeft: `3px solid ${tpl.accent_color}` }}>
-            {block.image_url && <img src={block.image_url} alt="" style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", objectFit: "cover" }} />}
-            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title}</div>
-            <div style={{ fontSize: "11px", color: tpl.text_color + "99", marginTop: "4px" }}>{block.date} · {block.time} · {block.location}</div>
+            {block.city_based && (
+              <div style={{ fontSize: "9px", fontWeight: 700, color: tpl.accent_color, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏙️ Personalisiert nach Stadt des Empfängers</div>
+            )}
+            {block.image_url && !block.image_url.startsWith("{{") && <img src={block.image_url} alt="" style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", objectFit: "cover" }} />}
+            {block.image_url && block.image_url.startsWith("{{") && <div style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", background: tpl.accent_color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color }}>📷 Event-Bild</div>}
+            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title.startsWith("{{") ? "Mamma Mia Party (Beispiel)" : block.title}</div>
+            <div style={{ fontSize: "11px", color: tpl.text_color + "99", marginTop: "4px" }}>{block.date.startsWith("{{") ? "15.03.2026" : block.date} · {block.time.startsWith("{{") ? "22:00" : block.time} · {block.location.startsWith("{{") ? "Paderborn" : block.location}</div>
           </div>
         );
       case "event_list":
         return (
           <div key={block.id} style={{ marginBottom: "12px" }}>
+            {block.city_based && (
+              <div style={{ fontSize: "9px", fontWeight: 700, color: tpl.accent_color, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏙️ Personalisiert nach Stadt</div>
+            )}
             <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>{block.heading}</div>
-            {block.events.map((ev, i) => (
+            {block.city_based ? (
+              <>
+                {["Mamma Mia Party", "City Madness", "Neon Nights"].map((t, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{t}</span>
+                    <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>Beispiel · {{city: "Paderborn"}["city"]}</span>
+                  </div>
+                ))}
+                <div style={{ fontSize: "9px", color: tpl.text_color + "66", marginTop: "4px", fontStyle: "italic" }}>Vorschau – wird beim Versand mit echten Events befüllt</div>
+              </>
+            ) : block.events.map((ev, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
                 <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{ev.title}</span>
                 <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>{ev.date} · {ev.location}</span>
