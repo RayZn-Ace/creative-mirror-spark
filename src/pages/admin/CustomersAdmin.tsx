@@ -52,6 +52,7 @@ const CustomersAdmin = () => {
   const [sortField, setSortField] = useState<SortField>("lastOrder");
   const [sortAsc, setSortAsc] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [cityFilter, setCityFilter] = useState<string>("all");
 
   useEffect(() => {
     const load = async () => {
@@ -96,6 +97,36 @@ const CustomersAdmin = () => {
     return Array.from(map.values());
   }, [orders]);
 
+  const eventMap = useMemo(() => {
+    const m = new Map<string, EventInfo>();
+    events.forEach((e) => m.set(e.id, e));
+    return m;
+  }, [events]);
+
+  const getCustomerCitiesSet = (customer: Customer): Set<string> => {
+    const cities = new Set<string>();
+    customer.orders.forEach((o) => {
+      if (o.event_id && o.status === "paid") {
+        const city = eventMap.get(o.event_id)?.city;
+        if (city) cities.add(city);
+      }
+    });
+    return cities;
+  };
+
+  const allCities = useMemo(() => {
+    const cities = new Set<string>();
+    customers.forEach((c) => {
+      c.orders.forEach((o) => {
+        if (o.event_id) {
+          const city = eventMap.get(o.event_id)?.city;
+          if (city) cities.add(city);
+        }
+      });
+    });
+    return Array.from(cities).sort();
+  }, [customers, eventMap]);
+
   const filteredCustomers = useMemo(() => {
     let result = customers;
     if (search.trim()) {
@@ -112,6 +143,9 @@ const CustomersAdmin = () => {
         c.orders.some((o) => o.status === statusFilter)
       );
     }
+    if (cityFilter !== "all") {
+      result = result.filter((c) => getCustomerCitiesSet(c).has(cityFilter));
+    }
     result.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -123,13 +157,7 @@ const CustomersAdmin = () => {
       return sortAsc ? cmp : -cmp;
     });
     return result;
-  }, [customers, search, sortField, sortAsc, statusFilter]);
-
-  const eventMap = useMemo(() => {
-    const m = new Map<string, EventInfo>();
-    events.forEach((e) => m.set(e.id, e));
-    return m;
-  }, [events]);
+  }, [customers, search, sortField, sortAsc, statusFilter, cityFilter, eventMap]);
 
   const getEventTitle = (eventId: string | null) => {
     if (!eventId) return "–";
@@ -137,14 +165,7 @@ const CustomersAdmin = () => {
   };
 
   const getCustomerCities = (customer: Customer): string[] => {
-    const cities = new Set<string>();
-    customer.orders.forEach((o) => {
-      if (o.event_id && o.status === "paid") {
-        const city = eventMap.get(o.event_id)?.city;
-        if (city) cities.add(city);
-      }
-    });
-    return Array.from(cities).sort();
+    return Array.from(getCustomerCitiesSet(customer)).sort();
   };
 
   const handleSort = (field: SortField) => {
@@ -234,6 +255,19 @@ const CustomersAdmin = () => {
           <option value="pending" style={{ background: "hsl(220 50% 10%)" }}>Nur ausstehend</option>
           <option value="failed" style={{ background: "hsl(220 50% 10%)" }}>Nur fehlgeschlagen</option>
         </select>
+        {allCities.length > 0 && (
+          <select
+            value={cityFilter}
+            onChange={(e) => setCityFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg text-sm"
+            style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+          >
+            <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
+            {allCities.map((city) => (
+              <option key={city} value={city} style={{ background: "hsl(220 50% 10%)" }}>{city}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Sort buttons */}
