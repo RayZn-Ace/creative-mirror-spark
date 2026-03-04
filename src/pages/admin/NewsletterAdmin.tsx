@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail, Send, Users, CheckCircle, AlertCircle, Loader2, Filter, Eye,
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
-  ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic,
+  ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -203,6 +203,7 @@ const NewsletterAdmin = () => {
   const [preview, setPreview] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showRecipients, setShowRecipients] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -338,9 +339,9 @@ ${bodyContent}
         Newsletter
       </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Left: Editor */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4">
           {/* From */}
           <div className="rounded-2xl p-5 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
             <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Absender</span>
@@ -362,129 +363,118 @@ ${bodyContent}
             <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="z.B. Neues Event: Summer Bash 2025 🎉" className="w-full px-3 py-2.5 rounded-lg text-sm" style={inputStyle} />
           </div>
 
-          {/* Toggle Editor/Preview */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPreview(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-              style={{ background: !preview ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)", color: !preview ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}
-            >
-              <Type className="w-3.5 h-3.5" /> Editor
-            </button>
-            <button
-              onClick={() => setPreview(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-              style={{ background: preview ? "hsl(215 90% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)", color: preview ? "hsl(215 90% 55%)" : "hsl(0 0% 100% / 0.4)" }}
-            >
-              <Eye className="w-3.5 h-3.5" /> Vorschau
-            </button>
+          {/* Blocks */}
+          <div className="space-y-2">
+            {blocks.map((block, idx) => {
+              const isSelected = selectedBlock === block.id;
+              const meta = blockLabel(block.type);
+              const Icon = meta.icon;
+              return (
+                <motion.div
+                  key={block.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="rounded-xl overflow-hidden"
+                  style={{
+                    background: "hsl(0 0% 100% / 0.04)",
+                    border: `1px solid ${isSelected ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
+                  }}
+                >
+                  <div
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/[0.02] transition-all"
+                    onClick={() => setSelectedBlock(isSelected ? null : block.id)}
+                  >
+                    <GripVertical className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
+                    <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(330 80% 55% / 0.6)" }} />
+                    <span className="text-xs font-bold flex-1" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{meta.label}</span>
+                    <div className="flex items-center gap-0.5">
+                      <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, -1); }} disabled={idx === 0} className="p-1 rounded hover:bg-white/[0.05] disabled:opacity-20" style={{ color: "hsl(0 0% 100% / 0.3)" }}><ChevronUp className="w-3 h-3" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 1); }} disabled={idx === blocks.length - 1} className="p-1 rounded hover:bg-white/[0.05] disabled:opacity-20" style={{ color: "hsl(0 0% 100% / 0.3)" }}><ChevronDown className="w-3 h-3" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.5)" }}><Trash2 className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                        <div className="px-3 pb-3 pt-1" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                          <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+
+            {/* Add block */}
+            <div className="relative">
+              <button
+                onClick={() => setShowAddMenu(!showAddMenu)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all hover:bg-white/[0.03]"
+                style={{ border: "2px dashed hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.3)" }}
+              >
+                <Plus className="w-4 h-4" /> Block hinzufügen
+              </button>
+              <AnimatePresence>
+                {showAddMenu && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute z-10 top-full mt-1 left-0 right-0 rounded-xl overflow-hidden shadow-xl" style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                    <div className="grid grid-cols-3 gap-1 p-2">
+                      {BLOCK_TYPES.map(({ type, label, icon: I }) => (
+                        <button key={type} onClick={() => addBlock(type)} className="flex flex-col items-center gap-1.5 py-3 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white/[0.06] transition-all" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                          <I className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Content area */}
-          {preview ? (
-            <div className="rounded-2xl overflow-hidden" style={{ background: "#f4f4f4", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-              <div dangerouslySetInnerHTML={{ __html: buildHtml() }} />
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {/* Blocks */}
-              {blocks.map((block, idx) => {
-                const isSelected = selectedBlock === block.id;
-                const meta = blockLabel(block.type);
-                const Icon = meta.icon;
-                return (
-                  <motion.div
-                    key={block.id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="rounded-xl overflow-hidden"
-                    style={{
-                      background: "hsl(0 0% 100% / 0.04)",
-                      border: `1px solid ${isSelected ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
-                    }}
-                  >
-                    {/* Block header */}
-                    <div
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/[0.02] transition-all"
-                      onClick={() => setSelectedBlock(isSelected ? null : block.id)}
-                    >
-                      <GripVertical className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
-                      <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(330 80% 55% / 0.6)" }} />
-                      <span className="text-xs font-bold flex-1" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-                        {meta.label}
-                      </span>
-                      <div className="flex items-center gap-0.5">
-                        <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, -1); }} disabled={idx === 0} className="p-1 rounded hover:bg-white/[0.05] disabled:opacity-20" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                          <ChevronUp className="w-3 h-3" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); moveBlock(block.id, 1); }} disabled={idx === blocks.length - 1} className="p-1 rounded hover:bg-white/[0.05] disabled:opacity-20" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                          <ChevronDown className="w-3 h-3" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.5)" }}>
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+          {/* Recipients (collapsible) */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+            <button
+              onClick={() => setShowRecipients(!showRecipients)}
+              className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-all"
+            >
+              <Users className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider flex-1 text-left" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                Empfänger ({recipients.length})
+              </span>
+              <ChevronRight className="w-4 h-4 transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: showRecipients ? "rotate(90deg)" : "rotate(0deg)" }} />
+            </button>
+            <AnimatePresence>
+              {showRecipients && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                  <div className="px-5 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    <div className="flex items-center gap-3 pt-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={onlyPaid} onChange={(e) => setOnlyPaid(e.target.checked)} className="rounded" />
+                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Nur bezahlte Kunden</span>
+                      </label>
+                      <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="px-2 py-1 rounded-lg text-xs" style={inputStyle}>
+                        <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
+                        {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
+                      </select>
                     </div>
-
-                    {/* Block editor */}
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-3 pb-3 pt-1" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                            <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              })}
-
-              {/* Add block button */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowAddMenu(!showAddMenu)}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all hover:bg-white/[0.03]"
-                  style={{ border: "2px dashed hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.3)" }}
-                >
-                  <Plus className="w-4 h-4" /> Block hinzufügen
-                </button>
-                <AnimatePresence>
-                  {showAddMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      className="absolute z-10 top-full mt-1 left-0 right-0 rounded-xl overflow-hidden shadow-xl"
-                      style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                    >
-                      <div className="grid grid-cols-3 gap-1 p-2">
-                        {BLOCK_TYPES.map(({ type, label, icon: I }) => (
-                          <button
-                            key={type}
-                            onClick={() => addBlock(type)}
-                            className="flex flex-col items-center gap-1.5 py-3 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white/[0.06] transition-all"
-                            style={{ color: "hsl(0 0% 100% / 0.6)" }}
-                          >
-                            <I className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          )}
+                    <div className="space-y-1 max-h-[200px] overflow-y-auto">
+                      {recipients.slice(0, 20).map((r) => (
+                        <div key={r.email} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px]" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                          <Mail className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
+                          <span className="truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
+                        </div>
+                      ))}
+                      {recipients.length > 20 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 20} weitere</p>}
+                      {recipients.length === 0 && <p className="text-[10px] text-center py-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Empfänger mit diesen Filtern</p>}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Send button */}
           <motion.button
@@ -509,52 +499,40 @@ ${bodyContent}
           </AnimatePresence>
         </div>
 
-        {/* Right: Recipients sidebar */}
-        <div className="space-y-4">
-          <div className="rounded-2xl p-5 space-y-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Empfänger</span>
+        {/* Right: Live Preview (sticky) */}
+        <div className="hidden xl:block">
+          <div className="sticky top-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Eye className="w-3.5 h-3.5" style={{ color: "hsl(215 90% 55%)" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Live-Vorschau</span>
             </div>
-            <div className="text-center py-4 rounded-xl" style={{ background: "hsl(330 80% 55% / 0.08)" }}>
-              <span className="text-3xl font-black" style={{ color: "hsl(330 80% 55%)" }}>{recipients.length}</span>
-              <span className="text-xs block mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>eindeutige E-Mails</span>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Filter</span>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={onlyPaid} onChange={(e) => setOnlyPaid(e.target.checked)} className="rounded" />
-                <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Nur bezahlte Kunden</span>
-              </label>
-              <div>
-                <label className={labelCls} style={labelStyle}>Stadt</label>
-                <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="w-full px-3 py-2 rounded-lg text-xs" style={inputStyle}>
-                  <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
-                  {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
-                </select>
-              </div>
+            <div
+              className="rounded-2xl overflow-hidden shadow-xl"
+              style={{ border: "1px solid hsl(0 0% 100% / 0.08)", transform: "scale(0.85)", transformOrigin: "top center" }}
+            >
+              <div style={{ background: "#f4f4f4" }} dangerouslySetInnerHTML={{ __html: buildHtml() }} />
             </div>
           </div>
+        </div>
 
-          {/* Recipient preview */}
-          <div className="rounded-2xl p-5 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-              Empfänger-Vorschau ({Math.min(recipients.length, 20)}/{recipients.length})
-            </span>
-            <div className="space-y-1 max-h-[300px] overflow-y-auto">
-              {recipients.slice(0, 20).map((r) => (
-                <div key={r.email} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px]" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
-                  <Mail className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
-                  <span className="truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
+        {/* Mobile preview toggle */}
+        <div className="xl:hidden">
+          <button
+            onClick={() => setPreview(!preview)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+            style={{ background: preview ? "hsl(215 90% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)", color: preview ? "hsl(215 90% 55%)" : "hsl(0 0% 100% / 0.4)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
+          >
+            <Eye className="w-3.5 h-3.5" /> {preview ? "Vorschau ausblenden" : "Vorschau anzeigen"}
+          </button>
+          <AnimatePresence>
+            {preview && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-3">
+                <div className="rounded-2xl overflow-hidden" style={{ background: "#f4f4f4", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <div dangerouslySetInnerHTML={{ __html: buildHtml() }} />
                 </div>
-              ))}
-              {recipients.length > 20 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 20} weitere</p>}
-              {recipients.length === 0 && <p className="text-[10px] text-center py-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Empfänger mit diesen Filtern</p>}
-            </div>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
