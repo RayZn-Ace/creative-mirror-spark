@@ -17,7 +17,7 @@ interface NavGroup {
 function buildNav(gt: GlobalTranslations) {
   const directLinks = [
     { label: gt.navHome, path: "/" },
-    { label: gt.navDatesTickets, path: "/#events" },
+    { label: gt.navDatesTickets, path: "/termine" },
   ];
 
   const groups: NavGroup[] = [
@@ -151,15 +151,13 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
           >
             {gt.navMyTickets}
           </Link>
-          <a
-            href="https://mammamia-partymotto.ticket.io/?view=table"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/termine"
             className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm animate-pulse-glow hover:opacity-90 transition-opacity"
           >
             <Ticket className="w-4 h-4" />
             {gt.navTickets}
-          </a>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -244,15 +242,14 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
                 {gt.navMyTickets}
               </Link>
 
-              <a
-                href="https://mammamia-partymotto.ticket.io/?view=table"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/termine"
+                onClick={() => setOpen(false)}
                 className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm"
               >
                 <Ticket className="w-4 h-4" />
                 {gt.navTickets}
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}
