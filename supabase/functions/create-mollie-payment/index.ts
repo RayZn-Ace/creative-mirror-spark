@@ -19,8 +19,7 @@ Deno.serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const body = await req.json();
-    const { email, firstName, lastName, eventId, items, currency, discountCode, redirectBase } = body;
+    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase } = body;
 
     // items: [{ ticketId, name, quantity, priceEur }]
     if (!email || !eventId || !items || items.length === 0) {
@@ -81,8 +80,9 @@ Deno.serve(async (req) => {
       .from("orders")
       .insert({
         email,
-        first_name: firstName || null,
-        last_name: lastName || null,
+        name: name || null,
+        birth_date: birthDate || null,
+        phone: phone || null,
         event_id: eventId,
         items,
         total_amount: grandTotalEur,
