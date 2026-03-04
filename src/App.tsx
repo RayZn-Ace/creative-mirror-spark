@@ -40,6 +40,7 @@ const NewsletterAdmin = lazy(() => import("./pages/admin/NewsletterAdmin"));
 const ScannerAdmin = lazy(() => import("./pages/admin/ScannerAdmin"));
 const SettingsAdmin = lazy(() => import("./pages/admin/SettingsAdmin"));
 const TemplatesAdmin = lazy(() => import("./pages/admin/TemplatesAdmin"));
+const AnalyticsAdmin = lazy(() => import("./pages/admin/AnalyticsAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="analytics" element={<AnalyticsAdmin />} />
                 <Route path="series" element={<SeriesAdmin />} />
                 <Route path="events" element={<EventsAdmin />} />
                 <Route path="tickets" element={<TicketsAdmin />} />
