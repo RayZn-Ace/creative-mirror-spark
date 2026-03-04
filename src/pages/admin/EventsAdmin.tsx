@@ -57,6 +57,8 @@ interface EventRow {
   tag: string | null;
   status: string | null;
   highlight: boolean | null;
+  open_air: boolean | null;
+  sold_out: boolean | null;
   ticket_link: string | null;
   sort_order: number | null;
   series_id: string | null;
@@ -95,7 +97,7 @@ interface SeriesOption {
 const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
-  status: "draft", highlight: false, ticket_link: "", sort_order: 0, series_id: null,
+  status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
   info_sections: [],
 };
@@ -699,6 +701,14 @@ const EventEditView = ({
             <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
               <input type="checkbox" checked={editing.highlight || false} onChange={(e) => setEditing({ ...editing, highlight: e.target.checked })} className="rounded w-4 h-4" />
               Highlight-Event
+            </label>
+            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              <input type="checkbox" checked={editing.open_air || false} onChange={(e) => setEditing({ ...editing, open_air: e.target.checked })} className="rounded w-4 h-4" />
+              🌞 Open Air
+            </label>
+            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              <input type="checkbox" checked={editing.sold_out || false} onChange={(e) => setEditing({ ...editing, sold_out: e.target.checked })} className="rounded w-4 h-4" />
+              🚫 Ausverkauft
             </label>
           </Section>
 

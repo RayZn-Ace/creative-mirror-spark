@@ -785,8 +785,8 @@ const CityPage = () => {
         venue: e.location_name || "TBA",
         address: e.location_address || e.city || "",
         city: e.city || series.city || "",
-        openAir: e.tag === "Open Air",
-        soldOut: false,
+        openAir: e.open_air === true,
+        soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
         infoSections: [],
       }));
