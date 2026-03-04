@@ -27,6 +27,7 @@ const Termine = lazy(() => import("./pages/Termine"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 const Scanner = lazy(() => import("./pages/Scanner"));
 const TicketUmbuchung = lazy(() => import("./pages/TicketUmbuchung"));
+const FuerWen = lazy(() => import("./pages/FuerWen"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/ticket-umbuchung" element={<TicketUmbuchung />} />
               <Route path="/ueber-uns" element={<UeberUns />} />
+              <Route path="/fuer-wen" element={<FuerWen />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/promoter" element={<Promoter />} />
               <Route path="/fotos" element={<Fotos />} />

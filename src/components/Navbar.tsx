@@ -24,7 +24,7 @@ function buildNav(gt: GlobalTranslations) {
     {
       label: gt.navExperience,
       items: [
-        { label: gt.navForWho, path: "/ueber-uns" },
+        { label: gt.navForWho, path: "/fuer-wen" },
         { label: gt.navMedia, path: "/fotos" },
         { label: gt.navBlog, path: "/vergangene-events" },
       ],
