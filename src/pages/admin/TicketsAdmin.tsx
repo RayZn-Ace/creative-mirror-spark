@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, X, Ticket, ChevronDown, ChevronRight, Users, Lock, Clock, Tag, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Ticket, ChevronDown, ChevronRight, Users, Lock, Clock, Tag, GripVertical, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -44,6 +44,7 @@ const TicketsAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [featureInput, setFeatureInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const load = async () => {
     const [ticketsRes, eventsRes] = await Promise.all([
@@ -57,9 +58,22 @@ const TicketsAdmin = () => {
 
   useEffect(() => { load(); }, []);
 
-  // Group tickets by event
+  // Group tickets by event, with search + event filter
   const groupedTickets = useMemo(() => {
-    const filtered = filterEvent ? tickets.filter((t) => t.event_id === filterEvent) : tickets;
+    let filtered = filterEvent ? tickets.filter((t) => t.event_id === filterEvent) : tickets;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter((t) => {
+        const event = events.find((e) => e.id === t.event_id);
+        return (
+          t.name.toLowerCase().includes(q) ||
+          (event?.title || "").toLowerCase().includes(q) ||
+          (event?.city || "").toLowerCase().includes(q)
+        );
+      });
+    }
+
     const groups = new Map<string, TicketRow[]>();
     filtered.forEach((t) => {
       const existing = groups.get(t.event_id) || [];
@@ -67,7 +81,7 @@ const TicketsAdmin = () => {
       groups.set(t.event_id, existing);
     });
     return groups;
-  }, [tickets, filterEvent]);
+  }, [tickets, filterEvent, searchQuery, events]);
 
   const toggleEvent = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -163,10 +177,20 @@ const TicketsAdmin = () => {
 
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Name, Event oder Stadt suchen…"
+            className="w-full pl-9 pr-3 py-2 rounded-lg text-sm outline-none"
+            style={inputStyle}
+          />
+        </div>
         <select
           value={filterEvent}
           onChange={(e) => setFilterEvent(e.target.value)}
-          className="px-3 py-2 rounded-lg text-sm outline-none min-w-[200px]"
+          className="px-3 py-2 rounded-lg text-sm outline-none min-w-[180px]"
           style={inputStyle}
         >
           <option value="">Alle Events</option>
