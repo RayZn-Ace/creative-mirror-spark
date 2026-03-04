@@ -1,6 +1,33 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, Component, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CityHeatmap } from "@/components/admin/CityHeatmap";
+
+// Error boundary to prevent heatmap crashes from killing the dashboard
+class HeatmapErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.warn("Heatmap error caught:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+          Karte wird geladen…
+          <button className="ml-2 underline" onClick={() => this.setState({ hasError: false })}>
+            Erneut versuchen
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface CityDataItem {
   name: string;
@@ -63,8 +90,10 @@ const GeoHeatmapWidget = () => {
       <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
         Geo-Heatmap
       </h3>
-      <div className="flex-1 min-h-0 rounded-xl overflow-hidden">
-        <CityHeatmap data={cityData} height="100%" />
+      <div className="flex-1 min-h-0 rounded-xl overflow-hidden" style={{ minHeight: 200 }}>
+        <HeatmapErrorBoundary>
+          <CityHeatmap data={cityData} height="100%" />
+        </HeatmapErrorBoundary>
       </div>
     </div>
   );
