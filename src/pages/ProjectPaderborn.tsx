@@ -768,7 +768,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </div>
 
     <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[220px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+      <img src={headerImg} alt="Mamma Mia Party" className="w-[90%] max-w-[360px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
