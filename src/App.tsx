@@ -38,6 +38,7 @@ const TrackingAdminPage = lazy(() => import("./pages/admin/TrackingAdmin"));
 const CustomersAdmin = lazy(() => import("./pages/admin/CustomersAdmin"));
 const NewsletterAdmin = lazy(() => import("./pages/admin/NewsletterAdmin"));
 const ScannerAdmin = lazy(() => import("./pages/admin/ScannerAdmin"));
+const SettingsAdmin = lazy(() => import("./pages/admin/SettingsAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
                 <Route path="newsletter" element={<NewsletterAdmin />} />
                 <Route path="tracking" element={<TrackingAdminPage />} />
                 <Route path="scanner" element={<ScannerAdmin />} />
+                <Route path="settings" element={<SettingsAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
