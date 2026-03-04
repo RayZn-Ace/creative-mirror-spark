@@ -810,6 +810,7 @@ const EventsAdmin = () => {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsedState());
   const [search, setSearch] = useState("");
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
+  const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -943,9 +944,25 @@ const EventsAdmin = () => {
       />
     );
   }
+  const today = new Date().toISOString().split("T")[0];
   const isSearching = !!search.trim();
+
+  // Tab filter
+  const tabFiltered = events.filter((e) => {
+    if (activeTab === "published") return e.status === "published" && (!e.date || e.date >= today);
+    if (activeTab === "draft") return e.status === "draft";
+    if (activeTab === "past") return e.status === "published" && e.date && e.date < today;
+    return true;
+  });
+
+  const tabCounts = {
+    published: events.filter((e) => e.status === "published" && (!e.date || e.date >= today)).length,
+    draft: events.filter((e) => e.status === "draft").length,
+    past: events.filter((e) => e.status === "published" && e.date && e.date < today).length,
+  };
+
   const filteredEvents = isSearching
-    ? events.filter((e) => {
+    ? tabFiltered.filter((e) => {
         const q = search.toLowerCase();
         const city = e.series_id ? seriesCityMap[e.series_id] : e.city;
         const country = getCountry(city || null);
@@ -958,7 +975,7 @@ const EventsAdmin = () => {
           (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
         );
       })
-    : events;
+    : tabFiltered;
 
   const grouped = filteredEvents.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
     (acc, event) => {
@@ -1026,6 +1043,28 @@ const EventsAdmin = () => {
             <X className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
           </button>
         )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-5 rounded-xl p-1" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+        {([
+          { key: "published" as const, label: "Veröffentlicht", count: tabCounts.published },
+          { key: "draft" as const, label: "Entwurf", count: tabCounts.draft },
+          { key: "past" as const, label: "Vergangen", count: tabCounts.past },
+        ]).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className="flex-1 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+            style={{
+              background: activeTab === tab.key ? "hsl(330 80% 50% / 0.15)" : "transparent",
+              color: activeTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+              border: activeTab === tab.key ? "1px solid hsl(330 80% 50% / 0.3)" : "1px solid transparent",
+            }}
+          >
+            {tab.label} ({tab.count})
+          </button>
+        ))}
       </div>
 
       {loading ? (
