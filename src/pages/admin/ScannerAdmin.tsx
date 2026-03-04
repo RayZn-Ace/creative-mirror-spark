@@ -26,6 +26,8 @@ interface Event {
   city: string | null;
 }
 
+const ALL_EVENTS_VALUE = "__ALL__";
+
 const ScannerAdmin = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -36,6 +38,7 @@ const ScannerAdmin = () => {
   const [newLabel, setNewLabel] = useState("");
   const [loading, setLoading] = useState(true);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // For direct scanner
   const [scanEventId, setScanEventId] = useState("");
@@ -54,18 +57,23 @@ const ScannerAdmin = () => {
     setLoading(false);
   };
 
-  const createLink = async (eventId?: string, label?: string) => {
-    const eid = eventId || selectedEvent;
-    if (!eid) return;
-    const { error } = await supabase.from("scanner_links").insert({
-      event_id: eid,
-      label: label || newLabel || null,
-    });
+  const createLink = async (eventId?: string | null, label?: string) => {
+    const eid = eventId === undefined ? selectedEvent : eventId;
+    const isAllEvents = eid === ALL_EVENTS_VALUE || eid === null;
+    
+    const insertData: any = {
+      label: label || newLabel || (isAllEvents ? "Alle Events" : null),
+    };
+    if (!isAllEvents && eid) {
+      insertData.event_id = eid;
+    }
+
+    const { error } = await supabase.from("scanner_links").insert(insertData);
     if (error) {
       toast({ title: "Fehler", description: error.message, variant: "destructive" });
       return false;
     }
-    if (!eventId) {
+    if (eventId === undefined) {
       toast({ title: "Scanner-Link erstellt" });
       setNewLabel("");
     }
@@ -89,11 +97,14 @@ const ScannerAdmin = () => {
     toast({ title: "Link kopiert!" });
   };
 
-  const getEventTitle = (eventId: string) => events.find((e) => e.id === eventId)?.title || "Unbekannt";
+  const getEventTitle = (eventId: string | null) => {
+    if (!eventId) return "Alle Events";
+    return events.find((e) => e.id === eventId)?.title || "Unbekannt";
+  };
 
   const createBulkLinks = async () => {
     setBulkLoading(true);
-    const existingEventIds = new Set(links.map((l) => l.event_id));
+    const existingEventIds = new Set(links.filter(l => l.event_id).map((l) => l.event_id));
     const missing = events.filter((e) => !existingEventIds.has(e.id));
     let created = 0;
     for (const ev of missing) {
@@ -107,7 +118,25 @@ const ScannerAdmin = () => {
 
   const openDirectScanner = () => {
     if (!scanEventId) return;
-    // Find or create a link for this event, then open scanner
+    
+    if (scanEventId === ALL_EVENTS_VALUE) {
+      // Find an all-events link or open without event filter
+      const allLink = links.find((l) => !l.event_id && l.active);
+      if (allLink) {
+        window.open(`/scan?token=${allLink.token}`, "_blank");
+      } else {
+        // Auto-create an all-events link, then open
+        (async () => {
+          const { data } = await supabase.from("scanner_links").insert({ label: "Alle Events (Direkt)" }).select("token").single();
+          if (data) {
+            loadData();
+            window.open(`/scan?token=${data.token}`, "_blank");
+          }
+        })();
+      }
+      return;
+    }
+    
     const existing = links.find((l) => l.event_id === scanEventId && l.active);
     if (existing) {
       window.open(`/scan?token=${existing.token}`, "_blank");
@@ -115,6 +144,12 @@ const ScannerAdmin = () => {
       toast({ title: "Kein aktiver Link", description: "Erstelle zuerst einen Scanner-Link für dieses Event.", variant: "destructive" });
     }
   };
+
+  const filteredEvents = events.filter((e) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return e.title.toLowerCase().includes(q) || e.city?.toLowerCase().includes(q);
+  });
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "links", label: "Links", icon: Link2 },
@@ -168,6 +203,7 @@ const ScannerAdmin = () => {
                 style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
               >
                 <option value="">Event auswählen…</option>
+                <option value={ALL_EVENTS_VALUE}>⚡ Alle Events</option>
                 {events.map((e) => (
                   <option key={e.id} value={e.id}>{e.title} {e.date ? `(${e.date})` : ""}</option>
                 ))}
@@ -210,6 +246,11 @@ const ScannerAdmin = () => {
                       <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
                         {link.label || "Kein Label"}
                       </span>
+                      {!link.event_id && (
+                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 65%)" }}>
+                          Alle
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{getEventTitle(link.event_id)}</p>
                     <p className="text-[10px] font-mono mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
@@ -245,8 +286,18 @@ const ScannerAdmin = () => {
               Direkt scannen (Admin/Scanner)
             </h3>
             <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-              Als Admin oder Scanner kannst du direkt einen aktiven Scanner-Link öffnen, ohne den Token manuell kopieren zu müssen.
+              Wähle ein Event oder scanne für alle Events gleichzeitig.
             </p>
+            
+            {/* Search input */}
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Event suchen…"
+              className="w-full px-3 py-2 rounded-lg text-sm mb-2"
+              style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
+            />
+            
             <select
               value={scanEventId}
               onChange={(e) => setScanEventId(e.target.value)}
@@ -254,8 +305,9 @@ const ScannerAdmin = () => {
               style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
             >
               <option value="">Event auswählen…</option>
-              {events.map((e) => (
-                <option key={e.id} value={e.id}>{e.title} {e.date ? `(${e.date})` : ""}</option>
+              <option value={ALL_EVENTS_VALUE}>⚡ Alle Events</option>
+              {filteredEvents.map((e) => (
+                <option key={e.id} value={e.id}>{e.title} {e.city ? `(${e.city})` : ""} {e.date ? `– ${e.date}` : ""}</option>
               ))}
             </select>
             <button
@@ -265,18 +317,34 @@ const ScannerAdmin = () => {
               style={{ background: "hsl(200 80% 55%)", color: "hsl(0 0% 100%)" }}
             >
               <ScanLine className="w-5 h-5" />
-              Scanner öffnen
+              {scanEventId === ALL_EVENTS_VALUE ? "Scanner öffnen (Alle Events)" : "Scanner öffnen"}
             </button>
           </div>
 
           {/* Quick list of events with active links */}
           <div className="rounded-xl p-4 sm:p-6" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
             <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-              Events mit aktiven Links
+              Schnellzugriff
             </h3>
             <div className="space-y-1.5">
-              {events.filter((e) => links.some((l) => l.event_id === e.id && l.active)).length === 0 ? (
-                <p className="text-xs py-4 text-center" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Events mit aktiven Scanner-Links.</p>
+              {/* All-events link if exists */}
+              {links.filter((l) => !l.event_id && l.active).map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => window.open(`/scan?token=${link.token}`, "_blank")}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all hover:bg-white/5"
+                  style={{ border: "1px solid hsl(270 60% 55% / 0.3)", background: "hsl(270 60% 55% / 0.05)" }}
+                >
+                  <div>
+                    <span className="text-sm font-bold" style={{ color: "hsl(270 60% 65%)" }}>⚡ Alle Events</span>
+                    <span className="text-xs ml-2" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{link.label}</span>
+                  </div>
+                  <ScanLine className="w-4 h-4 shrink-0" style={{ color: "hsl(270 60% 65%)" }} />
+                </button>
+              ))}
+              
+              {events.filter((e) => links.some((l) => l.event_id === e.id && l.active)).length === 0 && links.filter(l => !l.event_id && l.active).length === 0 ? (
+                <p className="text-xs py-4 text-center" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine aktiven Scanner-Links.</p>
               ) : (
                 events
                   .filter((e) => links.some((l) => l.event_id === e.id && l.active))

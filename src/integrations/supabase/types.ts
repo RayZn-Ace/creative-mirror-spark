@@ -380,7 +380,7 @@ export type Database = {
           active: boolean
           created_at: string
           created_by: string | null
-          event_id: string
+          event_id: string | null
           expires_at: string | null
           id: string
           label: string | null
@@ -390,7 +390,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           created_by?: string | null
-          event_id: string
+          event_id?: string | null
           expires_at?: string | null
           id?: string
           label?: string | null
@@ -400,7 +400,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           created_by?: string | null
-          event_id?: string
+          event_id?: string | null
           expires_at?: string | null
           id?: string
           label?: string | null
