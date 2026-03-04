@@ -413,17 +413,21 @@ const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; cu
 };
 
 /* ─── Ticket Widget ─── */
+const SAVED_INFO_KEY = "gimme_checkout_info";
+
 const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent; allEvents: CityEvent[]; citySlug: string; t: Translations }) => {
+  const savedInfo = (() => { try { return JSON.parse(localStorage.getItem(SAVED_INFO_KEY) || "{}"); } catch { return {}; } })();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [discountCode, setDiscountCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
   const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [checkoutEmail, setCheckoutEmail] = useState("");
-  const [checkoutName, setCheckoutName] = useState("");
-  const [checkoutBirthDate, setCheckoutBirthDate] = useState("");
-  const [checkoutPhone, setCheckoutPhone] = useState("");
+  const [checkoutEmail, setCheckoutEmail] = useState(savedInfo.email || "");
+  const [checkoutName, setCheckoutName] = useState(savedInfo.name || "");
+  const [checkoutBirthDate, setCheckoutBirthDate] = useState(savedInfo.birthDate || "");
+  const [checkoutPhone, setCheckoutPhone] = useState(savedInfo.phone || "");
+  const [saveInfo, setSaveInfo] = useState(!!savedInfo.email);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
@@ -501,6 +505,13 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
     const currency = getCurrencyForCity(event.city);
     const redirectBase = window.location.origin;
+
+    // Save or clear checkout info
+    if (saveInfo) {
+      localStorage.setItem(SAVED_INFO_KEY, JSON.stringify({ name: checkoutName, email: checkoutEmail, birthDate: checkoutBirthDate, phone: checkoutPhone }));
+    } else {
+      localStorage.removeItem(SAVED_INFO_KEY);
+    }
 
     try {
       const { data, error } = await supabase.functions.invoke("create-mollie-payment", {
@@ -615,6 +626,11 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
               <input type="tel" placeholder={t.phonePlaceholder} value={checkoutPhone}
                 onChange={(e) => setCheckoutPhone(e.target.value)}
                 className="pp-form-input text-sm w-full" />
+              <label className="flex items-center gap-2 cursor-pointer select-none py-1">
+                <input type="checkbox" checked={saveInfo} onChange={(e) => setSaveInfo(e.target.checked)}
+                  className="w-4 h-4 rounded accent-white" style={{ accentColor: "hsl(210 80% 60%)" }} />
+                <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>Kontoinfos speichern</span>
+              </label>
               {checkoutError && (
                 <p className="text-xs font-semibold" style={{ color: "hsl(0 70% 60%)" }}>{checkoutError}</p>
               )}
