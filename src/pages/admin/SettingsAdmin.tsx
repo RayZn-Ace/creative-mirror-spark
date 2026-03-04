@@ -275,11 +275,11 @@ const SettingsAdmin = () => {
               </div>
               <div>
                 <label style={{ ...labelStyle, fontSize: "10px" }}>Rolle</label>
-                <select value={newUserRole} onChange={e => setNewUserRole(e.target.value)} style={{ ...inputStyle, fontSize: "12px", colorScheme: "dark" }}>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="moderator">Moderator</option>
-                  <option value="scanner">Scanner</option>
+                <select value={newUserRole} onChange={e => setNewUserRole(e.target.value)} style={{ ...inputStyle, fontSize: "12px", colorScheme: "dark", backgroundColor: "hsl(220 50% 10%)", color: "hsl(0 0% 100%)" }}>
+                  <option value="user" style={{ background: "hsl(220 50% 10%)", color: "hsl(0 0% 100%)" }}>User</option>
+                  <option value="admin" style={{ background: "hsl(220 50% 10%)", color: "hsl(0 0% 100%)" }}>Admin</option>
+                  <option value="moderator" style={{ background: "hsl(220 50% 10%)", color: "hsl(0 0% 100%)" }}>Moderator</option>
+                  <option value="scanner" style={{ background: "hsl(220 50% 10%)", color: "hsl(0 0% 100%)" }}>Scanner</option>
                 </select>
               </div>
               <div className="flex items-end">
