@@ -131,8 +131,9 @@ async function generateTicketPDF(tickets: Array<{
   const bgColor = rgb(bgR, bgG, bgB);
   const acColor = rgb(acR, acG, acB);
   const txColor = rgb(txR, txG, txB);
-  const txFaded = rgb(txR, txG, txB, 0.5);
-  const txSubtle = rgb(txR, txG, txB, 0.15);
+  // pdf-lib rgb() does NOT support alpha – use opacity param on draw calls instead
+  const txFaded = txColor;
+  const txSubtle = txColor;
 
   // DIN Lang: 595 x 281 pts (210x99mm), A4: 420 x 600 pts
   const isDinLang = tpl.format === "din_lang";
@@ -160,7 +161,7 @@ async function generateTicketPDF(tickets: Array<{
     if (tpl.gradient?.enabled) {
       const [fromR, fromG, fromB] = hexToRgb(tpl.gradient.color_from);
       const [toR, toG, toB] = hexToRgb(tpl.gradient.color_to);
-      const strips = 20;
+      const strips = 40;
       const isRadial = tpl.gradient.type === "radial";
       for (let i = 0; i < strips; i++) {
         const t = i / (strips - 1);
@@ -207,7 +208,7 @@ async function generateTicketPDF(tickets: Array<{
       }
 
       // Divider
-      page.drawRectangle({ x: m, y: y + 2, width: textAreaW, height: 0.5, color: txSubtle });
+      page.drawRectangle({ x: m, y: y + 2, width: textAreaW, height: 0.5, color: txColor, opacity: 0.15 });
       y -= 10;
 
       // Details
@@ -224,7 +225,7 @@ async function generateTicketPDF(tickets: Array<{
         // Inline label + value on same line (matching preview)
         const labelText = d.label + "  ";
         const labelW = fontRegular.widthOfTextAtSize(labelText, 6);
-        page.drawText(labelText, { x: m, y, size: 6, font: fontRegular, color: txFaded });
+        page.drawText(labelText, { x: m, y, size: 6, font: fontRegular, color: txColor, opacity: 0.5 });
         page.drawText(d.value.substring(0, 40), { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
         y -= 14;
       }
@@ -278,7 +279,7 @@ async function generateTicketPDF(tickets: Array<{
         const sy = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: sy, size: 6, font: fontRegular, color: txFaded });
+            page.drawText(s.value, { x: sx, y: sy, size: 6, font: fontRegular, color: txColor, opacity: 0.4 });
             sx += fontRegular.widthOfTextAtSize(s.value, 6) + 12;
           }
         }
@@ -289,7 +290,7 @@ async function generateTicketPDF(tickets: Array<{
         // Dashed line separator
         const sepX = width - qrAreaW;
         for (let dy = m; dy < height - m; dy += 8) {
-          page.drawRectangle({ x: sepX, y: dy, width: 0.5, height: 4, color: txSubtle });
+          page.drawRectangle({ x: sepX, y: dy, width: 0.5, height: 4, color: txColor, opacity: 0.15 });
         }
 
         try {
@@ -312,7 +313,7 @@ async function generateTicketPDF(tickets: Array<{
           page.drawRectangle({ x: qrX - 6, y: qrY - 6, width: qrSize + 12, height: qrSize + 12, color: rgb(1, 1, 1) });
           page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
           const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 7);
-          page.drawText(ticket.qr_code, { x: sepX + (qrAreaW - codeW) / 2, y: qrY - 18, size: 7, font: fontRegular, color: txFaded });
+          page.drawText(ticket.qr_code, { x: sepX + (qrAreaW - codeW) / 2, y: qrY - 18, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
         } catch (e) {
           console.error("QR embed failed:", e);
           page.drawText(ticket.qr_code, { x: width - qrAreaW + 10, y: height / 2, size: 12, font: fontBold, color: txColor });
@@ -342,7 +343,7 @@ async function generateTicketPDF(tickets: Array<{
       }
 
       y -= 5;
-      page.drawRectangle({ x: m, y, width: width - m * 2, height: 1, color: txSubtle });
+      page.drawRectangle({ x: m, y, width: width - m * 2, height: 1, color: txColor, opacity: 0.15 });
       y -= 25;
 
       const details: Array<{ label: string; value: string }> = [];
@@ -356,7 +357,7 @@ async function generateTicketPDF(tickets: Array<{
       for (const d of details) {
         const labelText = d.label + "  ";
         const labelW = fontRegular.widthOfTextAtSize(labelText, 8);
-        page.drawText(labelText, { x: m, y, size: 8, font: fontRegular, color: txFaded });
+        page.drawText(labelText, { x: m, y, size: 8, font: fontRegular, color: txColor, opacity: 0.5 });
         page.drawText(d.value, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
         y -= 18;
       }
@@ -421,7 +422,7 @@ async function generateTicketPDF(tickets: Array<{
           page.drawRectangle({ x: qrX - 10, y: qrY - 10, width: qrSize + 20, height: qrSize + 20, color: rgb(1, 1, 1) });
           page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
           const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 9);
-          page.drawText(ticket.qr_code, { x: (width - codeW) / 2, y: qrY - 22, size: 9, font: fontRegular, color: txFaded });
+          page.drawText(ticket.qr_code, { x: (width - codeW) / 2, y: qrY - 22, size: 9, font: fontRegular, color: txColor, opacity: 0.4 });
         } catch (e) {
           console.error("QR embed failed:", e);
           page.drawText(ticket.qr_code, { x: m, y: 100, size: 16, font: fontBold, color: txColor });
@@ -433,7 +434,7 @@ async function generateTicketPDF(tickets: Array<{
         let sx = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: m, size: 7, font: fontRegular, color: txFaded });
+            page.drawText(s.value, { x: sx, y: m, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
             sx += fontRegular.widthOfTextAtSize(s.value, 7) + 16;
           }
         }
