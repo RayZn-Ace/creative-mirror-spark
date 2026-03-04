@@ -30,6 +30,7 @@ const TicketUmbuchung = lazy(() => import("./pages/TicketUmbuchung"));
 const FuerWen = lazy(() => import("./pages/FuerWen"));
 const LocationAnmelden = lazy(() => import("./pages/LocationAnmelden"));
 const PartnerWerden = lazy(() => import("./pages/PartnerWerden"));
+const InfluencerPage = lazy(() => import("./pages/Influencer"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/promoter" element={<Promoter />} />
               <Route path="/location-anmelden" element={<LocationAnmelden />} />
               <Route path="/partner" element={<PartnerWerden />} />
+              <Route path="/influencer" element={<InfluencerPage />} />
               <Route path="/fotos" element={<Fotos />} />
               <Route path="/meine-tickets" element={<MeineTickets />} />
               <Route path="/muttizettel" element={<Muttizettel />} />
