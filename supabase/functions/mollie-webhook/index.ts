@@ -146,6 +146,19 @@ Deno.serve(async (req) => {
                 console.error("Ticket generation failed:", ticketError);
               } else {
                 console.log(`Generated ${ticketRows.length} tickets for order ${orderId}`);
+
+                // Send tickets via email
+                try {
+                  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+                  await fetch(`${SUPABASE_URL}/functions/v1/send-tickets`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ order_id: orderId }),
+                  });
+                  console.log(`Ticket email triggered for order ${orderId}`);
+                } catch (emailErr) {
+                  console.error("Ticket email trigger failed:", emailErr);
+                }
               }
             }
           } else {
