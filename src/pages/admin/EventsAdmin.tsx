@@ -809,13 +809,32 @@ const EventsAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsedState());
   const [search, setSearch] = useState("");
+  const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
+
+  const loadEventStats = async (eventIds: string[]) => {
+    if (!eventIds.length) return;
+    const [ticketsRes, ordersRes] = await Promise.all([
+      supabase.from("tickets").select("event_id").in("event_id", eventIds),
+      supabase.from("orders").select("event_id, total_amount, status").in("event_id", eventIds).eq("status", "paid"),
+    ]);
+    const stats: Record<string, { ticketsSold: number; revenue: number }> = {};
+    eventIds.forEach(id => { stats[id] = { ticketsSold: 0, revenue: 0 }; });
+    (ticketsRes.data || []).forEach(t => {
+      if (stats[t.event_id]) stats[t.event_id].ticketsSold++;
+    });
+    (ordersRes.data || []).forEach(o => {
+      if (o.event_id && stats[o.event_id]) stats[o.event_id].revenue += Number(o.total_amount);
+    });
+    setEventStats(stats);
+  };
 
   const load = async () => {
     const [eventsRes, seriesRes] = await Promise.all([
       supabase.from("events").select("*").order("sort_order"),
       supabase.from("event_series").select("id, title, city").order("title"),
     ]);
-    setEvents((eventsRes.data as unknown as EventRow[]) || []);
+    const loadedEvents = (eventsRes.data as unknown as EventRow[]) || [];
+    setEvents(loadedEvents);
     const options = (seriesRes.data as SeriesOption[]) || [];
     setSeriesOptions(options);
     const map: Record<string, string> = {};
@@ -824,6 +843,7 @@ const EventsAdmin = () => {
     setSeriesMap(map);
     setSeriesCityMap(cityMap);
     setLoading(false);
+    loadEventStats(loadedEvents.map(e => e.id));
   };
 
   const loadTickets = () => {
@@ -1017,7 +1037,19 @@ const EventsAdmin = () => {
                                           {event.status}
                                         </span>
                                       </div>
-                                      <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
+                                        {eventStats[event.id] && (
+                                          <>
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.12)", color: "hsl(200 80% 60%)" }}>
+                                              🎟 {eventStats[event.id].ticketsSold}
+                                            </span>
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 55%)" }}>
+                                              💰 {eventStats[event.id].revenue.toFixed(2)} €
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
                                     </div>
                                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                       <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
