@@ -1,56 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
-
 @layer base {
   :root {
-    --background: 220 50% 12%;
-    --foreground: 0 0% 100%;
+    --background: 230 25% 7%;
+    --foreground: 210 40% 96%;
 
-    --card: 220 40% 18%;
-    --card-foreground: 0 0% 100%;
+    --card: 230 20% 11%;
+    --card-foreground: 210 40% 96%;
 
-    --popover: 220 50% 12%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 230 20% 11%;
+    --popover-foreground: 210 40% 96%;
 
-    --primary: 330 80% 55%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 40% 25%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 45 93% 58%;
+    --secondary-foreground: 230 25% 7%;
 
-    --muted: 220 30% 20%;
-    --muted-foreground: 220 15% 75%;
+    --muted: 230 15% 18%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 220 50% 35%;
+    --accent: 280 70% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 220 30% 25%;
-    --input: 220 30% 25%;
-    --ring: 330 80% 55%;
+    --border: 230 15% 20%;
+    --input: 230 15% 20%;
+    --ring: 217 91% 60%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --gradient-sky: linear-gradient(180deg, hsl(220, 55%, 18%) 0%, hsl(225, 50%, 12%) 50%, hsl(230, 45%, 8%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(220, 40%, 25% / 0.3) 0%, hsl(220, 40%, 30% / 0.15) 100%);
-    --gradient-stage: linear-gradient(135deg, hsl(220, 50%, 30%) 0%, hsl(225, 45%, 22%) 100%);
+    --gold: 45 93% 58%;
+    --gold-foreground: 230 25% 7%;
+    --electric: 217 91% 60%;
+    --electric-glow: 217 100% 70%;
+    --disco: 280 70% 55%;
 
-    --shadow-ticket: 0 4px 20px hsl(220 50% 20% / 0.15);
-    --shadow-button: 0 4px 15px hsl(330 80% 55% / 0.25);
+    --gradient-hero: linear-gradient(180deg, hsla(230, 25%, 7%, 0) 0%, hsla(230, 25%, 7%, 0.8) 60%, hsl(230, 25%, 7%) 100%);
+    --gradient-primary: linear-gradient(90deg, hsl(330, 80%, 55%), hsl(280, 70%, 55%), hsl(217, 91%, 60%));
+    --gradient-gold: linear-gradient(135deg, hsl(45, 93%, 58%), hsl(35, 90%, 50%));
+    --shadow-glow: 0 0 30px hsla(217, 91%, 60%, 0.3);
+    --shadow-gold: 0 0 20px hsla(45, 93%, 58%, 0.3);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 230 20% 11%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 15% 18%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 230 15% 20%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -60,17 +65,44 @@
   }
 
   body {
-    font-family: 'Montserrat', sans-serif;
-    background: hsl(220, 50%, 10%);
-    min-height: 100vh;
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+  .bg-gradient-gold {
+    background-image: var(--gradient-gold);
+  }
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+  .glow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  .bg-hero-overlay {
+    background-image: var(--gradient-hero);
   }
 }
 
 @layer components {
+  /* ─── Ticket Widget Styles ─── */
   .ticket-category-title {
-    @apply text-sm font-extrabold uppercase tracking-widest;
-    color: hsl(var(--foreground));
+    @apply text-sm font-extrabold uppercase tracking-widest text-foreground;
     opacity: 0.9;
   }
 
@@ -84,23 +116,19 @@
   }
 
   .ticket-title {
-    @apply text-sm font-bold uppercase;
-    color: hsl(var(--foreground));
+    @apply text-sm font-bold uppercase text-foreground;
   }
 
   .ticket-description {
-    @apply text-xs;
-    color: hsl(var(--muted-foreground));
+    @apply text-xs text-muted-foreground;
   }
 
   .ticket-price {
-    @apply text-sm font-bold;
-    color: hsl(var(--foreground));
+    @apply text-sm font-bold text-foreground;
   }
 
   .ticket-tax {
-    @apply text-[10px];
-    color: hsl(var(--muted-foreground));
+    @apply text-[10px] text-muted-foreground;
   }
 
   .sold-out-badge {
@@ -137,23 +165,19 @@
 
   .cart-button:hover {
     background: hsl(var(--foreground) / 0.25);
-    box-shadow: var(--shadow-button);
     transform: translateY(-1px);
   }
 
   .stage-badge {
-    background: var(--gradient-stage);
-    @apply rounded-2xl p-6 mb-2;
-    box-shadow: var(--shadow-ticket);
+    @apply rounded-2xl p-6 mb-2 bg-card;
   }
 
   .footer-link {
-    @apply text-xs transition-opacity duration-200;
-    color: hsl(var(--foreground) / 0.7);
+    @apply text-xs text-muted-foreground transition-colors duration-200;
   }
 
   .footer-link:hover {
-    color: hsl(var(--foreground));
+    @apply text-foreground;
   }
 
   .sold-out-line {
@@ -161,7 +185,7 @@
     opacity: 0.5;
   }
 
-  /* ─── Gimme Gimme Party Event Theme ─── */
+  /* ─── Event Page Theme ─── */
   .pp-bg {
     position: relative;
     overflow: hidden;
@@ -351,14 +375,11 @@
     box-shadow: 0 6px 25px hsl(142, 70%, 45% / 0.5);
   }
 
-  /* ─── Neon Title ─── */
   .pp-neon-title {
-    font-family: 'Orbitron', sans-serif;
-    color: hsl(0 0% 100%);
-    text-shadow: 0 2px 8px hsl(210 80% 15% / 0.6), 0 4px 16px hsl(210 60% 20% / 0.4);
+    font-family: 'Bebas Neue', sans-serif;
+    @apply text-foreground;
   }
 
-  /* ─── Form Input ─── */
   .pp-form-input {
     @apply w-full px-4 py-2.5 rounded-xl text-sm;
     background: hsl(0 0% 100% / 0.15);
@@ -367,7 +388,6 @@
     outline: none;
     transition: border-color 0.2s;
     backdrop-filter: blur(4px);
-    text-shadow: 0 1px 3px hsl(210 80% 15% / 0.5);
   }
 
   .pp-form-input:focus {
@@ -376,17 +396,6 @@
 
   .pp-form-input::placeholder {
     color: hsl(0 0% 100% / 0.6);
-    text-shadow: 0 1px 2px hsl(210 80% 15% / 0.4);
-  }
-
-  .footer-link {
-    @apply text-xs transition-opacity duration-200;
-    color: hsl(0 0% 100% / 0.9);
-    text-shadow: 0 1px 3px hsl(210 80% 15% / 0.5);
-  }
-
-  .footer-link:hover {
-    color: hsl(0 0% 100%);
   }
 }
 

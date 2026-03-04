@@ -1,197 +1,148 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapPin, Calendar, ArrowRight, Instagram, MessageCircle, Clock, Music, Sparkles, Users, Heart, Star } from "lucide-react";
+import {
+  MapPin, Calendar, ArrowRight, Ticket, Clock, Music, Music2, Sparkles,
+  Users, Heart, Star, Gift, Mic, Quote, Send, MessageCircle,
+  ChevronLeft, ChevronRight, Globe, PartyPopper, Cake
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
+import { supabase } from "@/integrations/supabase/client";
+import heroImg from "@/assets/gimme-hero.jpg";
 import eventHeaderImg from "@/assets/gimme-event-header.jpg";
 import gimmeImg2 from "@/assets/gimme-img2.jpg";
 import gimmeImg3 from "@/assets/gimme-img3.jpg";
-import Navbar from "@/components/Navbar";
-import { supabase } from "@/integrations/supabase/client";
-
-/* ─── Event Data from DB ─── */
-interface Event {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  date: string;
-  dateShort: string;
-  time: string;
-  location: string;
-  city: string;
-  image: string | null;
-  tag: string;
-  highlight?: boolean;
-  status?: string;
-}
 
 const fallbackImages = [eventHeaderImg, gimmeImg2, gimmeImg3];
 
-/* ─── Animations ─── */
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, delay: i * 0.1, ease: "easeOut" as const },
-  }),
-};
+/* ─── Hero ─── */
+const Hero = () => (
+  <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <div className="absolute inset-0">
+      <img src={heroImg} alt="GIMME GIMME PARTY – Tausende Fans feiern zur ABBA Musik" className="w-full h-full object-cover" loading="eager" />
+      <div className="absolute inset-0 bg-hero-overlay" />
+      <div className="absolute inset-0 bg-background/40" />
+    </div>
+    <div className="relative z-10 container text-center px-4 py-20">
+      <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+        <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-none mb-4">
+          GIMME GIMME{" "}<span className="text-gradient-primary">PARTY!</span>
+        </h1>
+        <p className="font-display text-2xl sm:text-3xl md:text-4xl text-gold mb-2">Die große Europa-Tour</p>
+        <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">
+          DAS MAMMA MIA FANKONZERT – 2,5 Stunden Show voller ABBA-Hits, Glitzer & Emotionen
+        </p>
+      </motion.div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
+          <Ticket className="w-5 h-5" /> Tickets sichern
+        </a>
+      </motion.div>
+    </div>
+    <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 w-6 h-10 rounded-full border-2 border-foreground/30 flex items-start justify-center p-2">
+      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+    </motion.div>
+  </section>
+);
 
-/* ─── Video Hero ─── */
-const VideoHero = () => {
+/* ─── Trust Badges ─── */
+const TrustBadges = () => {
+  const badges = [
+    { icon: MapPin, value: "150+", label: "STÄDTE" },
+    { icon: Globe, value: "13+", label: "LÄNDER" },
+    { icon: Heart, value: "1.5M+", label: "FOLLOWER" },
+    { icon: Users, value: "250K+", label: "FANS" },
+  ];
+
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      {/* Desktop Video */}
-      <video
-        src="https://gimmegimmeparty.com/assets/videos/video.mp4"
-        className="hidden md:block absolute inset-0 w-full h-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
-      {/* Mobile Video */}
-      <video
-        src="https://gimmegimmeparty.com/assets/videos/video9_16.mp4"
-        className="md:hidden absolute inset-0 w-full h-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
-      {/* Gradient Overlay */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, hsl(220 50% 10% / 0.3) 0%, hsl(220 50% 10% / 0.1) 30%, hsl(220 50% 10% / 0.5) 70%, hsl(220 50% 8%) 100%)",
-        }}
-      />
-      {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-4 sm:px-8 pb-16 sm:pb-24">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-        >
-          <p
-            className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3"
-            style={{ color: "hsl(330 80% 55%)" }}
-          >
-            Die große Europa-Tour
-          </p>
-          <h1
-            className="text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.85] mb-4"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
-          >
-            GIMME
-            <br />
-            GIMME
-            <br />
-            <span style={{ color: "hsl(330 80% 55%)" }}>PARTY!</span>
-          </h1>
-          <p
-            className="text-sm sm:text-lg font-semibold uppercase tracking-wider mb-8 max-w-xl"
-            style={{ color: "hsl(0 0% 100% / 0.7)" }}
-          >
-            DAS MAMMA MIA FANKONZERT – 2,5 Stunden Show voller ABBA-Hits, Glitzer & Emotionen
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="#events"
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
-              style={{
-                background: "hsl(330 80% 50%)",
-                color: "hsl(0 0% 100%)",
-                boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)",
-              }}
-            >
-              Tickets sichern
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href="#about"
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
-              style={{
-                background: "hsl(0 0% 100% / 0.1)",
-                color: "hsl(0 0% 100%)",
-                border: "1px solid hsl(0 0% 100% / 0.2)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              Mehr erfahren
-            </a>
-          </div>
-        </motion.div>
+    <section className="py-12 md:py-16 bg-card/50">
+      <div className="container">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {badges.map((b, i) => (
+            <motion.div key={b.value} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className="flex flex-col items-center text-center p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+              <b.icon className="w-7 h-7 text-primary mb-3" />
+              <span className="font-display text-3xl md:text-4xl text-gradient-primary">{b.value}</span>
+              <span className="text-xs font-semibold tracking-wider text-muted-foreground mt-1">{b.label}</span>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
 };
 
-/* ─── About Section ─── */
-const AboutSection = () => (
-  <section id="about" className="py-20 sm:py-32">
-    <div className="max-w-6xl mx-auto px-4 sm:px-8">
-      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-        <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>
-          Was erwartet dich?
-        </p>
-        <h2 className="text-3xl sm:text-5xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-          Mehr als nur <span style={{ color: "hsl(330 80% 55%)" }}>eine Party</span>
-        </h2>
-        <p className="text-sm sm:text-lg leading-relaxed max-w-3xl mx-auto" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-          Du liebst ABBA, Mamma Mia ist für dich mehr als nur ein Film und du tanzt bei jedem &bdquo;Gimme! Gimme!&ldquo; los? 
-          Dann ist das deine Bühne! Dich erwartet eine mitreißende 2,5-stündige Show voller Hits, Glitzer und Emotionen – 
-          wie ein echter Mamma Mia Film, nur live!
-        </p>
-      </motion.div>
+/* ─── What Is It ─── */
+const WhatIsIt = () => {
+  const features = [
+    { icon: Clock, label: "3+ Stunden Party" },
+    { icon: Music2, label: "Live DJ & Performer" },
+    { icon: Sparkles, label: "Glitter & Accessoires inklusive" },
+    { icon: Users, label: "250.000+ Fans weltweit" },
+  ];
 
-      {/* Reasons / Feature Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          {
-            icon: Music,
-            emoji: "💃",
-            title: "Die größten Hits zum Mitsingen",
-            desc: 'Von "Dancing Queen" über "Mamma Mia" bis "Waterloo" – alle Kult-Hits live vom DJ-Pult. Jeder Song wird zum Gänsehautmoment!',
-          },
-          {
-            icon: Sparkles,
-            emoji: "🪩",
-            title: "Einzigartige Mamma Mia Atmosphäre",
-            desc: "Wir nehmen euch mit in unsere eigene Mamma Mia Welt – mit verkleideten Akteuren, Fotospots und Disco-Feeling.",
-          },
-          {
-            icon: Heart,
-            emoji: "✨",
-            title: "Unvergessliche Momente",
-            desc: "Mädelsabend, JGA, Mutter-Tochter-Erlebnis oder Geburtstagsparty – hier entstehen magische Erinnerungen fürs Leben.",
-          },
-        ].map((item, i) => (
-          <motion.div
-            key={item.title}
-            custom={i}
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="rounded-2xl p-8 text-center transition-all duration-300 hover:scale-[1.02]"
-            style={{
-              background: "hsl(0 0% 100% / 0.04)",
-              border: "1px solid hsl(0 0% 100% / 0.08)",
-            }}
-          >
-            <div className="text-4xl mb-4">{item.emoji}</div>
-            <h3
-              className="text-sm sm:text-base font-bold uppercase mb-3"
-              style={{ color: "hsl(0 0% 100%)" }}
-            >
-              {item.title}
-            </h3>
-            <p className="text-xs sm:text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-              {item.desc}
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-6">
+              <span className="italic">Was ist die</span>{" "}
+              <span className="text-gradient-primary">GIMME GIMME PARTY?</span>
+            </h2>
+            <p className="text-muted-foreground leading-relaxed mb-8 max-w-lg">
+              Die weltweit größte ABBA Party! Ein einzigartiges Sing-Along Erlebnis mit den Songs, die Generationen geprägt haben. 
+              Zieh dein glitzerndstes Outfit an, bring deine Freunde mit und mach dich bereit für Dancing Queen, Mamma Mia, Waterloo und mehr!
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {features.map((f, i) => (
+                <motion.div key={f.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/50">
+                  <f.icon className="w-5 h-5 text-primary shrink-0" />
+                  <span className="text-sm font-medium text-foreground">{f.label}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="rounded-2xl overflow-hidden border border-border">
+            <img src={eventHeaderImg} alt="GIMME GIMME PARTY Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ─── Country Badges ─── */
+const countries = [
+  { flag: "🇩🇪", name: "Deutschland" }, { flag: "🇦🇹", name: "Österreich" },
+  { flag: "🇨🇭", name: "Schweiz" }, { flag: "🇳🇱", name: "Niederlande" },
+  { flag: "🇫🇷", name: "Frankreich" }, { flag: "🇱🇺", name: "Luxemburg" },
+  { flag: "🇧🇪", name: "Belgien" }, { flag: "🇵🇱", name: "Polen" },
+  { flag: "🇨🇿", name: "Tschechien" }, { flag: "🇮🇹", name: "Italien" },
+  { flag: "🇪🇸", name: "Spanien" }, { flag: "🇭🇷", name: "Kroatien" },
+  { flag: "🇧🇷", name: "Brasilien" },
+];
+
+const CountryBadges = () => (
+  <section className="py-12 md:py-20">
+    <div className="container">
+      <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
+        Wir sind in <span className="text-gradient-primary">13 Ländern</span>
+      </h2>
+      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
+        Die größte ABBA Sing-Along Party-Tour Europas – und darüber hinaus.
+      </p>
+      <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+        {countries.map((c, i) => (
+          <motion.div key={c.flag} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+            <span className="text-2xl">{c.flag}</span>
+            <span className="text-sm font-medium text-foreground">{c.name}</span>
           </motion.div>
         ))}
       </div>
@@ -199,204 +150,144 @@ const AboutSection = () => (
   </section>
 );
 
-/* ─── Musik & Konzept ─── */
-const KonzeptSection = () => (
-  <section className="py-16 sm:py-24" style={{ background: "hsl(220 50% 6%)" }}>
-    <div className="max-w-6xl mx-auto px-4 sm:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Text */}
-        <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>
-            Musik & Konzept
-          </p>
-          <h2 className="text-2xl sm:text-4xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-            3 Stunden <span style={{ color: "hsl(330 80% 55%)" }}>Zeitreise</span>
-          </h2>
-          <p className="text-sm sm:text-base leading-relaxed mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            Die Mamma Mia Party ist keine normale Party – sie ist eine 3-stündige Zeitreise in die goldene Ära der 70er, 
-            kombiniert mit modernen Party-Vibes. Hier geht es nicht ums Zuhören, sondern um Mitsingen, Tanzen und Loslassen.
-          </p>
-          <div className="space-y-3">
-            {[
-              "ABBA – alle großen Klassiker (Dancing Queen, Mamma Mia, Gimme! Gimme! Gimme!, Waterloo u.v.m.)",
-              "70er & 80er Disco- & Pop-Hits – Feel-Good Classics",
-              "Moderne Party-Edits, damit die Tanzfläche nicht stehen bleibt",
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <Star className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
-                <span className="text-xs sm:text-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{item}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs font-semibold uppercase tracking-wider mt-6" style={{ color: "hsl(330 80% 55% / 0.8)" }}>
-            Keine Schlagerparty. Kein reiner Oldie-Abend. Sondern ABBA-Power mit Club-Energie.
-          </p>
-        </motion.div>
+/* ─── For Whom ─── */
+const audiences = [
+  { icon: PartyPopper, title: "JGA / Bachelorette", desc: "Die perfekte Feier mit den Mädels vor dem großen Tag." },
+  { icon: Cake, title: "Geburtstage", desc: "Feier deinen Geburtstag auf eine einzigartige und unvergessliche Art." },
+  { icon: Heart, title: "Girls Night Out", desc: "Versammelt die Truppe und singt die Songs, die ihr liebt." },
+  { icon: Users, title: "Gruppen", desc: "Spezielle Angebote für Gruppen ab 10 Personen." },
+  { icon: Star, title: "Fans aller Generationen", desc: "ABBA ist zeitlos – Fans jeden Alters sind willkommen!" },
+];
 
-        {/* Gallery */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="grid grid-cols-2 gap-3"
-        >
-          <img
-            src="/images/gimme-gallery-1.jpg"
-            alt="Gimme Gimme Party Stimmung"
-            className="rounded-2xl w-full h-48 sm:h-64 object-cover col-span-2"
-          />
-          <img
-            src="/images/gimme-gallery-2.jpg"
-            alt="Gimme Gimme Party Show"
-            className="rounded-2xl w-full h-36 sm:h-48 object-cover"
-          />
-          <img
-            src="/images/gimme-gallery-3.jpg"
-            alt="Gimme Gimme Party Publikum"
-            className="rounded-2xl w-full h-36 sm:h-48 object-cover"
-          />
-        </motion.div>
+const ForWhom = () => (
+  <section className="py-16 md:py-24">
+    <div className="container">
+      <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
+        <span className="italic">Für wen ist</span>{" "}
+        <span className="text-gradient-primary">die Party?</span>
+      </h2>
+      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
+        Die GIMME GIMME PARTY ist für alle, die ABBA lieben und eine unvergessliche Nacht erleben wollen!
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <img src={gimmeImg2} alt="Party crowd" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
+        <img src={gimmeImg3} alt="Party atmosphere" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {audiences.map((a, i) => (
+          <motion.div key={a.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+            className="p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
+            <a.icon className="w-5 h-5 text-primary mb-2" />
+            <h3 className="font-display text-lg text-primary mb-1">{a.title}</h3>
+            <p className="text-sm text-muted-foreground">{a.desc}</p>
+          </motion.div>
+        ))}
       </div>
     </div>
   </section>
 );
 
-/* ─── Für wen? ─── */
-const ZielgruppeSection = () => (
-  <section className="py-16 sm:py-24">
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
-      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-        <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>
-          Für wen?
-        </p>
-        <h2 className="text-2xl sm:text-4xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-          Für alle, die Musik <span style={{ color: "hsl(330 80% 55%)" }}>fühlen</span>
-        </h2>
-        <p className="text-sm sm:text-base leading-relaxed mb-10" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-          Egal ob du ABBA früher gehört hast oder sie durch Filme & TikTok neu entdeckt hast – diese Party holt dich ab.
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { emoji: "👯‍♀️", label: "Mädelsabende" },
-            { emoji: "🎂", label: "Geburtstage & JGAs" },
-            { emoji: "🪩", label: "ABBA-Fans" },
-            { emoji: "👩‍👧", label: "Mutter & Tochter" },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl p-5 transition-all hover:scale-105"
-              style={{
-                background: "hsl(0 0% 100% / 0.04)",
-                border: "1px solid hsl(0 0% 100% / 0.08)",
-              }}
-            >
-              <div className="text-3xl mb-2">{item.emoji}</div>
-              <span className="text-xs sm:text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  </section>
-);
+/* ─── Event Countdown ─── */
+function pad(n: number) { return String(n).padStart(2, "0"); }
 
-/* ─── Event Card ─── */
-const EventCard = ({ event, index }: { event: Event; index: number }) => {
-  const Wrapper = event.slug
-    ? ({ children, ...props }: any) => (
-        <Link to={`/${event.slug}`} {...props}>
-          {children}
-        </Link>
-      )
-    : ({ children, ...props }: any) => <div {...props}>{children}</div>;
+const EventCountdown = () => {
+  const [nextEvent, setNextEvent] = useState<{ city: string; location: string; date: string } | null>(null);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    const fetchNext = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("city, location_name, date")
+        .eq("status", "published")
+        .gte("date", new Date().toISOString().split("T")[0])
+        .order("date")
+        .limit(1);
+      if (data?.[0]) setNextEvent({ city: data[0].city || "", location: data[0].location_name || "", date: data[0].date || "" });
+    };
+    fetchNext();
+  }, []);
+
+  useEffect(() => {
+    if (!nextEvent?.date) return;
+    const target = new Date(nextEvent.date).getTime();
+    const tick = () => {
+      const diff = Math.max(0, target - Date.now());
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        mins: Math.floor((diff % 3600000) / 60000),
+        secs: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [nextEvent]);
+
+  if (!nextEvent) return null;
+
+  const dateStr = nextEvent.date ? new Date(nextEvent.date).toLocaleDateString("de-DE", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  }) : "";
 
   return (
-    <motion.div custom={index} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-      <Wrapper className="block group cursor-pointer">
-        <div
-          className="rounded-2xl overflow-hidden transition-all duration-300 group-hover:scale-[1.02]"
-          style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-        >
-          <div className="relative aspect-[16/10] overflow-hidden">
-            {event.image ? (
-              <img
-                src={event.image}
-                alt={event.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, hsl(220 40% 20%) 0%, hsl(220 30% 10%) 100%)" }}
-              >
-                <span className="text-xl sm:text-2xl font-black uppercase opacity-20" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-                  {event.title}
-                </span>
-              </div>
-            )}
-            <span
-              className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-              style={{
-                background: event.status ? "hsl(330 80% 50% / 0.9)" : "hsl(0 0% 0% / 0.6)",
-                color: "hsl(0 0% 100% / 0.95)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              {event.tag}
-            </span>
-            {event.dateShort !== "TBA" && (
-              <div
-                className="absolute bottom-3 left-3 px-3 py-2 rounded-xl text-center leading-tight"
-                style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
-              >
-                <div className="text-[10px] font-bold uppercase">{event.dateShort.split(" ")[1]}</div>
-                <div className="text-lg font-black">{event.dateShort.split(" ")[0]}</div>
-              </div>
-            )}
-          </div>
-          <div className="p-4 sm:p-5">
-            <h3
-              className="text-base sm:text-lg font-black uppercase leading-tight mb-1"
-              style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
-            >
-              {event.title}
-            </h3>
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-              {event.subtitle}
-            </p>
-            <div className="flex items-center gap-4 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" style={{ color: "hsl(330 80% 55%)" }} />
-                {event.date}
-              </span>
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" style={{ color: "hsl(330 80% 55%)" }} />
-                {event.city}
-              </span>
-            </div>
-          </div>
+    <section className="py-16 md:py-24 bg-card/50">
+      <div className="container text-center">
+        <h2 className="font-display text-4xl md:text-5xl mb-2 text-foreground">
+          Nächstes <span className="text-gradient-gold">Event</span>
+        </h2>
+        <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8 flex-wrap">
+          <MapPin className="w-4 h-4" />
+          <span>{nextEvent.city}</span>
+          <span>·</span>
+          <span>{nextEvent.location}</span>
+          <span>·</span>
+          <span>{dateStr}</span>
         </div>
-      </Wrapper>
-    </motion.div>
+        <div className="flex justify-center gap-4 md:gap-6 mb-10">
+          {[
+            { val: timeLeft.days, label: "Tage" },
+            { val: timeLeft.hours, label: "Stunden" },
+            { val: timeLeft.mins, label: "Minuten" },
+            { val: timeLeft.secs, label: "Sekunden" },
+          ].map(u => (
+            <motion.div key={u.label} className="flex flex-col items-center" initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} viewport={{ once: true }}>
+              <span className="font-display text-4xl md:text-6xl text-primary">{pad(u.val)}</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{u.label}</span>
+            </motion.div>
+          ))}
+        </div>
+        <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
+          <Ticket className="w-5 h-5" />
+          Tickets für {nextEvent.city}
+        </a>
+      </div>
+    </section>
   );
 };
 
-/* ─── Events Section ─── */
-const EventsSection = () => {
-  const [cityEvents, setCityEvents] = useState<Event[]>([]);
+/* ─── Upcoming Events from DB ─── */
+interface Event {
+  id: string; slug: string; title: string; subtitle: string;
+  date: string; dateShort: string; time: string; location: string;
+  city: string; image: string | null; tag: string; highlight?: boolean;
+}
+
+const UpcomingEvents = () => {
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    const fetchCities = async () => {
+    const fetch = async () => {
       const { data: series } = await supabase
         .from("event_series")
         .select("id, slug, title, city, image_url")
         .eq("status", "published")
         .order("sort_order")
-        .limit(12);
-
+        .limit(6);
       if (!series) return;
 
-      // For each series, get the next upcoming event
       const mapped: Event[] = [];
       for (const s of series) {
         const { data: ev } = await supabase
@@ -408,45 +299,96 @@ const EventsSection = () => {
           .order("date")
           .limit(1);
 
-        const firstEvent = ev?.[0];
-        const dateObj = firstEvent?.date ? new Date(firstEvent.date + "T00:00:00") : null;
+        const e = ev?.[0];
+        const d = e?.date ? new Date(e.date + "T00:00:00") : null;
+        const months = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
         mapped.push({
-          id: s.id,
-          slug: s.slug,
+          id: s.id, slug: s.slug,
           title: (s.city || s.title).toUpperCase(),
-          subtitle: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
-          date: dateObj ? `${dateObj.getDate()}. ${["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"][dateObj.getMonth()]} ${dateObj.getFullYear()}` : "Bald verfügbar",
-          dateShort: dateObj ? `${dateObj.getDate()}. ${["JAN", "FEB", "MÄR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"][dateObj.getMonth()]}` : "TBA",
-          time: firstEvent?.time || "20:00 Uhr",
-          location: firstEvent?.location_name || "TBA",
+          subtitle: "MAMMA MIA / ABBA TOUR",
+          date: d ? `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}` : "Bald verfügbar",
+          dateShort: d ? `${d.getDate()}. ${months[d.getMonth()].toUpperCase()}` : "TBA",
+          time: e?.time || "20:00",
+          location: e?.location_name || "TBA",
           city: s.city || s.title,
           image: s.image_url || fallbackImages[mapped.length % fallbackImages.length],
-          tag: firstEvent ? (firstEvent.highlight ? "Fast ausverkauft" : firstEvent.tag || "Konzert") : "Coming Soon",
-          highlight: firstEvent?.highlight || false,
-          status: firstEvent?.highlight ? "Fast ausverkauft!" : undefined,
+          tag: e ? (e.highlight ? "Fast ausverkauft" : e.tag || "Konzert") : "Coming Soon",
+          highlight: e?.highlight || false,
         });
       }
-
-      setCityEvents(mapped);
+      setEvents(mapped);
     };
-
-    fetchCities();
+    fetch();
   }, []);
 
   return (
-    <section id="events" className="py-16 sm:py-24" style={{ background: "hsl(220 50% 6%)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="flex items-end justify-between mb-8 sm:mb-12">
-          <div>
-            <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mb-2" style={{ color: "hsl(330 80% 55%)" }}>Kommende</p>
-            <h2 className="text-2xl sm:text-4xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events & Tickets</h2>
-          </div>
-        </motion.div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {cityEvents.map((event, i) => (
-            <EventCard key={event.id} event={event} index={i} />
+    <section id="events" className="py-16 md:py-24">
+      <div className="container">
+        <h2 className="font-display text-4xl md:text-5xl text-center mb-12 text-foreground">
+          Kommende <span className="text-gradient-primary">Events</span>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {events.map((ev, i) => (
+            <motion.div key={ev.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+              <Link to={`/${ev.slug}`} className="flex items-center justify-between p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+                <div className="flex gap-4 items-center">
+                  <div className="text-center min-w-[50px]">
+                    <span className="font-display text-2xl text-primary">{ev.dateShort.split(".")[0]}</span>
+                    <p className="text-xs text-muted-foreground uppercase">{ev.dateShort.split(" ").pop()}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{ev.city}</h3>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.location}</p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                  <Ticket className="w-4 h-4" />Tickets
+                </span>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+        <div className="text-center">
+          <Link to="/vergangene-events" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+            Alle Events ansehen <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ─── What To Expect ─── */
+const WhatToExpect = () => {
+  const features = [
+    { icon: Music, title: "Live DJ", desc: "Professioneller DJ mit den besten ABBA-Hits und Party-Classics." },
+    { icon: Users, title: "Show-Crew", desc: "Verkleidete Performer sorgen für die ultimative Mamma Mia Atmosphäre." },
+    { icon: Sparkles, title: "Glitter & Accessoires", desc: "Glitter, Leuchtstäbe und Accessoires – alles inklusive!" },
+    { icon: Gift, title: "Goodie Bags", desc: "Jeder Gast bekommt ein Party-Kit mit Überraschungen." },
+    { icon: Mic, title: "Sing-Along", desc: "Alle Texte auf großen Screens – jeder singt mit!" },
+    { icon: Heart, title: "Unvergesslich", desc: "Emotionen, Gänsehaut und magische Momente garantiert." },
+  ];
+
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
+          Was dich <span className="text-gradient-primary">erwartet</span>
+        </h2>
+        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
+          Jede GIMME GIMME PARTY ist ein Gesamterlebnis – mehr als nur Musik.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f, i) => (
+            <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+              className="flex gap-4 p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+              <f.icon className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-display text-lg text-foreground mb-1">{f.title}</h3>
+                <p className="text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -454,152 +396,206 @@ const EventsSection = () => {
   );
 };
 
-/* ─── Dresscode CTA ─── */
-const DresscodeCTA = () => (
-  <section className="py-16 sm:py-24">
-    <div className="max-w-4xl mx-auto px-4 sm:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="rounded-3xl p-8 sm:p-12 text-center"
-        style={{
-          background: "linear-gradient(135deg, hsl(330 80% 50% / 0.15) 0%, hsl(280 60% 50% / 0.1) 100%)",
-          border: "1px solid hsl(330 80% 55% / 0.2)",
-        }}
-      >
-        <div className="text-5xl mb-4">🪩</div>
-        <h2 className="text-2xl sm:text-3xl font-black uppercase mb-4" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-          Dresscode
+/* ─── Ticket Categories ─── */
+const TicketCategories = () => {
+  const tickets = [
+    { name: "Regular Ticket", desc: "Eintritt zur Party mit allen Basis-Features.", price: "Ab 19,99€", popular: false },
+    { name: "Deluxe Ticket", desc: "Inkl. Goodie Bag, Glitter-Kit und Priority-Einlass.", price: "Ab 29,99€", popular: false },
+    { name: "VIP Ticket", desc: "Alles aus Deluxe + VIP-Bereich, Getränk und Meet & Greet.", price: "Ab 49,99€", popular: true },
+  ];
+
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
+          Unsere <span className="text-gradient-primary">Tickets</span>
         </h2>
-        <p className="text-sm sm:text-lg mb-2" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-          Glitzer, Mamma Mia oder ABBA-Bezug!
-        </p>
-        <p className="text-xs sm:text-sm mb-8" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-          Kein Muss, aber gerne gesehen – Schlaghosen, Disco-Outfits, alles kann, nichts muss. 💃
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            to="#events"
-            className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
-            style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}
-          >
-            Jetzt Tickets sichern
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="http://bit.ly/mammamiacommunity"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
-            style={{ background: "hsl(142 70% 45%)", color: "hsl(0 0% 100%)" }}
-          >
-            <MessageCircle className="w-4 h-4" />
-            WhatsApp Community
-          </a>
+        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">Wähle das Ticket, das zu dir passt.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
+          {tickets.map((tk, i) => (
+            <motion.div key={tk.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className={`relative flex flex-col p-6 rounded-xl border transition-all hover:scale-[1.02] ${tk.popular ? "border-primary bg-primary/5 glow-primary" : "border-border bg-card hover:border-primary/30"}`}>
+              {tk.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">Beliebt</span>}
+              <h3 className="font-display text-xl mb-2 text-foreground">{tk.name}</h3>
+              <p className="text-sm text-muted-foreground flex-1 mb-4">{tk.desc}</p>
+              <p className="font-display text-2xl text-gold mb-4">{tk.price}</p>
+              <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
+                <Ticket className="w-4 h-4" />Jetzt buchen
+              </a>
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
+      </div>
+    </section>
+  );
+};
+
+/* ─── Gallery Slideshow ─── */
+const slides = [
+  { src: "/images/gimme-gallery-1.jpg", alt: "GIMME GIMME PARTY – Full Venue" },
+  { src: "/images/gimme-gallery-2.jpg", alt: "Crowd at ABBA show" },
+  { src: "/images/gimme-gallery-3.jpg", alt: "Party atmosphere" },
+];
+
+const GallerySlideshow = () => {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  const go = useCallback((dir: 1 | -1) => {
+    setDirection(dir);
+    setCurrent(prev => (prev + dir + slides.length) % slides.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => go(1), 5000);
+    return () => clearInterval(timer);
+  }, [go]);
+
+  return (
+    <section className="py-16 md:py-24 overflow-hidden">
+      <div className="container">
+        <h2 className="font-display text-4xl md:text-5xl text-center mb-10 text-foreground">
+          PARTY <span className="text-gradient-primary">VIBES</span>
+        </h2>
+        <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden aspect-[16/9] bg-card">
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={current}
+              custom={direction}
+              initial={{ x: direction > 0 ? "100%" : "-100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: direction > 0 ? "-100%" : "100%", opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <img src={slides[current].src} alt={slides[current].alt} className="w-full h-full object-cover" />
+            </motion.div>
+          </AnimatePresence>
+          <button onClick={() => go(-1)} aria-label="Previous"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background/80 transition-colors z-10">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button onClick={() => go(1)} aria-label="Next"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background/80 transition-colors z-10">
+            <ChevronRight className="w-5 h-5" />
+          </button>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {slides.map((_, i) => (
+              <button key={i} onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-primary w-6" : "bg-foreground/40 hover:bg-foreground/60"}`}
+                aria-label={`Slide ${i + 1}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ─── Reviews ─── */
+const reviews = [
+  { name: "Camila R.", text: "Beste Nacht meines Lebens! Wir haben jeden Song zusammen gesungen, ich habe bei Dancing Queen geweint. Hab schon Tickets für's nächste Mal!", rating: 5 },
+  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Der Glitter, die Energie, einfach alles war unglaublich!", rating: 5 },
+  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, wir fühlten uns wie in den 70ern!", rating: 5 },
+  { name: "Ana Clara S.", text: "Ich habe meine Mutter mitgebracht und es war so emotional. ABBA verbindet Generationen! Die Produktion ist makellos.", rating: 5 },
+  { name: "Juliana K.", text: "Wir waren mit 15 Freunden da. Die Organisation war top, der Gruppenrabatt hat sich absolut gelohnt. Wir kommen wieder!", rating: 5 },
+  { name: "Marcos T.", text: "Ich dachte, es wäre nur für Frauen, aber ich hatte SO VIEL SPASS. Die Party ist für alle, die gute Laune lieben!", rating: 5 },
+];
+
+const Reviews = () => (
+  <section className="py-16 md:py-24">
+    <div className="container">
+      <h2 className="font-display text-3xl md:text-5xl text-center mb-12 text-foreground italic">
+        Was unsere <span className="text-gradient-primary">Fans sagen</span>
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {reviews.map((r, i) => (
+          <motion.div key={r.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+            className="p-6 rounded-xl bg-card border border-border flex flex-col">
+            <Quote className="w-8 h-8 text-primary mb-3" />
+            <p className="text-sm text-foreground/90 mb-4 flex-1">"{r.text}"</p>
+            <div className="flex items-center justify-between pt-3 border-t border-border">
+              <span className="text-sm font-semibold text-foreground">{r.name}</span>
+              <div className="flex gap-0.5">
+                {Array.from({ length: r.rating }).map((_, j) => (
+                  <Star key={j} className="w-4 h-4 fill-gold text-gold" />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   </section>
 );
 
-/* ─── Footer ─── */
-const HomeFooter = () => (
-  <footer className="pb-8 sm:pb-12 pt-12 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
-    <div className="max-w-7xl mx-auto px-4 sm:px-8">
-      {/* 4-column grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-        {/* Brand */}
-        <div>
-          <div className="mb-4">
-            <span className="text-sm font-black uppercase tracking-wider" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}>
-              GIMME GIMME
-            </span>
-            <span className="ml-2 text-xs font-bold uppercase tracking-[0.3em]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>PARTY</span>
-          </div>
-          <p className="text-sm mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-            Die größte ABBA Sing-Along Party-Tour Europas – 13 Länder, 150+ Städte, 250.000+ Fans.
-          </p>
-          <div className="flex gap-3">
-            <a href="https://www.instagram.com/mammamia.partymotto" target="_blank" rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
-              aria-label="Instagram">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="https://www.facebook.com/profile.php?id=61577320797241" target="_blank" rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
-              aria-label="Facebook">
-              <Users className="w-5 h-5" />
-            </a>
-            <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-              style={{ background: "hsl(142 70% 45% / 0.15)", color: "hsl(142 70% 55%)" }}
-              aria-label="WhatsApp">
-              <MessageCircle className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
+/* ─── Newsletter CTA ─── */
+const NewsletterCTA = () => {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Schnelllinks</h3>
-          <div className="flex flex-col gap-2">
-            <Link to="/#events" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Alle Events</Link>
-            <Link to="/fotos" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Fotos & Media</Link>
-            <Link to="/faq" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>FAQ</Link>
-            <Link to="/jobs" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Jobs</Link>
-            <Link to="/promoter" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Promoter werden</Link>
-            <Link to="/kontakt" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Kontakt</Link>
-          </div>
-        </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    await supabase.from("newsletter_subscribers").insert({ email, source: "landing_page" });
+    setSubmitted(true);
+  };
 
-        {/* Contact */}
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Kontakt</h3>
-          <div className="flex flex-col gap-2 text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-            <a href="mailto:mail@gimmegimmeparty.com" className="hover:opacity-100 transition-opacity">mail@gimmegimmeparty.com</a>
-            <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 hover:opacity-100 transition-opacity">
-              <MessageCircle className="w-4 h-4" /> WhatsApp Community
-            </a>
-          </div>
-        </div>
+  return (
+    <section className="py-16 md:py-24 bg-card/50">
+      <div className="container max-w-2xl text-center">
+        <h2 className="font-display text-4xl md:text-5xl mb-4 text-foreground">
+          Bleib <span className="text-gradient-gold">informiert</span>
+        </h2>
+        <p className="text-muted-foreground mb-8">Erhalte exklusive News, Presale-Zugang und Party-Updates direkt in dein Postfach.</p>
 
-        {/* Legal */}
-        <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Rechtliches</h3>
-          <div className="flex flex-col gap-2">
-            <Link to="/impressum" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Impressum</Link>
-            <Link to="/datenschutz" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Datenschutz</Link>
-            <Link to="/agb" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>AGB</Link>
-          </div>
+        {submitted ? (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-primary font-semibold text-lg">
+            🎉 Du bist dabei! Check dein Postfach.
+          </motion.p>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <input type="email" required placeholder="Deine E-Mail Adresse" value={email} onChange={e => setEmail(e.target.value)}
+              className="flex-1 px-4 py-3 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+            <button type="submit" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
+              <Send className="w-4 h-4" /> Anmelden
+            </button>
+          </form>
+        )}
+
+        <div className="mt-8">
+          <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(142,70%,45%)] text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
+            <MessageCircle className="w-5 h-5" /> WhatsApp Community
+          </a>
         </div>
       </div>
-
-      {/* Bottom bar */}
-      <div className="pt-6 text-center text-xs" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.3)" }}>
-        <p>© {new Date().getFullYear()} GIMME GIMME PARTY. Alle Rechte vorbehalten.</p>
-        <p className="mt-1">Homepage made by <a href="https://homepageschmied.de" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100 transition-opacity">Homepageschmied.de</a> · powered by <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100 transition-opacity">smea</a></p>
-      </div>
-    </div>
-  </footer>
-);
+    </section>
+  );
+};
 
 /* ─── Page ─── */
-const Index = () => (
-  <div className="min-h-screen" style={{ background: "hsl(220 50% 8%)" }}>
-    <Navbar />
-    <VideoHero />
-    <AboutSection />
-    <KonzeptSection />
-    <ZielgruppeSection />
-    <EventsSection />
-    <DresscodeCTA />
-    <HomeFooter />
-    <SupportChatbot />
-  </div>
-);
-
-export default Index;
+export default function Index() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-16 md:pt-20">
+        <Hero />
+        <TrustBadges />
+        <WhatIsIt />
+        <CountryBadges />
+        <ForWhom />
+        <EventCountdown />
+        <UpcomingEvents />
+        <WhatToExpect />
+        <TicketCategories />
+        <GallerySlideshow />
+        <Reviews />
+        <NewsletterCTA />
+      </main>
+      <Footer />
+      <SupportChatbot />
+    </div>
+  );
+}
