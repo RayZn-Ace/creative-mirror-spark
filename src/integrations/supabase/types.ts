@@ -591,6 +591,122 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string
+          id: string
+          is_internal: boolean | null
+          sender_email: string | null
+          sender_name: string | null
+          sender_type: string
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_type?: string
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          sender_email?: string | null
+          sender_name?: string | null
+          sender_type?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: Database["public"]["Enums"]["support_category"]
+          created_at: string
+          customer_email: string
+          customer_name: string | null
+          event_id: string | null
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          priority: Database["public"]["Enums"]["support_priority"]
+          resolved_at: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["support_status"]
+          subject: string
+          ticket_number: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["support_category"]
+          created_at?: string
+          customer_email: string
+          customer_name?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          priority?: Database["public"]["Enums"]["support_priority"]
+          resolved_at?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          subject: string
+          ticket_number?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: Database["public"]["Enums"]["support_category"]
+          created_at?: string
+          customer_email?: string
+          customer_name?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          priority?: Database["public"]["Enums"]["support_priority"]
+          resolved_at?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["support_status"]
+          subject?: string
+          ticket_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_categories: {
         Row: {
           badge: string | null
@@ -845,6 +961,16 @@ export type Database = {
         | "interstitial"
         | "ticket_ad"
       app_role: "admin" | "moderator" | "user" | "scanner"
+      support_category:
+        | "refund"
+        | "support"
+        | "job"
+        | "collaboration"
+        | "location"
+        | "influencer"
+        | "other"
+      support_priority: "low" | "normal" | "high" | "urgent"
+      support_status: "open" | "in_progress" | "waiting" | "resolved" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -980,6 +1106,17 @@ export const Constants = {
         "ticket_ad",
       ],
       app_role: ["admin", "moderator", "user", "scanner"],
+      support_category: [
+        "refund",
+        "support",
+        "job",
+        "collaboration",
+        "location",
+        "influencer",
+        "other",
+      ],
+      support_priority: ["low", "normal", "high", "urgent"],
+      support_status: ["open", "in_progress", "waiting", "resolved", "closed"],
     },
   },
 } as const
