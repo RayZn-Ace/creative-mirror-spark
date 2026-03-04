@@ -576,6 +576,37 @@ Deno.serve(async (req) => {
     let upcomingEvents: EventRow[] = [];
     let recipientCityMap: Map<string, string | null> = new Map();
 
+    // ─── Always look up recipient info for placeholder replacement ───
+    interface RecipientInfo { name: string | null; city: string | null; email: string }
+    const recipientInfoMap = new Map<string, RecipientInfo>();
+
+    // Look up from orders
+    const { data: ordersData } = await adminClient
+      .from("orders")
+      .select("email, name, event_id")
+      .in("email", recipients.map((e: string) => e.toLowerCase()));
+
+    // Look up from newsletter_subscribers
+    const { data: subscribersData } = await adminClient
+      .from("newsletter_subscribers")
+      .select("email, name, city")
+      .in("email", recipients.map((e: string) => e.toLowerCase()));
+
+    // Populate recipientInfoMap from subscribers first, then orders (orders override)
+    (subscribersData || []).forEach((s: any) => {
+      const email = s.email.toLowerCase();
+      recipientInfoMap.set(email, { name: s.name, city: s.city, email });
+    });
+    (ordersData || []).forEach((o: any) => {
+      const email = o.email.toLowerCase();
+      const existing = recipientInfoMap.get(email);
+      if (!existing) {
+        recipientInfoMap.set(email, { name: o.name, city: null, email });
+      } else if (!existing.name && o.name) {
+        existing.name = o.name;
+      }
+    });
+
     if (magicMode) {
       const today = new Date().toISOString().split("T")[0];
       const { data: eventsData } = await adminClient
@@ -586,11 +617,6 @@ Deno.serve(async (req) => {
         .order("date", { ascending: true });
 
       upcomingEvents = (eventsData || []) as EventRow[];
-
-      const { data: ordersData } = await adminClient
-        .from("orders")
-        .select("email, event_id")
-        .in("email", recipients.map((e: string) => e.toLowerCase()));
 
       const eventIds = new Set<string>();
       (ordersData || []).forEach((o: any) => { if (o.event_id) eventIds.add(o.event_id); });
@@ -624,7 +650,21 @@ Deno.serve(async (req) => {
           if (count > maxCount) { maxCount = count; maxCity = city; }
         });
         recipientCityMap.set(email, maxCity || null);
+        // Also set city in recipientInfoMap if not already set
+        const info = recipientInfoMap.get(email);
+        if (info && !info.city && maxCity) info.city = maxCity;
       });
+    }
+
+    // ─── Placeholder replacement helper ───
+    function replacePlaceholders(text: string, info: RecipientInfo): string {
+      const fullName = info.name || "";
+      const firstName = fullName.split(/\s+/)[0] || "";
+      return text
+        .replace(/\{\{name\}\}/gi, fullName)
+        .replace(/\{\{vorname\}\}/gi, firstName)
+        .replace(/\{\{city\}\}/gi, info.city || "")
+        .replace(/\{\{email\}\}/gi, info.email);
     }
 
     // Pre-compute translation cache: translate once per language, not per recipient
@@ -637,12 +677,18 @@ Deno.serve(async (req) => {
       const batch = recipients.slice(i, i + batchSize);
       const promises = batch.map(async (email: string) => {
         try {
+          const recipientInfo: RecipientInfo = recipientInfoMap.get(email.toLowerCase()) || { name: null, city: null, email };
           let personalizedHtml = html;
+          let personalizedSubject = subject;
           let recipientLang = "de"; // Default to German
 
+          // Replace placeholders in HTML and subject
+          personalizedHtml = replacePlaceholders(personalizedHtml, recipientInfo);
+          personalizedSubject = replacePlaceholders(personalizedSubject, recipientInfo);
+
           if (magicMode) {
-            const recipientCity = recipientCityMap.get(email.toLowerCase()) || null;
-            personalizedHtml = personalizeHtml(html, recipientCity, upcomingEvents, siteUrl);
+            const recipientCity = recipientCityMap.get(email.toLowerCase()) || recipientInfo.city || null;
+            personalizedHtml = personalizeHtml(personalizedHtml, recipientCity, upcomingEvents, siteUrl);
 
             // Determine recipient language from city
             if (recipientCity) {
@@ -669,7 +715,7 @@ Deno.serve(async (req) => {
               Authorization: `Bearer ${RESEND_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ from, to: [email], subject, html: personalizedHtml }),
+            body: JSON.stringify({ from, to: [email], subject: personalizedSubject, html: personalizedHtml }),
           });
 
           if (!res.ok) {
