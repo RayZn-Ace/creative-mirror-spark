@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
+  ComposedChart, Legend,
+} from "recharts";
 import {
   TrendingUp, TrendingDown, Euro, ShoppingCart, Ticket, Users, Calendar,
   ArrowUpRight, ArrowDownRight, CreditCard, MapPin, Clock, BarChart3,
+  ChevronLeft, ChevronRight, Download, Filter, Sun, Moon, Eye, Target,
+  Percent, Repeat, UserCheck, Globe, Zap, ArrowRight,
 } from "lucide-react";
 
+/* ─── Helpers ─── */
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
+const fmtInt = (n: number) => n.toLocaleString("de-DE");
 const COLORS = [
   "hsl(330 80% 55%)", "hsl(260 70% 60%)", "hsl(200 80% 55%)", "hsl(140 60% 50%)",
   "hsl(40 90% 55%)", "hsl(10 80% 55%)", "hsl(180 60% 50%)", "hsl(290 60% 55%)",
+  "hsl(170 70% 50%)", "hsl(350 80% 55%)", "hsl(220 70% 60%)", "hsl(60 80% 50%)",
 ];
 
 const cardStyle: React.CSSProperties = {
@@ -19,52 +26,406 @@ const cardStyle: React.CSSProperties = {
   borderRadius: 16,
 };
 
-const StatCard = ({ icon: Icon, label, value, sub, trend, color }: any) => (
-  <div style={cardStyle} className="p-5 flex flex-col gap-2">
+const tooltipStyle = {
+  contentStyle: { background: "hsl(220 40% 14%)", border: "1px solid hsl(0 0% 100% / 0.1)", borderRadius: 12, fontSize: 12, color: "#fff" },
+  cursor: { fill: "hsl(0 0% 100% / 0.04)" },
+};
+
+const daysBetween = (a: Date, b: Date) => Math.ceil((b.getTime() - a.getTime()) / 86400000);
+
+const getWeekNumber = (d: Date) => {
+  const start = new Date(d.getFullYear(), 0, 1);
+  const diff = d.getTime() - start.getTime() + ((start.getDay() + 6) % 7) * 86400000;
+  return Math.ceil(diff / 604800000);
+};
+
+/* ─── Stat Card ─── */
+const StatCard = ({ icon: Icon, label, value, sub, trend, color, onClick, active }: any) => (
+  <div
+    style={{ ...cardStyle, ...(active ? { borderColor: color, boxShadow: `0 0 20px ${color}20` } : {}) }}
+    className={`p-4 sm:p-5 flex flex-col gap-1.5 ${onClick ? "cursor-pointer hover:border-white/20 transition-all" : ""}`}
+    onClick={onClick}
+  >
     <div className="flex items-center justify-between">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${color}20` }}>
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}20` }}>
         <Icon className="w-4 h-4" style={{ color }} />
       </div>
-      {trend !== undefined && (
-        <span className="flex items-center gap-1 text-xs font-bold" style={{ color: trend >= 0 ? "hsl(140 60% 50%)" : "hsl(0 70% 55%)" }}>
+      {trend !== undefined && trend !== null && (
+        <span className="flex items-center gap-0.5 text-[11px] font-bold" style={{ color: trend >= 0 ? "hsl(140 60% 50%)" : "hsl(0 70% 55%)" }}>
           {trend >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {Math.abs(trend).toFixed(1)}%
         </span>
       )}
     </div>
-    <span className="text-[11px] font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{label}</span>
-    <span className="text-xl font-black" style={{ color: "hsl(0 0% 100%)" }}>{value}</span>
+    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{label}</span>
+    <span className="text-lg sm:text-xl font-black" style={{ color: "hsl(0 0% 100%)" }}>{value}</span>
     {sub && <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{sub}</span>}
   </div>
 );
 
-const SectionHeader = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-sm font-bold uppercase tracking-wider mt-8 mb-4" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-    {children}
-  </h2>
+const SectionHeader = ({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) => (
+  <div className="flex items-center justify-between mt-8 mb-4">
+    <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{children}</h2>
+    {right}
+  </div>
 );
 
+/* ─── Date Range Presets ─── */
+type RangeKey = "today" | "yesterday" | "7d" | "14d" | "30d" | "thisMonth" | "lastMonth" | "90d" | "thisYear" | "all";
+const RANGE_PRESETS: { key: RangeKey; label: string }[] = [
+  { key: "today", label: "Heute" },
+  { key: "yesterday", label: "Gestern" },
+  { key: "7d", label: "7 Tage" },
+  { key: "14d", label: "14 Tage" },
+  { key: "30d", label: "30 Tage" },
+  { key: "thisMonth", label: "Dieser Monat" },
+  { key: "lastMonth", label: "Letzter Monat" },
+  { key: "90d", label: "90 Tage" },
+  { key: "thisYear", label: "Dieses Jahr" },
+  { key: "all", label: "Gesamt" },
+];
+
+const getRange = (key: RangeKey): [Date, Date] => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (key) {
+    case "today": return [today, now];
+    case "yesterday": { const y = new Date(today.getTime() - 86400000); return [y, today]; }
+    case "7d": return [new Date(today.getTime() - 7 * 86400000), now];
+    case "14d": return [new Date(today.getTime() - 14 * 86400000), now];
+    case "30d": return [new Date(today.getTime() - 30 * 86400000), now];
+    case "thisMonth": return [new Date(now.getFullYear(), now.getMonth(), 1), now];
+    case "lastMonth": return [new Date(now.getFullYear(), now.getMonth() - 1, 1), new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)];
+    case "90d": return [new Date(today.getTime() - 90 * 86400000), now];
+    case "thisYear": return [new Date(now.getFullYear(), 0, 1), now];
+    case "all": return [new Date(2020, 0, 1), now];
+  }
+};
+
+type ViewMode = "day" | "week" | "month";
+
+/* ─── Main Component ─── */
 const AnalyticsAdmin = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rangeKey, setRangeKey] = useState<RangeKey>("30d");
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [showRangeMenu, setShowRangeMenu] = useState(false);
+  const [detailTab, setDetailTab] = useState<"overview" | "revenue" | "orders" | "customers" | "events" | "geo">("overview");
 
   useEffect(() => {
     Promise.all([
-      supabase.from("orders").select("id, total_amount, service_fee, status, paid_at, created_at, email, event_id, name, birth_date").then(r => r.data ?? []),
-      supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id").then(r => r.data ?? []),
-      supabase.from("events").select("id, title, date, city, status, slug").then(r => r.data ?? []),
-      supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city").then(r => r.data ?? []),
+      supabase.from("orders").select("id, total_amount, service_fee, status, paid_at, created_at, email, event_id, name, birth_date, items, phone").then(r => r.data ?? []),
+      supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id, ticket_category_id, holder_email").then(r => r.data ?? []),
+      supabase.from("events").select("id, title, date, city, status, slug, location_name, sold_out, open_air").then(r => r.data ?? []),
+      supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city, source").then(r => r.data ?? []),
     ]).then(([o, t, e, s]) => {
-      setOrders(o);
-      setTickets(t);
-      setEvents(e);
-      setSubscribers(s);
+      setOrders(o); setTickets(t); setEvents(e); setSubscribers(s);
       setLoading(false);
     });
   }, []);
+
+  const [rangeStart, rangeEnd] = useMemo(() => getRange(rangeKey), [rangeKey]);
+
+  // Previous period for comparison
+  const rangeDays = daysBetween(rangeStart, rangeEnd);
+  const prevStart = new Date(rangeStart.getTime() - rangeDays * 86400000);
+  const prevEnd = new Date(rangeStart.getTime() - 1);
+
+  // Filtered data
+  const filteredOrders = useMemo(() => {
+    let o = orders.filter(o => o.status === "paid");
+    o = o.filter(o => {
+      const d = new Date(o.paid_at ?? o.created_at);
+      return d >= rangeStart && d <= rangeEnd;
+    });
+    if (selectedEvent) o = o.filter(o => o.event_id === selectedEvent);
+    return o;
+  }, [orders, rangeStart, rangeEnd, selectedEvent]);
+
+  const prevOrders = useMemo(() => {
+    let o = orders.filter(o => o.status === "paid");
+    o = o.filter(o => {
+      const d = new Date(o.paid_at ?? o.created_at);
+      return d >= prevStart && d <= prevEnd;
+    });
+    if (selectedEvent) o = o.filter(o => o.event_id === selectedEvent);
+    return o;
+  }, [orders, prevStart, prevEnd, selectedEvent]);
+
+  const filteredTickets = useMemo(() => {
+    let t = tickets.filter(t => {
+      const d = new Date(t.created_at);
+      return d >= rangeStart && d <= rangeEnd;
+    });
+    if (selectedEvent) t = t.filter(t => t.event_id === selectedEvent);
+    return t;
+  }, [tickets, rangeStart, rangeEnd, selectedEvent]);
+
+  const allPaidOrders = useMemo(() => orders.filter(o => o.status === "paid"), [orders]);
+  const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
+
+  // ── KPIs ──
+  const totalRevenue = filteredOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+  const prevRevenue = prevOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+  const revenueTrend = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : null;
+  const totalServiceFees = filteredOrders.reduce((s, o) => s + Number(o.service_fee), 0);
+  const avgOrderValue = filteredOrders.length > 0 ? totalRevenue / filteredOrders.length : 0;
+  const prevAOV = prevOrders.length > 0 ? prevOrders.reduce((s, o) => s + Number(o.total_amount), 0) / prevOrders.length : 0;
+  const aovTrend = prevAOV > 0 ? ((avgOrderValue - prevAOV) / prevAOV) * 100 : null;
+  const ticketCount = filteredTickets.length;
+  const prevTicketCount = tickets.filter(t => { const d = new Date(t.created_at); return d >= prevStart && d <= prevEnd; }).length;
+  const ticketTrend = prevTicketCount > 0 ? ((ticketCount - prevTicketCount) / prevTicketCount) * 100 : null;
+  const checkedIn = filteredTickets.filter(t => t.checked_in_at).length;
+  const checkinRate = ticketCount > 0 ? (checkedIn / ticketCount) * 100 : 0;
+  const orderCount = filteredOrders.length;
+  const prevOrderCount = prevOrders.length;
+  const orderTrend = prevOrderCount > 0 ? ((orderCount - prevOrderCount) / prevOrderCount) * 100 : null;
+
+  // Unique & repeat customers
+  const emailCount = new Map<string, number>();
+  filteredOrders.forEach(o => emailCount.set(o.email, (emailCount.get(o.email) ?? 0) + 1));
+  const uniqueCustomers = emailCount.size;
+  const repeatCustomers = Array.from(emailCount.values()).filter(c => c > 1).length;
+  const repeatRate = uniqueCustomers > 0 ? (repeatCustomers / uniqueCustomers) * 100 : 0;
+
+  // Revenue per day for chart
+  const revenuePerDay = useMemo(() => filteredOrders.reduce((acc, o) => {
+    const ds = (o.paid_at ?? o.created_at).split("T")[0];
+    acc[ds] = (acc[ds] ?? 0) + Number(o.total_amount);
+    return acc;
+  }, {} as Record<string, number>), [filteredOrders]);
+
+  const ordersPerDay = useMemo(() => filteredOrders.reduce((acc, o) => {
+    const ds = (o.paid_at ?? o.created_at).split("T")[0];
+    acc[ds] = (acc[ds] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>), [filteredOrders]);
+
+  const ticketsPerDay = useMemo(() => filteredTickets.reduce((acc, t) => {
+    const ds = t.created_at.split("T")[0];
+    acc[ds] = (acc[ds] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>), [filteredTickets]);
+
+  // Build chart data based on view mode
+  const chartData = useMemo(() => {
+    if (viewMode === "day") {
+      const data: { label: string; revenue: number; orders: number; tickets: number; date: string }[] = [];
+      const days = daysBetween(rangeStart, rangeEnd);
+      for (let i = 0; i < Math.min(days, 366); i++) {
+        const d = new Date(rangeStart.getTime() + i * 86400000);
+        const ds = d.toISOString().split("T")[0];
+        data.push({
+          label: d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
+          date: ds,
+          revenue: revenuePerDay[ds] ?? 0,
+          orders: ordersPerDay[ds] ?? 0,
+          tickets: ticketsPerDay[ds] ?? 0,
+        });
+      }
+      return data;
+    }
+    if (viewMode === "week") {
+      const weekMap = new Map<string, { revenue: number; orders: number; tickets: number }>();
+      const days = daysBetween(rangeStart, rangeEnd);
+      for (let i = 0; i < Math.min(days, 366); i++) {
+        const d = new Date(rangeStart.getTime() + i * 86400000);
+        const ds = d.toISOString().split("T")[0];
+        const wk = `KW ${getWeekNumber(d)}`;
+        const cur = weekMap.get(wk) ?? { revenue: 0, orders: 0, tickets: 0 };
+        cur.revenue += revenuePerDay[ds] ?? 0;
+        cur.orders += ordersPerDay[ds] ?? 0;
+        cur.tickets += ticketsPerDay[ds] ?? 0;
+        weekMap.set(wk, cur);
+      }
+      return Array.from(weekMap.entries()).map(([label, v]) => ({ label, ...v, date: label }));
+    }
+    // month
+    const monthMap = new Map<string, { revenue: number; orders: number; tickets: number }>();
+    const days = daysBetween(rangeStart, rangeEnd);
+    for (let i = 0; i < Math.min(days, 366); i++) {
+      const d = new Date(rangeStart.getTime() + i * 86400000);
+      const ds = d.toISOString().split("T")[0];
+      const mk = d.toLocaleDateString("de-DE", { month: "short", year: "2-digit" });
+      const cur = monthMap.get(mk) ?? { revenue: 0, orders: 0, tickets: 0 };
+      cur.revenue += revenuePerDay[ds] ?? 0;
+      cur.orders += ordersPerDay[ds] ?? 0;
+      cur.tickets += ticketsPerDay[ds] ?? 0;
+      monthMap.set(mk, cur);
+    }
+    return Array.from(monthMap.entries()).map(([label, v]) => ({ label, ...v, date: label }));
+  }, [viewMode, rangeStart, rangeEnd, revenuePerDay, ordersPerDay, ticketsPerDay]);
+
+  // Revenue by event
+  const revenueByEvent = useMemo(() => {
+    const map = new Map<string, { revenue: number; tickets: number; orders: number; fee: number }>();
+    filteredOrders.forEach(o => {
+      if (!o.event_id) return;
+      const cur = map.get(o.event_id) ?? { revenue: 0, tickets: 0, orders: 0, fee: 0 };
+      cur.revenue += Number(o.total_amount);
+      cur.orders += 1;
+      cur.fee += Number(o.service_fee);
+      map.set(o.event_id, cur);
+    });
+    filteredTickets.forEach(t => {
+      const cur = map.get(t.event_id) ?? { revenue: 0, tickets: 0, orders: 0, fee: 0 };
+      cur.tickets += 1;
+      map.set(t.event_id, cur);
+    });
+    return Array.from(map.entries())
+      .map(([id, v]) => ({ id, name: eventMap.get(id)?.title ?? "Unbekannt", city: eventMap.get(id)?.city ?? "", ...v }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [filteredOrders, filteredTickets, eventMap]);
+
+  // City breakdown
+  const cityData = useMemo(() => {
+    const map = new Map<string, { revenue: number; orders: number; tickets: number }>();
+    filteredOrders.forEach(o => {
+      const city = eventMap.get(o.event_id)?.city ?? "Unbekannt";
+      const cur = map.get(city) ?? { revenue: 0, orders: 0, tickets: 0 };
+      cur.revenue += Number(o.total_amount);
+      cur.orders += 1;
+      map.set(city, cur);
+    });
+    filteredTickets.forEach(t => {
+      const city = eventMap.get(t.event_id)?.city ?? "Unbekannt";
+      const cur = map.get(city) ?? { revenue: 0, orders: 0, tickets: 0 };
+      cur.tickets += 1;
+      map.set(city, cur);
+    });
+    return Array.from(map.entries())
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [filteredOrders, filteredTickets, eventMap]);
+
+  // Payment status (all orders in range, not just paid)
+  const paymentStatusData = useMemo(() => {
+    const map = new Map<string, number>();
+    orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d >= rangeStart && d <= rangeEnd;
+    }).forEach(o => map.set(o.status, (map.get(o.status) ?? 0) + 1));
+    const labels: Record<string, string> = { paid: "Bezahlt", pending: "Ausstehend", expired: "Abgelaufen", canceled: "Storniert", failed: "Fehlgeschlagen" };
+    return Array.from(map.entries()).map(([k, v]) => ({ name: labels[k] ?? k, value: v }));
+  }, [orders, rangeStart, rangeEnd]);
+
+  // Peak hours
+  const peakData = useMemo(() => {
+    const hours = new Array(24).fill(0);
+    filteredOrders.forEach(o => { if (o.paid_at) hours[new Date(o.paid_at).getHours()]++; });
+    return hours.map((count, h) => ({ hour: `${String(h).padStart(2, "0")}:00`, count }));
+  }, [filteredOrders]);
+
+  // Weekday breakdown
+  const weekdayData = useMemo(() => {
+    const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    const map = new Array(7).fill(0);
+    const revMap = new Array(7).fill(0);
+    filteredOrders.forEach(o => {
+      const d = new Date(o.paid_at ?? o.created_at).getDay();
+      map[d]++;
+      revMap[d] += Number(o.total_amount);
+    });
+    return days.map((name, i) => ({ name, orders: map[i], revenue: revMap[i] }));
+  }, [filteredOrders]);
+
+  // Age distribution
+  const ageData = useMemo(() => {
+    const groups: Record<string, number> = { "< 18": 0, "18-24": 0, "25-34": 0, "35-44": 0, "45-54": 0, "55+": 0 };
+    const now = new Date();
+    filteredOrders.forEach(o => {
+      if (!o.birth_date) return;
+      const age = Math.floor((now.getTime() - new Date(o.birth_date).getTime()) / (365.25 * 86400000));
+      if (age < 18) groups["< 18"]++;
+      else if (age <= 24) groups["18-24"]++;
+      else if (age <= 34) groups["25-34"]++;
+      else if (age <= 44) groups["35-44"]++;
+      else if (age <= 54) groups["45-54"]++;
+      else groups["55+"]++;
+    });
+    return Object.entries(groups).map(([name, value]) => ({ name, value }));
+  }, [filteredOrders]);
+
+  // Hourly revenue heatmap data
+  const hourlyRevenue = useMemo(() => {
+    const map = new Array(24).fill(0);
+    filteredOrders.forEach(o => {
+      if (o.paid_at) map[new Date(o.paid_at).getHours()] += Number(o.total_amount);
+    });
+    return map;
+  }, [filteredOrders]);
+
+  // Top customers
+  const topCustomers = useMemo(() => {
+    const map = new Map<string, { name: string; orders: number; revenue: number; tickets: number }>();
+    filteredOrders.forEach(o => {
+      const cur = map.get(o.email) ?? { name: o.name || o.email, orders: 0, revenue: 0, tickets: 0 };
+      cur.orders += 1;
+      cur.revenue += Number(o.total_amount);
+      if (o.name) cur.name = o.name;
+      map.set(o.email, cur);
+    });
+    filteredTickets.forEach(t => {
+      const email = t.holder_email;
+      if (!email) return;
+      const cur = map.get(email);
+      if (cur) cur.tickets += 1;
+    });
+    return Array.from(map.entries())
+      .map(([email, v]) => ({ email, ...v }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 20);
+  }, [filteredOrders, filteredTickets]);
+
+  // Conversion funnel
+  const allOrdersInRange = useMemo(() => orders.filter(o => {
+    const d = new Date(o.created_at); return d >= rangeStart && d <= rangeEnd;
+  }), [orders, rangeStart, rangeEnd]);
+  const conversionRate = allOrdersInRange.length > 0 ? (filteredOrders.length / allOrdersInRange.length) * 100 : 0;
+
+  // Cumulative revenue
+  const cumulativeData = useMemo(() => {
+    let cumulative = 0;
+    return chartData.map(d => {
+      cumulative += d.revenue;
+      return { ...d, cumulative };
+    });
+  }, [chartData]);
+
+  // Daily detail table
+  const dailyDetail = useMemo(() => {
+    return chartData.map(d => ({
+      ...d,
+      avgOrder: d.orders > 0 ? d.revenue / d.orders : 0,
+      ticketsPerOrder: d.orders > 0 ? d.tickets / d.orders : 0,
+    })).reverse();
+  }, [chartData]);
+
+  // Newsletter stats
+  const activeSubs = subscribers.filter(s => !s.unsubscribed).length;
+  const subsBySource = useMemo(() => {
+    const map = new Map<string, number>();
+    subscribers.forEach(s => map.set(s.source ?? "unbekannt", (map.get(s.source ?? "unbekannt") ?? 0) + 1));
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [subscribers]);
+
+  // CSV export
+  const exportCSV = useCallback(() => {
+    const headers = ["Datum", "Umsatz", "Bestellungen", "Tickets", "Ø Bestellwert"];
+    const rows = chartData.map(d => [d.label, d.revenue.toFixed(2), d.orders, d.tickets, d.orders > 0 ? (d.revenue / d.orders).toFixed(2) : "0"]);
+    const csv = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `analytics-${rangeKey}-${viewMode}.csv`;
+    a.click();
+  }, [chartData, rangeKey, viewMode]);
 
   if (loading) {
     return (
@@ -74,314 +435,477 @@ const AnalyticsAdmin = () => {
     );
   }
 
-  const paidOrders = orders.filter(o => o.status === "paid");
-  const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
-  const weekAgo = new Date(now.getTime() - 7 * 86400000);
-  const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
-  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  // Revenue calculations
-  const totalRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
-  const totalServiceFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
-  const todayRevenue = paidOrders.filter(o => (o.paid_at ?? "").startsWith(todayStr)).reduce((s, o) => s + Number(o.total_amount), 0);
-  const weekRevenue = paidOrders.filter(o => new Date(o.paid_at ?? 0) >= weekAgo).reduce((s, o) => s + Number(o.total_amount), 0);
-  const monthRevenue = paidOrders.filter(o => new Date(o.paid_at ?? 0) >= monthAgo).reduce((s, o) => s + Number(o.total_amount), 0);
-  const prevMonthRevenue = paidOrders.filter(o => {
-    const d = new Date(o.paid_at ?? 0);
-    return d >= prevMonthStart && d <= prevMonthEnd;
-  }).reduce((s, o) => s + Number(o.total_amount), 0);
-  const monthTrend = prevMonthRevenue > 0 ? ((monthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : 0;
-
-  const avgOrderValue = paidOrders.length > 0 ? totalRevenue / paidOrders.length : 0;
-  const totalTickets = tickets.length;
-  const checkedIn = tickets.filter(t => t.checked_in_at).length;
-  const checkinRate = totalTickets > 0 ? (checkedIn / totalTickets) * 100 : 0;
-
-  // Revenue last 30 days chart
-  const revenueLast30: { day: string; revenue: number; orders: number }[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86400000);
-    const ds = d.toISOString().split("T")[0];
-    const dayOrders = paidOrders.filter(o => (o.paid_at ?? "").startsWith(ds));
-    revenueLast30.push({
-      day: d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }),
-      revenue: dayOrders.reduce((s, o) => s + Number(o.total_amount), 0),
-      orders: dayOrders.length,
-    });
-  }
-
-  // Revenue by event
-  const eventMap = new Map(events.map(e => [e.id, e]));
-  const revenueByEvent: { name: string; revenue: number; tickets: number }[] = [];
-  const eventRevMap = new Map<string, { revenue: number; tickets: number }>();
-  paidOrders.forEach(o => {
-    if (!o.event_id) return;
-    const cur = eventRevMap.get(o.event_id) ?? { revenue: 0, tickets: 0 };
-    cur.revenue += Number(o.total_amount);
-    eventRevMap.set(o.event_id, cur);
-  });
-  tickets.forEach(t => {
-    const cur = eventRevMap.get(t.event_id) ?? { revenue: 0, tickets: 0 };
-    cur.tickets += 1;
-    eventRevMap.set(t.event_id, cur);
-  });
-  eventRevMap.forEach((v, k) => {
-    const ev = eventMap.get(k);
-    revenueByEvent.push({ name: ev?.title ?? "Unbekannt", ...v });
-  });
-  revenueByEvent.sort((a, b) => b.revenue - a.revenue);
-
-  // City breakdown
-  const cityRevMap = new Map<string, number>();
-  paidOrders.forEach(o => {
-    const ev = eventMap.get(o.event_id);
-    const city = ev?.city ?? "Unbekannt";
-    cityRevMap.set(city, (cityRevMap.get(city) ?? 0) + Number(o.total_amount));
-  });
-  const cityData = Array.from(cityRevMap.entries()).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-
-  // Payment status
-  const statusMap = new Map<string, number>();
-  orders.forEach(o => {
-    statusMap.set(o.status, (statusMap.get(o.status) ?? 0) + 1);
-  });
-  const statusLabels: Record<string, string> = { paid: "Bezahlt", pending: "Ausstehend", expired: "Abgelaufen", canceled: "Storniert" };
-  const paymentStatusData = Array.from(statusMap.entries()).map(([key, value]) => ({ name: statusLabels[key] ?? key, value }));
-
-  // Peak hours
-  const hourMap = new Array(24).fill(0);
-  paidOrders.forEach(o => {
-    if (o.paid_at) {
-      const h = new Date(o.paid_at).getHours();
-      hourMap[h]++;
-    }
-  });
-  const peakData = hourMap.map((count, h) => ({ hour: `${h}:00`, count }));
-
-  // Orders last 7 days
-  const ordersLast7: { day: string; count: number }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86400000);
-    const ds = d.toISOString().split("T")[0];
-    ordersLast7.push({
-      day: d.toLocaleDateString("de-DE", { weekday: "short" }),
-      count: paidOrders.filter(o => (o.paid_at ?? "").startsWith(ds)).length,
-    });
-  }
-
-  // Repeat customers
-  const emailCount = new Map<string, number>();
-  paidOrders.forEach(o => emailCount.set(o.email, (emailCount.get(o.email) ?? 0) + 1));
-  const repeatCustomers = Array.from(emailCount.values()).filter(c => c > 1).length;
-  const uniqueCustomers = emailCount.size;
-
-  // Age distribution
-  const ageGroups = { "< 18": 0, "18-24": 0, "25-34": 0, "35-44": 0, "45+": 0 };
-  paidOrders.forEach(o => {
-    if (!o.birth_date) return;
-    const age = Math.floor((now.getTime() - new Date(o.birth_date).getTime()) / (365.25 * 86400000));
-    if (age < 18) ageGroups["< 18"]++;
-    else if (age <= 24) ageGroups["18-24"]++;
-    else if (age <= 34) ageGroups["25-34"]++;
-    else if (age <= 44) ageGroups["35-44"]++;
-    else ageGroups["45+"]++;
-  });
-  const ageData = Object.entries(ageGroups).map(([name, value]) => ({ name, value }));
-
-  // Newsletter
-  const activeSubs = subscribers.filter(s => !s.unsubscribed).length;
-
-  const tooltipStyle = {
-    contentStyle: { background: "hsl(220 40% 14%)", border: "1px solid hsl(0 0% 100% / 0.1)", borderRadius: 12, fontSize: 12, color: "#fff" },
-    cursor: { fill: "hsl(0 0% 100% / 0.04)" },
-  };
+  const tabs = [
+    { key: "overview", label: "Übersicht", icon: BarChart3 },
+    { key: "revenue", label: "Umsatz", icon: Euro },
+    { key: "orders", label: "Bestellungen", icon: ShoppingCart },
+    { key: "customers", label: "Kunden", icon: Users },
+    { key: "events", label: "Events", icon: Calendar },
+    { key: "geo", label: "Geografie", icon: Globe },
+  ] as const;
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black" style={{ color: "hsl(0 0% 100%)" }}>Analyse & Umsatz</h1>
-        <p className="text-sm mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Alle Kennzahlen und Umsätze auf einen Blick</p>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard icon={Euro} label="Gesamtumsatz" value={`${fmt(totalRevenue)}€`} color="hsl(140 60% 50%)" trend={monthTrend} sub={`${paidOrders.length} bezahlte Bestellungen`} />
-        <StatCard icon={ShoppingCart} label="Ø Bestellwert" value={`${fmt(avgOrderValue)}€`} color="hsl(200 80% 55%)" />
-        <StatCard icon={Ticket} label="Tickets gesamt" value={totalTickets.toLocaleString("de-DE")} color="hsl(330 80% 55%)" sub={`${checkinRate.toFixed(1)}% eingecheckt`} />
-        <StatCard icon={CreditCard} label="Servicegebühren" value={`${fmt(totalServiceFees)}€`} color="hsl(260 70% 60%)" />
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
-        <StatCard icon={TrendingUp} label="Heute" value={`${fmt(todayRevenue)}€`} color="hsl(40 90% 55%)" />
-        <StatCard icon={TrendingUp} label="Diese Woche" value={`${fmt(weekRevenue)}€`} color="hsl(40 90% 55%)" />
-        <StatCard icon={TrendingUp} label="Dieser Monat" value={`${fmt(monthRevenue)}€`} color="hsl(40 90% 55%)" trend={monthTrend} />
-        <StatCard icon={Users} label="Kunden" value={uniqueCustomers.toLocaleString("de-DE")} color="hsl(180 60% 50%)" sub={`${repeatCustomers} Stammkunden`} />
-      </div>
-
-      {/* Revenue Chart */}
-      <SectionHeader>Umsatz letzte 30 Tage</SectionHeader>
-      <div style={cardStyle} className="p-5">
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={revenueLast30} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
-            <defs>
-              <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(330 80% 55%)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="hsl(330 80% 55%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={4} />
-            <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-            <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`, "Umsatz"]} />
-            <Area type="monotone" dataKey="revenue" stroke="hsl(330 80% 55%)" fill="url(#revGrad)" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Orders Chart */}
-      <SectionHeader>Bestellungen letzte 7 Tage</SectionHeader>
-      <div style={cardStyle} className="p-5">
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={ordersLast7} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-            <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
-            <Tooltip {...tooltipStyle} />
-            <Bar dataKey="count" name="Bestellungen" fill="hsl(260 70% 60%)" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-        {/* Revenue by Event */}
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <SectionHeader>Umsatz pro Event</SectionHeader>
+          <h1 className="text-2xl font-black" style={{ color: "hsl(0 0% 100%)" }}>Analyse & Umsatz</h1>
+          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+            {rangeStart.toLocaleDateString("de-DE")} – {rangeEnd.toLocaleDateString("de-DE")}
+            {selectedEvent && ` · ${eventMap.get(selectedEvent)?.title}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Export */}
+          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white/5 transition-colors" style={{ border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.5)" }}>
+            <Download className="w-3.5 h-3.5" /> CSV
+          </button>
+          {/* View mode */}
+          <div className="flex rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+            {(["day", "week", "month"] as ViewMode[]).map(m => (
+              <button key={m} onClick={() => setViewMode(m)}
+                className="px-3 py-2 text-xs font-medium transition-all"
+                style={{ background: viewMode === m ? "hsl(330 80% 55% / 0.2)" : "transparent", color: viewMode === m ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}
+              >
+                {{ day: "Tag", week: "Woche", month: "Monat" }[m]}
+              </button>
+            ))}
+          </div>
+          {/* Range selector */}
+          <div className="relative">
+            <button onClick={() => setShowRangeMenu(!showRangeMenu)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+              style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)", border: "1px solid hsl(330 80% 55% / 0.3)" }}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              {RANGE_PRESETS.find(r => r.key === rangeKey)?.label}
+            </button>
+            {showRangeMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowRangeMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 z-50 rounded-xl overflow-hidden shadow-xl min-w-[160px]" style={{ background: "hsl(220 40% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                  {RANGE_PRESETS.map(r => (
+                    <button key={r.key} onClick={() => { setRangeKey(r.key); setShowRangeMenu(false); }}
+                      className="w-full px-4 py-2.5 text-xs text-left transition-colors"
+                      style={{ background: rangeKey === r.key ? "hsl(330 80% 55% / 0.15)" : "transparent", color: rangeKey === r.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)" }}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Event filter */}
+      {selectedEvent && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Gefiltert nach:</span>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
+            {eventMap.get(selectedEvent)?.title}
+          </span>
+          <button onClick={() => setSelectedEvent(null)} className="text-xs underline" style={{ color: "hsl(0 0% 100% / 0.4)" }}>×</button>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
+        {tabs.map(tab => (
+          <button key={tab.key} onClick={() => setDetailTab(tab.key)}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
+            style={{
+              background: detailTab === tab.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
+              color: detailTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+              border: `1px solid ${detailTab === tab.key ? "hsl(330 80% 55% / 0.3)" : "transparent"}`,
+            }}
+          >
+            <tab.icon className="w-3.5 h-3.5" /> {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ═══════ OVERVIEW TAB ═══════ */}
+      {detailTab === "overview" && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <StatCard icon={Euro} label="Umsatz" value={`${fmt(totalRevenue)}€`} color="hsl(140 60% 50%)" trend={revenueTrend} />
+            <StatCard icon={ShoppingCart} label="Bestellungen" value={fmtInt(orderCount)} color="hsl(200 80% 55%)" trend={orderTrend} />
+            <StatCard icon={Ticket} label="Tickets" value={fmtInt(ticketCount)} color="hsl(330 80% 55%)" trend={ticketTrend} />
+            <StatCard icon={Target} label="Ø Bestellwert" value={`${fmt(avgOrderValue)}€`} color="hsl(260 70% 60%)" trend={aovTrend} />
+            <StatCard icon={CreditCard} label="Servicegebühren" value={`${fmt(totalServiceFees)}€`} color="hsl(40 90% 55%)" />
+            <StatCard icon={Percent} label="Conversion" value={`${conversionRate.toFixed(1)}%`} color="hsl(180 60% 50%)" sub={`${allOrdersInRange.length} Bestellversuche`} />
+          </div>
+
+          {/* Main revenue chart */}
+          <SectionHeader>
+            Umsatz & Bestellungen ({viewMode === "day" ? "Tage" : viewMode === "week" ? "Wochen" : "Monate"})
+          </SectionHeader>
           <div style={cardStyle} className="p-5">
-            <div className="space-y-3 max-h-80 overflow-auto">
-              {revenueByEvent.slice(0, 15).map((e, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="text-xs font-bold w-5 text-center" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium truncate block" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{e.name}</span>
-                    <div className="w-full h-1.5 rounded-full mt-1" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${(e.revenue / (revenueByEvent[0]?.revenue || 1)) * 100}%`,
-                          background: COLORS[i % COLORS.length],
-                        }}
-                      />
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(330 80% 55%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(330 80% 55%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={viewMode === "day" && chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis yAxisId="left" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `${fmt(v)}€` : v, name === "revenue" ? "Umsatz" : name === "orders" ? "Bestellungen" : "Tickets"]} />
+                <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(330 80% 55%)" fill="url(#revGrad)" strokeWidth={2} name="revenue" />
+                <Bar yAxisId="right" dataKey="orders" fill="hsl(260 70% 60%)" radius={[3, 3, 0, 0]} opacity={0.6} name="orders" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Quick stats row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <StatCard icon={UserCheck} label="Check-in-Rate" value={`${checkinRate.toFixed(1)}%`} color="hsl(140 60% 50%)" sub={`${fmtInt(checkedIn)} / ${fmtInt(ticketCount)}`} />
+            <StatCard icon={Repeat} label="Stammkunden" value={`${repeatRate.toFixed(1)}%`} color="hsl(260 70% 60%)" sub={`${repeatCustomers} von ${uniqueCustomers}`} />
+            <StatCard icon={Users} label="Newsletter" value={fmtInt(activeSubs)} color="hsl(330 80% 55%)" sub={`${subscribers.length} gesamt`} />
+            <StatCard icon={Calendar} label="Events" value={events.length} color="hsl(200 80% 55%)" sub={`${events.filter(e => e.status === "published").length} veröffentlicht`} />
+          </div>
+        </>
+      )}
+
+      {/* ═══════ REVENUE TAB ═══════ */}
+      {detailTab === "revenue" && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard icon={Euro} label="Gesamtumsatz" value={`${fmt(totalRevenue)}€`} color="hsl(140 60% 50%)" trend={revenueTrend} />
+            <StatCard icon={Target} label="Ø Bestellwert" value={`${fmt(avgOrderValue)}€`} color="hsl(260 70% 60%)" trend={aovTrend} />
+            <StatCard icon={CreditCard} label="Servicegebühren" value={`${fmt(totalServiceFees)}€`} color="hsl(40 90% 55%)" />
+            <StatCard icon={TrendingUp} label="Ø Tagesumsatz" value={`${fmt(rangeDays > 0 ? totalRevenue / rangeDays : 0)}€`} color="hsl(200 80% 55%)" />
+          </div>
+
+          <SectionHeader>Kumulierter Umsatz</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={cumulativeData} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                <defs>
+                  <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(140 60% 50%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(140 60% 50%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`, "Kumuliert"]} />
+                <Area type="monotone" dataKey="cumulative" stroke="hsl(140 60% 50%)" fill="url(#cumGrad)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Detail table */}
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{dailyDetail.length} Einträge</span>}>
+            Detail-Tabelle
+          </SectionHeader>
+          <div style={cardStyle} className="overflow-hidden">
+            <div className="max-h-[400px] overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                    {["Datum", "Umsatz", "Bestellungen", "Tickets", "Ø Bestellwert", "Tickets/Best."].map(h => (
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailyDetail.slice(0, 60).map((d, i) => (
+                    <tr key={i} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{d.label}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: d.revenue > 0 ? "hsl(140 60% 50%)" : "hsl(0 0% 100% / 0.3)" }}>{d.revenue > 0 ? `${fmt(d.revenue)}€` : "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.orders || "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.tickets || "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.avgOrder > 0 ? `${fmt(d.avgOrder)}€` : "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.ticketsPerOrder > 0 ? d.ticketsPerOrder.toFixed(1) : "–"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══════ ORDERS TAB ═══════ */}
+      {detailTab === "orders" && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard icon={ShoppingCart} label="Bestellungen" value={fmtInt(orderCount)} color="hsl(200 80% 55%)" trend={orderTrend} />
+            <StatCard icon={Percent} label="Conversion" value={`${conversionRate.toFixed(1)}%`} color="hsl(180 60% 50%)" />
+            <StatCard icon={Target} label="Ø Bestellwert" value={`${fmt(avgOrderValue)}€`} color="hsl(260 70% 60%)" />
+            <StatCard icon={Ticket} label="Ø Tickets/Best." value={(ticketCount / Math.max(orderCount, 1)).toFixed(1)} color="hsl(330 80% 55%)" />
+          </div>
+
+          <SectionHeader>Bestellungen pro {viewMode === "day" ? "Tag" : viewMode === "week" ? "Woche" : "Monat"}</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="orders" name="Bestellungen" fill="hsl(260 70% 60%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="tickets" name="Tickets" fill="hsl(330 80% 55%)" radius={[4, 4, 0, 0]} opacity={0.6} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {/* Payment status */}
+            <div>
+              <SectionHeader>Zahlungsstatus</SectionHeader>
+              <div style={cardStyle} className="p-5 flex items-center gap-6">
+                <div className="w-32 h-32 flex-shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={paymentStatusData} dataKey="value" cx="50%" cy="50%" innerRadius={25} outerRadius={50} paddingAngle={2}>
+                        {paymentStatusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip {...tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-2 flex-1">
+                  {paymentStatusData.map((s, i) => (
+                    <div key={s.name} className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{s.name}</span>
+                      </div>
+                      <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{s.value}</span>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{fmt(e.revenue)}€</span>
-                    <span className="text-[10px] block" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{e.tickets} Tickets</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Weekday breakdown */}
+            <div>
+              <SectionHeader>Wochentage</SectionHeader>
+              <div style={cardStyle} className="p-5">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={weekdayData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                    <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `${fmt(v)}€` : v, name === "revenue" ? "Umsatz" : "Bestellungen"]} />
+                    <Bar dataKey="orders" name="orders" fill="hsl(200 80% 55%)" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Peak hours */}
+          <SectionHeader>Peak-Zeiten (Buchungsuhrzeit)</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={peakData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
+                <XAxis dataKey="hour" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} interval={1} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="count" name="Bestellungen" fill="hsl(200 80% 55%)" radius={[3, 3, 0, 0]}>
+                  {peakData.map((_, i) => <Cell key={i} fill={`hsl(200 80% ${40 + (peakData[i].count / Math.max(...peakData.map(d => d.count), 1)) * 30}%)`} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
+
+      {/* ═══════ CUSTOMERS TAB ═══════ */}
+      {detailTab === "customers" && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard icon={Users} label="Einzigartige Kunden" value={fmtInt(uniqueCustomers)} color="hsl(200 80% 55%)" />
+            <StatCard icon={Repeat} label="Stammkunden" value={fmtInt(repeatCustomers)} color="hsl(260 70% 60%)" sub={`${repeatRate.toFixed(1)}% Quote`} />
+            <StatCard icon={UserCheck} label="Check-in-Rate" value={`${checkinRate.toFixed(1)}%`} color="hsl(140 60% 50%)" />
+            <StatCard icon={Euro} label="Ø Umsatz/Kunde" value={`${fmt(uniqueCustomers > 0 ? totalRevenue / uniqueCustomers : 0)}€`} color="hsl(330 80% 55%)" />
+          </div>
+
+          {/* Age distribution */}
+          <SectionHeader>Altersverteilung</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={ageData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
+                <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="value" name="Kunden" fill="hsl(330 80% 55%)" radius={[4, 4, 0, 0]}>
+                  {ageData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Top customers */}
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Top 20</span>}>
+            Top Kunden nach Umsatz
+          </SectionHeader>
+          <div style={cardStyle} className="overflow-hidden">
+            <div className="max-h-[400px] overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                    {["#", "Name", "E-Mail", "Bestellungen", "Tickets", "Umsatz"].map(h => (
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {topCustomers.map((c, i) => (
+                    <tr key={c.email} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{i + 1}</td>
+                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{c.name}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{c.email}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.orders}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.tickets}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(c.revenue)}€</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Newsletter sources */}
+          <SectionHeader>Newsletter nach Quelle</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <div className="space-y-2">
+              {subsBySource.map((s, i) => (
+                <div key={s.name} className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                  <span className="text-xs flex-1 capitalize" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{s.name}</span>
+                  <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{s.value}</span>
+                  <div className="w-20 h-1.5 rounded-full" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${(s.value / (subsBySource[0]?.value || 1)) * 100}%`, background: COLORS[i % COLORS.length] }} />
                   </div>
                 </div>
               ))}
-              {revenueByEvent.length === 0 && (
-                <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Daten</span>
-              )}
             </div>
           </div>
-        </div>
+        </>
+      )}
 
-        {/* City Breakdown */}
-        <div>
+      {/* ═══════ EVENTS TAB ═══════ */}
+      {detailTab === "events" && (
+        <>
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{revenueByEvent.length} Events</span>}>
+            Umsatz pro Event
+          </SectionHeader>
+          <div style={cardStyle} className="overflow-hidden">
+            <div className="max-h-[500px] overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                    {["#", "Event", "Stadt", "Umsatz", "Gebühren", "Bestellungen", "Tickets", ""].map(h => (
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {revenueByEvent.map((e, i) => (
+                    <tr key={e.id} className="border-t hover:bg-white/[0.02] transition-colors" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                      <td className="px-4 py-3 font-bold" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{i + 1}</td>
+                      <td className="px-4 py-3 font-medium max-w-[200px] truncate" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{e.name}</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{e.city}</td>
+                      <td className="px-4 py-3 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(e.revenue)}€</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(40 90% 55%)" }}>{fmt(e.fee)}€</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{e.orders}</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{e.tickets}</td>
+                      <td className="px-4 py-3">
+                        <button onClick={() => setSelectedEvent(selectedEvent === e.id ? null : e.id)}
+                          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                          style={{ color: selectedEvent === e.id ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}
+                        >
+                          <Filter className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bar chart of top events */}
+          <SectionHeader>Top 10 Events</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={revenueByEvent.slice(0, 10)} layout="vertical" margin={{ top: 0, right: 4, bottom: 0, left: 0 }}>
+                <XAxis type="number" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={150} tick={{ fill: "hsl(0 0% 100% / 0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`, "Umsatz"]} />
+                <Bar dataKey="revenue" fill="hsl(330 80% 55%)" radius={[0, 4, 4, 0]}>
+                  {revenueByEvent.slice(0, 10).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
+
+      {/* ═══════ GEO TAB ═══════ */}
+      {detailTab === "geo" && (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <StatCard icon={Globe} label="Städte" value={cityData.length} color="hsl(200 80% 55%)" />
+            <StatCard icon={Euro} label="Top Stadt Umsatz" value={cityData[0] ? `${fmt(cityData[0].revenue)}€` : "–"} color="hsl(140 60% 50%)" sub={cityData[0]?.name} />
+            <StatCard icon={MapPin} label="Ø Umsatz/Stadt" value={`${fmt(cityData.length > 0 ? totalRevenue / cityData.length : 0)}€`} color="hsl(260 70% 60%)" />
+          </div>
+
+          {/* City pie + list */}
           <SectionHeader>Umsatz nach Stadt</SectionHeader>
-          <div style={cardStyle} className="p-5 flex items-center gap-6">
-            <div className="w-40 h-40 flex-shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div style={cardStyle} className="p-5">
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={cityData} dataKey="value" cx="50%" cy="50%" innerRadius={30} outerRadius={60} paddingAngle={2}>
-                    {cityData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  <Pie data={cityData.slice(0, 10)} dataKey="revenue" cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} label={({ name }) => name}>
+                    {cityData.slice(0, 10).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`]} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="space-y-2 flex-1">
-              {cityData.map((c, i) => (
-                <div key={c.name} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="text-xs flex-1 truncate" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{c.name}</span>
-                  <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{fmt(c.value)}€</span>
-                </div>
-              ))}
-              {cityData.length === 0 && <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Daten</span>}
+            <div style={cardStyle} className="overflow-hidden">
+              <div className="max-h-[300px] overflow-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                      {["Stadt", "Umsatz", "Bestellungen", "Tickets"].map(h => (
+                        <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cityData.map((c, i) => (
+                      <tr key={c.name} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                        <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                            {c.name}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(c.revenue)}€</td>
+                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.orders}</td>
+                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.tickets}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-        {/* Payment Status */}
-        <div>
-          <SectionHeader>Zahlungsstatus</SectionHeader>
-          <div style={cardStyle} className="p-5">
-            <div className="w-32 h-32 mx-auto mb-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={paymentStatusData} dataKey="value" cx="50%" cy="50%" innerRadius={25} outerRadius={50}>
-                    {paymentStatusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip {...tooltipStyle} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-2">
-              {paymentStatusData.map((s, i) => (
-                <div key={s.name} className="flex items-center gap-2 justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                    <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{s.name}</span>
-                  </div>
-                  <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{s.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Peak Hours */}
-        <div>
-          <SectionHeader>Peak-Zeiten</SectionHeader>
-          <div style={cardStyle} className="p-5">
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={peakData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
-                <XAxis dataKey="hour" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 8 }} axisLine={false} tickLine={false} interval={3} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="count" name="Bestellungen" fill="hsl(200 80% 55%)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Age Distribution */}
-        <div>
-          <SectionHeader>Altersverteilung</SectionHeader>
-          <div style={cardStyle} className="p-5">
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={ageData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
-                <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" name="Kunden" fill="hsl(140 60% 50%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Newsletter & Misc Stats */}
-      <SectionHeader>Weitere Kennzahlen</SectionHeader>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-        <StatCard icon={Users} label="Newsletter-Abonnenten" value={activeSubs} color="hsl(330 80% 55%)" sub={`${subscribers.length} gesamt`} />
-        <StatCard icon={Calendar} label="Events gesamt" value={events.length} color="hsl(200 80% 55%)" />
-        <StatCard icon={Users} label="Check-in Quote" value={`${checkinRate.toFixed(1)}%`} color="hsl(140 60% 50%)" sub={`${checkedIn} / ${totalTickets}`} />
-        <StatCard icon={Users} label="Stammkunden-Quote" value={uniqueCustomers > 0 ? `${((repeatCustomers / uniqueCustomers) * 100).toFixed(1)}%` : "0%"} color="hsl(260 70% 60%)" sub={`${repeatCustomers} von ${uniqueCustomers}`} />
-      </div>
+      <div className="h-8" />
     </div>
   );
 };
