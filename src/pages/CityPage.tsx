@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
+import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun, ArrowLeft } from "lucide-react";
 import { AdDisplay } from "@/components/AdDisplay";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -586,16 +586,20 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{t.ticketsLoading}</div></div>
       ) : (
         <>
-          {ticketCategories.map((category) => (
-            <div key={category.title}>
-              <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>
-              <div>
-                {category.items.map((item) => (
-                  <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} t={t} currency={getCurrencyForCity(event.city)} />
-                ))}
+          {ticketCategories.map((category) => {
+            // Hide category title if only 1 item and the item name contains the category title (redundant)
+            const hideTitle = category.items.length === 1 && category.items[0].name.toUpperCase().includes(category.title.toUpperCase());
+            return (
+              <div key={category.title}>
+                {!hideTitle && <h3 className="pp-category-title mb-2 sm:mb-3 text-sm sm:text-base">{category.title}</h3>}
+                <div>
+                  {category.items.map((item) => (
+                    <TicketRow key={item.id} item={item} qty={quantities[item.id] || 0} onQtyChange={(v) => handleQtyChange(item.id, v)} t={t} currency={getCurrencyForCity(event.city)} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <div className="flex gap-2">
             <input type="text" placeholder={t.discountPlaceholder} value={discountCode}
@@ -879,6 +883,12 @@ const CityPage = () => {
         <div className="pp-smoke pp-smoke--5" />
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-12">
+        {/* Back to all dates */}
+        <Link to="/termine" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wide mb-4 sm:mb-6 px-3 py-1.5 rounded-lg transition-all hover:scale-[1.02]"
+          style={{ color: "hsl(0 0% 100% / 0.8)", background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.2)" }}>
+          <ArrowLeft className="w-3.5 h-3.5" /> Alle Termine
+        </Link>
+        
         {/* Top banners */}
         <AdDisplay eventId={selectedEvent.id} type="banner" position="top" />
         
