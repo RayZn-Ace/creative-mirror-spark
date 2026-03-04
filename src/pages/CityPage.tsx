@@ -250,7 +250,7 @@ const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; c
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
-        <span className="text-sm sm:text-base font-bold uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>{title}</span>
+        <span className="text-sm sm:text-base font-display uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>{title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
@@ -261,7 +261,7 @@ const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; c
             <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-3">
               {isWhatsapp ? (
                 <>
-                  <p className="text-sm sm:text-base leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)" }}>{t.whatsappDesc}</p>
+                  <p className="text-sm sm:text-base leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)" }}>{t.whatsappDesc}</p>
                   <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide mt-2 hover:scale-[1.02]"
                     style={{ background: "hsl(142, 70%, 45%)", color: "white" }}>
@@ -269,7 +269,7 @@ const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; c
                   </a>
                 </>
               ) : (
-                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-semibold" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7)" }}>{content}</p>
+                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7)" }}>{content}</p>
               )}
             </div>
           </motion.div>
