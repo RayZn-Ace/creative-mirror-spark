@@ -10,6 +10,7 @@ import {
   Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
 
 // ─── Block Types ───────────────────────────────────────────────
 type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list" | "voucher" | "timer";
@@ -1461,10 +1462,7 @@ ${bodyContent}
                           {/* City Filter */}
                           <div>
                             <label className={labelCls} style={labelStyle}>Stadt</label>
-                            <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="w-full px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle}>
-                              <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
-                              {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
-                            </select>
+                            <CitySearchFilter cities={allCities} value={cityFilter} onChange={setCityFilter} compact />
                           </div>
 
                           {/* Age Filter */}

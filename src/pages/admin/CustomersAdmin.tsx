@@ -5,6 +5,7 @@ import {
   Users, Search, ChevronDown, ChevronUp, Mail, Phone, Calendar, ShoppingCart,
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
 } from "lucide-react";
+import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
 
 type Order = {
   id: string;
@@ -43,83 +44,7 @@ type Customer = {
 
 type SortField = "email" | "totalSpent" | "orderCount" | "lastOrder";
 
-const CitySearchFilter = ({ cities, value, onChange }: { cities: string[]; value: string; onChange: (v: string) => void }) => {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const filtered = cities.filter((c) => c.toLowerCase().includes(query.toLowerCase()));
-
-  return (
-    <div className="relative" ref={ref}>
-      <div
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer min-w-[160px]"
-        style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: `1px solid ${value !== "all" ? "hsl(215 90% 55% / 0.4)" : "hsl(0 0% 100% / 0.1)"}` }}
-        onClick={() => setOpen(!open)}
-      >
-        <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: value !== "all" ? "hsl(215 90% 55%)" : "hsl(0 0% 100% / 0.3)" }} />
-        <span className="truncate flex-1" style={{ color: value !== "all" ? "hsl(215 90% 55%)" : "hsl(0 0% 100% / 0.5)" }}>
-          {value === "all" ? "Stadt filtern…" : value}
-        </span>
-        {value !== "all" && (
-          <X
-            className="w-3.5 h-3.5 shrink-0 hover:opacity-80"
-            style={{ color: "hsl(0 0% 100% / 0.4)" }}
-            onClick={(e) => { e.stopPropagation(); onChange("all"); setQuery(""); }}
-          />
-        )}
-      </div>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 top-full mt-1 left-0 w-full min-w-[200px] rounded-xl overflow-hidden shadow-xl"
-            style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-          >
-            <div className="p-2">
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Stadt suchen…"
-                className="w-full px-3 py-1.5 rounded-lg text-xs"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-              />
-            </div>
-            <div className="max-h-[200px] overflow-y-auto">
-              {filtered.length === 0 ? (
-                <div className="px-3 py-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Stadt gefunden</div>
-              ) : (
-                filtered.map((city) => (
-                  <button
-                    key={city}
-                    onClick={() => { onChange(city); setOpen(false); setQuery(""); }}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-white/[0.06] transition-colors flex items-center gap-2"
-                    style={{ color: city === value ? "hsl(215 90% 55%)" : "hsl(0 0% 100% / 0.7)" }}
-                  >
-                    <MapPin className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
-                    {city}
-                  </button>
-                ))
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
+// CitySearchFilter is imported from @/components/admin/CitySearchFilter
 
 const CustomersAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
