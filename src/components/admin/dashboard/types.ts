@@ -12,16 +12,28 @@ export type WidgetType =
   | "recent_orders"
   | "revenue"
   | "newsletter_stats"
-  | "upcoming_events";
+  | "upcoming_events"
+  | "checkin_rate"
+  | "top_events"
+  | "recent_checkins"
+  | "sales_chart"
+  | "event_calendar"
+  | "scanner_activity";
 
-export const WIDGET_META: Record<WidgetType, { label: string; icon: string; defaultColSpan: 1 | 2 }> = {
-  stats: { label: "Statistiken", icon: "BarChart3", defaultColSpan: 2 },
-  live_events: { label: "Heute Live", icon: "Radio", defaultColSpan: 2 },
-  quick_actions: { label: "Schnellaktionen", icon: "Zap", defaultColSpan: 1 },
-  recent_orders: { label: "Letzte Bestellungen", icon: "ShoppingCart", defaultColSpan: 1 },
-  revenue: { label: "Umsatz-Übersicht", icon: "TrendingUp", defaultColSpan: 1 },
-  newsletter_stats: { label: "Newsletter-Stats", icon: "Mail", defaultColSpan: 1 },
-  upcoming_events: { label: "Kommende Events", icon: "CalendarDays", defaultColSpan: 1 },
+export const WIDGET_META: Record<WidgetType, { label: string; description: string; icon: string; defaultW: number; defaultH: number }> = {
+  stats: { label: "Statistiken", description: "Übersicht über Serien, Events, Tickets & Seiten", icon: "BarChart3", defaultW: 4, defaultH: 4 },
+  live_events: { label: "Heute Live", description: "Laufende Events mit Echtzeit Check-in Zahlen", icon: "Radio", defaultW: 4, defaultH: 5 },
+  quick_actions: { label: "Schnellaktionen", description: "Direkt-Links zu häufigen Admin-Aktionen", icon: "Zap", defaultW: 2, defaultH: 4 },
+  recent_orders: { label: "Letzte Bestellungen", description: "Die neuesten Ticket-Bestellungen im Überblick", icon: "ShoppingCart", defaultW: 2, defaultH: 5 },
+  revenue: { label: "Umsatz-Übersicht", description: "Tages-, Wochen- und Monatsumsätze", icon: "TrendingUp", defaultW: 2, defaultH: 5 },
+  newsletter_stats: { label: "Newsletter-Stats", description: "Abonnenten, Neu-Anmeldungen & Abmeldungen", icon: "Mail", defaultW: 2, defaultH: 5 },
+  upcoming_events: { label: "Kommende Events", description: "Nächste geplante Events mit Countdown", icon: "CalendarDays", defaultW: 2, defaultH: 5 },
+  checkin_rate: { label: "Check-in Quote", description: "Check-in Rate über alle Events der letzten 30 Tage", icon: "UserCheck", defaultW: 2, defaultH: 4 },
+  top_events: { label: "Top Events", description: "Bestverkaufte Events nach Ticketanzahl", icon: "Trophy", defaultW: 2, defaultH: 5 },
+  recent_checkins: { label: "Letzte Check-ins", description: "Live-Feed der neuesten Ticket-Check-ins", icon: "ScanLine", defaultW: 2, defaultH: 5 },
+  sales_chart: { label: "Verkaufs-Chart", description: "Ticket-Verkäufe der letzten 7 Tage als Diagramm", icon: "LineChart", defaultW: 4, defaultH: 5 },
+  event_calendar: { label: "Event-Kalender", description: "Monatsübersicht aller geplanten Events", icon: "Calendar", defaultW: 2, defaultH: 5 },
+  scanner_activity: { label: "Scanner-Aktivität", description: "Aktive Scanner-Links und deren Status", icon: "QrCode", defaultW: 2, defaultH: 4 },
 };
 
 export const DEFAULT_LAYOUT: DashboardWidget[] = [
