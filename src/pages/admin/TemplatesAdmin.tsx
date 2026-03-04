@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Palette, Mail, FileText, Paperclip, Save, Loader2, Upload, X, Plus, Eye,
-  Type, Minus, Image, MousePointerClick, Calendar, Star, ArrowUp, ArrowDown, Trash2,
+  Type, Minus, Image, MousePointerClick, Calendar, Star, ArrowUp, ArrowDown, Trash2, Sparkles,
 } from "lucide-react";
+import { format } from "date-fns";
 
 /* ─── Shared styles ─── */
 const sectionStyle = {
@@ -417,6 +418,48 @@ const EmailTab = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showBlockMenu, setShowBlockMenu] = useState(false);
+  const [dbEvents, setDbEvents] = useState<Array<{ id: string; title: string; date: string | null; time: string | null; location_name: string | null; image_url: string | null }>>([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
+
+  const loadEvents = async () => {
+    if (eventsLoaded) return dbEvents;
+    const { data } = await supabase.from("events").select("id, title, date, time, location_name, image_url").eq("status", "published").order("date", { ascending: true });
+    const events = data || [];
+    setDbEvents(events);
+    setEventsLoaded(true);
+    return events;
+  };
+
+  const magicFillHighlight = async (blockId: string) => {
+    const events = await loadEvents();
+    const now = new Date().toISOString().split("T")[0];
+    const next = events.find(e => e.date && e.date >= now) || events[0];
+    if (!next) { toast.error("Keine Events gefunden"); return; }
+    updateBlock(blockId, {
+      title: next.title,
+      date: next.date ? format(new Date(next.date), "dd.MM.yyyy") : "",
+      time: next.time || "",
+      location: next.location_name || "",
+      image_url: next.image_url || "",
+    });
+    toast.success(`✨ "${next.title}" eingefügt`);
+  };
+
+  const magicFillList = async (blockId: string) => {
+    const events = await loadEvents();
+    const now = new Date().toISOString().split("T")[0];
+    const upcoming = events.filter(e => e.date && e.date >= now).slice(0, 6);
+    if (upcoming.length === 0) { toast.error("Keine kommenden Events gefunden"); return; }
+    updateBlock(blockId, {
+      heading: "Unsere nächsten Events",
+      events: upcoming.map(e => ({
+        title: e.title,
+        date: e.date ? format(new Date(e.date), "dd.MM.yyyy") : "",
+        location: e.location_name || "",
+      })),
+    });
+    toast.success(`✨ ${upcoming.length} Events eingefügt`);
+  };
 
   useEffect(() => {
     (async () => {
@@ -511,6 +554,13 @@ const EmailTab = () => {
       case "event_highlight":
         return wrapper(
           <div className="space-y-2">
+            <div className="flex justify-end">
+              <button onClick={() => magicFillHighlight(block.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105"
+                style={{ background: "linear-gradient(135deg, hsl(280 80% 55% / 0.2), hsl(330 80% 55% / 0.2))", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.3)" }}>
+                <Sparkles className="w-3 h-3" /> Magic – Nächstes Event laden
+              </button>
+            </div>
             <input type="text" value={block.title} onChange={(e) => updateBlock(block.id, { title: e.target.value })} placeholder="Event-Titel" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
             <div className="grid grid-cols-3 gap-2">
               <input type="text" value={block.date} onChange={(e) => updateBlock(block.id, { date: e.target.value })} placeholder="Datum" className="text-sm px-3 py-2 rounded-lg" style={inputStyle} />
@@ -523,7 +573,14 @@ const EmailTab = () => {
       case "event_list":
         return wrapper(
           <div className="space-y-2">
-            <input type="text" value={block.heading} onChange={(e) => updateBlock(block.id, { heading: e.target.value })} placeholder="Überschrift" className="w-full text-sm font-bold px-3 py-2 rounded-lg" style={inputStyle} />
+            <div className="flex items-center justify-between">
+              <input type="text" value={block.heading} onChange={(e) => updateBlock(block.id, { heading: e.target.value })} placeholder="Überschrift" className="flex-1 text-sm font-bold px-3 py-2 rounded-lg mr-2" style={inputStyle} />
+              <button onClick={() => magicFillList(block.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:scale-105 shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(280 80% 55% / 0.2), hsl(330 80% 55% / 0.2))", color: "hsl(280 80% 65%)", border: "1px solid hsl(280 80% 55% / 0.3)" }}>
+                <Sparkles className="w-3 h-3" /> Magic – Alle Events laden
+              </button>
+            </div>
             {block.events.map((ev, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <input type="text" value={ev.title} onChange={(e) => { const evs = [...block.events]; evs[i] = { ...evs[i], title: e.target.value }; updateBlock(block.id, { events: evs }); }}
