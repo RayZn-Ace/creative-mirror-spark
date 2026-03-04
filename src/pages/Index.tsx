@@ -360,10 +360,10 @@ const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
               <h3 className="font-display text-xl mb-2 text-foreground">{tk.name}</h3>
               <p className="text-sm text-muted-foreground flex-1 mb-4">{tk.desc}</p>
               <p className="font-display text-2xl text-gold mb-4">{tk.price}</p>
-              <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
+              <Link to="/termine"
                 className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
                 <Ticket className="w-4 h-4" />{gt.ticketCatSecure}
-              </a>
+              </Link>
             </motion.div>
           ))}
         </div>
