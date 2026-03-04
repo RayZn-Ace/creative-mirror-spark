@@ -741,31 +741,10 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
 /* ─── Footer ─── */
 const CityFooter = ({ t }: { t: Translations }) => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
-    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100%)" }}>
-      <p>{t.footerQuestion}</p>
-      <p>{t.footerContact} <a href="mailto:info@gimmegimmeparty.com" className="underline hover:opacity-80">info@gimmegimmeparty.com</a></p>
-    </div>
-    <div className="hidden md:flex items-start justify-between gap-6 lg:gap-8">
-      <div className="flex-1">
-        <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100" style={{ color: "hsl(0 0% 100%)" }}>powered by smea</a>
-        <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-          {t.footerOrganizer}
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-4 lg:gap-6 text-xs lg:text-sm">
-        <a href="/impressum" className="footer-link">{t.imprint}</a>
-        <a href="/datenschutz" className="footer-link">{t.privacy}</a>
-        <a href="/agb" className="footer-link">{t.terms}</a>
-      </div>
-    </div>
-    <div className="md:hidden text-center space-y-3">
-      <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 inline-block" style={{ color: "hsl(0 0% 100%)" }}>powered by smea</a>
-      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)" }}>{t.footerOrganizer}</p>
-      <div className="flex justify-center gap-4 text-xs">
-        <a href="/impressum" className="footer-link">{t.imprint}</a>
-        <a href="/datenschutz" className="footer-link">{t.privacy}</a>
-        <a href="/agb" className="footer-link">{t.terms}</a>
-      </div>
+    <div className="flex flex-wrap justify-center gap-4 lg:gap-6 text-xs lg:text-sm">
+      <a href="/impressum" className="footer-link">{t.imprint}</a>
+      <a href="/datenschutz" className="footer-link">{t.privacy}</a>
+      <a href="/agb" className="footer-link">{t.terms}</a>
     </div>
   </footer>
 );

@@ -784,42 +784,10 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
 /* ─── Footer ─── */
 const PPFooter = () => (
   <footer className="mt-8 sm:mt-12 pb-6 sm:pb-8">
-    <div className="text-center mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.6)" }}>
-      <p>Fragen, Probleme oder Reservierungsanfragen?</p>
-      <p>
-        Kontaktiere uns:{" "}
-        <a href="mailto:info@gimmegimmeparty.com" className="underline hover:opacity-80 transition-opacity">
-          info@gimmegimmeparty.com
-        </a>
-      </p>
-    </div>
-    <div className="hidden md:flex items-start justify-between gap-6 lg:gap-8">
-      <div className="flex-1">
-        <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs lg:text-sm font-medium opacity-80 hover:opacity-100 transition-opacity" style={{ color: "hsl(0 0% 100%)" }}>
-          powered by smea
-        </a>
-        <p className="text-xs lg:text-sm mt-2 lg:mt-3 max-w-xs lg:max-w-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.5)" }}>
-          Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-4 lg:gap-6 text-xs lg:text-sm">
-        <a href="/impressum" className="footer-link">Impressum</a>
-        <a href="/datenschutz" className="footer-link">Datenschutzerklärung</a>
-        <a href="/agb" className="footer-link">AGB</a>
-      </div>
-    </div>
-    <div className="md:hidden text-center space-y-3">
-      <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="text-xs font-medium opacity-80 hover:opacity-100 transition-opacity inline-block" style={{ color: "hsl(0 0% 100%)" }}>
-        powered by smea
-      </a>
-      <p className="text-xs px-4 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.9)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.5)" }}>
-        Veranstalter: Gimme Gimme Party. Der Ticketverkauf erfolgt über unsere eigene Plattform.
-      </p>
-      <div className="flex justify-center gap-4 text-xs">
-        <a href="/impressum" className="footer-link">Impressum</a>
-        <a href="/datenschutz" className="footer-link">Datenschutz</a>
-        <a href="/agb" className="footer-link">AGB</a>
-      </div>
+    <div className="flex flex-wrap justify-center gap-4 lg:gap-6 text-xs lg:text-sm">
+      <a href="/impressum" className="footer-link">Impressum</a>
+      <a href="/datenschutz" className="footer-link">Datenschutz</a>
+      <a href="/agb" className="footer-link">AGB</a>
     </div>
   </footer>
 );
