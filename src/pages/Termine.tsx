@@ -485,7 +485,7 @@ export default function Termine() {
               >
                 <Link
                   to={`/${group.slug}`}
-                  className="group block rounded-2xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                  className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
                 >
                   {/* Image */}
                   {group.imageUrl && (
@@ -493,12 +493,12 @@ export default function Termine() {
                       <img
                         src={group.imageUrl}
                         alt={group.city}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                       {group.km !== null && (
-                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium">
+                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium">
                           <MapPin className="w-3 h-3 text-primary" />
                           {group.km} {t.kmAway}
                         </div>
@@ -510,7 +510,7 @@ export default function Termine() {
                     {/* City name + distance */}
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                        <h3 className="text-xl font-display uppercase tracking-wide group-hover:text-primary transition-colors" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
                           {group.city}
                         </h3>
                         {group.events[0]?.locationName && (
