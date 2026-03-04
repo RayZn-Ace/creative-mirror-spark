@@ -299,6 +299,7 @@ const TrackingAdmin = () => {
   const [editingIds, setEditingIds] = useState<Record<string, string>>({});
   // Track which guide is open
   const [openGuide, setOpenGuide] = useState<string | null>(null);
+  const [expandedStatus, setExpandedStatus] = useState<string | null>(null);
 
   const loadPixels = async () => {
     const { data } = await supabase.from("tracking_pixels").select("*").order("created_at", { ascending: false });
@@ -825,36 +826,146 @@ const TrackingAdmin = () => {
             <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
               Pixel-Status Übersicht
             </h3>
+            <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+              Klicke auf einen Pixel, um Details und Diagnose-Infos zu sehen.
+            </p>
             {pixels.length === 0 ? (
               <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Pixel konfiguriert. Gehe zum Konfigurator, um Pixel hinzuzufügen.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {pixels.map((pixel) => {
                   const info = getProviderInfo(pixel.provider);
+                  const providerDef = PROVIDERS.find(p => p.id === pixel.provider);
+                  const pixelConfig = (pixel.config || {}) as Record<string, string>;
+                  const isExpanded = expandedStatus === pixel.id;
+
+                  // Diagnose status
+                  const isPending = pixel.pixel_id === "PENDING" || !pixel.pixel_id?.trim();
+                  const requiredFields = providerDef?.fields.filter(f => f.required) || [];
+                  const missingRequired = requiredFields.filter(f => {
+                    if (f.key === "pixel_id") return isPending;
+                    return !pixelConfig[f.key]?.trim();
+                  });
+                  const hasError = missingRequired.length > 0;
+                  const isLive = pixel.enabled && !hasError;
+                  const isTestMode = pixel.test_mode;
+
+                  // Build diagnostic items
+                  type DiagItem = { icon: "check" | "warn" | "error" | "info"; text: string; color: string };
+                  const diagnostics: DiagItem[] = [];
+
+                  if (isPending) {
+                    diagnostics.push({ icon: "error", text: "Pixel-ID fehlt. Gehe zum Konfigurator und trage deine Pixel-ID ein.", color: "hsl(0 70% 55%)" });
+                  } else {
+                    diagnostics.push({ icon: "check", text: `Pixel-ID gesetzt: ${pixel.pixel_id}`, color: "hsl(150 60% 40%)" });
+                  }
+
+                  missingRequired.filter(f => f.key !== "pixel_id").forEach(f => {
+                    diagnostics.push({ icon: "error", text: `Pflichtfeld "${f.label}" fehlt. Gehe zum Konfigurator und trage es ein.`, color: "hsl(0 70% 55%)" });
+                  });
+
+                  if (!pixel.enabled && !hasError) {
+                    diagnostics.push({ icon: "warn", text: "Pixel ist konfiguriert aber nicht aktiviert. Klicke auf 'Live' im Konfigurator, um ihn zu aktivieren.", color: "hsl(45 80% 55%)" });
+                  }
+
+                  if (pixel.enabled && hasError) {
+                    diagnostics.push({ icon: "error", text: "Pixel ist als 'Live' markiert, aber es fehlen Pflichtfelder. Events werden nicht korrekt gesendet.", color: "hsl(0 70% 55%)" });
+                  }
+
+                  if (isLive) {
+                    diagnostics.push({ icon: "check", text: "Pixel ist live und sendet Events an den Anbieter.", color: "hsl(150 60% 40%)" });
+                  }
+
+                  if (isTestMode) {
+                    diagnostics.push({ icon: "info", text: "Testmodus aktiv – Events werden geloggt, aber nicht an den Anbieter gesendet.", color: "hsl(45 80% 55%)" });
+                  }
+
+                  // Optional field hints
+                  const optionalFields = providerDef?.fields.filter(f => !f.required) || [];
+                  const configuredOptional = optionalFields.filter(f => pixelConfig[f.key]?.trim());
+                  const unconfiguredOptional = optionalFields.filter(f => !pixelConfig[f.key]?.trim() && f.type !== "toggle");
+                  
+                  if (configuredOptional.length > 0) {
+                    diagnostics.push({ icon: "check", text: `${configuredOptional.length} optionale Feature(s) konfiguriert: ${configuredOptional.map(f => f.label).join(", ")}`, color: "hsl(150 60% 40%)" });
+                  }
+                  if (unconfiguredOptional.length > 0 && !hasError) {
+                    diagnostics.push({ icon: "info", text: `${unconfiguredOptional.length} optionale Feature(s) verfügbar: ${unconfiguredOptional.map(f => f.label).join(", ")}`, color: "hsl(200 60% 55%)" });
+                  }
+
+                  // Recent events count
+                  const recentLogs = eventLogs.filter(l => l.pixel_id === pixel.id);
+                  if (recentLogs.length > 0) {
+                    diagnostics.push({ icon: "check", text: `${recentLogs.length} Event(s) im Log gefunden.`, color: "hsl(150 60% 40%)" });
+                  } else if (isLive) {
+                    diagnostics.push({ icon: "warn", text: "Noch keine Events im Log. Besuche deine Seite, um ein PageView auszulösen.", color: "hsl(45 80% 55%)" });
+                  }
+
+                  const statusColor = hasError ? "hsl(0 70% 55%)" : isPending ? "hsl(45 80% 55%)" : isLive ? "hsl(150 60% 40%)" : "hsl(0 0% 100% / 0.3)";
+                  const statusLabel = hasError ? "Fehler" : isPending ? "Ausstehend" : isLive ? "Aktiv" : "Inaktiv";
+
                   return (
-                    <div
-                      key={pixel.id}
-                      className="rounded-xl p-4"
-                      style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full" style={{ background: pixel.enabled ? "hsl(150 60% 40%)" : "hsl(0 0% 100% / 0.2)" }} />
-                        <span className="text-xs font-bold" style={{ color: info.color }}>{info.name}</span>
-                      </div>
-                      <code className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{pixel.pixel_id}</code>
-                      <div className="flex gap-2 mt-2">
-                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{
-                          background: pixel.enabled ? "hsl(150 60% 40% / 0.1)" : "hsl(0 70% 50% / 0.1)",
-                          color: pixel.enabled ? "hsl(150 60% 40%)" : "hsl(0 70% 50%)",
-                        }}>
-                          {pixel.enabled ? "Aktiv" : "Inaktiv"}
-                        </span>
-                        {pixel.test_mode && (
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(45 80% 55% / 0.1)", color: "hsl(45 80% 55%)" }}>
-                            Testmodus
+                    <div key={pixel.id} className="col-span-1">
+                      <div
+                        className="rounded-xl p-4 cursor-pointer transition-all hover:scale-[1.01]"
+                        style={{ background: "hsl(0 0% 100% / 0.03)", border: `1px solid ${isExpanded ? info.color + "40" : "hsl(0 0% 100% / 0.06)"}` }}
+                        onClick={() => setExpandedStatus(isExpanded ? null : pixel.id)}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColor }} />
+                          <span className="text-xs font-bold" style={{ color: info.color }}>{info.name}</span>
+                          <ChevronDown className="w-3 h-3 ml-auto transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />
+                        </div>
+                        <code className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                          {isPending ? "–" : pixel.pixel_id}
+                        </code>
+                        <div className="flex gap-2 mt-2">
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{
+                            background: statusColor.replace(")", " / 0.12)").replace("hsl", "hsl"),
+                            color: statusColor,
+                          }}>
+                            {statusLabel}
                           </span>
-                        )}
+                          {isTestMode && (
+                            <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(45 80% 55% / 0.1)", color: "hsl(45 80% 55%)" }}>
+                              Testmodus
+                            </span>
+                          )}
+                        </div>
                       </div>
+
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="rounded-b-xl px-4 pb-4 pt-3 space-y-2 -mt-2" style={{ background: "hsl(0 0% 100% / 0.02)", borderLeft: `1px solid ${info.color}20`, borderRight: `1px solid ${info.color}20`, borderBottom: `1px solid ${info.color}20` }}>
+                              <span className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Diagnose</span>
+                              {diagnostics.map((d, di) => (
+                                <div key={di} className="flex items-start gap-2 py-1">
+                                  <div className="mt-0.5 shrink-0">
+                                    {d.icon === "check" && <Check className="w-3.5 h-3.5" style={{ color: d.color }} />}
+                                    {d.icon === "error" && <X className="w-3.5 h-3.5" style={{ color: d.color }} />}
+                                    {d.icon === "warn" && <Activity className="w-3.5 h-3.5" style={{ color: d.color }} />}
+                                    {d.icon === "info" && <HelpCircle className="w-3.5 h-3.5" style={{ color: d.color }} />}
+                                  </div>
+                                  <span className="text-[11px] leading-relaxed" style={{ color: d.color }}>{d.text}</span>
+                                </div>
+                              ))}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setActiveTab("config"); }}
+                                className="mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
+                                style={{ background: info.color + "20", color: info.color }}
+                              >
+                                <Settings2 className="w-3.5 h-3.5" /> Zum Konfigurator
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   );
                 })}
