@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import { useEffect, useMemo, useRef } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 
 /* ─── Known city coordinates (DACH + Europe + Brazil) ─── */
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -15,6 +16,8 @@ const CITY_COORDS: Record<string, [number, number]> = {
   "Hamburg": [53.5511, 9.9937], "Hannover": [52.3759, 9.7320], "Karlsruhe": [49.0069, 8.4037],
   "Köln": [50.9375, 6.9603], "Leipzig": [51.3397, 12.3731], "München": [48.1351, 11.5820],
   "Nürnberg": [49.4521, 11.0767], "Stuttgart": [48.7758, 9.1829],
+  "Paderborn": [51.7189, 8.7575], "Münster": [51.9607, 7.6261], "Detmold": [51.9386, 8.8789],
+  "Gütersloh": [51.9032, 8.3858], "Herford": [52.1145, 8.6734], "Lippstadt": [51.6749, 8.3447],
   // Austria
   "Wien": [48.2082, 16.3738], "Salzburg": [47.8095, 13.0550], "Linz": [48.3064, 14.2858],
   "Innsbruck": [47.2692, 11.4041], "Dornbirn": [47.4125, 9.7438], "Gralla": [46.7500, 15.6000],
@@ -61,7 +64,102 @@ const FitBounds = ({ coords }: { coords: [number, number][] }) => {
   return null;
 };
 
-const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/* Heat layer component */
+const HeatLayer = ({ points }: { points: [number, number, number][] }) => {
+  const map = useMap();
+  const layerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (layerRef.current) {
+      map.removeLayer(layerRef.current);
+    }
+    if (points.length === 0) return;
+
+    // @ts-ignore – leaflet.heat extends L
+    const heat = L.heatLayer(points, {
+      radius: 35,
+      blur: 25,
+      maxZoom: 12,
+      max: 1.0,
+      minOpacity: 0.3,
+      gradient: {
+        0.0: "#0d0887",
+        0.15: "#4903a0",
+        0.3: "#7d03a8",
+        0.45: "#b5367a",
+        0.6: "#e8566d",
+        0.75: "#fb8861",
+        0.9: "#fec287",
+        1.0: "#f0f921",
+      },
+    });
+
+    heat.addTo(map);
+    layerRef.current = heat;
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+      }
+    };
+  }, [points, map]);
+
+  return null;
+};
+
+/* City labels on hover (lightweight markers) */
+const CityLabels = ({ markers, maxRevenue }: { markers: (CityDataItem & { lat: number; lng: number })[]; maxRevenue: number }) => {
+  const map = useMap();
+  const layerGroupRef = useRef<L.LayerGroup | null>(null);
+
+  const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  useEffect(() => {
+    if (layerGroupRef.current) {
+      map.removeLayer(layerGroupRef.current);
+    }
+
+    const group = L.layerGroup();
+
+    markers.forEach((m) => {
+      const circle = L.circleMarker([m.lat, m.lng], {
+        radius: 4,
+        fillColor: "transparent",
+        fillOpacity: 0,
+        color: "transparent",
+        weight: 0,
+        interactive: true,
+      });
+
+      circle.bindTooltip(
+        `<div style="background:hsl(220 40% 12%);color:#fff;padding:8px 12px;border-radius:10px;border:1px solid hsl(0 0% 100%/0.1);font-size:12px;min-width:140px;">
+          <div style="font-weight:800;font-size:13px;margin-bottom:4px">${m.name}</div>
+          <div style="color:hsl(140 60% 55%);font-weight:700">${fmt(m.revenue)} €</div>
+          <div style="color:hsl(0 0% 100%/0.5);margin-top:2px">${m.orders} Bestellungen · ${m.tickets} Tickets</div>
+        </div>`,
+        {
+          direction: "top",
+          offset: [0, -8],
+          className: "city-heatmap-tooltip",
+          permanent: false,
+        }
+      );
+
+      group.addLayer(circle);
+    });
+
+    group.addTo(map);
+    layerGroupRef.current = group;
+
+    return () => {
+      if (layerGroupRef.current) {
+        map.removeLayer(layerGroupRef.current);
+      }
+    };
+  }, [markers, maxRevenue, map]);
+
+  return null;
+};
 
 export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
   const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
@@ -75,6 +173,11 @@ export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
       })
       .filter(Boolean) as (CityDataItem & { lat: number; lng: number })[],
     [data]
+  );
+
+  const heatPoints = useMemo(() =>
+    markers.map(m => [m.lat, m.lng, m.revenue / maxRevenue] as [number, number, number]),
+    [markers, maxRevenue]
   );
 
   const coords = markers.map(m => [m.lat, m.lng] as [number, number]);
@@ -101,40 +204,8 @@ export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         <FitBounds coords={coords} />
-        {markers.map((m) => {
-          const intensity = m.revenue / maxRevenue;
-          const radius = 8 + intensity * 30;
-          const hue = 330 - (1 - intensity) * 130;
-          const lightness = 45 + intensity * 15;
-          return (
-            <CircleMarker
-              key={m.name}
-              center={[m.lat, m.lng]}
-              radius={radius}
-              pathOptions={{
-                fillColor: `hsl(${hue} 80% ${lightness}%)`,
-                fillOpacity: 0.6 + intensity * 0.3,
-                color: `hsl(${hue} 80% ${lightness + 15}%)`,
-                weight: 2,
-                opacity: 0.8,
-              }}
-            >
-              <Tooltip
-                direction="top"
-                offset={[0, -radius]}
-                className="city-heatmap-tooltip"
-              >
-                <div style={{ background: "hsl(220 40% 12%)", color: "#fff", padding: "8px 12px", borderRadius: 10, border: "1px solid hsl(0 0% 100% / 0.1)", fontSize: 12, minWidth: 140 }}>
-                  <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 4 }}>{m.name}</div>
-                  <div style={{ color: "hsl(140 60% 55%)", fontWeight: 700 }}>{fmt(m.revenue)} €</div>
-                  <div style={{ color: "hsl(0 0% 100% / 0.5)", marginTop: 2 }}>
-                    {m.orders} Bestellungen · {m.tickets} Tickets
-                  </div>
-                </div>
-              </Tooltip>
-            </CircleMarker>
-          );
-        })}
+        <HeatLayer points={heatPoints} />
+        <CityLabels markers={markers} maxRevenue={maxRevenue} />
       </MapContainer>
     </div>
   );
