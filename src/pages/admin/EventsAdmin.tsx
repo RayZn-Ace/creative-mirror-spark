@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
   ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
+  Sun, XCircle, Filter,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -811,6 +812,8 @@ const EventsAdmin = () => {
   const [search, setSearch] = useState("");
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
+  const [filterOpenAir, setFilterOpenAir] = useState(false);
+  const [filterSoldOut, setFilterSoldOut] = useState<"all" | "hide" | "only">("all");
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -961,8 +964,16 @@ const EventsAdmin = () => {
     past: events.filter((e) => e.status === "published" && e.date && e.date < today).length,
   };
 
+  // Apply extra filters
+  const extraFiltered = tabFiltered.filter((e) => {
+    if (filterOpenAir && !e.open_air) return false;
+    if (filterSoldOut === "hide" && e.sold_out) return false;
+    if (filterSoldOut === "only" && !e.sold_out) return false;
+    return true;
+  });
+
   const filteredEvents = isSearching
-    ? tabFiltered.filter((e) => {
+    ? extraFiltered.filter((e) => {
         const q = search.toLowerCase();
         const city = e.series_id ? seriesCityMap[e.series_id] : e.city;
         const country = getCountry(city || null);
@@ -975,7 +986,7 @@ const EventsAdmin = () => {
           (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
         );
       })
-    : tabFiltered;
+    : extraFiltered;
 
   const grouped = filteredEvents.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
     (acc, event) => {
@@ -1041,6 +1052,53 @@ const EventsAdmin = () => {
         {search && (
           <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-white/10">
             <X className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+          </button>
+        )}
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+        <button
+          onClick={() => setFilterOpenAir(!filterOpenAir)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+          style={{
+            background: filterOpenAir ? "hsl(45 90% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+            color: filterOpenAir ? "hsl(45 90% 55%)" : "hsl(0 0% 100% / 0.4)",
+            border: `1px solid ${filterOpenAir ? "hsl(45 90% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+          }}
+        >
+          <Sun className="w-3 h-3" /> Nur Open Air
+        </button>
+        <button
+          onClick={() => setFilterSoldOut(filterSoldOut === "hide" ? "all" : "hide")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+          style={{
+            background: filterSoldOut === "hide" ? "hsl(0 70% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+            color: filterSoldOut === "hide" ? "hsl(0 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+            border: `1px solid ${filterSoldOut === "hide" ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+          }}
+        >
+          <XCircle className="w-3 h-3" /> Ausverkaufte ausblenden
+        </button>
+        <button
+          onClick={() => setFilterSoldOut(filterSoldOut === "only" ? "all" : "only")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+          style={{
+            background: filterSoldOut === "only" ? "hsl(0 70% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+            color: filterSoldOut === "only" ? "hsl(0 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+            border: `1px solid ${filterSoldOut === "only" ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+          }}
+        >
+          <XCircle className="w-3 h-3" /> Nur Ausverkaufte
+        </button>
+        {(filterOpenAir || filterSoldOut !== "all") && (
+          <button
+            onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); }}
+            className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
+            style={{ color: "hsl(330 80% 55%)" }}
+          >
+            Filter zurücksetzen
           </button>
         )}
       </div>
