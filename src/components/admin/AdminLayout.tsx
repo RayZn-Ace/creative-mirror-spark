@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette,
 } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -114,28 +114,15 @@ const AdminLayout = () => {
       <Sidebar />
 
       {/* Mobile sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-40 bg-black/60"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSidebarOpen(false)}
-            />
-            <motion.div
-              className="fixed inset-y-0 left-0 z-50 w-64"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25 }}
-            >
-              <Sidebar mobile />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <div
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-200 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 transition-transform duration-200 ease-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <Sidebar mobile />
+      </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
