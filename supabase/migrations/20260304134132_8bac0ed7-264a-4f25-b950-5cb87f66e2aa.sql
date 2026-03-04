@@ -1,0 +1,1 @@
+ALTER TABLE public.scanner_links ALTER COLUMN event_id DROP NOT NULL;

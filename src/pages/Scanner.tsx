@@ -49,12 +49,17 @@ const Scanner = () => {
         .eq("active", true)
         .single();
       if (data) {
-        const { data: event } = await supabase
-          .from("events")
-          .select("title, id")
-          .eq("id", data.event_id)
-          .single();
-        if (event) setEventInfo({ title: event.title, id: event.id });
+        if (data.event_id) {
+          const { data: event } = await supabase
+            .from("events")
+            .select("title, id")
+            .eq("id", data.event_id)
+            .single();
+          if (event) setEventInfo({ title: event.title, id: event.id });
+        } else {
+          // All-events scanner
+          setEventInfo({ title: data.label || "Alle Events", id: "__ALL__" });
+        }
       }
     })();
   }, [scannerToken]);
@@ -62,24 +67,27 @@ const Scanner = () => {
   // Load stats
   useEffect(() => {
     if (!eventInfo?.id) return;
+    const isAll = eventInfo.id === "__ALL__";
     const loadStats = async () => {
-      const { count: total } = await supabase
-        .from("tickets")
-        .select("*", { count: "exact", head: true })
-        .eq("event_id", eventInfo.id);
-      const { count: checkedIn } = await supabase
-        .from("tickets")
-        .select("*", { count: "exact", head: true })
-        .eq("event_id", eventInfo.id)
-        .eq("status", "checked_in");
+      let totalQuery = supabase.from("tickets").select("*", { count: "exact", head: true });
+      let checkedQuery = supabase.from("tickets").select("*", { count: "exact", head: true }).eq("status", "checked_in");
+      if (!isAll) {
+        totalQuery = totalQuery.eq("event_id", eventInfo.id);
+        checkedQuery = checkedQuery.eq("event_id", eventInfo.id);
+      }
+      const { count: total } = await totalQuery;
+      const { count: checkedIn } = await checkedQuery;
       setStats({ total: total || 0, checkedIn: checkedIn || 0 });
     };
     loadStats();
 
     // Realtime updates
+    const channelConfig = isAll
+      ? { event: "*" as const, schema: "public", table: "tickets" }
+      : { event: "*" as const, schema: "public", table: "tickets", filter: `event_id=eq.${eventInfo.id}` };
     const channel = supabase
       .channel("scanner-tickets")
-      .on("postgres_changes", { event: "*", schema: "public", table: "tickets", filter: `event_id=eq.${eventInfo.id}` }, () => {
+      .on("postgres_changes", channelConfig, () => {
         loadStats();
       })
       .subscribe();
@@ -151,7 +159,7 @@ const Scanner = () => {
       const { data, error } = await supabase.functions.invoke("validate-ticket", {
         body: {
           qr_code: code.trim().toUpperCase(),
-          event_id: eventInfo?.id,
+          event_id: eventInfo?.id === "__ALL__" ? null : eventInfo?.id,
           scanner_token: scannerToken,
           action: "checkin",
         },
