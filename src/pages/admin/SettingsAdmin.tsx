@@ -216,10 +216,21 @@ const SettingsAdmin = () => {
     const { data: roles } = await supabase.from("user_roles").select("*");
     if (!roles) { setUserRoles([]); return; }
     const userIds = [...new Set(roles.map(r => r.user_id))];
+    // Fetch profiles
     const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
     const profileMap: Record<string, string> = {};
     (profiles || []).forEach(p => { profileMap[p.user_id] = p.display_name || ""; });
-    setUserRoles(roles.map(r => ({ ...r, display_name: profileMap[r.user_id] || "", email: profileMap[r.user_id] || r.user_id })));
+    // Fetch emails from auth via edge function
+    let emailMap: Record<string, { email: string; display_name: string | null }> = {};
+    try {
+      const { data } = await supabase.functions.invoke("list-users", { body: { userIds } });
+      if (data?.users) emailMap = data.users;
+    } catch {}
+    setUserRoles(roles.map(r => ({
+      ...r,
+      display_name: profileMap[r.user_id] || emailMap[r.user_id]?.display_name || "",
+      email: emailMap[r.user_id]?.email || r.user_id,
+    })));
   };
 
   const loadPermissions = async () => {
@@ -537,8 +548,8 @@ const SettingsAdmin = () => {
                       {r.role[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "hsl(0 0% 100%)" }}>{r.display_name || r.user_id}</p>
-                      <p className="text-[10px] font-mono" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{r.user_id}</p>
+                      <p className="text-sm font-medium truncate" style={{ color: "hsl(0 0% 100%)" }}>{r.display_name || r.email || "Unbekannt"}</p>
+                      <p className="text-[11px] truncate" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{r.email && r.email !== r.user_id ? r.email : ""}</p>
                     </div>
                     {isEditing ? (
                       <div className="flex items-center gap-2">
