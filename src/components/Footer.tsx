@@ -80,9 +80,8 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
-          <p>© {new Date().getFullYear()} GIMME GIMME PARTY.</p>
-          <p>Homepage made by <a href="https://homepageschmied.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline">Homepageschmied.de</a> · powered by <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline">smea</a></p>
+        <div className="mt-12 pt-6 border-t border-border text-center text-sm text-muted-foreground">
+          <p className="font-body">Veranstalter: Gimme Gimme Party.</p>
         </div>
       </div>
     </footer>
