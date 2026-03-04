@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, MessageCircle, Facebook } from "lucide-react";
+import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 
 const socialLinks = [
   { icon: Instagram, href: "https://www.instagram.com/mammamia.partymotto", label: "Instagram" },
@@ -7,12 +8,13 @@ const socialLinks = [
   { icon: Youtube, href: "https://www.youtube.com/shorts/s8-6TQHgslw", label: "YouTube" },
 ];
 
-export default function Footer() {
+export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
+  const gt = gtProp || getGlobalTranslations();
+
   return (
     <footer className="bg-card border-t border-border">
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
           <div>
             <div className="mb-4">
               <span className="font-display leading-none tracking-wide">
@@ -20,9 +22,7 @@ export default function Footer() {
                 <span className="block text-xl text-gradient-primary">PARTY</span>
               </span>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Die größte ABBA Sing-Along Party-Tour Europas – 13 Länder, 150+ Städte, 250.000+ Fans.
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">{gt.footerAboutDesc}</p>
             <div className="flex gap-3">
               {socialLinks.map(s => (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
@@ -41,22 +41,20 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">Schnelllinks</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerLinks}</h3>
             <div className="flex flex-col gap-2">
-              <Link to="/#events" className="text-sm text-muted-foreground hover:text-primary transition-colors">Alle Events</Link>
-              <Link to="/fotos" className="text-sm text-muted-foreground hover:text-primary transition-colors">Fotos & Media</Link>
-              <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ</Link>
-              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">Jobs</Link>
-              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">Promoter werden</Link>
-              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontakt</Link>
+              <Link to="/#events" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navDatesTickets}</Link>
+              <Link to="/fotos" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPhotos}</Link>
+              <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerFaq}</Link>
+              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navJobs}</Link>
+              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPromoter}</Link>
+              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerContact}</Link>
             </div>
           </div>
 
-          {/* Contact */}
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerContact}</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <a href="mailto:mail@gimmegimmeparty.com" className="hover:text-primary transition-colors">mail@gimmegimmeparty.com</a>
               <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
@@ -67,19 +65,18 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Legal */}
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">Rechtliches</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerLegal}</h3>
             <div className="flex flex-col gap-2">
-              <Link to="/impressum" className="text-sm text-muted-foreground hover:text-primary transition-colors">Impressum</Link>
-              <Link to="/datenschutz" className="text-sm text-muted-foreground hover:text-primary transition-colors">Datenschutz</Link>
-              <Link to="/agb" className="text-sm text-muted-foreground hover:text-primary transition-colors">AGB</Link>
+              <Link to="/impressum" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerImprint}</Link>
+              <Link to="/datenschutz" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerPrivacy}</Link>
+              <Link to="/agb" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerTerms}</Link>
             </div>
           </div>
         </div>
 
         <div className="mt-12 pt-6 border-t border-border text-center text-xs text-muted-foreground space-y-1">
-          <p>© {new Date().getFullYear()} GIMME GIMME PARTY. Alle Rechte vorbehalten.</p>
+          <p>© {new Date().getFullYear()} GIMME GIMME PARTY.</p>
           <p>Homepage made by <a href="https://homepageschmied.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline">Homepageschmied.de</a> · powered by <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline">smea</a></p>
         </div>
       </div>
