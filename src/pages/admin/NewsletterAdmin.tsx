@@ -25,7 +25,7 @@ const NewsletterAdmin = () => {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [fromName, setFromName] = useState("GIMME Events");
-  const [fromEmail, setFromEmail] = useState("onboarding@resend.dev");
+  const [fromEmail, setFromEmail] = useState("newsletter@gimmegimmeparty.com");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [onlyPaid, setOnlyPaid] = useState(true);
   const [preview, setPreview] = useState(false);
