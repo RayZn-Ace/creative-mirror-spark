@@ -43,12 +43,13 @@ const OrderConfirmation = () => {
     const interval = setInterval(async () => {
       const { data } = await supabase
         .from("orders")
-        .select("status, paid_at")
+        .select("*")
         .eq("id", orderId)
         .maybeSingle();
-      if (data && order) {
-        setOrder((prev) => prev ? { ...prev, status: data.status, paid_at: data.paid_at } : prev);
-        if (data.status === "paid" || data.status === "cancelled" || data.status === "failed") {
+      if (data) {
+        const updated = data as unknown as OrderData;
+        setOrder(updated);
+        if (updated.status === "paid" || updated.status === "cancelled" || updated.status === "failed") {
           clearInterval(interval);
         }
       }
