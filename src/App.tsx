@@ -34,6 +34,7 @@ const EventsAdmin = lazy(() => import("./pages/admin/EventsAdmin"));
 const TicketsAdmin = lazy(() => import("./pages/admin/TicketsAdmin"));
 const PagesAdmin = lazy(() => import("./pages/admin/PagesAdmin"));
 const TrackingAdminPage = lazy(() => import("./pages/admin/TrackingAdmin"));
+const CustomersAdmin = lazy(() => import("./pages/admin/CustomersAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,8 @@ const App = () => (
                 <Route path="events" element={<EventsAdmin />} />
                 <Route path="tickets" element={<TicketsAdmin />} />
                 <Route path="pages" element={<PagesAdmin />} />
+                <Route path="customers" element={<CustomersAdmin />} />
+                <Route path="tracking" element={<TrackingAdminPage />} />
                 <Route path="tracking" element={<TrackingAdminPage />} />
               </Route>
 
