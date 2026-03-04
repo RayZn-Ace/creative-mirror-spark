@@ -68,55 +68,70 @@ const FitBounds = ({ coords }: { coords: [number, number][] }) => {
 const HeatLayer = ({ points }: { points: [number, number, number][] }) => {
   const map = useMap();
   const layerRef = useRef<any>(null);
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
       layerRef.current = null;
     }
+    if (retryRef.current) {
+      clearTimeout(retryRef.current);
+      retryRef.current = null;
+    }
     if (points.length === 0) return;
 
-    const addHeat = () => {
-      try {
+    // @ts-ignore – leaflet.heat extends L
+    const heat = L.heatLayer(points, {
+      radius: 35,
+      blur: 25,
+      maxZoom: 12,
+      max: 1.0,
+      minOpacity: 0.3,
+      gradient: {
+        0.0: "#0d0887",
+        0.15: "#4903a0",
+        0.3: "#7d03a8",
+        0.45: "#b5367a",
+        0.6: "#e8566d",
+        0.75: "#fb8861",
+        0.9: "#fec287",
+        1.0: "#f0f921",
+      },
+    });
+
+    // Monkey-patch _reset to guard against 0-size canvas
+    const origReset = heat._reset?.bind(heat);
+    if (origReset) {
+      heat._reset = function () {
         const size = map.getSize();
-        if (!size || size.x === 0 || size.y === 0) {
-          // Container not ready yet, retry
-          setTimeout(addHeat, 150);
-          return;
-        }
+        if (!size || size.x === 0 || size.y === 0) return;
+        origReset();
+      };
+    }
 
-        // @ts-ignore – leaflet.heat extends L
-        const heat = L.heatLayer(points, {
-          radius: 35,
-          blur: 25,
-          maxZoom: 12,
-          max: 1.0,
-          minOpacity: 0.3,
-          gradient: {
-            0.0: "#0d0887",
-            0.15: "#4903a0",
-            0.3: "#7d03a8",
-            0.45: "#b5367a",
-            0.6: "#e8566d",
-            0.75: "#fb8861",
-            0.9: "#fec287",
-            1.0: "#f0f921",
-          },
-        });
-
+    const tryAdd = (attempt = 0) => {
+      const size = map.getSize();
+      if ((!size || size.x === 0 || size.y === 0) && attempt < 20) {
+        map.invalidateSize();
+        retryRef.current = setTimeout(() => tryAdd(attempt + 1), 150);
+        return;
+      }
+      if (size && size.x > 0 && size.y > 0) {
         heat.addTo(map);
         layerRef.current = heat;
-      } catch (e) {
-        console.warn("HeatLayer draw deferred:", e);
-        setTimeout(addHeat, 200);
       }
     };
 
-    // Small delay to ensure container is rendered
-    const timeout = setTimeout(addHeat, 100);
+    map.whenReady(() => {
+      retryRef.current = setTimeout(() => tryAdd(0), 50);
+    });
 
     return () => {
-      clearTimeout(timeout);
+      if (retryRef.current) {
+        clearTimeout(retryRef.current);
+        retryRef.current = null;
+      }
       if (layerRef.current) {
         map.removeLayer(layerRef.current);
         layerRef.current = null;
