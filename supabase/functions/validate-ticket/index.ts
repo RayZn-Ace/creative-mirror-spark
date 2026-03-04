@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
       .from("tickets")
       .select(`
         *,
-        events:event_id (title, date, location_name),
+        events:event_id (title, date, location_name, city),
         ticket_categories:ticket_category_id (name, category_group)
       `)
       .eq("qr_code", qr_code)
@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
           event: ticket.events?.title,
           event_date: ticket.events?.date,
           location: ticket.events?.location_name,
+          city: ticket.events?.city,
         },
       }), {
         status: 200,
@@ -178,6 +179,8 @@ Deno.serve(async (req) => {
         category: ticket.ticket_categories?.name,
         group: ticket.ticket_categories?.category_group,
         event: ticket.events?.title,
+        event_date: ticket.events?.date,
+        city: ticket.events?.city,
       },
     }), {
       status: 200,

@@ -696,15 +696,15 @@ const ScannerAdmin = () => {
                                 : "inset 0 0 0 4px hsla(0, 60%, 55%, 0.8)",
                             }}
                           >
-                            <div className="text-white text-center space-y-2 px-4">
+                            <div className="text-white text-center space-y-1.5 px-3">
                               {scanResult.status === "checked_in" ? (
-                                <CheckCircle2 size={48} className="mx-auto drop-shadow-lg" />
+                                <CheckCircle2 size={32} className="mx-auto drop-shadow-lg" />
                               ) : scanResult.status === "wrong_event" ? (
-                                <AlertTriangle size={48} className="mx-auto drop-shadow-lg" />
+                                <AlertTriangle size={32} className="mx-auto drop-shadow-lg" />
                               ) : (
-                                <XCircle size={48} className="mx-auto drop-shadow-lg" />
+                                <XCircle size={32} className="mx-auto drop-shadow-lg" />
                               )}
-                              <h2 className="font-bold text-2xl tracking-wider drop-shadow-md">
+                              <h2 className="font-bold text-lg tracking-wider drop-shadow-md">
                                 {scanResult.status === "checked_in"
                                   ? "VALID ✓"
                                   : scanResult.status === "already_checked_in"
@@ -715,26 +715,26 @@ const ScannerAdmin = () => {
                                   ? "STORNIERT"
                                   : "UNGÜLTIG"}
                               </h2>
-                              {scanResult.ticket?.event && (
-                                <p className="text-sm font-medium bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 inline-block">
-                                  {scanResult.ticket.event}
+                              {(scanResult.ticket?.city || scanResult.ticket?.event_date) && (
+                                <p className="text-xs font-medium bg-white/20 backdrop-blur-sm rounded-md px-2 py-1 inline-block">
+                                  {[scanResult.ticket?.city, scanResult.ticket?.event_date && new Date(scanResult.ticket.event_date).toLocaleDateString("de-DE")].filter(Boolean).join(" · ")}
                                 </p>
                               )}
-                              {scanResult.ticket?.holder_name && (
-                                <p className="text-xs opacity-80">{scanResult.ticket.holder_name}</p>
-                              )}
                               {scanResult.ticket?.category && (
-                                <p className="text-sm font-semibold bg-white/25 backdrop-blur-sm rounded-md px-3 py-1 inline-block">
+                                <p className="text-xs font-semibold bg-white/25 backdrop-blur-sm rounded-md px-2 py-0.5 inline-block">
                                   {scanResult.ticket.category}
                                 </p>
                               )}
+                              {scanResult.ticket?.holder_name && (
+                                <p className="text-[11px] opacity-80">{scanResult.ticket.holder_name}</p>
+                              )}
                               {scanResult.status === "already_checked_in" && scanResult.checked_in_at && (
-                                <p className="text-xs opacity-70">
+                                <p className="text-[10px] opacity-70">
                                   Eingecheckt: {new Date(scanResult.checked_in_at).toLocaleTimeString("de-DE")}
                                 </p>
                               )}
                               {scanResult.error && (
-                                <p className="text-xs opacity-80 font-mono bg-white/20 backdrop-blur-sm rounded px-2 py-1">
+                                <p className="text-[10px] opacity-80 font-mono bg-white/20 rounded px-2 py-0.5">
                                   {scanResult.error}
                                 </p>
                               )}
