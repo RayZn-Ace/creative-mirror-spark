@@ -26,6 +26,7 @@ const Jobs = lazy(() => import("./pages/Jobs"));
 const Termine = lazy(() => import("./pages/Termine"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 const Scanner = lazy(() => import("./pages/Scanner"));
+const TicketUmbuchung = lazy(() => import("./pages/TicketUmbuchung"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/agb" element={<AGB />} />
               <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/ticket-umbuchung" element={<TicketUmbuchung />} />
               <Route path="/ueber-uns" element={<UeberUns />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/promoter" element={<Promoter />} />

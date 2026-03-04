@@ -43,7 +43,7 @@ function buildNav(gt: GlobalTranslations) {
 
   const extraLinks = [
     { label: gt.navFaqSupport, path: "/faq" },
-    { label: gt.navTicketRebooking, path: "/kontakt" },
+    { label: gt.navTicketRebooking, path: "/ticket-umbuchung" },
   ];
 
   return { directLinks, groups, extraLinks };
