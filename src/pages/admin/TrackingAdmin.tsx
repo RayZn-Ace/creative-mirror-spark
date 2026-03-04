@@ -30,15 +30,99 @@ type EventLog = {
   created_at: string;
 };
 
-const PROVIDERS = [
-  { id: "google_analytics", name: "Google Analytics", placeholder: "G-XXXXXXXXXX", color: "hsl(45 80% 55%)", fields: [{ key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }] },
-  { id: "google_tag_manager", name: "Google Tag Manager", placeholder: "GTM-XXXXXXX", color: "hsl(45 60% 50%)", fields: [{ key: "pixel_id", label: "Container ID", placeholder: "GTM-XXXXXXX" }] },
-  { id: "meta", name: "Meta Pixel", placeholder: "123456789012345", color: "hsl(215 90% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "123456789012345" }, { key: "capi_token", label: "Conversions API Token (optional)", placeholder: "EAAxxxxxxx..." }] },
-  { id: "tiktok", name: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", color: "hsl(330 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "CXXXXXXXXXXXXXXXXX" }, { key: "capi_token", label: "Events API Token (optional)", placeholder: "Token..." }] },
-  { id: "snapchat", name: "Snapchat Pixel", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", color: "hsl(55 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx" }, { key: "capi_token", label: "CAPI Token (optional)", placeholder: "Token..." }] },
-  { id: "pinterest", name: "Pinterest Tag", placeholder: "1234567890123", color: "hsl(0 70% 50%)", fields: [{ key: "pixel_id", label: "Tag ID", placeholder: "1234567890123" }] },
-  { id: "linkedin", name: "LinkedIn Insight", placeholder: "123456", color: "hsl(210 70% 50%)", fields: [{ key: "pixel_id", label: "Partner ID", placeholder: "123456" }] },
-  { id: "twitter", name: "Twitter/X Pixel", placeholder: "xxxxx", color: "hsl(200 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "xxxxx" }] },
+type ProviderField = { key: string; label: string; placeholder: string; type?: "text" | "toggle"; description?: string };
+
+const PROVIDERS: { id: string; name: string; placeholder: string; color: string; fields: ProviderField[] }[] = [
+  {
+    id: "google_analytics", name: "Google Analytics 4", placeholder: "G-XXXXXXXXXX", color: "hsl(45 80% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" },
+      { key: "cross_domains", label: "Cross-Domain Tracking (kommasepariert)", placeholder: "shop.example.com, checkout.example.com", description: "Session-Tracking über mehrere Domains" },
+      { key: "enhanced_measurement", label: "Enhanced Measurement", placeholder: "", type: "toggle", description: "Scrolls, Outbound Clicks, Site Search, Video, File Downloads automatisch tracken" },
+      { key: "debug_mode", label: "Debug Mode (DebugView)", placeholder: "", type: "toggle", description: "Echtzeit-Debugging in Google Analytics" },
+    ],
+  },
+  {
+    id: "google_tag_manager", name: "Google Tag Manager", placeholder: "GTM-XXXXXXX", color: "hsl(45 60% 50%)",
+    fields: [
+      { key: "pixel_id", label: "Container ID", placeholder: "GTM-XXXXXXX" },
+      { key: "gtm_auth", label: "Environment Auth (optional)", placeholder: "abc123xyz", description: "Für GTM-Environments (Staging/Preview)" },
+      { key: "gtm_preview", label: "Environment Preview ID", placeholder: "env-123", description: "Preview-Container für Testumgebungen" },
+      { key: "data_layer_name", label: "DataLayer Name", placeholder: "dataLayer", description: "Custom DataLayer-Name" },
+    ],
+  },
+  {
+    id: "meta", name: "Meta Pixel (Facebook/Instagram)", placeholder: "123456789012345", color: "hsl(215 90% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Pixel ID", placeholder: "123456789012345" },
+      { key: "capi_token", label: "Conversions API Access Token", placeholder: "EAAxxxxxxx...", description: "Server-seitiges Tracking für bessere Datenqualität" },
+      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST12345", description: "Aus Events Manager → Test Events" },
+      { key: "advanced_matching", label: "Advanced Matching (automatisch)", placeholder: "", type: "toggle", description: "E-Mail, Telefon etc. automatisch hashen und senden" },
+      { key: "domain_verification", label: "Domain Verification Meta-Tag", placeholder: "xxxxxxxxxxxxxxxxx", description: "Verifizierungs-String für Meta Business Suite" },
+      { key: "external_id", label: "External ID Parameter", placeholder: "user_id", description: "Custom Nutzer-ID für besseres Matching" },
+    ],
+  },
+  {
+    id: "tiktok", name: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", color: "hsl(330 80% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Pixel ID", placeholder: "CXXXXXXXXXXXXXXXXX" },
+      { key: "capi_token", label: "Events API Access Token", placeholder: "Token...", description: "Server-to-Server Tracking" },
+      { key: "advanced_matching", label: "Automatic Advanced Matching", placeholder: "", type: "toggle", description: "E-Mail, Telefon automatisch aus Formularen erfassen" },
+      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST...", description: "Für Server-Event-Tests" },
+    ],
+  },
+  {
+    id: "snapchat", name: "Snapchat Pixel", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", color: "hsl(55 80% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx" },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Event-Tracking" },
+      { key: "advanced_matching", label: "Advanced Matching", placeholder: "", type: "toggle", description: "User-Informationen für besseres Targeting" },
+    ],
+  },
+  {
+    id: "pinterest", name: "Pinterest Tag", placeholder: "1234567890123", color: "hsl(0 70% 50%)",
+    fields: [
+      { key: "pixel_id", label: "Tag ID", placeholder: "1234567890123" },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "pina_...", description: "Serverseitiges Tracking" },
+      { key: "enhanced_match", label: "Enhanced Match", placeholder: "", type: "toggle", description: "Automatisches Matching von Kundendaten" },
+    ],
+  },
+  {
+    id: "linkedin", name: "LinkedIn Insight Tag", placeholder: "123456", color: "hsl(210 70% 50%)",
+    fields: [
+      { key: "pixel_id", label: "Partner ID", placeholder: "123456" },
+      { key: "conversion_id", label: "Conversion ID", placeholder: "12345678", description: "Für spezifische Conversion-Aktionen" },
+    ],
+  },
+  {
+    id: "twitter", name: "Twitter/X Pixel", placeholder: "xxxxx", color: "hsl(200 80% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxx" },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Conversion-Tracking" },
+    ],
+  },
+  {
+    id: "google_ads", name: "Google Ads", placeholder: "AW-XXXXXXXXX", color: "hsl(30 80% 50%)",
+    fields: [
+      { key: "pixel_id", label: "Conversion ID", placeholder: "AW-XXXXXXXXX" },
+      { key: "conversion_label", label: "Conversion Label", placeholder: "AbCdEfGhIj...", description: "Label für Conversion-Aktionen" },
+      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für bessere Zuordnung" },
+    ],
+  },
+  {
+    id: "hotjar", name: "Hotjar", placeholder: "1234567", color: "hsl(15 85% 55%)",
+    fields: [
+      { key: "pixel_id", label: "Site ID", placeholder: "1234567" },
+      { key: "snippet_version", label: "Snippet Version", placeholder: "6", description: "Standard: 6" },
+    ],
+  },
+  {
+    id: "microsoft_ads", name: "Microsoft/Bing Ads", placeholder: "12345678", color: "hsl(195 80% 45%)",
+    fields: [
+      { key: "pixel_id", label: "UET Tag ID", placeholder: "12345678" },
+      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für verbesserte Attribution" },
+    ],
+  },
 ];
 
 const STANDARD_EVENTS = [
@@ -256,11 +340,36 @@ const TrackingAdmin = () => {
                             const editKey = `${provider.id}__${field.key}`;
                             const currentVal = editingIds[editKey] ?? savedValue;
 
+                            if (field.type === "toggle") {
+                              const isOn = currentVal === "true" || currentVal === "1";
+                              return (
+                                <div key={field.key} className="flex items-center justify-between rounded-lg px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                                  <div>
+                                    <span className="text-[11px] font-medium block" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{field.label}</span>
+                                    {field.description && <span className="text-[10px] block mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{field.description}</span>}
+                                  </div>
+                                  <button
+                                    onClick={() => setEditingIds((prev) => ({ ...prev, [editKey]: String(!isOn) }))}
+                                    className="relative w-9 h-5 rounded-full transition-all duration-200 shrink-0 ml-3"
+                                    style={{ background: isOn ? provider.color : "hsl(0 0% 100% / 0.1)" }}
+                                  >
+                                    <motion.div
+                                      className="absolute top-0.5 w-4 h-4 rounded-full"
+                                      style={{ background: "hsl(0 0% 100%)" }}
+                                      animate={{ left: isOn ? "calc(100% - 18px)" : "2px" }}
+                                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                  </button>
+                                </div>
+                              );
+                            }
+
                             return (
                               <div key={field.key}>
                                 <label className="text-[11px] font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                                   {field.label}
                                 </label>
+                                {field.description && <span className="text-[10px] block mb-1.5" style={{ color: "hsl(0 0% 100% / 0.25)" }}>{field.description}</span>}
                                 <input
                                   value={currentVal}
                                   onChange={(e) => setEditingIds((prev) => ({ ...prev, [editKey]: e.target.value }))}
