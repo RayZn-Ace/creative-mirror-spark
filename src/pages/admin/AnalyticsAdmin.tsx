@@ -507,6 +507,44 @@ const AnalyticsAdmin = () => {
     return ticketCategoryStats.filter(s => s.groupSize > 1);
   }, [ticketCategoryStats]);
 
+  // No-show stats: overall + per past event average
+  const noShowStats = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    // Past events (date < today)
+    const pastEventIds = new Set(events.filter(e => e.date && e.date < today).map(e => e.id));
+
+    // All tickets for past events (regardless of time filter)
+    const pastEventTickets = tickets.filter(t => pastEventIds.has(t.event_id));
+    const overallTotal = pastEventTickets.length;
+    const overallNoShow = pastEventTickets.filter(t => !t.checked_in_at).length;
+    const overallRate = overallTotal > 0 ? (overallNoShow / overallTotal) * 100 : 0;
+
+    // Per-event no-show rates
+    const perEvent = new Map<string, { total: number; noShow: number }>();
+    pastEventTickets.forEach(t => {
+      const cur = perEvent.get(t.event_id) ?? { total: 0, noShow: 0 };
+      cur.total += 1;
+      if (!t.checked_in_at) cur.noShow += 1;
+      perEvent.set(t.event_id, cur);
+    });
+
+    const eventRates = Array.from(perEvent.entries()).map(([id, v]) => ({
+      id,
+      title: eventMap.get(id)?.title ?? "Unbekannt",
+      city: eventMap.get(id)?.city ?? "",
+      date: eventMap.get(id)?.date ?? "",
+      total: v.total,
+      noShow: v.noShow,
+      rate: v.total > 0 ? (v.noShow / v.total) * 100 : 0,
+    })).sort((a, b) => b.rate - a.rate);
+
+    const avgRate = eventRates.length > 0
+      ? eventRates.reduce((s, e) => s + e.rate, 0) / eventRates.length
+      : 0;
+
+    return { overallRate, overallTotal, overallNoShow, avgRate, eventCount: eventRates.length, eventRates };
+  }, [tickets, events, eventMap]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -881,8 +919,8 @@ const AnalyticsAdmin = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <StatCard icon={Ticket} label="Tickets gesamt" value={fmtInt(ticketCount)} color="hsl(330 80% 55%)" />
             <StatCard icon={UserCheck} label="Check-in Rate" value={`${checkinRate.toFixed(1)}%`} color="hsl(140 60% 50%)" sub={`${fmtInt(checkedIn)} eingecheckt`} />
-            <StatCard icon={Users} label="Kategorien" value={fmtInt(ticketCategoryStats.length)} color="hsl(260 70% 60%)" />
-            <StatCard icon={Zap} label="Gruppentickets" value={fmtInt(groupTicketStats.reduce((s, g) => s + g.count, 0))} color="hsl(40 90% 55%)" sub={`${groupTicketStats.length} Kategorien`} />
+            <StatCard icon={Eye} label="No-Show Rate" value={`${noShowStats.overallRate.toFixed(1)}%`} color="hsl(10 80% 55%)" sub={`${fmtInt(noShowStats.overallNoShow)} von ${fmtInt(noShowStats.overallTotal)} Tickets`} />
+            <StatCard icon={Target} label="Ø No-Show / Event" value={`${noShowStats.avgRate.toFixed(1)}%`} color="hsl(40 90% 55%)" sub={`gemessen an ${noShowStats.eventCount} Events`} />
           </div>
 
           {/* Category Group Distribution (Pie + Bar) */}
@@ -1055,6 +1093,96 @@ const AnalyticsAdmin = () => {
               </div>
             </>
           )}
+
+          {/* No-Show Rate per Event */}
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>gemessen an {noShowStats.eventCount} vergangenen Events</span>}>
+            No-Show Rate pro Event
+          </SectionHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            {/* No-Show Bar Chart */}
+            <div style={cardStyle} className="p-5">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={noShowStats.eventRates.slice(0, 15)} layout="vertical" margin={{ left: 10, right: 20 }}>
+                  <XAxis type="number" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                  <YAxis type="category" dataKey="title" tick={{ fill: "hsl(0 0% 100% / 0.6)", fontSize: 10 }} width={140} axisLine={false} tickLine={false} />
+                  <Tooltip {...tooltipStyle} formatter={(v: number) => [`${v.toFixed(1)}%`, "No-Show Rate"]} />
+                  <Bar dataKey="rate" radius={[0, 6, 6, 0]}>
+                    {noShowStats.eventRates.slice(0, 15).map((e, i) => (
+                      <Cell key={i} fill={e.rate > 50 ? "hsl(10 80% 55%)" : e.rate > 30 ? "hsl(40 90% 55%)" : "hsl(140 60% 50%)"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Summary Card */}
+            <div style={cardStyle} className="p-5 flex flex-col gap-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Zusammenfassung</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl" style={{ background: "hsl(10 80% 55% / 0.1)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Gesamt No-Show</span>
+                  <p className="text-2xl font-black mt-1" style={{ color: "hsl(10 80% 55%)" }}>{noShowStats.overallRate.toFixed(1)}%</p>
+                  <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{fmtInt(noShowStats.overallNoShow)} Tickets</span>
+                </div>
+                <div className="p-4 rounded-xl" style={{ background: "hsl(40 90% 55% / 0.1)" }}>
+                  <span className="text-[10px] uppercase font-semibold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Ø pro Event</span>
+                  <p className="text-2xl font-black mt-1" style={{ color: "hsl(40 90% 55%)" }}>{noShowStats.avgRate.toFixed(1)}%</p>
+                  <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>über {noShowStats.eventCount} Events</span>
+                </div>
+              </div>
+              {/* Top 5 worst no-show events */}
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Höchste No-Show Raten</span>
+                <div className="mt-2 space-y-2">
+                  {noShowStats.eventRates.slice(0, 5).map((e, i) => (
+                    <div key={e.id} className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold w-5 text-center" style={{ color: "hsl(0 0% 100% / 0.2)" }}>{i + 1}</span>
+                      <span className="text-[11px] flex-1 truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{e.title}</span>
+                      <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{e.city}</span>
+                      <span className="text-xs font-bold" style={{ color: e.rate > 50 ? "hsl(10 80% 55%)" : e.rate > 30 ? "hsl(40 90% 55%)" : "hsl(140 60% 50%)" }}>
+                        {e.rate.toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Full No-Show Table */}
+          <div style={cardStyle} className="overflow-hidden">
+            <div className="max-h-[350px] overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                    {["Event", "Stadt", "Datum", "Tickets", "No-Shows", "No-Show %"].map(h => (
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {noShowStats.eventRates.map(e => (
+                    <tr key={e.id} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                      <td className="px-4 py-2.5 font-semibold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{e.title}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{e.city}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{e.date ? new Date(e.date + "T00:00:00").toLocaleDateString("de-DE") : "–"}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(330 80% 55%)" }}>{fmtInt(e.total)}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(10 80% 55%)" }}>{fmtInt(e.noShow)}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
+                            <div className="h-full rounded-full" style={{ width: `${Math.min(e.rate, 100)}%`, background: e.rate > 50 ? "hsl(10 80% 55%)" : e.rate > 30 ? "hsl(40 90% 55%)" : "hsl(140 60% 50%)" }} />
+                          </div>
+                          <span className="font-bold" style={{ color: e.rate > 50 ? "hsl(10 80% 55%)" : e.rate > 30 ? "hsl(40 90% 55%)" : "hsl(140 60% 50%)" }}>{e.rate.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 
