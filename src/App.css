@@ -56,3 +56,8 @@
 .bright-map-labels {
   filter: brightness(2.5) contrast(1.1);
 }
+
+/* Brighten water on dark map tiles */
+.leaflet-container .leaflet-tile-pane {
+  filter: saturate(1.4) brightness(1.15);
+}

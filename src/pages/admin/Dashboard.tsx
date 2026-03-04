@@ -33,6 +33,7 @@ const NextEventCountdownWidget = lazy(() => import("@/components/admin/dashboard
 const WelcomeGreetingWidget = lazy(() => import("@/components/admin/dashboard/widgets/WelcomeGreetingWidget"));
 const CapacityOverviewWidget = lazy(() => import("@/components/admin/dashboard/widgets/CapacityOverviewWidget"));
 const RevenueByEventWidget = lazy(() => import("@/components/admin/dashboard/widgets/RevenueByEventWidget"));
+const GeoHeatmapWidget = lazy(() => import("@/components/admin/dashboard/widgets/GeoHeatmapWidget"));
 
 const WIDGET_COMPONENTS: Record<WidgetType, React.LazyExoticComponent<React.ComponentType>> = {
   stats: StatsWidget,
@@ -59,6 +60,7 @@ const WIDGET_COMPONENTS: Record<WidgetType, React.LazyExoticComponent<React.Comp
   welcome_greeting: WelcomeGreetingWidget,
   capacity_overview: CapacityOverviewWidget,
   revenue_by_event: RevenueByEventWidget,
+  geo_heatmap: GeoHeatmapWidget,
 };
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
