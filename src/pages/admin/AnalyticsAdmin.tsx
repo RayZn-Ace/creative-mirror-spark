@@ -111,12 +111,13 @@ const AnalyticsAdmin = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [rangeKey, setRangeKey] = useState<RangeKey>("30d");
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [showRangeMenu, setShowRangeMenu] = useState(false);
-  const [detailTab, setDetailTab] = useState<"overview" | "revenue" | "orders" | "customers" | "events" | "geo">("overview");
+  const [detailTab, setDetailTab] = useState<"overview" | "revenue" | "orders" | "customers" | "events" | "geo" | "tickets">("overview");
 
   useEffect(() => {
     Promise.all([
@@ -124,8 +125,9 @@ const AnalyticsAdmin = () => {
       supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id, ticket_category_id, holder_email").then(r => r.data ?? []),
       supabase.from("events").select("id, title, date, city, status, slug, location_name, sold_out, open_air").then(r => r.data ?? []),
       supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city, source").then(r => r.data ?? []),
-    ]).then(([o, t, e, s]) => {
-      setOrders(o); setTickets(t); setEvents(e); setSubscribers(s);
+      supabase.from("ticket_categories").select("id, name, price, category_group, group_size, event_id, sold_out, badge").then(r => r.data ?? []),
+    ]).then(([o, t, e, s, c]) => {
+      setOrders(o); setTickets(t); setEvents(e); setSubscribers(s); setCategories(c);
       setLoading(false);
     });
   }, []);
@@ -428,6 +430,81 @@ const AnalyticsAdmin = () => {
     a.click();
   }, [chartData, rangeKey, viewMode]);
 
+  const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+
+  // Ticket category analytics
+  const ticketCategoryStats = useMemo(() => {
+    const map = new Map<string, { name: string; group: string; count: number; checkedIn: number; revenue: number; groupSize: number; events: Set<string> }>();
+    filteredTickets.forEach(t => {
+      const catId = t.ticket_category_id;
+      const cat = catId ? categoryMap.get(catId) : null;
+      const catName = cat?.name ?? "Unbekannt";
+      const catGroup = cat?.category_group ?? "Sonstige";
+      const key = catGroup + " – " + catName;
+      const cur = map.get(key) ?? { name: catName, group: catGroup, count: 0, checkedIn: 0, revenue: 0, groupSize: cat?.group_size ?? 1, events: new Set<string>() };
+      cur.count += 1;
+      if (t.checked_in_at) cur.checkedIn += 1;
+      cur.revenue += Number(cat?.price ?? 0);
+      cur.events.add(t.event_id);
+      map.set(key, cur);
+    });
+    return Array.from(map.entries())
+      .map(([key, v]) => ({ key, ...v, eventCount: v.events.size, checkinRate: v.count > 0 ? (v.checkedIn / v.count) * 100 : 0 }))
+      .sort((a, b) => b.count - a.count);
+  }, [filteredTickets, categoryMap]);
+
+  const categoryGroupStats = useMemo(() => {
+    const map = new Map<string, { count: number; checkedIn: number; revenue: number }>();
+    ticketCategoryStats.forEach(s => {
+      const cur = map.get(s.group) ?? { count: 0, checkedIn: 0, revenue: 0 };
+      cur.count += s.count;
+      cur.checkedIn += s.checkedIn;
+      cur.revenue += s.revenue;
+      map.set(s.group, cur);
+    });
+    return Array.from(map.entries())
+      .map(([name, v]) => ({ name, ...v, checkinRate: v.count > 0 ? (v.checkedIn / v.count) * 100 : 0 }))
+      .sort((a, b) => b.count - a.count);
+  }, [ticketCategoryStats]);
+
+  const ticketTimelineByGroup = useMemo(() => {
+    const groups = new Set<string>();
+    const dayMap = new Map<string, Record<string, number>>();
+    filteredTickets.forEach(t => {
+      const ds = t.created_at.split("T")[0];
+      const cat = t.ticket_category_id ? categoryMap.get(t.ticket_category_id) : null;
+      const group = cat?.category_group ?? "Sonstige";
+      groups.add(group);
+      const cur = dayMap.get(ds) ?? {};
+      cur[group] = (cur[group] ?? 0) + 1;
+      dayMap.set(ds, cur);
+    });
+    const sortedDays = Array.from(dayMap.keys()).sort();
+    const groupList = Array.from(groups);
+    return { data: sortedDays.map(ds => ({ date: ds, label: new Date(ds + "T00:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }), ...dayMap.get(ds) })), groups: groupList };
+  }, [filteredTickets, categoryMap]);
+
+  const eventCategoryBreakdown = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    filteredTickets.forEach(t => {
+      const cat = t.ticket_category_id ? categoryMap.get(t.ticket_category_id) : null;
+      const catName = cat ? `${cat.category_group ?? ""} ${cat.name}`.trim() : "Unbekannt";
+      const eventTitle = eventMap.get(t.event_id)?.title ?? "Unbekannt";
+      if (!map.has(eventTitle)) map.set(eventTitle, new Map());
+      const inner = map.get(eventTitle)!;
+      inner.set(catName, (inner.get(catName) ?? 0) + 1);
+    });
+    return Array.from(map.entries()).map(([event, cats]) => ({
+      event,
+      categories: Array.from(cats.entries()).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count),
+      total: Array.from(cats.values()).reduce((s, c) => s + c, 0),
+    })).sort((a, b) => b.total - a.total);
+  }, [filteredTickets, categoryMap, eventMap]);
+
+  const groupTicketStats = useMemo(() => {
+    return ticketCategoryStats.filter(s => s.groupSize > 1);
+  }, [ticketCategoryStats]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -440,6 +517,7 @@ const AnalyticsAdmin = () => {
     { key: "overview", label: "Übersicht", icon: BarChart3 },
     { key: "revenue", label: "Umsatz", icon: Euro },
     { key: "orders", label: "Bestellungen", icon: ShoppingCart },
+    { key: "tickets", label: "Tickets", icon: Ticket },
     { key: "customers", label: "Kunden", icon: Users },
     { key: "events", label: "Events", icon: Calendar },
     { key: "geo", label: "Geografie", icon: Globe },
@@ -794,7 +872,191 @@ const AnalyticsAdmin = () => {
         </>
       )}
 
-      {/* ═══════ EVENTS TAB ═══════ */}
+      {/* ═══════ TICKETS TAB ═══════ */}
+      {detailTab === "tickets" && (
+        <>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <StatCard icon={Ticket} label="Tickets gesamt" value={fmtInt(ticketCount)} color="hsl(330 80% 55%)" />
+            <StatCard icon={UserCheck} label="Check-in Rate" value={`${checkinRate.toFixed(1)}%`} color="hsl(140 60% 50%)" sub={`${fmtInt(checkedIn)} eingecheckt`} />
+            <StatCard icon={Users} label="Kategorien" value={fmtInt(ticketCategoryStats.length)} color="hsl(260 70% 60%)" />
+            <StatCard icon={Zap} label="Gruppentickets" value={fmtInt(groupTicketStats.reduce((s, g) => s + g.count, 0))} color="hsl(40 90% 55%)" sub={`${groupTicketStats.length} Kategorien`} />
+          </div>
+
+          {/* Category Group Distribution (Pie + Bar) */}
+          <SectionHeader>Verteilung nach Kategorie-Gruppe</SectionHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div style={cardStyle} className="p-5">
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie data={categoryGroupStats} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={3} strokeWidth={0}>
+                    {categoryGroupStats.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [`${fmtInt(v)} Tickets`, name]} />
+                  <Legend formatter={(v) => <span style={{ color: "hsl(0 0% 100% / 0.6)", fontSize: 11 }}>{v}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={cardStyle} className="p-5">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={categoryGroupStats} layout="vertical" margin={{ left: 10, right: 20 }}>
+                  <XAxis type="number" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.6)", fontSize: 11 }} width={100} axisLine={false} tickLine={false} />
+                  <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmtInt(v)} Tickets`]} />
+                  <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                    {categoryGroupStats.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Ticket Sales Timeline by Group */}
+          <SectionHeader>Ticketverkäufe nach Gruppe (Zeitverlauf)</SectionHeader>
+          <div style={cardStyle} className="p-5">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={ticketTimelineByGroup.data} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+                <defs>
+                  {ticketTimelineByGroup.groups.map((g, i) => (
+                    <linearGradient key={g} id={`tktGrad${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COLORS[i % COLORS.length]} stopOpacity={0.3} />
+                      <stop offset="100%" stopColor={COLORS[i % COLORS.length]} stopOpacity={0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} />
+                <Legend formatter={(v) => <span style={{ color: "hsl(0 0% 100% / 0.6)", fontSize: 11 }}>{v}</span>} />
+                {ticketTimelineByGroup.groups.map((g, i) => (
+                  <Area key={g} type="monotone" dataKey={g} stackId="1" stroke={COLORS[i % COLORS.length]} fill={`url(#tktGrad${i})`} strokeWidth={2} />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Detailed Category Table */}
+          <SectionHeader>Alle Ticketkategorien (Detail)</SectionHeader>
+          <div style={cardStyle} className="overflow-hidden">
+            <div className="max-h-[400px] overflow-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                    {["Gruppe", "Kategorie", "Tickets", "Eingecheckt", "Check-in %", "Umsatz", "Events", "Typ"].map(h => (
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ticketCategoryStats.map((s, i) => (
+                    <tr key={s.key} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                          <span style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.group}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 font-semibold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{s.name}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(330 80% 55%)" }}>{fmtInt(s.count)}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(140 60% 50%)" }}>{fmtInt(s.checkedIn)}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
+                            <div className="h-full rounded-full" style={{ width: `${Math.min(s.checkinRate, 100)}%`, background: "hsl(140 60% 50%)" }} />
+                          </div>
+                          <span style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.checkinRate.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(s.revenue)}€</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.eventCount}</td>
+                      <td className="px-4 py-2.5">
+                        {s.groupSize > 1 ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(40 90% 55% / 0.15)", color: "hsl(40 90% 55%)" }}>
+                            Gruppe ({s.groupSize}er)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ background: "hsl(0 0% 100% / 0.05)", color: "hsl(0 0% 100% / 0.3)" }}>
+                            Einzel
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Per-Event Category Breakdown */}
+          <SectionHeader>Kategorie-Verteilung pro Event</SectionHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {eventCategoryBreakdown.slice(0, 10).map((ev, ei) => (
+              <div key={ev.event} style={cardStyle} className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold truncate" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{ev.event}</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>{ev.total} Tickets</span>
+                </div>
+                <div className="space-y-2">
+                  {ev.categories.map((cat, ci) => {
+                    const pct = ev.total > 0 ? (cat.count / ev.total) * 100 : 0;
+                    return (
+                      <div key={cat.name} className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: COLORS[ci % COLORS.length] }} />
+                        <span className="text-[11px] flex-1 truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{cat.name}</span>
+                        <div className="w-24 h-1.5 rounded-full overflow-hidden flex-shrink-0" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: COLORS[ci % COLORS.length] }} />
+                        </div>
+                        <span className="text-[10px] font-bold w-8 text-right" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{cat.count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Group Tickets Section */}
+          {groupTicketStats.length > 0 && (
+            <>
+              <SectionHeader>Gruppentickets</SectionHeader>
+              <div style={cardStyle} className="overflow-hidden">
+                <div className="max-h-[300px] overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                        {["Kategorie", "Gruppengröße", "Tickets", "Personen (effektiv)", "Check-in %", "Umsatz"].map(h => (
+                          <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupTicketStats.map((s, i) => (
+                        <tr key={s.key} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
+                          <td className="px-4 py-2.5 font-semibold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+                            {s.group} – {s.name}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(40 90% 55% / 0.15)", color: "hsl(40 90% 55%)" }}>
+                              {s.groupSize}er
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(330 80% 55%)" }}>{fmtInt(s.count)}</td>
+                          <td className="px-4 py-2.5" style={{ color: "hsl(260 70% 60%)" }}>{fmtInt(s.count)}</td>
+                          <td className="px-4 py-2.5" style={{ color: "hsl(140 60% 50%)" }}>{s.checkinRate.toFixed(1)}%</td>
+                          <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(s.revenue)}€</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+
       {detailTab === "events" && (
         <>
           <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{revenueByEvent.length} Events</span>}>
