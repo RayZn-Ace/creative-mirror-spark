@@ -8,6 +8,48 @@ import SupportChatbot from "@/components/SupportChatbot";
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang } from "@/lib/i18n";
 
+/* ─── City name aliases (multilingual) ─── */
+const CITY_ALIASES: Record<string, string[]> = {
+  Aachen: ["Aix-la-Chapelle", "Aken", "Akwizgran"],
+  Amsterdam: ["Ámsterdam"],
+  Antwerpen: ["Antwerp", "Anvers", "Amberes", "Anversa"],
+  Augsburg: ["Augusta"],
+  Berlin: ["Berlín", "Berlino", "Berlim"],
+  Dresden: ["Dresde", "Dresda"],
+  Düsseldorf: ["Dusseldorf", "Duesseldorf"],
+  Frankfurt: ["Francfort", "Francoforte", "Fráncfort"],
+  Hamburg: ["Hamburgo", "Hambourg", "Amburgo"],
+  Hannover: ["Hanover", "Hanovre", "Hanóver"],
+  Köln: ["Cologne", "Colonia", "Kolonia", "Keulen"],
+  Krakow: ["Kraków", "Cracow", "Cracovia", "Cracovie", "Krakau"],
+  Leipzig: ["Lipsia", "Lípsia"],
+  Luxembourg: ["Luxemburg", "Luxemburgo", "Lussemburgo", "Luksemburg"],
+  München: ["Munich", "Múnich", "Monaco di Baviera", "Munique", "Monachium"],
+  Nürnberg: ["Nuremberg", "Norimberga", "Núremberg", "Norymberga"],
+  Paris: ["Parigi", "Paryż", "Paříž"],
+  Salzburg: ["Salisburgo", "Salzburgo"],
+  SãoPaulo: ["São Paulo", "Sao Paulo", "San Pablo"],
+  Stuttgart: ["Stoccarda", "Estugarda", "Sztutgart"],
+  Wien: ["Vienna", "Vienne", "Viena", "Bécs", "Vídeň", "Wiedeń"],
+  Zadar: ["Zara"],
+  Zürich: ["Zurich", "Zurigo", "Zúrich", "Curych"],
+};
+
+/** Check if a city matches a search query (including multilingual aliases) */
+const cityMatchesSearch = (city: string, query: string): boolean => {
+  const q = query.toLowerCase();
+  if (city.toLowerCase().includes(q)) return true;
+  const aliases = CITY_ALIASES[city];
+  if (aliases) return aliases.some(a => a.toLowerCase().includes(q));
+  // Reverse lookup for case-insensitive city key match
+  for (const [key, list] of Object.entries(CITY_ALIASES)) {
+    if (key.toLowerCase() === city.toLowerCase()) {
+      return list.some(a => a.toLowerCase().includes(q));
+    }
+  }
+  return false;
+};
+
 /* ─── City Coordinates ─── */
 const CITY_COORDS: Record<string, [number, number]> = {
   Aachen:[50.7753,6.0839],Albstadt:[48.2106,9.0254],Amsterdam:[52.3676,4.9041],
@@ -260,12 +302,12 @@ export default function Termine() {
       groups = groups.filter((g) => g.km !== null && g.km <= rangeKm);
     }
 
-    // Filter by search
+    // Filter by search (multilingual city names + location)
     if (search.trim()) {
       const q = search.toLowerCase();
       groups = groups.filter(
         (g) =>
-          g.city.toLowerCase().includes(q) ||
+          cityMatchesSearch(g.city, q) ||
           g.events.some((e) => e.locationName?.toLowerCase().includes(q))
       );
     }
