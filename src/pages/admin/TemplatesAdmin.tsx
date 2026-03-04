@@ -44,8 +44,8 @@ type EmailBlock =
   | { type: "text"; id: string; content: string }
   | { type: "heading"; id: string; content: string }
   | { type: "divider"; id: string }
-  | { type: "event_highlight"; id: string; title: string; date: string; time: string; location: string; image_url: string; city_based?: boolean }
-  | { type: "event_list"; id: string; heading: string; events: Array<{ title: string; date: string; location: string }>; city_based?: boolean }
+  | { type: "event_highlight"; id: string; title: string; date: string; time: string; location: string; image_url: string; city_based?: boolean; exclude_purchased?: boolean }
+  | { type: "event_list"; id: string; heading: string; events: Array<{ title: string; date: string; location: string }>; city_based?: boolean; exclude_purchased?: boolean }
   | { type: "cta_button"; id: string; text: string; url: string }
   | { type: "image"; id: string; url: string; alt: string }
   | { type: "spacer"; id: string; height: number };
@@ -438,21 +438,23 @@ const EmailTab = () => {
       location: "{{next_event_location}}",
       image_url: "{{next_event_image}}",
       city_based: true,
+      exclude_purchased: true,
     });
-    toast.success("✨ Dynamisch – zeigt das nächste Event in der Stadt des Empfängers");
+    toast.success("✨ Dynamisch – nächstes Event in der Stadt (ohne bereits gekauftes)");
   };
 
   const magicFillList = async (blockId: string) => {
     updateBlock(blockId, {
       heading: "Events in deiner Stadt",
       city_based: true,
+      exclude_purchased: true,
       events: [
         { title: "{{event_1_title}}", date: "{{event_1_date}}", location: "{{event_1_location}}" },
         { title: "{{event_2_title}}", date: "{{event_2_date}}", location: "{{event_2_location}}" },
         { title: "{{event_3_title}}", date: "{{event_3_date}}", location: "{{event_3_location}}" },
       ],
     });
-    toast.success("✨ Dynamisch – zeigt Events aus der Stadt des Empfängers");
+    toast.success("✨ Dynamisch – Events aus der Stadt (ohne bereits gekauftes)");
   };
 
   useEffect(() => {
@@ -563,7 +565,7 @@ const EmailTab = () => {
             </div>
             {block.city_based && (
               <div className="text-[10px] px-2 py-1.5 rounded-lg" style={{ background: "hsl(280 80% 55% / 0.08)", color: "hsl(280 80% 65% / 0.8)" }}>
-                💡 Zeigt automatisch das nächste Event in der Stadt des Empfängers. Falls kein Event in seiner Stadt → nächstgelegenes Event.
+                💡 Zeigt das nächste Event in der Stadt des Empfängers. Das Event, wofür das Ticket gekauft wurde, wird ausgelassen. Falls kein Event in seiner Stadt → nächstgelegenes.
               </div>
             )}
             <input type="text" value={block.title} onChange={(e) => updateBlock(block.id, { title: e.target.value })} placeholder="Event-Titel" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
@@ -593,7 +595,7 @@ const EmailTab = () => {
                   🏙️ Personalisiert nach Stadt
                 </span>
                 <span className="text-[10px]" style={{ color: "hsl(280 80% 65% / 0.7)" }}>
-                  Zeigt Events aus der Stadt des Empfängers
+                  Events aus der Stadt – ohne das bereits gekaufte Event
                 </span>
               </div>
             )}
