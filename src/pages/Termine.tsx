@@ -156,6 +156,8 @@ export default function Termine() {
   const [locationStatus, setLocationStatus] = useState<"pending" | "granted" | "denied">("pending");
   const [rangeKm, setRangeKm] = useState(0); // 0 = all
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
+  const [showSoldOut, setShowSoldOut] = useState(true);
+  const [onlyOpenAir, setOnlyOpenAir] = useState(false);
 
   // Fetch all published events grouped by series/city
   useEffect(() => {
@@ -268,6 +270,18 @@ export default function Termine() {
       );
     }
 
+    // Filter events within groups based on sold out / open air
+    groups = groups.map((g) => {
+      let filteredEvents = g.events;
+      if (!showSoldOut) {
+        filteredEvents = filteredEvents.filter((e) => !e.soldOut);
+      }
+      if (onlyOpenAir) {
+        filteredEvents = filteredEvents.filter((e) => e.openAir);
+      }
+      return { ...g, events: filteredEvents };
+    }).filter((g) => g.events.length > 0);
+
     // Sort by distance (if available), then alphabetically
     groups.sort((a, b) => {
       if (a.km !== null && b.km !== null) return a.km - b.km;
@@ -277,7 +291,7 @@ export default function Termine() {
     });
 
     return groups;
-  }, [cityGroups, userPos, search, rangeKm]);
+  }, [cityGroups, userPos, search, rangeKm, showSoldOut, onlyOpenAir]);
 
   const formatDate = useCallback((iso: string) => {
     if (!iso) return "";
@@ -371,6 +385,32 @@ export default function Termine() {
               )}
             </AnimatePresence>
           </div>
+        </div>
+
+        {/* Toggle filters */}
+        <div className="flex flex-wrap gap-2 max-w-3xl mx-auto mt-3">
+          <button
+            onClick={() => setOnlyOpenAir(!onlyOpenAir)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+              onlyOpenAir
+                ? "border-amber-500/50 bg-amber-500/15 text-amber-400"
+                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            <Sun className="w-3.5 h-3.5" />
+            Nur Open Air
+          </button>
+          <button
+            onClick={() => setShowSoldOut(!showSoldOut)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+              !showSoldOut
+                ? "border-primary/50 bg-primary/15 text-primary"
+                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
+            }`}
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            Ausverkaufte ausblenden
+          </button>
         </div>
 
         {locationStatus === "denied" && (
