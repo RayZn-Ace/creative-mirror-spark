@@ -5,6 +5,7 @@ import {
   Mail, Send, Users, CheckCircle, AlertCircle, Loader2, Filter, Eye,
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
+  LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -32,17 +33,129 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: any }[] = [
   { type: "spacer", label: "Abstand", icon: ChevronDown },
 ];
 
-const createBlock = (type: BlockType): Block => {
+const createBlock = (type: BlockType, overrides?: Partial<any>): Block => {
   const id = uid();
-  switch (type) {
-    case "heading": return { id, type, text: "Überschrift", level: 1, align: "center", color: "#ffffff" };
-    case "text": return { id, type, text: "Dein Text hier...", align: "left", bold: false, italic: false, color: "#333333" };
-    case "image": return { id, type, src: "", alt: "Bild", width: 100 };
-    case "button": return { id, type, text: "Jetzt Tickets sichern", url: "https://", bgColor: "#e91e8c", textColor: "#ffffff", align: "center", borderRadius: 8 };
-    case "divider": return { id, type, color: "#eeeeee", style: "solid" };
-    case "spacer": return { id, type, height: 24 };
-  }
+  const base = (() => {
+    switch (type) {
+      case "heading": return { id, type, text: "Überschrift", level: 1 as const, align: "center" as const, color: "#ffffff" };
+      case "text": return { id, type, text: "Dein Text hier...", align: "left" as const, bold: false, italic: false, color: "#333333" };
+      case "image": return { id, type, src: "", alt: "Bild", width: 100 };
+      case "button": return { id, type, text: "Jetzt Tickets sichern", url: "https://", bgColor: "#e91e8c", textColor: "#ffffff", align: "center" as const, borderRadius: 8 };
+      case "divider": return { id, type, color: "#eeeeee", style: "solid" as const };
+      case "spacer": return { id, type, height: 24 };
+    }
+  })();
+  return overrides ? { ...base, ...overrides, id } as Block : base as Block;
 };
+
+// ─── Newsletter Templates ──────────────────────────────────────
+interface NewsletterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: any;
+  gradient: string;
+  headerGradient: string;
+  blocks: () => Block[];
+}
+
+const TEMPLATES: NewsletterTemplate[] = [
+  {
+    id: "event-announcement",
+    name: "Event Ankündigung",
+    description: "Perfekt für neue Events",
+    icon: PartyPopper,
+    gradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
+    headerGradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
+    blocks: () => [
+      createBlock("heading", { text: "🎉 Neues Event!", level: 1, align: "center", color: "#ffffff" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("image", { src: "", alt: "Event Bild", width: 100 }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("heading", { text: "Event Name", level: 2, align: "center", color: "#1a1a1a" }),
+      createBlock("text", { text: "📅 Datum | 📍 Location\n\nBeschreibe hier dein Event und mach Lust auf eine unvergessliche Nacht!", align: "center", color: "#555555" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("button", { text: "🎟 Jetzt Tickets sichern", url: "https://", bgColor: "#e91e8c", textColor: "#ffffff", align: "center", borderRadius: 50 }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("divider", { color: "#eeeeee", style: "solid" }),
+      createBlock("text", { text: "Wir freuen uns auf dich! 🙌", align: "center", color: "#999999", italic: true }),
+    ],
+  },
+  {
+    id: "minimal-clean",
+    name: "Minimal & Clean",
+    description: "Schlicht und modern",
+    icon: Sparkles,
+    gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    headerGradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    blocks: () => [
+      createBlock("heading", { text: "Neuigkeiten", level: 1, align: "left", color: "#1a1a1a" }),
+      createBlock("divider", { color: "#667eea", style: "solid" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("text", { text: "Hallo!\n\nHier sind die neuesten Updates für dich. Wir haben spannende Neuigkeiten, die du nicht verpassen solltest.", align: "left", color: "#333333" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("button", { text: "Mehr erfahren →", url: "https://", bgColor: "#667eea", textColor: "#ffffff", align: "left", borderRadius: 6 }),
+    ],
+  },
+  {
+    id: "neon-party",
+    name: "Neon Party",
+    description: "Auffällig mit Neon-Vibes",
+    icon: Zap,
+    gradient: "linear-gradient(135deg, #00f5a0, #00d9f5)",
+    headerGradient: "linear-gradient(135deg, #0a0a0a, #1a1a2e)",
+    blocks: () => [
+      createBlock("heading", { text: "⚡ NEON NIGHTS ⚡", level: 1, align: "center", color: "#00f5a0" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("text", { text: "Die heißeste Party der Stadt ist zurück!", align: "center", bold: true, color: "#00d9f5" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("image", { src: "", alt: "Party Bild", width: 100 }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("heading", { text: "Line-Up", level: 2, align: "center", color: "#ff006e" }),
+      createBlock("text", { text: "🎧 DJ 1 — Main Stage\n🎧 DJ 2 — Floor 2\n🎧 DJ 3 — Outdoor", align: "center", color: "#cccccc" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("button", { text: "🔥 TICKETS HOLEN", url: "https://", bgColor: "#00f5a0", textColor: "#0a0a0a", align: "center", borderRadius: 50 }),
+    ],
+  },
+  {
+    id: "sale-promo",
+    name: "Sale & Promo",
+    description: "Für Aktionen und Rabatte",
+    icon: Megaphone,
+    gradient: "linear-gradient(135deg, #f5af19, #f12711)",
+    headerGradient: "linear-gradient(135deg, #f5af19, #f12711)",
+    blocks: () => [
+      createBlock("heading", { text: "🔥 SPECIAL DEAL 🔥", level: 1, align: "center", color: "#ffffff" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("heading", { text: "Nur für kurze Zeit!", level: 2, align: "center", color: "#f5af19" }),
+      createBlock("text", { text: "Sichere dir jetzt exklusive Vorteile und spare bei deinem nächsten Ticket-Kauf. Dieses Angebot gilt nur solange der Vorrat reicht!", align: "center", color: "#333333" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("button", { text: "💰 Jetzt zuschlagen", url: "https://", bgColor: "#f12711", textColor: "#ffffff", align: "center", borderRadius: 12 }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("text", { text: "⏰ Angebot endet am XX.XX.XXXX", align: "center", bold: true, color: "#f12711" }),
+    ],
+  },
+  {
+    id: "recap-photos",
+    name: "Event Recap",
+    description: "Fotos und Nachbericht",
+    icon: Heart,
+    gradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
+    headerGradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
+    blocks: () => [
+      createBlock("heading", { text: "Was für eine Nacht! 💜", level: 1, align: "center", color: "#ffffff" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("text", { text: "Danke an alle, die dabei waren! Hier sind ein paar Impressionen von der letzten Party.", align: "center", color: "#555555" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("image", { src: "", alt: "Foto 1", width: 100 }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("image", { src: "", alt: "Foto 2", width: 100 }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("text", { text: "Das nächste Event steht schon in den Startlöchern...", align: "center", italic: true, color: "#888888" }),
+      createBlock("button", { text: "Nächstes Event ansehen", url: "https://", bgColor: "#6a82fb", textColor: "#ffffff", align: "center", borderRadius: 8 }),
+    ],
+  },
+];
 
 // ─── Block to HTML ─────────────────────────────────────────────
 const blockToHtml = (block: Block): string => {
@@ -204,6 +317,8 @@ const NewsletterAdmin = () => {
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showRecipients, setShowRecipients] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const [showTemplates, setShowTemplates] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -271,16 +386,27 @@ const NewsletterAdmin = () => {
     });
   }, []);
 
+  const applyTemplate = useCallback((template: NewsletterTemplate) => {
+    setBlocks(template.blocks());
+    setActiveTemplateId(template.id);
+    setShowTemplates(false);
+    setSelectedBlock(null);
+    toast.success(`Vorlage "${template.name}" geladen`);
+  }, []);
+
+  const activeTemplate = TEMPLATES.find((t) => t.id === activeTemplateId);
+
   // ─── Build HTML ────────────────────────────────────────────
   const buildHtml = useCallback(() => {
     const bodyContent = blocks.map(blockToHtml).join("");
+    const headerBg = activeTemplate?.headerGradient || "linear-gradient(135deg,#e91e8c,#ff6b35)";
     return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:40px 0;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:linear-gradient(135deg,#e91e8c,#ff6b35);padding:32px 40px;">
+<tr><td style="background:${headerBg};padding:32px 40px;">
 <h1 style="margin:0;color:#fff;font-size:24px;font-weight:800;">${subject || "Newsletter"}</h1>
 </td></tr>
 <tr><td style="padding:32px 40px;">
@@ -293,7 +419,7 @@ ${bodyContent}
 </td></tr>
 </table>
 </body></html>`;
-  }, [blocks, subject]);
+  }, [blocks, subject, activeTemplate]);
 
   const handleSend = async () => {
     if (!subject.trim()) { toast.error("Bitte Betreff ausfüllen"); return; }
@@ -342,7 +468,54 @@ ${bodyContent}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Left: Editor */}
         <div className="space-y-4">
-          {/* From */}
+          {/* Template Picker */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+            <button
+              onClick={() => setShowTemplates(!showTemplates)}
+              className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-all"
+            >
+              <LayoutTemplate className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider flex-1 text-left" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                Vorlagen {activeTemplate ? `— ${activeTemplate.name}` : ""}
+              </span>
+              <ChevronRight className="w-4 h-4 transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: showTemplates ? "rotate(90deg)" : "rotate(0deg)" }} />
+            </button>
+            <AnimatePresence>
+              {showTemplates && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                  <div className="px-4 pb-4 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    {TEMPLATES.map((tpl) => {
+                      const Icon = tpl.icon;
+                      const isActive = activeTemplateId === tpl.id;
+                      return (
+                        <motion.button
+                          key={tpl.id}
+                          onClick={() => applyTemplate(tpl)}
+                          className="relative flex flex-col items-center gap-2 py-4 px-3 rounded-xl text-center transition-all overflow-hidden group"
+                          style={{
+                            background: isActive ? "hsl(0 0% 100% / 0.08)" : "hsl(0 0% 100% / 0.03)",
+                            border: `1px solid ${isActive ? "hsl(330 80% 55% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
+                          }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: tpl.gradient }}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[11px] font-bold" style={{ color: isActive ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.7)" }}>{tpl.name}</span>
+                          <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{tpl.description}</span>
+                          {isActive && (
+                            <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "hsl(330 80% 55%)" }} />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <div className="rounded-2xl p-5 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
             <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Absender</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
