@@ -444,26 +444,23 @@ export default function Termine() {
                     </div>
 
                     {/* All dates listed */}
-                    <div className="space-y-1.5 mb-4">
+                    {/* All dates as horizontal wrap */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
                       {group.events.map((ev) => (
-                        <div key={ev.id} className="flex items-center gap-2 text-sm">
-                          <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className={`font-medium ${ev.soldOut ? "line-through text-muted-foreground" : ""}`}>
-                            {formatDate(ev.date)}
-                          </span>
-                          {ev.openAir && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                              <Sun className="w-2.5 h-2.5" />
-                              OPEN AIR
-                            </span>
-                          )}
-                          {ev.soldOut && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
-                              <XCircle className="w-2.5 h-2.5" />
-                              SOLD OUT
-                            </span>
-                          )}
-                        </div>
+                        <span
+                          key={ev.id}
+                          className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border ${
+                            ev.soldOut
+                              ? "border-destructive/30 bg-destructive/10 text-destructive line-through"
+                              : ev.openAir
+                              ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                              : "border-border bg-muted/30 text-foreground"
+                          }`}
+                        >
+                          {ev.openAir && <Sun className="w-3 h-3" />}
+                          {ev.soldOut && <XCircle className="w-3 h-3" />}
+                          {formatDate(ev.date)}
+                        </span>
                       ))}
                     </div>
 
