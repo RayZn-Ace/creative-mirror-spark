@@ -423,6 +423,8 @@ export type Database = {
           id: string
           name: string
           price: number
+          sale_end: string | null
+          sale_start: string | null
           sold_out: boolean | null
           sort_order: number | null
           updated_at: string
@@ -439,6 +441,8 @@ export type Database = {
           id?: string
           name: string
           price?: number
+          sale_end?: string | null
+          sale_start?: string | null
           sold_out?: boolean | null
           sort_order?: number | null
           updated_at?: string
@@ -455,6 +459,8 @@ export type Database = {
           id?: string
           name?: string
           price?: number
+          sale_end?: string | null
+          sale_start?: string | null
           sold_out?: boolean | null
           sort_order?: number | null
           updated_at?: string
