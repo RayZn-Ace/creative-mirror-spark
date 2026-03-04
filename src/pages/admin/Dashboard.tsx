@@ -161,12 +161,12 @@ const Dashboard = () => {
       {/* Widget grid */}
       {editing ? (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="dashboard">
+          <Droppable droppableId="dashboard" direction="vertical">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="grid grid-cols-2 gap-2 sm:gap-3"
+                className="flex flex-col gap-2 sm:gap-3"
               >
                 {visibleWidgets.map((widget, index) => (
                   <Draggable key={widget.id} draggableId={widget.id} index={index}>
@@ -174,34 +174,42 @@ const Dashboard = () => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className="rounded-xl sm:rounded-2xl overflow-hidden transition-shadow"
+                        className="rounded-xl sm:rounded-2xl overflow-hidden"
                         style={{
                           ...provided.draggableProps.style,
-                          gridColumn: `span ${widget.colSpan}`,
-                          background: "hsl(0 0% 100% / 0.04)",
+                          background: snapshot.isDragging ? "hsl(0 0% 100% / 0.07)" : "hsl(0 0% 100% / 0.04)",
                           border: snapshot.isDragging
                             ? "2px solid hsl(270 60% 55% / 0.5)"
                             : "1px solid hsl(0 0% 100% / 0.08)",
-                          boxShadow: snapshot.isDragging ? "0 8px 32px hsl(0 0% 0% / 0.4)" : "none",
+                          boxShadow: snapshot.isDragging ? "0 12px 40px hsl(0 0% 0% / 0.5)" : "none",
+                          transition: snapshot.isDragging ? undefined : "background 0.2s, border 0.2s, box-shadow 0.2s",
                         }}
                       >
                         {/* Edit toolbar */}
                         <div
-                          className="flex items-center justify-between px-3 py-2"
+                          {...provided.dragHandleProps}
+                          className="flex items-center justify-between px-3 py-2.5 cursor-grab active:cursor-grabbing select-none"
                           style={{ background: "hsl(0 0% 100% / 0.03)", borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}
                         >
-                          <div className="flex items-center gap-2">
-                            <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-0.5">
-                              <GripVertical className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-                            </div>
+                          <div className="flex items-center gap-2.5">
+                            <GripVertical className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.25)" }} />
                             <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
                               {WIDGET_META[widget.type].label}
                             </span>
+                            <span
+                              className="text-[9px] font-medium px-1.5 py-0.5 rounded"
+                              style={{
+                                background: widget.colSpan === 2 ? "hsl(200 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+                                color: widget.colSpan === 2 ? "hsl(200 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+                              }}
+                            >
+                              {widget.colSpan === 2 ? "Volle Breite" : "Halbe Breite"}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => toggleColSpan(widget.id)}
-                              className="p-1 rounded hover:bg-white/10 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
                               title={widget.colSpan === 1 ? "Breit machen" : "Schmal machen"}
                             >
                               {widget.colSpan === 1 ? (
@@ -212,16 +220,11 @@ const Dashboard = () => {
                             </button>
                             <button
                               onClick={() => toggleWidget(widget.id)}
-                              className="p-1 rounded hover:bg-white/10 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
                             >
                               <X className="w-3.5 h-3.5" style={{ color: "hsl(0 60% 55%)" }} />
                             </button>
                           </div>
-                        </div>
-                        <div className="p-3 sm:p-4 opacity-50 pointer-events-none">
-                          <Suspense fallback={<WidgetSkeleton />}>
-                            {(() => { const C = WIDGET_COMPONENTS[widget.type]; return <C />; })()}
-                          </Suspense>
                         </div>
                       </div>
                     )}
