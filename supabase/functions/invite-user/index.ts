@@ -2,11 +2,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -37,6 +37,10 @@ Deno.serve(async (req) => {
     const { email, role } = await req.json();
     if (!email || !role) throw new Error("E-Mail und Rolle sind erforderlich");
 
+    // Map role to app_role enum value for pending_invitations
+    const validAppRoles = ["admin", "moderator", "user", "scanner"];
+    const appRole = validAppRoles.includes(role) ? role : "user";
+
     // Check if user already exists
     const { data: existingUsers } = await adminClient.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(
@@ -44,10 +48,10 @@ Deno.serve(async (req) => {
     );
 
     if (existingUser) {
-      // User exists – assign role directly
+      // User exists – assign role directly via service role (bypasses RLS)
       const { error: roleError } = await adminClient
         .from("user_roles")
-        .upsert({ user_id: existingUser.id, role }, { onConflict: "user_id,role" });
+        .upsert({ user_id: existingUser.id, role: appRole }, { onConflict: "user_id,role" });
       if (roleError) throw roleError;
 
       return new Response(
@@ -59,20 +63,38 @@ Deno.serve(async (req) => {
     // Store pending invitation
     const { error: invError } = await adminClient
       .from("pending_invitations")
-      .insert({ email: email.toLowerCase(), role, invited_by: user.id });
-    if (invError) throw invError;
+      .insert({ email: email.toLowerCase(), role: appRole, invited_by: user.id });
+    if (invError) {
+      console.error("Invitation insert error:", invError);
+      throw new Error(`Einladung konnte nicht gespeichert werden: ${invError.message}`);
+    }
+
+    // Build redirect URL from referer or origin
+    const origin = req.headers.get("referer")?.replace(/\/$/, "") 
+      || req.headers.get("origin") 
+      || "https://gimmetestooo.lovable.app";
+    const redirectTo = `${origin}/admin/login`;
+
+    console.log("Sending invite to:", email, "with redirect:", redirectTo);
 
     // Send invite email via Supabase Auth
-    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${req.headers.get("origin") || supabaseUrl}/admin/login`,
+    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+      redirectTo,
     });
-    if (inviteError) throw inviteError;
+    
+    if (inviteError) {
+      console.error("Invite error:", inviteError);
+      throw new Error(`Einladungs-E-Mail konnte nicht gesendet werden: ${inviteError.message}`);
+    }
+
+    console.log("Invite sent successfully:", inviteData);
 
     return new Response(
-      JSON.stringify({ success: true, message: "Einladung gesendet" }),
+      JSON.stringify({ success: true, message: `Einladung an ${email} gesendet` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("invite-user error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
