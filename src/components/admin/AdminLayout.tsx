@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail,
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Ticket-Kategorien", href: "/admin/tickets", icon: Ticket },
   { label: "Seiten-Inhalte", href: "/admin/pages", icon: FileText },
   { label: "Kunden", href: "/admin/customers", icon: Users },
+  { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
   { label: "Tracking & Pixel", href: "/admin/tracking", icon: Activity },
 ];
 
