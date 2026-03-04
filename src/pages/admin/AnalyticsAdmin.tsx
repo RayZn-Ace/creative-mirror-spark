@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
@@ -10,6 +10,7 @@ import {
   ChevronLeft, ChevronRight, Download, Filter, Sun, Moon, Eye, Target,
   Percent, Repeat, UserCheck, Globe, Zap, ArrowRight,
 } from "lucide-react";
+import { CityHeatmap } from "@/components/admin/CityHeatmap";
 
 /* ─── Helpers ─── */
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -859,6 +860,10 @@ const AnalyticsAdmin = () => {
             <StatCard icon={Euro} label="Top Stadt Umsatz" value={cityData[0] ? `${fmt(cityData[0].revenue)}€` : "–"} color="hsl(140 60% 50%)" sub={cityData[0]?.name} />
             <StatCard icon={MapPin} label="Ø Umsatz/Stadt" value={`${fmt(cityData.length > 0 ? totalRevenue / cityData.length : 0)}€`} color="hsl(260 70% 60%)" />
           </div>
+
+          {/* Interactive Heatmap */}
+          <SectionHeader>Interaktive Heatmap</SectionHeader>
+          <CityHeatmap data={cityData} />
 
           {/* City pie + list */}
           <SectionHeader>Umsatz nach Stadt</SectionHeader>
