@@ -42,35 +42,40 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           </div>
 
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerLinks}</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">Quick Links</h3>
             <div className="flex flex-col gap-2">
-              <Link to="/#events" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navDatesTickets}</Link>
-              <Link to="/fotos" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navMedia}</Link>
-              <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerFaq}</Link>
-              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navJobs}</Link>
-              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPartner}</Link>
-              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerContact}</Link>
+              <Link to="/termine" className="text-sm text-muted-foreground hover:text-primary transition-colors">Termine & Tickets</Link>
+              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">Uns Buchen!</Link>
+              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Location anmelden</Link>
+              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">Partner werden</Link>
+              <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ & Support</Link>
+              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors text-primary">Jobs</Link>
+              <Link to="/ticket-umbuchung" className="text-sm text-muted-foreground hover:text-primary transition-colors">Ticket Umbuchung</Link>
+              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Rückerstattung</Link>
+              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontakt</Link>
             </div>
           </div>
 
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerContact}</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               <a href="mailto:mail@gimmegimmeparty.com" className="hover:text-primary transition-colors">mail@gimmegimmeparty.com</a>
-              <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
+              <a href="https://partner.partyshows.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Partner Portal</a>
+              <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 hover:text-primary transition-colors">
                 <MessageCircle className="w-4 h-4" />
-                WhatsApp Community
+                WhatsApp Gruppe
               </a>
             </div>
           </div>
 
           <div>
-            <h3 className="font-display text-lg text-foreground mb-4">{gt.footerLegal}</h3>
+            <h3 className="font-display text-lg text-foreground mb-4">Rechtliches</h3>
             <div className="flex flex-col gap-2">
-              <Link to="/impressum" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerImprint}</Link>
-              <Link to="/datenschutz" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerPrivacy}</Link>
-              <Link to="/agb" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerTerms}</Link>
+              <Link to="/impressum" className="text-sm text-muted-foreground hover:text-primary transition-colors">Impressum</Link>
+              <Link to="/datenschutz" className="text-sm text-muted-foreground hover:text-primary transition-colors">Datenschutz</Link>
+              <Link to="/agb" className="text-sm text-muted-foreground hover:text-primary transition-colors">AGB</Link>
+              <Link to="/presse" className="text-sm text-muted-foreground hover:text-primary transition-colors">Presse</Link>
             </div>
           </div>
         </div>
