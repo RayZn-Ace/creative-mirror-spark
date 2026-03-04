@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MapPin, Calendar, ArrowRight, Instagram, MessageCircle, Clock, Music, Sparkles, Users, Heart, Star } from "lucide-react";
+import SupportChatbot from "@/components/SupportChatbot";
 import eventHeaderImg from "@/assets/gimme-event-header.jpg";
 import gimmeImg2 from "@/assets/gimme-img2.jpg";
 import gimmeImg3 from "@/assets/gimme-img3.jpg";
@@ -504,40 +505,83 @@ const DresscodeCTA = () => (
 
 /* ─── Footer ─── */
 const HomeFooter = () => (
-  <footer className="pb-8 sm:pb-12 pt-8 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+  <footer className="pb-8 sm:pb-12 pt-12 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
     <div className="max-w-7xl mx-auto px-4 sm:px-8">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="text-center sm:text-left">
-          <span
-            className="text-sm font-black uppercase tracking-wider"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55% / 0.8)" }}
-          >
-            GIMME GIMME <span style={{ color: "hsl(0 0% 100% / 0.6)" }}>PARTY</span>
-          </span>
-          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-            © 2025 Gimme Gimme Party. Alle Rechte vorbehalten.
+      {/* 4-column grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        {/* Brand */}
+        <div>
+          <div className="mb-4">
+            <span className="text-sm font-black uppercase tracking-wider" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}>
+              GIMME GIMME
+            </span>
+            <span className="ml-2 text-xs font-bold uppercase tracking-[0.3em]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>PARTY</span>
+          </div>
+          <p className="text-sm mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+            Die größte ABBA Sing-Along Party-Tour Europas – 13 Länder, 150+ Städte, 250.000+ Fans.
           </p>
+          <div className="flex gap-3">
+            <a href="https://www.instagram.com/mammamia.partymotto" target="_blank" rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
+              aria-label="Instagram">
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61577320797241" target="_blank" rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}
+              aria-label="Facebook">
+              <Users className="w-5 h-5" />
+            </a>
+            <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              style={{ background: "hsl(142 70% 45% / 0.15)", color: "hsl(142 70% 55%)" }}
+              aria-label="WhatsApp">
+              <MessageCircle className="w-5 h-5" />
+            </a>
+          </div>
         </div>
-        <div className="flex items-center gap-4 sm:gap-6">
-          <a
-            href="https://smea.de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] sm:text-xs font-medium transition-opacity hover:opacity-100"
-            style={{ color: "hsl(0 0% 100% / 0.35)" }}
-          >
-            powered by smea
-          </a>
-          <Link to="/impressum" className="text-[10px] sm:text-xs transition-opacity hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-            Impressum
-          </Link>
-          <Link to="/datenschutz" className="text-[10px] sm:text-xs transition-opacity hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-            Datenschutz
-          </Link>
-          <Link to="/agb" className="text-[10px] sm:text-xs transition-opacity hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-            AGB
-          </Link>
+
+        {/* Quick Links */}
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Schnelllinks</h3>
+          <div className="flex flex-col gap-2">
+            <Link to="/#events" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Alle Events</Link>
+            <Link to="/fotos" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Fotos & Media</Link>
+            <Link to="/faq" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>FAQ</Link>
+            <Link to="/jobs" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Jobs</Link>
+            <Link to="/promoter" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Promoter werden</Link>
+            <Link to="/kontakt" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Kontakt</Link>
+          </div>
         </div>
+
+        {/* Contact */}
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Kontakt</h3>
+          <div className="flex flex-col gap-2 text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+            <a href="mailto:mail@gimmegimmeparty.com" className="hover:opacity-100 transition-opacity">mail@gimmegimmeparty.com</a>
+            <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 hover:opacity-100 transition-opacity">
+              <MessageCircle className="w-4 h-4" /> WhatsApp Community
+            </a>
+          </div>
+        </div>
+
+        {/* Legal */}
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "hsl(0 0% 100%)" }}>Rechtliches</h3>
+          <div className="flex flex-col gap-2">
+            <Link to="/impressum" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Impressum</Link>
+            <Link to="/datenschutz" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Datenschutz</Link>
+            <Link to="/agb" className="text-sm transition-colors hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.5)" }}>AGB</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="pt-6 text-center text-xs" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.3)" }}>
+        <p>© {new Date().getFullYear()} GIMME GIMME PARTY. Alle Rechte vorbehalten.</p>
+        <p className="mt-1">Homepage made by <a href="https://homepageschmied.de" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100 transition-opacity">Homepageschmied.de</a> · powered by <a href="https://smea.de/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-100 transition-opacity">smea</a></p>
       </div>
     </div>
   </footer>
@@ -554,6 +598,7 @@ const Index = () => (
     <EventsSection />
     <DresscodeCTA />
     <HomeFooter />
+    <SupportChatbot />
   </div>
 );
 
