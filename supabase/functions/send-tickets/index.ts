@@ -852,10 +852,9 @@ Deno.serve(async (req) => {
     });
 
     // ─── Determine sender ───
-    const senderName = emailSettings.sender_name || "Tickets";
-    const senderDomain = emailSettings.sender_domain || "resend.dev";
-    const senderEmail = `${senderName.toLowerCase().replace(/\s+/g, "")}@${senderDomain}`;
-    const replyTo = emailSettings.reply_to || undefined;
+    const senderName = emailSettings.sender_name || "GIMME GIMME";
+    const senderEmail = "ticket@gimmegimmeparty.com";
+    const replyTo = emailSettings.reply_to || "ticket@gimmegimmeparty.com";
 
     // ─── Send via Resend ───
     const resendRes = await fetch("https://api.resend.com/emails", {
