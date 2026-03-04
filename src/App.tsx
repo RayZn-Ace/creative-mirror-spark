@@ -31,6 +31,8 @@ const FuerWen = lazy(() => import("./pages/FuerWen"));
 const LocationAnmelden = lazy(() => import("./pages/LocationAnmelden"));
 const PartnerWerden = lazy(() => import("./pages/PartnerWerden"));
 const InfluencerPage = lazy(() => import("./pages/Influencer"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPostPage = lazy(() => import("./pages/BlogPost"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -86,6 +88,8 @@ const App = () => (
               <Route path="/abiklasse" element={<Abiklasse />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/termine" element={<Termine />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
 
               {/* Admin */}
               <Route path="/admin/login" element={<AdminLogin />} />
