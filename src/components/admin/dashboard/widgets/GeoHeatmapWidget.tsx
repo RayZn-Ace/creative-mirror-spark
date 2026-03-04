@@ -90,9 +90,9 @@ const GeoHeatmapWidget = () => {
       <h3 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
         Geo-Heatmap
       </h3>
-      <div className="flex-1 min-h-0 rounded-xl overflow-hidden" style={{ minHeight: 200 }}>
+      <div className="flex-1 min-h-0 rounded-xl overflow-hidden" style={{ minHeight: 300 }}>
         <HeatmapErrorBoundary>
-          <CityHeatmap data={cityData} height="100%" />
+          <CityHeatmap data={cityData} height={500} />
         </HeatmapErrorBoundary>
       </div>
     </div>
