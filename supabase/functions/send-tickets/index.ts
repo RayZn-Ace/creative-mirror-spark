@@ -156,12 +156,24 @@ async function generateTicketPDF(tickets: Array<{
     const { width, height } = page.getSize();
     const m = isDinLang ? 20 : 30; // margin
 
-    // Background (gradient not supported in pdf-lib natively, use solid)
-    page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
-    // If gradient enabled, draw a second overlay rectangle with the "to" color at reduced opacity
+    // Background with gradient simulation using multiple strips
     if (tpl.gradient?.enabled) {
+      const [fromR, fromG, fromB] = hexToRgb(tpl.gradient.color_from);
       const [toR, toG, toB] = hexToRgb(tpl.gradient.color_to);
-      page.drawRectangle({ x: 0, y: 0, width: width / 2, height, color: rgb(toR, toG, toB), opacity: 0.3 });
+      const strips = 20;
+      const isRadial = tpl.gradient.type === "radial";
+      for (let i = 0; i < strips; i++) {
+        const t = i / (strips - 1);
+        // For radial: center is "from", edges are "to"
+        const factor = isRadial ? (t < 0.5 ? t * 2 : (1 - t) * 2) : t;
+        const r = fromR + (toR - fromR) * (isRadial ? 1 - factor : t);
+        const g = fromG + (toG - fromG) * (isRadial ? 1 - factor : t);
+        const b = fromB + (toB - fromB) * (isRadial ? 1 - factor : t);
+        const stripW = width / strips;
+        page.drawRectangle({ x: stripW * i, y: 0, width: stripW + 1, height, color: rgb(r, g, b) });
+      }
+    } else {
+      page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
     }
     // Accent bar
     page.drawRectangle({ x: 0, y: height - (isDinLang ? 4 : 6), width, height: isDinLang ? 4 : 6, color: acColor });
@@ -209,9 +221,11 @@ async function generateTicketPDF(tickets: Array<{
 
       for (const d of details) {
         if (y < m + 10) break;
-        page.drawText(d.label, { x: m, y, size: 6, font: fontRegular, color: txFaded });
-        y -= 10;
-        page.drawText(d.value.substring(0, 40), { x: m, y, size: 9, font: fontBold, color: txColor });
+        // Inline label + value on same line (matching preview)
+        const labelText = d.label + "  ";
+        const labelW = fontRegular.widthOfTextAtSize(labelText, 6);
+        page.drawText(labelText, { x: m, y, size: 6, font: fontRegular, color: txFaded });
+        page.drawText(d.value.substring(0, 40), { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
         y -= 14;
       }
 
@@ -340,10 +354,11 @@ async function generateTicketPDF(tickets: Array<{
       if (tpl.show_holder_name && ticket.holder_name) details.push({ label: "NAME", value: ticket.holder_name });
 
       for (const d of details) {
-        page.drawText(d.label, { x: m, y, size: 8, font: fontRegular, color: txFaded });
-        y -= 14;
-        page.drawText(d.value, { x: m, y, size: 11, font: fontBold, color: txColor });
-        y -= 22;
+        const labelText = d.label + "  ";
+        const labelW = fontRegular.widthOfTextAtSize(labelText, 8);
+        page.drawText(labelText, { x: m, y, size: 8, font: fontRegular, color: txFaded });
+        page.drawText(d.value, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
+        y -= 18;
       }
 
       // Content blocks (A4)
