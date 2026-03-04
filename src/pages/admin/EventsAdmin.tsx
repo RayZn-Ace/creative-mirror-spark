@@ -82,6 +82,8 @@ interface TicketRow {
   category_group: string | null;
   sale_start: string | null;
   sale_end: string | null;
+  internal_only: boolean | null;
+  group_size: number | null;
 }
 
 interface SeriesOption {
@@ -98,7 +100,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   info_sections: [],
 };
 
-const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null };
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1 };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -149,6 +151,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       category_group: editingTicket.category_group || "REGULAR",
       sale_start: editingTicket.sale_start || null,
       sale_end: editingTicket.sale_end || null,
+      internal_only: editingTicket.internal_only || false,
+      group_size: editingTicket.group_size || 1,
       event_id: eventId,
     };
     if (editingTicket.id) {
@@ -213,6 +217,16 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                   {t.sale_end ? new Date(t.sale_end).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "∞"}
                 </span>
               )}
+              {t.internal_only && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>
+                  Nur intern
+                </span>
+              )}
+              {(t.group_size || 1) > 1 && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(180 60% 50% / 0.15)", color: "hsl(180 60% 50%)" }}>
+                  {t.group_size}er Gruppe
+                </span>
+              )}
             </div>
             {t.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t.description}</p>}
             {t.features && t.features.length > 0 && (
@@ -256,7 +270,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
           <Field label="Beschreibung" value={editingTicket.description} onChange={(v: string) => setEditingTicket({ ...editingTicket, description: v })} />
           <div className="grid grid-cols-2 gap-3">
             <Field label="Sortierung" value={editingTicket.sort_order} onChange={(v: string) => setEditingTicket({ ...editingTicket, sort_order: parseInt(v) || 0 })} type="number" />
-            <div className="flex items-end pb-1 gap-4">
+            <div className="flex items-end pb-1 gap-4 flex-wrap">
               <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
                 <input type="checkbox" checked={editingTicket.sold_out || false} onChange={(e) => setEditingTicket({ ...editingTicket, sold_out: e.target.checked })} className="rounded w-4 h-4" />
                 Ausverkauft
@@ -265,7 +279,15 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 <input type="checkbox" checked={editingTicket.coming_soon || false} onChange={(e) => setEditingTicket({ ...editingTicket, coming_soon: e.target.checked })} className="rounded w-4 h-4" />
                 Coming Soon
               </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(45 80% 55% / 0.9)" }}>
+                <input type="checkbox" checked={editingTicket.internal_only || false} onChange={(e) => setEditingTicket({ ...editingTicket, internal_only: e.target.checked })} className="rounded w-4 h-4" />
+                Nur intern (Freiticket)
+              </label>
             </div>
+          </div>
+          {/* Group size */}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Gruppengröße (1 = Einzelticket)" value={editingTicket.group_size || 1} onChange={(v: string) => setEditingTicket({ ...editingTicket, group_size: parseInt(v) || 1 })} type="number" />
           </div>
           {/* Sale Start / End */}
           <div className="grid grid-cols-2 gap-3">

@@ -444,6 +444,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         const groups: Record<string, TicketItem[]> = {};
         const now = new Date();
         for (const row of data) {
+          // Skip internal-only tickets (free tickets for admin use)
+          if (row.internal_only) continue;
           // Skip tickets outside sale window
           if (row.sale_start && new Date(row.sale_start) > now) continue;
           if (row.sale_end && new Date(row.sale_end) < now) continue;

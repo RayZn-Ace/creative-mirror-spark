@@ -123,17 +123,31 @@ Deno.serve(async (req) => {
           if (!existingTickets || existingTickets.length === 0) {
             const ticketRows = [];
 
+            // Fetch group_size for each ticket category
+            const categoryIds = items.map((i: any) => i.ticketId).filter(Boolean);
+            const { data: categories } = categoryIds.length > 0
+              ? await supabase.from("ticket_categories").select("id, group_size").in("id", categoryIds)
+              : { data: [] };
+            const groupSizeMap: Record<string, number> = {};
+            for (const cat of categories || []) {
+              groupSizeMap[cat.id] = cat.group_size || 1;
+            }
+
             for (const item of items) {
+              const groupSize = item.ticketId ? (groupSizeMap[item.ticketId] || 1) : 1;
               for (let i = 0; i < item.quantity; i++) {
-                ticketRows.push({
-                  order_id: orderId,
-                  event_id: order.event_id,
-                  ticket_category_id: item.ticketId,
-                  holder_name: order.name || null,
-                  holder_email: order.email,
-                  qr_code: generateQRCode(),
-                  status: "valid",
-                });
+                // For group tickets, generate one ticket per person in the group
+                for (let g = 0; g < groupSize; g++) {
+                  ticketRows.push({
+                    order_id: orderId,
+                    event_id: order.event_id,
+                    ticket_category_id: item.ticketId,
+                    holder_name: order.name || null,
+                    holder_email: order.email,
+                    qr_code: generateQRCode(),
+                    status: "valid",
+                  });
+                }
               }
             }
 

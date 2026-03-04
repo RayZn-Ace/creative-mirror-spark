@@ -420,7 +420,9 @@ export type Database = {
           description: string | null
           event_id: string
           features: string[] | null
+          group_size: number | null
           id: string
+          internal_only: boolean | null
           name: string
           price: number
           sale_end: string | null
@@ -438,7 +440,9 @@ export type Database = {
           description?: string | null
           event_id: string
           features?: string[] | null
+          group_size?: number | null
           id?: string
+          internal_only?: boolean | null
           name: string
           price?: number
           sale_end?: string | null
@@ -456,7 +460,9 @@ export type Database = {
           description?: string | null
           event_id?: string
           features?: string[] | null
+          group_size?: number | null
           id?: string
+          internal_only?: boolean | null
           name?: string
           price?: number
           sale_end?: string | null
