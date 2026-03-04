@@ -1113,6 +1113,16 @@ const EventsAdmin = () => {
                                         <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
                                           {event.status}
                                         </span>
+                                        {event.open_air && (
+                                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
+                                            ☀️ Open Air
+                                          </span>
+                                        )}
+                                        {event.sold_out && (
+                                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
+                                            Ausverkauft
+                                          </span>
+                                        )}
                                       </div>
                                       <div className="flex items-center gap-2 flex-wrap mt-0.5">
                                         <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
