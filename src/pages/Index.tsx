@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
 import { events, getNextEvent } from "@/data/events";
+import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
 import heroBg from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdAerial from "@/assets/crowd-aerial.jpg";
@@ -21,7 +22,7 @@ import crowdHands from "@/assets/crowd-hands.jpg";
 import dancerHappy from "@/assets/dancer-happy.jpg";
 
 /* ─── Hero ─── */
-const Hero = () => (
+const Hero = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0">
       <img src={heroBg} alt="GIMME GIMME PARTY – Tausende Fans feiern zur ABBA Musik" className="w-full h-full object-cover" loading="eager" />
@@ -31,17 +32,15 @@ const Hero = () => (
     <div className="relative z-10 container text-center px-4 py-20">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-none mb-4">
-          GIMME GIMME{" "}<span className="text-gradient-primary">PARTY</span>
+          {gt.heroTitle}{" "}<span className="text-gradient-primary">PARTY</span>
         </h1>
-        <p className="font-display text-2xl sm:text-3xl md:text-4xl text-gold mb-2">THE ULTIMATE ABBA NIGHT</p>
-        <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">
-          Die größte ABBA Sing-Along Party-Tour Europas. Über 250.000 Fans weltweit.
-        </p>
+        <p className="font-display text-2xl sm:text-3xl md:text-4xl text-gold mb-2">{gt.heroSubtitle}</p>
+        <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">{gt.heroDesc}</p>
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
-          <Ticket className="w-5 h-5" /> Tickets sichern
+          <Ticket className="w-5 h-5" /> {gt.heroTicketBtn}
         </a>
       </motion.div>
     </div>
@@ -52,12 +51,12 @@ const Hero = () => (
 );
 
 /* ─── Trust Badges ─── */
-const TrustBadges = () => {
+const TrustBadges = ({ gt }: { gt: GlobalTranslations }) => {
   const badges = [
-    { icon: MapPin, value: "150+", label: "STÄDTE" },
-    { icon: Globe, value: "13+", label: "LÄNDER" },
-    { icon: Heart, value: "1.5M+", label: "FOLLOWER" },
-    { icon: Users, value: "250K+", label: "FANS" },
+    { icon: MapPin, value: "150+", label: gt.trustCities },
+    { icon: Globe, value: "13+", label: gt.trustCountries },
+    { icon: Heart, value: "1.5M+", label: gt.trustFollowers },
+    { icon: Users, value: "250K+", label: gt.trustFans },
   ];
 
   return (
@@ -79,12 +78,12 @@ const TrustBadges = () => {
 };
 
 /* ─── What Is It ─── */
-const WhatIsIt = () => {
+const WhatIsIt = ({ gt }: { gt: GlobalTranslations }) => {
   const features = [
-    { icon: Clock, label: "3+ Stunden Party" },
-    { icon: Music2, label: "Live DJ & Performer" },
-    { icon: Sparkles, label: "Glitter & Accessoires inklusive" },
-    { icon: Users, label: "250.000+ Fans weltweit" },
+    { icon: Clock, label: gt.feat3hParty },
+    { icon: Music2, label: gt.featLiveDj },
+    { icon: Sparkles, label: gt.featGlitter },
+    { icon: Users, label: gt.featFans },
   ];
 
   return (
@@ -93,13 +92,10 @@ const WhatIsIt = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
             <h2 className="font-display text-3xl md:text-5xl text-foreground mb-6">
-              <span className="italic">Was ist die</span>{" "}
-              <span className="text-gradient-primary">GIMME GIMME PARTY?</span>
+              <span className="italic">{gt.whatIsTitle1}</span>{" "}
+              <span className="text-gradient-primary">{gt.whatIsTitle2}</span>
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8 max-w-lg">
-              Die weltweit größte ABBA Party! Ein einzigartiges Sing-Along Erlebnis mit den Songs, die Generationen geprägt haben. 
-              Zieh dein glitzerndstes Outfit an, bring deine Freunde mit und mach dich bereit für Dancing Queen, Mamma Mia, Waterloo und mehr!
-            </p>
+            <p className="text-muted-foreground leading-relaxed mb-8 max-w-lg">{gt.whatIsDesc}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {features.map((f, i) => (
                 <motion.div key={f.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
@@ -121,31 +117,29 @@ const WhatIsIt = () => {
 };
 
 /* ─── Country Badges ─── */
-const countries = [
-  { flag: "🇩🇪", name: "Deutschland" }, { flag: "🇦🇹", name: "Österreich" },
-  { flag: "🇨🇭", name: "Schweiz" }, { flag: "🇳🇱", name: "Niederlande" },
-  { flag: "🇫🇷", name: "Frankreich" }, { flag: "🇱🇺", name: "Luxemburg" },
-  { flag: "🇧🇪", name: "Belgien" }, { flag: "🇵🇱", name: "Polen" },
-  { flag: "🇨🇿", name: "Tschechien" }, { flag: "🇮🇹", name: "Italien" },
-  { flag: "🇪🇸", name: "Spanien" }, { flag: "🇭🇷", name: "Kroatien" },
-  { flag: "🇧🇷", name: "Brasilien" },
+const countryCodes = [
+  { flag: "🇩🇪", code: "DE" }, { flag: "🇦🇹", code: "AT" },
+  { flag: "🇨🇭", code: "CH" }, { flag: "🇳🇱", code: "NL" },
+  { flag: "🇫🇷", code: "FR" }, { flag: "🇱🇺", code: "LU" },
+  { flag: "🇧🇪", code: "BE" }, { flag: "🇵🇱", code: "PL" },
+  { flag: "🇨🇿", code: "CZ" }, { flag: "🇮🇹", code: "IT" },
+  { flag: "🇪🇸", code: "ES" }, { flag: "🇭🇷", code: "HR" },
+  { flag: "🇧🇷", code: "BR" },
 ];
 
-const CountryBadges = () => (
+const CountryBadges = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="py-12 md:py-20">
     <div className="container">
       <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
-        Wir sind in <span className="text-gradient-primary">13 Ländern</span>
+        {gt.countriesTitle1} <span className="text-gradient-primary">{gt.countriesTitle2}</span>
       </h2>
-      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
-        Die größte ABBA Sing-Along Party-Tour Europas – und darüber hinaus.
-      </p>
+      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{gt.countriesDesc}</p>
       <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-        {countries.map((c, i) => (
+        {countryCodes.map((c, i) => (
           <motion.div key={c.flag} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
             <span className="text-2xl">{c.flag}</span>
-            <span className="text-sm font-medium text-foreground">{c.name}</span>
+            <span className="text-sm font-medium text-foreground">{gt.countryNames[c.code] || c.code}</span>
           </motion.div>
         ))}
       </div>
@@ -154,46 +148,46 @@ const CountryBadges = () => (
 );
 
 /* ─── For Whom ─── */
-const audiences = [
-  { icon: PartyPopper, title: "JGA / Bachelorette", desc: "Die perfekte Feier mit den Mädels vor dem großen Tag." },
-  { icon: Cake, title: "Geburtstage", desc: "Feier deinen Geburtstag auf eine einzigartige und unvergessliche Art." },
-  { icon: Heart, title: "Girls Night Out", desc: "Versammelt die Truppe und singt die Songs, die ihr liebt." },
-  { icon: Users, title: "Gruppen", desc: "Spezielle Angebote für Gruppen ab 10 Personen." },
-  { icon: Star, title: "Fans aller Generationen", desc: "ABBA ist zeitlos – Fans jeden Alters sind willkommen!" },
-];
+const ForWhom = ({ gt }: { gt: GlobalTranslations }) => {
+  const audiences = [
+    { icon: PartyPopper, title: gt.audJga, desc: gt.audJgaDesc },
+    { icon: Cake, title: gt.audBirthday, desc: gt.audBirthdayDesc },
+    { icon: Heart, title: gt.audGirlsNight, desc: gt.audGirlsNightDesc },
+    { icon: Users, title: gt.audGroups, desc: gt.audGroupsDesc },
+    { icon: Star, title: gt.audFans, desc: gt.audFansDesc },
+  ];
 
-const ForWhom = () => (
-  <section className="py-16 md:py-24">
-    <div className="container">
-      <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
-        <span className="italic">Für wen ist</span>{" "}
-        <span className="text-gradient-primary">die Party?</span>
-      </h2>
-      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
-        Die GIMME GIMME PARTY ist für alle, die ABBA lieben und eine unvergessliche Nacht erleben wollen!
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-        <img src={crowdAerial} alt="Party crowd" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
-        <img src={crowdVertical} alt="Party atmosphere" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
+          <span className="italic">{gt.forWhomTitle1}</span>{" "}
+          <span className="text-gradient-primary">{gt.forWhomTitle2}</span>
+        </h2>
+        <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{gt.forWhomDesc}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <img src={crowdAerial} alt="Party crowd" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
+          <img src={crowdVertical} alt="Party atmosphere" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {audiences.map((a, i) => (
+            <motion.div key={a.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+              className="p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
+              <a.icon className="w-5 h-5 text-primary mb-2" />
+              <h3 className="font-display text-lg text-primary mb-1">{a.title}</h3>
+              <p className="text-sm text-muted-foreground">{a.desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {audiences.map((a, i) => (
-          <motion.div key={a.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-            className="p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
-            <a.icon className="w-5 h-5 text-primary mb-2" />
-            <h3 className="font-display text-lg text-primary mb-1">{a.title}</h3>
-            <p className="text-sm text-muted-foreground">{a.desc}</p>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ─── Event Countdown ─── */
 function pad(n: number) { return String(n).padStart(2, "0"); }
 
-const EventCountdown = () => {
+const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
   const nextEvent = getNextEvent();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
@@ -224,7 +218,7 @@ const EventCountdown = () => {
     <section className="py-16 md:py-24 bg-card/50">
       <div className="container text-center">
         <h2 className="font-display text-4xl md:text-5xl mb-2 text-foreground">
-          NÄCHSTES <span className="text-gradient-gold">EVENT</span>
+          {gt.countdownNext} <span className="text-gradient-gold">{gt.countdownEvent}</span>
         </h2>
         <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8 flex-wrap">
           <MapPin className="w-4 h-4" />
@@ -236,10 +230,10 @@ const EventCountdown = () => {
         </div>
         <div className="flex justify-center gap-4 md:gap-6 mb-10">
           {[
-            { val: timeLeft.days, label: "Tage" },
-            { val: timeLeft.hours, label: "Stunden" },
-            { val: timeLeft.mins, label: "Minuten" },
-            { val: timeLeft.secs, label: "Sekunden" },
+            { val: timeLeft.days, label: gt.countdownDays },
+            { val: timeLeft.hours, label: gt.countdownHours },
+            { val: timeLeft.mins, label: gt.countdownMinutes },
+            { val: timeLeft.secs, label: gt.countdownSeconds },
           ].map(u => (
             <motion.div key={u.label} className="flex flex-col items-center" initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} viewport={{ once: true }}>
               <span className="font-display text-4xl md:text-6xl text-primary">{pad(u.val)}</span>
@@ -250,7 +244,7 @@ const EventCountdown = () => {
         <a href={nextEvent.ticketLink} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
           <Ticket className="w-5 h-5" />
-          Tickets für {nextEvent.city} sichern
+          {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
         </a>
       </div>
     </section>
@@ -258,17 +252,17 @@ const EventCountdown = () => {
 };
 
 /* ─── Upcoming Events ─── */
-const UpcomingEvents = () => {
+const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
   const upcomingEvents = events
     .filter(e => e.status === "planned" && new Date(e.date) > new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 4);
 
   return (
-    <section className="py-16 md:py-24">
+    <section id="events" className="py-16 md:py-24">
       <div className="container">
         <h2 className="font-display text-4xl md:text-5xl text-center mb-12 text-foreground">
-          KOMMENDE <span className="text-gradient-primary">TERMINE</span>
+          {gt.upcomingTitle1} <span className="text-gradient-primary">{gt.upcomingTitle2}</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {upcomingEvents.map((ev, i) => (
@@ -293,14 +287,14 @@ const UpcomingEvents = () => {
               </div>
               <a href={ev.ticketLink} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
-                <Ticket className="w-4 h-4" />Tickets
+                <Ticket className="w-4 h-4" />{gt.navTickets}
               </a>
             </motion.div>
           ))}
         </div>
         <div className="text-center">
           <Link to="/vergangene-events" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
-            Alle Termine anzeigen <ArrowRight className="w-4 h-4" />
+            {gt.upcomingAllDates} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -309,25 +303,23 @@ const UpcomingEvents = () => {
 };
 
 /* ─── What To Expect ─── */
-const WhatToExpect = () => {
+const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
   const features = [
-    { icon: Music, title: "Live DJ", desc: "Die besten ABBA Hits – non-stop zum Mitsingen und Tanzen." },
-    { icon: Users, title: "Crew & Performer", desc: "Professionelle Tänzer & Entertainers auf der Bühne." },
-    { icon: Sparkles, title: "Glitter & Accessories", desc: "LED-Headbands, Glitter-Stationen und mehr." },
-    { icon: Gift, title: "Give-Aways", desc: "Überraschungen und Geschenke an jedem Tourstop." },
-    { icon: Mic, title: "Sing-Along", desc: "Alle ABBA Klassiker zum Mitsingen – Texte auf den Screens." },
-    { icon: Heart, title: "Unvergesslich", desc: "3+ Stunden Party, Emotionen und unvergessliche Momente." },
+    { icon: Music, title: gt.expectLiveDj, desc: gt.expectLiveDjDesc },
+    { icon: Users, title: gt.expectCrew, desc: gt.expectCrewDesc },
+    { icon: Sparkles, title: gt.expectGlitter, desc: gt.expectGlitterDesc },
+    { icon: Gift, title: gt.expectGiveaways, desc: gt.expectGiveawaysDesc },
+    { icon: Mic, title: gt.expectSingAlong, desc: gt.expectSingAlongDesc },
+    { icon: Heart, title: gt.expectUnforgettable, desc: gt.expectUnforgettableDesc },
   ];
 
   return (
     <section className="py-16 md:py-24">
       <div className="container">
         <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-          WAS DICH <span className="text-gradient-primary">ERWARTET</span>
+          {gt.expectTitle1} <span className="text-gradient-primary">{gt.expectTitle2}</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-          Jeder Tourstop ist ein einzigartiges Erlebnis voller Musik, Emotionen und Party.
-        </p>
+        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">{gt.expectDesc}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
@@ -346,31 +338,31 @@ const WhatToExpect = () => {
 };
 
 /* ─── Ticket Categories ─── */
-const TicketCategories = () => {
+const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
   const tickets = [
-    { name: "Regular-Ticket", desc: "Entry ticket", price: "Ab 19,99€", popular: false },
-    { name: "Deluxe-Ticket", desc: "Entry ticket + bevorzugter Einlass", price: "Ab 29,99€", popular: false },
-    { name: "Fan-Ticket", desc: "VIP entrance + LED headband + Exclusive wristband", price: "Ab 49,99€", popular: true },
+    { name: gt.ticketRegular, desc: gt.ticketRegularDesc, price: "Ab 19,99€", popular: false },
+    { name: gt.ticketDeluxe, desc: gt.ticketDeluxeDesc, price: "Ab 29,99€", popular: false },
+    { name: gt.ticketFan, desc: gt.ticketFanDesc, price: "Ab 49,99€", popular: true },
   ];
 
   return (
     <section className="py-16 md:py-24">
       <div className="container">
         <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-          TICKET <span className="text-gradient-primary">KATEGORIEN</span>
+          {gt.ticketCatTitle1} <span className="text-gradient-primary">{gt.ticketCatTitle2}</span>
         </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">Wähle dein Erlebnis – von Regular bis Fan-Ticket.</p>
+        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">{gt.ticketCatDesc}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
           {tickets.map((tk, i) => (
             <motion.div key={tk.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
               className={`relative flex flex-col p-6 rounded-xl border transition-all hover:scale-[1.02] ${tk.popular ? "border-primary bg-primary/5 glow-primary" : "border-border bg-card hover:border-primary/30"}`}>
-              {tk.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">BELIEBT</span>}
+              {tk.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">{gt.ticketCatPopular}</span>}
               <h3 className="font-display text-xl mb-2 text-foreground">{tk.name}</h3>
               <p className="text-sm text-muted-foreground flex-1 mb-4">{tk.desc}</p>
               <p className="font-display text-2xl text-gold mb-4">{tk.price}</p>
               <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
-                <Ticket className="w-4 h-4" />Jetzt sichern
+                <Ticket className="w-4 h-4" />{gt.ticketCatSecure}
               </a>
             </motion.div>
           ))}
@@ -391,7 +383,7 @@ const slides = [
   { src: crowdGlowsticks2, alt: "Sea of glowsticks" },
 ];
 
-const CrowdSlideshow = () => {
+const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -409,7 +401,7 @@ const CrowdSlideshow = () => {
     <section className="py-16 md:py-24 overflow-hidden">
       <div className="container">
         <h2 className="font-display text-4xl md:text-5xl text-center mb-10 text-foreground">
-          PARTY <span className="text-gradient-primary">VIBES</span>
+          {gt.vibesTitle1} <span className="text-gradient-primary">{gt.vibesTitle2}</span>
         </h2>
         <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden aspect-[16/9] bg-card">
           <AnimatePresence initial={false} custom={direction}>
@@ -449,13 +441,13 @@ const CrowdSlideshow = () => {
 /* ─── Video Section ─── */
 const videoIds = ["53dTybHhlaw", "LrTjwGo_6Z4", "s8-6TQHgslw", "zNJMzCW0qVk", "1GTESLgRtvk"];
 
-const VideoSection = () => (
+const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="py-16 md:py-24 bg-card/50">
     <div className="container">
       <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-        PARTY <span className="text-gradient-gold">VIBES</span>
+        {gt.videoTitle1} <span className="text-gradient-gold">{gt.videoTitle2}</span>
       </h2>
-      <p className="text-center text-muted-foreground mb-12">Erlebe die Stimmung unserer Shows in diesen Highlights.</p>
+      <p className="text-center text-muted-foreground mb-12">{gt.videoDesc}</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {videoIds.map((id, i) => (
           <motion.div key={id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
@@ -485,11 +477,11 @@ const reviews = [
   { name: "Marcos T.", text: "Ich dachte, es wäre nur für Frauen, aber ich hatte SO VIEL SPASS. Die Party ist für alle, die gute Laune lieben!", rating: 5 },
 ];
 
-const Reviews = () => (
+const Reviews = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="py-16 md:py-24">
     <div className="container">
       <h2 className="font-display text-3xl md:text-5xl text-center mb-12 text-foreground italic">
-        DAS SAGEN UNSERE <span className="text-gradient-primary">GÄSTE</span>
+        {gt.reviewsTitle1} <span className="text-gradient-primary">{gt.reviewsTitle2}</span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reviews.map((r, i) => (
@@ -513,7 +505,7 @@ const Reviews = () => (
 );
 
 /* ─── Newsletter CTA ─── */
-const NewsletterCTA = () => {
+const NewsletterCTA = ({ gt }: { gt: GlobalTranslations }) => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -526,20 +518,20 @@ const NewsletterCTA = () => {
     <section className="py-16 md:py-24 bg-card/50">
       <div className="container max-w-2xl text-center">
         <h2 className="font-display text-4xl md:text-5xl mb-4 text-foreground">
-          BLEIB <span className="text-gradient-gold">UPGEDATED</span>
+          {gt.newsletterTitle1} <span className="text-gradient-gold">{gt.newsletterTitle2}</span>
         </h2>
-        <p className="text-muted-foreground mb-8">Neue Termine, exklusive Angebote und Behind-the-Scenes direkt in dein Postfach.</p>
+        <p className="text-muted-foreground mb-8">{gt.newsletterDesc}</p>
 
         {submitted ? (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-primary font-semibold text-lg">
-            🎉 Danke! Du bist dabei.
+            {gt.newsletterThanks}
           </motion.p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-            <input type="email" required placeholder="Deine E-Mail Adresse" value={email} onChange={e => setEmail(e.target.value)}
+            <input type="email" required placeholder={gt.newsletterPlaceholder} value={email} onChange={e => setEmail(e.target.value)}
               className="flex-1 px-4 py-3 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
             <button type="submit" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-              <Send className="w-4 h-4" /> Anmelden
+              <Send className="w-4 h-4" /> {gt.newsletterSubmit}
             </button>
           </form>
         )}
@@ -547,7 +539,7 @@ const NewsletterCTA = () => {
         <div className="mt-8">
           <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(142,70%,45%)] text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-            <MessageCircle className="w-5 h-5" /> WhatsApp Gruppe beitreten
+            <MessageCircle className="w-5 h-5" /> {gt.whatsappJoinGroup}
           </a>
         </div>
       </div>
@@ -557,25 +549,27 @@ const NewsletterCTA = () => {
 
 /* ─── Page ─── */
 export default function Index() {
+  const gt = useMemo(() => getGlobalTranslations(), []);
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <Navbar gt={gt} />
       <main className="flex-1 pt-16 md:pt-20">
-        <Hero />
-        <TrustBadges />
-        <WhatIsIt />
-        <CountryBadges />
-        <ForWhom />
-        <EventCountdown />
-        <UpcomingEvents />
-        <WhatToExpect />
-        <TicketCategories />
-        <CrowdSlideshow />
-        <VideoSection />
-        <Reviews />
-        <NewsletterCTA />
+        <Hero gt={gt} />
+        <TrustBadges gt={gt} />
+        <WhatIsIt gt={gt} />
+        <CountryBadges gt={gt} />
+        <ForWhom gt={gt} />
+        <EventCountdown gt={gt} />
+        <UpcomingEvents gt={gt} />
+        <WhatToExpect gt={gt} />
+        <TicketCategories gt={gt} />
+        <CrowdSlideshow gt={gt} />
+        <VideoSection gt={gt} />
+        <Reviews gt={gt} />
+        <NewsletterCTA gt={gt} />
       </main>
-      <Footer />
+      <Footer gt={gt} />
       <SupportChatbot />
     </div>
   );

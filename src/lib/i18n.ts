@@ -1058,3 +1058,291 @@ export const translateBadge = (badge: string, t: Translations): string => {
 export const translateTicketDesc = (ticketName: string, fallbackDesc: string, t: Translations): string => {
   return t.ticketDescMap[ticketName] || fallbackDesc;
 };
+
+/* ─── Global / Landing Page i18n ─── */
+export interface GlobalTranslations {
+  // Navbar
+  navHome: string;
+  navDatesTickets: string;
+  navExperience: string;
+  navCollaboration: string;
+  navFaqSupport: string;
+  navTicketRebooking: string;
+  navMyTickets: string;
+  navTickets: string;
+  // Erleben dropdown
+  navPhotos: string;
+  navPastEvents: string;
+  // Zusammenarbeit dropdown
+  navAbiklasse: string;
+  navPromoter: string;
+  navJobs: string;
+  // Landing page
+  heroTitle: string;
+  heroSubtitle: string;
+  heroDesc: string;
+  heroTicketBtn: string;
+  trustCities: string;
+  trustCountries: string;
+  trustFollowers: string;
+  trustFans: string;
+  whatIsTitle1: string;
+  whatIsTitle2: string;
+  whatIsDesc: string;
+  feat3hParty: string;
+  featLiveDj: string;
+  featGlitter: string;
+  featFans: string;
+  countriesTitle1: string;
+  countriesTitle2: string;
+  countriesDesc: string;
+  countryNames: Record<string, string>;
+  forWhomTitle1: string;
+  forWhomTitle2: string;
+  forWhomDesc: string;
+  audJga: string;
+  audJgaDesc: string;
+  audBirthday: string;
+  audBirthdayDesc: string;
+  audGirlsNight: string;
+  audGirlsNightDesc: string;
+  audGroups: string;
+  audGroupsDesc: string;
+  audFans: string;
+  audFansDesc: string;
+  countdownNext: string;
+  countdownEvent: string;
+  countdownDays: string;
+  countdownHours: string;
+  countdownMinutes: string;
+  countdownSeconds: string;
+  countdownTicketsFor: string;
+  countdownSecure: string;
+  upcomingTitle1: string;
+  upcomingTitle2: string;
+  upcomingAllDates: string;
+  expectTitle1: string;
+  expectTitle2: string;
+  expectDesc: string;
+  expectLiveDj: string;
+  expectLiveDjDesc: string;
+  expectCrew: string;
+  expectCrewDesc: string;
+  expectGlitter: string;
+  expectGlitterDesc: string;
+  expectGiveaways: string;
+  expectGiveawaysDesc: string;
+  expectSingAlong: string;
+  expectSingAlongDesc: string;
+  expectUnforgettable: string;
+  expectUnforgettableDesc: string;
+  ticketCatTitle1: string;
+  ticketCatTitle2: string;
+  ticketCatDesc: string;
+  ticketCatPopular: string;
+  ticketCatSecure: string;
+  ticketRegular: string;
+  ticketRegularDesc: string;
+  ticketDeluxe: string;
+  ticketDeluxeDesc: string;
+  ticketFan: string;
+  ticketFanDesc: string;
+  vibesTitle1: string;
+  vibesTitle2: string;
+  videoTitle1: string;
+  videoTitle2: string;
+  videoDesc: string;
+  reviewsTitle1: string;
+  reviewsTitle2: string;
+  newsletterTitle1: string;
+  newsletterTitle2: string;
+  newsletterDesc: string;
+  newsletterPlaceholder: string;
+  newsletterSubmit: string;
+  newsletterThanks: string;
+  whatsappJoinGroup: string;
+  // Footer
+  footerAbout: string;
+  footerAboutDesc: string;
+  footerLinks: string;
+  footerLegal: string;
+  footerSocial: string;
+  footerImprint: string;
+  footerPrivacy: string;
+  footerTerms: string;
+  footerContact: string;
+  footerAboutUs: string;
+  footerFaq: string;
+  // Meine Tickets page
+  myTicketsTitle: string;
+  myTicketsSubtitle: string;
+  myTicketsSearch: string;
+  myTicketsSearchBtn: string;
+  myTicketsNone: string;
+  myTicketsNoneHint: string;
+  myTicketsEnterEmail: string;
+  myTicketsValid: string;
+  myTicketsCheckedIn: string;
+  myTicketsPaid: string;
+  myTicketsOrderedAt: string;
+  // Checkout save info
+  saveInfoLabel: string;
+}
+
+const globalDe: GlobalTranslations = {
+  navHome: "Startseite", navDatesTickets: "Termine & Tickets", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
+  navPhotos: "Fotos & Media", navPastEvents: "Vergangene Events",
+  navAbiklasse: "Abiklasse auffüllen", navPromoter: "Promoter werden", navJobs: "Jobs",
+  heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "Die größte ABBA Sing-Along Party-Tour Europas. Über 250.000 Fans weltweit.", heroTicketBtn: "Tickets sichern",
+  trustCities: "STÄDTE", trustCountries: "LÄNDER", trustFollowers: "FOLLOWER", trustFans: "FANS",
+  whatIsTitle1: "Was ist die", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Die weltweit größte ABBA Party! Ein einzigartiges Sing-Along Erlebnis mit den Songs, die Generationen geprägt haben. Zieh dein glitzerndstes Outfit an, bring deine Freunde mit und mach dich bereit für Dancing Queen, Mamma Mia, Waterloo und mehr!",
+  feat3hParty: "3+ Stunden Party", featLiveDj: "Live DJ & Performer", featGlitter: "Glitter & Accessoires inklusive", featFans: "250.000+ Fans weltweit",
+  countriesTitle1: "Wir sind in", countriesTitle2: "13 Ländern", countriesDesc: "Die größte ABBA Sing-Along Party-Tour Europas – und darüber hinaus.",
+  countryNames: { DE: "Deutschland", AT: "Österreich", CH: "Schweiz", NL: "Niederlande", FR: "Frankreich", LU: "Luxemburg", BE: "Belgien", PL: "Polen", CZ: "Tschechien", IT: "Italien", ES: "Spanien", HR: "Kroatien", BR: "Brasilien" },
+  forWhomTitle1: "Für wen ist", forWhomTitle2: "die Party?", forWhomDesc: "Die GIMME GIMME PARTY ist für alle, die ABBA lieben und eine unvergessliche Nacht erleben wollen!",
+  audJga: "JGA / Bachelorette", audJgaDesc: "Die perfekte Feier mit den Mädels vor dem großen Tag.", audBirthday: "Geburtstage", audBirthdayDesc: "Feier deinen Geburtstag auf eine einzigartige und unvergessliche Art.", audGirlsNight: "Girls Night Out", audGirlsNightDesc: "Versammelt die Truppe und singt die Songs, die ihr liebt.", audGroups: "Gruppen", audGroupsDesc: "Spezielle Angebote für Gruppen ab 10 Personen.", audFans: "Fans aller Generationen", audFansDesc: "ABBA ist zeitlos – Fans jeden Alters sind willkommen!",
+  countdownNext: "NÄCHSTES", countdownEvent: "EVENT", countdownDays: "Tage", countdownHours: "Stunden", countdownMinutes: "Minuten", countdownSeconds: "Sekunden", countdownTicketsFor: "Tickets für", countdownSecure: "sichern",
+  upcomingTitle1: "KOMMENDE", upcomingTitle2: "TERMINE", upcomingAllDates: "Alle Termine anzeigen",
+  expectTitle1: "WAS DICH", expectTitle2: "ERWARTET", expectDesc: "Jeder Tourstop ist ein einzigartiges Erlebnis voller Musik, Emotionen und Party.",
+  expectLiveDj: "Live DJ", expectLiveDjDesc: "Die besten ABBA Hits – non-stop zum Mitsingen und Tanzen.", expectCrew: "Crew & Performer", expectCrewDesc: "Professionelle Tänzer & Entertainers auf der Bühne.", expectGlitter: "Glitter & Accessories", expectGlitterDesc: "LED-Headbands, Glitter-Stationen und mehr.", expectGiveaways: "Give-Aways", expectGiveawaysDesc: "Überraschungen und Geschenke an jedem Tourstop.", expectSingAlong: "Sing-Along", expectSingAlongDesc: "Alle ABBA Klassiker zum Mitsingen – Texte auf den Screens.", expectUnforgettable: "Unvergesslich", expectUnforgettableDesc: "3+ Stunden Party, Emotionen und unvergessliche Momente.",
+  ticketCatTitle1: "TICKET", ticketCatTitle2: "KATEGORIEN", ticketCatDesc: "Wähle dein Erlebnis – von Regular bis Fan-Ticket.", ticketCatPopular: "BELIEBT", ticketCatSecure: "Jetzt sichern",
+  ticketRegular: "Regular-Ticket", ticketRegularDesc: "Entry ticket", ticketDeluxe: "Deluxe-Ticket", ticketDeluxeDesc: "Entry ticket + bevorzugter Einlass", ticketFan: "Fan-Ticket", ticketFanDesc: "VIP entrance + LED headband + Exclusive wristband",
+  vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Erlebe die Stimmung unserer Shows in diesen Highlights.",
+  reviewsTitle1: "DAS SAGEN UNSERE", reviewsTitle2: "GÄSTE",
+  newsletterTitle1: "BLEIB", newsletterTitle2: "UPGEDATED", newsletterDesc: "Neue Termine, exklusive Angebote und Behind-the-Scenes direkt in dein Postfach.", newsletterPlaceholder: "Deine E-Mail Adresse", newsletterSubmit: "Anmelden", newsletterThanks: "🎉 Danke! Du bist dabei.", whatsappJoinGroup: "WhatsApp Gruppe beitreten",
+  footerAbout: "Über uns", footerAboutDesc: "Die größte ABBA Sing-Along Party-Tour. Über 150 Städte, 13 Länder, eine Mission: Die Welt tanzen lassen.", footerLinks: "Links", footerLegal: "Rechtliches", footerSocial: "Social Media",
+  footerImprint: "Impressum", footerPrivacy: "Datenschutz", footerTerms: "AGB", footerContact: "Kontakt", footerAboutUs: "Über uns", footerFaq: "FAQ",
+  myTicketsTitle: "Meine Tickets", myTicketsSubtitle: "Finde deine gekauften Tickets", myTicketsSearch: "Deine E-Mail-Adresse eingeben...", myTicketsSearchBtn: "Suchen", myTicketsNone: "Keine Tickets für diese E-Mail gefunden.", myTicketsNoneHint: "Stelle sicher, dass du die gleiche E-Mail wie bei der Bestellung verwendest.", myTicketsEnterEmail: "Gib deine E-Mail-Adresse ein, um deine Tickets zu finden.", myTicketsValid: "Gültig", myTicketsCheckedIn: "Eingecheckt", myTicketsPaid: "Bezahlt", myTicketsOrderedAt: "Bestellt am",
+  saveInfoLabel: "Kontoinfos speichern",
+};
+
+const globalEn: GlobalTranslations = {
+  navHome: "Home", navDatesTickets: "Dates & Tickets", navExperience: "Experience", navCollaboration: "Collaborate", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Rebooking", navMyTickets: "My Tickets", navTickets: "Tickets",
+  navPhotos: "Photos & Media", navPastEvents: "Past Events",
+  navAbiklasse: "Prom class special", navPromoter: "Become a Promoter", navJobs: "Jobs",
+  heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "The largest ABBA sing-along party tour in Europe. Over 250,000 fans worldwide.", heroTicketBtn: "Get Tickets",
+  trustCities: "CITIES", trustCountries: "COUNTRIES", trustFollowers: "FOLLOWERS", trustFans: "FANS",
+  whatIsTitle1: "What is the", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "The world's biggest ABBA party! A unique sing-along experience with the songs that shaped generations. Put on your glitteriest outfit, bring your friends and get ready for Dancing Queen, Mamma Mia, Waterloo and more!",
+  feat3hParty: "3+ hours of party", featLiveDj: "Live DJ & performers", featGlitter: "Glitter & accessories included", featFans: "250,000+ fans worldwide",
+  countriesTitle1: "We are in", countriesTitle2: "13 countries", countriesDesc: "The largest ABBA sing-along party tour in Europe – and beyond.",
+  countryNames: { DE: "Germany", AT: "Austria", CH: "Switzerland", NL: "Netherlands", FR: "France", LU: "Luxembourg", BE: "Belgium", PL: "Poland", CZ: "Czech Republic", IT: "Italy", ES: "Spain", HR: "Croatia", BR: "Brazil" },
+  forWhomTitle1: "Who is", forWhomTitle2: "the party for?", forWhomDesc: "The GIMME GIMME PARTY is for everyone who loves ABBA and wants an unforgettable night!",
+  audJga: "Hen Party", audJgaDesc: "The perfect celebration with the girls before the big day.", audBirthday: "Birthdays", audBirthdayDesc: "Celebrate your birthday in a unique and unforgettable way.", audGirlsNight: "Girls Night Out", audGirlsNightDesc: "Gather the crew and sing the songs you love.", audGroups: "Groups", audGroupsDesc: "Special offers for groups of 10+.", audFans: "Fans of all generations", audFansDesc: "ABBA is timeless – fans of all ages are welcome!",
+  countdownNext: "NEXT", countdownEvent: "EVENT", countdownDays: "Days", countdownHours: "Hours", countdownMinutes: "Minutes", countdownSeconds: "Seconds", countdownTicketsFor: "Tickets for", countdownSecure: "get now",
+  upcomingTitle1: "UPCOMING", upcomingTitle2: "DATES", upcomingAllDates: "View all dates",
+  expectTitle1: "WHAT TO", expectTitle2: "EXPECT", expectDesc: "Every tour stop is a unique experience full of music, emotions and party.",
+  expectLiveDj: "Live DJ", expectLiveDjDesc: "The best ABBA hits – non-stop to sing and dance along.", expectCrew: "Crew & Performers", expectCrewDesc: "Professional dancers & entertainers on stage.", expectGlitter: "Glitter & Accessories", expectGlitterDesc: "LED headbands, glitter stations and more.", expectGiveaways: "Give-Aways", expectGiveawaysDesc: "Surprises and gifts at every tour stop.", expectSingAlong: "Sing-Along", expectSingAlongDesc: "All ABBA classics to sing along – lyrics on the screens.", expectUnforgettable: "Unforgettable", expectUnforgettableDesc: "3+ hours of party, emotions and unforgettable moments.",
+  ticketCatTitle1: "TICKET", ticketCatTitle2: "CATEGORIES", ticketCatDesc: "Choose your experience – from Regular to Fan Ticket.", ticketCatPopular: "POPULAR", ticketCatSecure: "Get now",
+  ticketRegular: "Regular Ticket", ticketRegularDesc: "Entry ticket", ticketDeluxe: "Deluxe Ticket", ticketDeluxeDesc: "Entry + priority admission", ticketFan: "Fan Ticket", ticketFanDesc: "VIP entrance + LED headband + exclusive wristband",
+  vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Experience the atmosphere of our shows in these highlights.",
+  reviewsTitle1: "WHAT OUR", reviewsTitle2: "GUESTS SAY",
+  newsletterTitle1: "STAY", newsletterTitle2: "UPDATED", newsletterDesc: "New dates, exclusive offers and behind-the-scenes straight to your inbox.", newsletterPlaceholder: "Your email address", newsletterSubmit: "Subscribe", newsletterThanks: "🎉 Thanks! You're in.", whatsappJoinGroup: "Join WhatsApp Group",
+  footerAbout: "About us", footerAboutDesc: "The largest ABBA sing-along party tour. Over 150 cities, 13 countries, one mission: Make the world dance.", footerLinks: "Links", footerLegal: "Legal", footerSocial: "Social Media",
+  footerImprint: "Imprint", footerPrivacy: "Privacy", footerTerms: "Terms", footerContact: "Contact", footerAboutUs: "About us", footerFaq: "FAQ",
+  myTicketsTitle: "My Tickets", myTicketsSubtitle: "Find your purchased tickets", myTicketsSearch: "Enter your email address...", myTicketsSearchBtn: "Search", myTicketsNone: "No tickets found for this email.", myTicketsNoneHint: "Make sure you use the same email as when you ordered.", myTicketsEnterEmail: "Enter your email to find your tickets.", myTicketsValid: "Valid", myTicketsCheckedIn: "Checked in", myTicketsPaid: "Paid", myTicketsOrderedAt: "Ordered on",
+  saveInfoLabel: "Save account info",
+};
+
+const globalNl: GlobalTranslations = {
+  navHome: "Home", navDatesTickets: "Data & Tickets", navExperience: "Beleef", navCollaboration: "Samenwerken", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Omboeken", navMyTickets: "Mijn Tickets", navTickets: "Tickets",
+  navPhotos: "Foto's & Media", navPastEvents: "Vorige Evenementen",
+  navAbiklasse: "Eindexamenklas", navPromoter: "Word Promoter", navJobs: "Jobs",
+  heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "De grootste ABBA sing-along partytour van Europa. Meer dan 250.000 fans wereldwijd.", heroTicketBtn: "Tickets kopen",
+  trustCities: "STEDEN", trustCountries: "LANDEN", trustFollowers: "VOLGERS", trustFans: "FANS",
+  whatIsTitle1: "Wat is de", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Het grootste ABBA-feest ter wereld! Een unieke sing-along ervaring met de nummers die generaties hebben gevormd.",
+  feat3hParty: "3+ uur feest", featLiveDj: "Live DJ & artiesten", featGlitter: "Glitter & accessoires inbegrepen", featFans: "250.000+ fans wereldwijd",
+  countriesTitle1: "We zijn in", countriesTitle2: "13 landen", countriesDesc: "De grootste ABBA sing-along partytour van Europa – en daarbuiten.",
+  countryNames: { DE: "Duitsland", AT: "Oostenrijk", CH: "Zwitserland", NL: "Nederland", FR: "Frankrijk", LU: "Luxemburg", BE: "België", PL: "Polen", CZ: "Tsjechië", IT: "Italië", ES: "Spanje", HR: "Kroatië", BR: "Brazilië" },
+  forWhomTitle1: "Voor wie is", forWhomTitle2: "het feest?", forWhomDesc: "Het GIMME GIMME feest is voor iedereen die van ABBA houdt!",
+  audJga: "Vrijgezellenfeest", audJgaDesc: "Het perfecte feest met de meiden.", audBirthday: "Verjaardagen", audBirthdayDesc: "Vier je verjaardag op een unieke manier.", audGirlsNight: "Girls Night Out", audGirlsNightDesc: "Verzamel de crew en zing de nummers die je liefhebt.", audGroups: "Groepen", audGroupsDesc: "Speciale aanbiedingen voor groepen van 10+.", audFans: "Fans van alle generaties", audFansDesc: "ABBA is tijdloos – fans van alle leeftijden welkom!",
+  countdownNext: "VOLGEND", countdownEvent: "EVENEMENT", countdownDays: "Dagen", countdownHours: "Uren", countdownMinutes: "Minuten", countdownSeconds: "Seconden", countdownTicketsFor: "Tickets voor", countdownSecure: "kopen",
+  upcomingTitle1: "AANKOMENDE", upcomingTitle2: "DATA", upcomingAllDates: "Alle data bekijken",
+  expectTitle1: "WAT JE KUNT", expectTitle2: "VERWACHTEN", expectDesc: "Elke tourstop is een unieke ervaring vol muziek, emoties en feest.",
+  expectLiveDj: "Live DJ", expectLiveDjDesc: "De beste ABBA hits – non-stop.", expectCrew: "Crew & Artiesten", expectCrewDesc: "Professionele dansers op het podium.", expectGlitter: "Glitter & Accessories", expectGlitterDesc: "LED-haarbanden, glitterstations en meer.", expectGiveaways: "Give-Aways", expectGiveawaysDesc: "Verrassingen bij elke tourstop.", expectSingAlong: "Sing-Along", expectSingAlongDesc: "Alle ABBA klassiekers om mee te zingen.", expectUnforgettable: "Onvergetelijk", expectUnforgettableDesc: "3+ uur feest en onvergetelijke momenten.",
+  ticketCatTitle1: "TICKET", ticketCatTitle2: "CATEGORIEËN", ticketCatDesc: "Kies je ervaring.", ticketCatPopular: "POPULAIR", ticketCatSecure: "Nu kopen",
+  ticketRegular: "Regular Ticket", ticketRegularDesc: "Toegangskaart", ticketDeluxe: "Deluxe Ticket", ticketDeluxeDesc: "Toegang + voorrang", ticketFan: "Fan Ticket", ticketFanDesc: "VIP-ingang + LED-haarband + polsband",
+  vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Beleef de sfeer van onze shows.",
+  reviewsTitle1: "WAT ONZE", reviewsTitle2: "GASTEN ZEGGEN",
+  newsletterTitle1: "BLIJF", newsletterTitle2: "OP DE HOOGTE", newsletterDesc: "Nieuwe data, exclusieve aanbiedingen en behind-the-scenes.", newsletterPlaceholder: "Je e-mailadres", newsletterSubmit: "Aanmelden", newsletterThanks: "🎉 Bedankt! Je bent erbij.", whatsappJoinGroup: "WhatsApp groep",
+  footerAbout: "Over ons", footerAboutDesc: "De grootste ABBA sing-along partytour.", footerLinks: "Links", footerLegal: "Juridisch", footerSocial: "Social Media",
+  footerImprint: "Colofon", footerPrivacy: "Privacy", footerTerms: "Voorwaarden", footerContact: "Contact", footerAboutUs: "Over ons", footerFaq: "FAQ",
+  myTicketsTitle: "Mijn Tickets", myTicketsSubtitle: "Vind je gekochte tickets", myTicketsSearch: "Voer je e-mailadres in...", myTicketsSearchBtn: "Zoeken", myTicketsNone: "Geen tickets gevonden.", myTicketsNoneHint: "Gebruik hetzelfde e-mailadres als bij je bestelling.", myTicketsEnterEmail: "Voer je e-mail in om je tickets te vinden.", myTicketsValid: "Geldig", myTicketsCheckedIn: "Ingecheckt", myTicketsPaid: "Betaald", myTicketsOrderedAt: "Besteld op",
+  saveInfoLabel: "Accountgegevens opslaan",
+};
+
+const globalFr: GlobalTranslations = {
+  navHome: "Accueil", navDatesTickets: "Dates & Billets", navExperience: "Découvrir", navCollaboration: "Collaboration", navFaqSupport: "FAQ & Support", navTicketRebooking: "Échange de billets", navMyTickets: "Mes Billets", navTickets: "Billets",
+  navPhotos: "Photos & Médias", navPastEvents: "Événements passés",
+  navAbiklasse: "Classe de terminale", navPromoter: "Devenir Promoteur", navJobs: "Emplois",
+  heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "La plus grande tournée ABBA sing-along d'Europe. Plus de 250 000 fans dans le monde.", heroTicketBtn: "Acheter des billets",
+  trustCities: "VILLES", trustCountries: "PAYS", trustFollowers: "ABONNÉS", trustFans: "FANS",
+  whatIsTitle1: "Qu'est-ce que la", whatIsTitle2: "GIMME GIMME PARTY ?", whatIsDesc: "La plus grande fête ABBA au monde ! Une expérience sing-along unique avec les chansons qui ont marqué des générations.",
+  feat3hParty: "3+ heures de fête", featLiveDj: "DJ live & artistes", featGlitter: "Paillettes & accessoires inclus", featFans: "250 000+ fans dans le monde",
+  countriesTitle1: "Nous sommes dans", countriesTitle2: "13 pays", countriesDesc: "La plus grande tournée sing-along ABBA d'Europe – et au-delà.",
+  countryNames: { DE: "Allemagne", AT: "Autriche", CH: "Suisse", NL: "Pays-Bas", FR: "France", LU: "Luxembourg", BE: "Belgique", PL: "Pologne", CZ: "Tchéquie", IT: "Italie", ES: "Espagne", HR: "Croatie", BR: "Brésil" },
+  forWhomTitle1: "Pour qui est", forWhomTitle2: "la fête ?", forWhomDesc: "La GIMME GIMME PARTY est pour tous ceux qui aiment ABBA !",
+  audJga: "EVJF", audJgaDesc: "La fête parfaite avant le grand jour.", audBirthday: "Anniversaires", audBirthdayDesc: "Fêtez votre anniversaire de manière unique.", audGirlsNight: "Soirée entre filles", audGirlsNightDesc: "Rassemblez le groupe et chantez vos chansons préférées.", audGroups: "Groupes", audGroupsDesc: "Offres spéciales pour les groupes de 10+.", audFans: "Fans de toutes générations", audFansDesc: "ABBA est intemporel – fans de tous âges bienvenus !",
+  countdownNext: "PROCHAIN", countdownEvent: "ÉVÉNEMENT", countdownDays: "Jours", countdownHours: "Heures", countdownMinutes: "Minutes", countdownSeconds: "Secondes", countdownTicketsFor: "Billets pour", countdownSecure: "acheter",
+  upcomingTitle1: "PROCHAINES", upcomingTitle2: "DATES", upcomingAllDates: "Voir toutes les dates",
+  expectTitle1: "CE QUI VOUS", expectTitle2: "ATTEND", expectDesc: "Chaque étape est une expérience unique pleine de musique et de fête.",
+  expectLiveDj: "DJ Live", expectLiveDjDesc: "Les meilleurs hits ABBA – non-stop.", expectCrew: "Crew & Artistes", expectCrewDesc: "Danseurs professionnels sur scène.", expectGlitter: "Paillettes & Accessoires", expectGlitterDesc: "Bandeaux LED, stations paillettes et plus.", expectGiveaways: "Cadeaux", expectGiveawaysDesc: "Surprises à chaque étape.", expectSingAlong: "Sing-Along", expectSingAlongDesc: "Tous les classiques ABBA à chanter.", expectUnforgettable: "Inoubliable", expectUnforgettableDesc: "3+ heures de fête et moments inoubliables.",
+  ticketCatTitle1: "CATÉGORIES", ticketCatTitle2: "DE BILLETS", ticketCatDesc: "Choisissez votre expérience.", ticketCatPopular: "POPULAIRE", ticketCatSecure: "Acheter",
+  ticketRegular: "Billet Regular", ticketRegularDesc: "Billet d'entrée", ticketDeluxe: "Billet Deluxe", ticketDeluxeDesc: "Entrée + accès prioritaire", ticketFan: "Billet Fan", ticketFanDesc: "Entrée VIP + bandeau LED + bracelet exclusif",
+  vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Vivez l'ambiance de nos shows.",
+  reviewsTitle1: "CE QUE DISENT NOS", reviewsTitle2: "INVITÉS",
+  newsletterTitle1: "RESTEZ", newsletterTitle2: "INFORMÉ", newsletterDesc: "Nouvelles dates, offres exclusives et coulisses.", newsletterPlaceholder: "Votre adresse e-mail", newsletterSubmit: "S'inscrire", newsletterThanks: "🎉 Merci ! Vous êtes inscrit.", whatsappJoinGroup: "Rejoindre le groupe WhatsApp",
+  footerAbout: "À propos", footerAboutDesc: "La plus grande tournée ABBA sing-along.", footerLinks: "Liens", footerLegal: "Mentions légales", footerSocial: "Réseaux sociaux",
+  footerImprint: "Mentions légales", footerPrivacy: "Confidentialité", footerTerms: "CGV", footerContact: "Contact", footerAboutUs: "À propos", footerFaq: "FAQ",
+  myTicketsTitle: "Mes Billets", myTicketsSubtitle: "Trouvez vos billets achetés", myTicketsSearch: "Entrez votre adresse e-mail...", myTicketsSearchBtn: "Chercher", myTicketsNone: "Aucun billet trouvé.", myTicketsNoneHint: "Utilisez la même adresse e-mail que lors de votre commande.", myTicketsEnterEmail: "Entrez votre e-mail pour trouver vos billets.", myTicketsValid: "Valide", myTicketsCheckedIn: "Enregistré", myTicketsPaid: "Payé", myTicketsOrderedAt: "Commandé le",
+  saveInfoLabel: "Enregistrer les infos",
+};
+
+const globalPl: GlobalTranslations = {
+  navHome: "Strona główna", navDatesTickets: "Terminy & Bilety", navExperience: "Przeżyj", navCollaboration: "Współpraca", navFaqSupport: "FAQ & Wsparcie", navTicketRebooking: "Zmiana biletu", navMyTickets: "Moje Bilety", navTickets: "Bilety",
+  navPhotos: "Zdjęcia & Media", navPastEvents: "Przeszłe wydarzenia",
+  navAbiklasse: "Klasa maturalna", navPromoter: "Zostań Promotorem", navJobs: "Praca",
+  heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "Największa trasa koncertowa ABBA sing-along w Europie. Ponad 250 000 fanów na całym świecie.", heroTicketBtn: "Kup bilety",
+  trustCities: "MIAST", trustCountries: "KRAJÓW", trustFollowers: "OBSERWUJĄCYCH", trustFans: "FANÓW",
+  whatIsTitle1: "Czym jest", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Największa impreza ABBA na świecie! Unikalne przeżycie sing-along z piosenkami, które ukształtowały pokolenia.",
+  feat3hParty: "3+ godziny zabawy", featLiveDj: "Live DJ & artyści", featGlitter: "Brokat i akcesoria w cenie", featFans: "250 000+ fanów",
+  countriesTitle1: "Jesteśmy w", countriesTitle2: "13 krajach", countriesDesc: "Największa trasa ABBA sing-along w Europie.",
+  countryNames: { DE: "Niemcy", AT: "Austria", CH: "Szwajcaria", NL: "Holandia", FR: "Francja", LU: "Luksemburg", BE: "Belgia", PL: "Polska", CZ: "Czechy", IT: "Włochy", ES: "Hiszpania", HR: "Chorwacja", BR: "Brazylia" },
+  forWhomTitle1: "Dla kogo jest", forWhomTitle2: "impreza?", forWhomDesc: "GIMME GIMME PARTY jest dla wszystkich, którzy kochają ABBA!",
+  audJga: "Wieczór panieński", audJgaDesc: "Idealna impreza przed wielkim dniem.", audBirthday: "Urodziny", audBirthdayDesc: "Świętuj urodziny w wyjątkowy sposób.", audGirlsNight: "Dziewczyny na mieście", audGirlsNightDesc: "Zbierz ekipę i śpiewaj ulubione piosenki.", audGroups: "Grupy", audGroupsDesc: "Oferty specjalne dla grup 10+.", audFans: "Fani wszystkich pokoleń", audFansDesc: "ABBA jest ponadczasowa – fani w każdym wieku!",
+  countdownNext: "NASTĘPNE", countdownEvent: "WYDARZENIE", countdownDays: "Dni", countdownHours: "Godziny", countdownMinutes: "Minuty", countdownSeconds: "Sekundy", countdownTicketsFor: "Bilety na", countdownSecure: "kup",
+  upcomingTitle1: "NADCHODZĄCE", upcomingTitle2: "TERMINY", upcomingAllDates: "Zobacz wszystkie terminy",
+  expectTitle1: "CO CIĘ", expectTitle2: "CZEKA", expectDesc: "Każdy przystanek to unikalne przeżycie pełne muzyki i zabawy.",
+  expectLiveDj: "Live DJ", expectLiveDjDesc: "Najlepsze hity ABBA – non-stop.", expectCrew: "Crew & Artyści", expectCrewDesc: "Profesjonalni tancerze na scenie.", expectGlitter: "Brokat & Akcesoria", expectGlitterDesc: "Opaski LED, stacje z brokatem i więcej.", expectGiveaways: "Upominki", expectGiveawaysDesc: "Niespodzianki na każdym przystanku.", expectSingAlong: "Sing-Along", expectSingAlongDesc: "Wszystkie klasyki ABBA do wspólnego śpiewania.", expectUnforgettable: "Niezapomniane", expectUnforgettableDesc: "3+ godziny zabawy i niezapomnianych chwil.",
+  ticketCatTitle1: "KATEGORIE", ticketCatTitle2: "BILETÓW", ticketCatDesc: "Wybierz swoje przeżycie.", ticketCatPopular: "POPULARNE", ticketCatSecure: "Kup teraz",
+  ticketRegular: "Bilet Regular", ticketRegularDesc: "Bilet wstępu", ticketDeluxe: "Bilet Deluxe", ticketDeluxeDesc: "Wstęp + priorytetowe wejście", ticketFan: "Bilet Fan", ticketFanDesc: "Wejście VIP + opaska LED + bransoletka",
+  vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Poczuj atmosferę naszych pokazów.",
+  reviewsTitle1: "CO MÓWIĄ NASI", reviewsTitle2: "GOŚCIE",
+  newsletterTitle1: "BĄDŹ NA", newsletterTitle2: "BIEŻĄCO", newsletterDesc: "Nowe terminy, ekskluzywne oferty i kulisy.", newsletterPlaceholder: "Twój adres e-mail", newsletterSubmit: "Zapisz się", newsletterThanks: "🎉 Dzięki! Jesteś na liście.", whatsappJoinGroup: "Dołącz do grupy WhatsApp",
+  footerAbout: "O nas", footerAboutDesc: "Największa trasa ABBA sing-along.", footerLinks: "Linki", footerLegal: "Prawne", footerSocial: "Social Media",
+  footerImprint: "Impressum", footerPrivacy: "Prywatność", footerTerms: "Regulamin", footerContact: "Kontakt", footerAboutUs: "O nas", footerFaq: "FAQ",
+  myTicketsTitle: "Moje Bilety", myTicketsSubtitle: "Znajdź swoje bilety", myTicketsSearch: "Wpisz swój adres e-mail...", myTicketsSearchBtn: "Szukaj", myTicketsNone: "Nie znaleziono biletów.", myTicketsNoneHint: "Upewnij się, że używasz tego samego e-maila.", myTicketsEnterEmail: "Wpisz e-mail, aby znaleźć bilety.", myTicketsValid: "Ważny", myTicketsCheckedIn: "Zarejestrowany", myTicketsPaid: "Opłacony", myTicketsOrderedAt: "Zamówiony",
+  saveInfoLabel: "Zapisz dane konta",
+};
+
+const globalTranslationsMap: Record<string, GlobalTranslations> = {
+  de: globalDe, en: globalEn, nl: globalNl, fr: globalFr, pl: globalPl,
+};
+
+// Fallback chain for missing languages
+const globalFallback = (lang: LangCode): GlobalTranslations => {
+  return globalTranslationsMap[lang] || globalTranslationsMap.en || globalDe;
+};
+
+/** Detect browser language and return global translations */
+export const getBrowserLang = (): LangCode => {
+  const nav = typeof navigator !== "undefined" ? navigator.language || "" : "";
+  const short = nav.split("-")[0].toLowerCase() as LangCode;
+  // Only return if we have translations for it
+  if (globalTranslationsMap[short]) return short;
+  return "de";
+};
+
+export const getGlobalTranslations = (lang?: LangCode): GlobalTranslations => {
+  const l = lang || getBrowserLang();
+  return globalFallback(l);
+};

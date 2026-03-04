@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Ticket, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 
 interface DropdownItem {
   label: string;
@@ -13,30 +14,37 @@ interface NavGroup {
   items: DropdownItem[];
 }
 
-const directLinks = [
-  { label: "Home", path: "/" },
-  { label: "Events", path: "/#events" },
-];
+function buildNav(gt: GlobalTranslations) {
+  const directLinks = [
+    { label: gt.navHome, path: "/" },
+    { label: gt.navDatesTickets, path: "/#events" },
+  ];
 
-const groups: NavGroup[] = [
-  {
-    label: "Erleben",
-    items: [
-      { label: "Fotos & Media", path: "/fotos" },
-      { label: "Vergangene Events", path: "/vergangene-events" },
-    ],
-  },
-  {
-    label: "Mehr",
-    items: [
-      { label: "Über uns", path: "/ueber-uns" },
-      { label: "FAQ", path: "/faq" },
-      { label: "Jobs", path: "/jobs" },
-      { label: "Promoter werden", path: "/promoter" },
-      { label: "Kontakt", path: "/kontakt" },
-    ],
-  },
-];
+  const groups: NavGroup[] = [
+    {
+      label: gt.navExperience,
+      items: [
+        { label: gt.navPhotos, path: "/fotos" },
+        { label: gt.navPastEvents, path: "/vergangene-events" },
+      ],
+    },
+    {
+      label: gt.navCollaboration,
+      items: [
+        { label: gt.navAbiklasse, path: "/abiklasse" },
+        { label: gt.navPromoter, path: "/promoter" },
+        { label: gt.navJobs, path: "/jobs" },
+      ],
+    },
+  ];
+
+  const extraLinks = [
+    { label: gt.navFaqSupport, path: "/faq" },
+    { label: gt.navTicketRebooking, path: "/kontakt" },
+  ];
+
+  return { directLinks, groups, extraLinks };
+}
 
 function DesktopDropdown({ group }: { group: NavGroup }) {
   const [open, setOpen] = useState(false);
@@ -87,7 +95,9 @@ function DesktopDropdown({ group }: { group: NavGroup }) {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
+  const gt = gtProp || getGlobalTranslations();
+  const { directLinks, groups, extraLinks } = buildNav(gt);
   const [open, setOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const location = useLocation();
@@ -120,6 +130,17 @@ export default function Navbar() {
           {groups.map((group) => (
             <DesktopDropdown key={group.label} group={group} />
           ))}
+          {extraLinks.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-colors ${
+                location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
 
         {/* Right side */}
@@ -128,7 +149,7 @@ export default function Navbar() {
             to="/meine-tickets"
             className="px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground"
           >
-            Meine Tickets
+            {gt.navMyTickets}
           </Link>
           <a
             href="https://mammamia-partymotto.ticket.io/?view=table"
@@ -137,7 +158,7 @@ export default function Navbar() {
             className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm animate-pulse-glow hover:opacity-90 transition-opacity"
           >
             <Ticket className="w-4 h-4" />
-            Tickets
+            {gt.navTickets}
           </a>
         </div>
 
@@ -200,6 +221,19 @@ export default function Navbar() {
                 </div>
               ))}
 
+              {extraLinks.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === item.path ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
               <Link
                 to="/meine-tickets"
                 onClick={() => setOpen(false)}
@@ -207,7 +241,7 @@ export default function Navbar() {
                   location.pathname === "/meine-tickets" ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
-                Meine Tickets
+                {gt.navMyTickets}
               </Link>
 
               <a
@@ -217,7 +251,7 @@ export default function Navbar() {
                 className="mt-2 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm"
               >
                 <Ticket className="w-4 h-4" />
-                Tickets sichern
+                {gt.navTickets}
               </a>
             </div>
           </motion.div>
