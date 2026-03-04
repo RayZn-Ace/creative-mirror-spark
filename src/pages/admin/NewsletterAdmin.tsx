@@ -430,15 +430,47 @@ const AlignPicker = ({ value, onChange }: { value: string; onChange: (v: any) =>
   </div>
 );
 
+// ─── Placeholder Variables ─────────────────────────────────────
+const PLACEHOLDERS = [
+  { tag: "{{name}}", label: "Name", icon: "👤" },
+  { tag: "{{vorname}}", label: "Vorname", icon: "🙋" },
+  { tag: "{{city}}", label: "Stadt", icon: "📍" },
+  { tag: "{{email}}", label: "E-Mail", icon: "✉️" },
+];
+
+const PlaceholderPills = ({ onInsert }: { onInsert: (tag: string) => void }) => (
+  <div className="flex flex-wrap gap-1 pt-1">
+    <span className="text-[9px] font-medium mr-1 self-center" style={{ color: "hsl(0 0% 100% / 0.25)" }}>Platzhalter:</span>
+    {PLACEHOLDERS.map((p) => (
+      <button
+        key={p.tag}
+        type="button"
+        onClick={() => onInsert(p.tag)}
+        className="px-2 py-0.5 rounded-full text-[10px] font-medium transition-all hover:scale-105"
+        style={{ background: "hsl(270 80% 55% / 0.15)", color: "hsl(270 80% 55%)", border: "1px solid hsl(270 80% 55% / 0.25)" }}
+        title={`${p.tag} — Wird beim Versand durch den ${p.label} des Empfängers ersetzt`}
+      >
+        {p.icon} {p.tag}
+      </button>
+    ))}
+  </div>
+);
+
 // ─── Block Editor Panel ────────────────────────────────────────
 const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) => void }) => {
   const upd = (patch: Partial<Block>) => onChange({ ...block, ...patch } as Block);
+
+  const insertPlaceholder = (field: "text", tag: string) => {
+    const current = (block as any)[field] || "";
+    upd({ [field]: current + tag } as any);
+  };
 
   switch (block.type) {
     case "heading":
       return (
         <div className="space-y-2">
           <input value={block.text} onChange={(e) => upd({ text: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <PlaceholderPills onInsert={(tag) => insertPlaceholder("text", tag)} />
           <div className="flex items-center gap-3">
             <div className="flex gap-1">
               {([1, 2, 3] as const).map((l) => (
@@ -454,6 +486,7 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
       return (
         <div className="space-y-2">
           <textarea value={block.text} onChange={(e) => upd({ text: e.target.value })} rows={4} className="w-full px-3 py-2 rounded-lg text-sm resize-y" style={inputStyle} />
+          <PlaceholderPills onInsert={(tag) => insertPlaceholder("text", tag)} />
           <div className="flex items-center gap-3">
             <div className="flex gap-1">
               <button onClick={() => upd({ bold: !block.bold })} className="p-1.5 rounded-md" style={{ background: block.bold ? "hsl(330 80% 55% / 0.2)" : "transparent", color: block.bold ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}><Bold className="w-3.5 h-3.5" /></button>
@@ -1279,6 +1312,7 @@ ${bodyContent}
           <div className="rounded-2xl p-5 space-y-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
             <label className={labelCls} style={{ color: "hsl(0 0% 100% / 0.35)" }}>Betreff</label>
             <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="z.B. Neues Event: Summer Bash 2025 🎉" className="w-full px-3 py-2.5 rounded-lg text-sm" style={inputStyle} />
+            <PlaceholderPills onInsert={(tag) => setSubject((prev) => prev + tag)} />
           </div>
 
           {/* Blocks */}
