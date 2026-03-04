@@ -32,6 +32,7 @@ const LocationAnmelden = lazy(() => import("./pages/LocationAnmelden"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminRegister = lazy(() => import("./pages/admin/AdminRegister"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const SeriesAdmin = lazy(() => import("./pages/admin/SeriesAdmin"));
@@ -83,6 +84,7 @@ const App = () => (
 
               {/* Admin */}
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/register" element={<AdminRegister />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="analytics" element={<AnalyticsAdmin />} />
