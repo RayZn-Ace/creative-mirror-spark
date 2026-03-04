@@ -83,6 +83,22 @@ export default function SupportAdmin() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [newTicket, setNewTicket] = useState({ subject: "", customer_email: "", customer_name: "", category: "support" as Category, priority: "normal" as Priority, message: "" });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isOnline, setIsOnline] = useState(false);
+
+  // Load online status
+  useEffect(() => {
+    const loadOnline = async () => {
+      const { data } = await supabase.from("settings").select("value").eq("key", "support_online").single();
+      if (data) setIsOnline(!!(data.value as Record<string, unknown>)?.online);
+    };
+    loadOnline();
+  }, []);
+
+  const toggleOnline = async () => {
+    const newStatus = !isOnline;
+    setIsOnline(newStatus);
+    await supabase.from("settings").upsert([{ key: "support_online", value: { online: newStatus } }], { onConflict: "key" });
+  };
 
   const loadTickets = useCallback(async () => {
     const { data } = await supabase.from("support_tickets").select("*").order("created_at", { ascending: false });
@@ -348,7 +364,21 @@ export default function SupportAdmin() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black tracking-tight" style={{ color: "hsl(0 0% 100%)" }}>Support</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: "hsl(0 0% 100%)" }}>Support</h1>
+          <button
+            onClick={toggleOnline}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+            style={{
+              background: isOnline ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+              color: isOnline ? "hsl(142 70% 50%)" : "hsl(0 0% 100% / 0.4)",
+              border: isOnline ? "1px solid hsl(142 70% 45% / 0.3)" : "1px solid hsl(0 0% 100% / 0.1)",
+            }}
+          >
+            <span className="w-2 h-2 rounded-full" style={{ background: isOnline ? "hsl(142 70% 50%)" : "hsl(0 0% 100% / 0.3)" }} />
+            {isOnline ? "Online" : "Offline"}
+          </button>
+        </div>
         <button onClick={() => setShowNewTicket(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm" style={{ background: "hsl(330 80% 50%)", color: "white" }}>
           <Plus className="w-4 h-4" /> Neues Ticket
         </button>
