@@ -62,11 +62,33 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 /* ─── Template interface ─── */
+interface ContentBlock {
+  id: string;
+  type: "text" | "image" | "info_list";
+  enabled: boolean;
+  text?: string;
+  font_size?: "sm" | "md" | "lg";
+  bold?: boolean;
+  image_url?: string;
+  image_width?: number;
+  items?: string[];
+  list_title?: string;
+}
+
+interface GradientConfig {
+  enabled: boolean;
+  type: "linear" | "radial";
+  angle: number;
+  color_from: string;
+  color_to: string;
+}
+
 interface TicketTemplate {
   format: "din_lang" | "a4";
   background_color: string;
   accent_color: string;
   text_color: string;
+  gradient?: GradientConfig;
   show_event_title: boolean;
   show_date: boolean;
   show_time: boolean;
@@ -77,13 +99,14 @@ interface TicketTemplate {
   show_qr_code: boolean;
   logo_url: string;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
+  content_blocks?: ContentBlock[];
 }
 
 const defaultTpl: TicketTemplate = {
   format: "din_lang", background_color: "#14141e", accent_color: "#d9338a", text_color: "#ffffff",
   show_event_title: true, show_date: true, show_time: true, show_location: true,
   show_address: true, show_category: true, show_holder_name: true, show_qr_code: true,
-  logo_url: "", sponsors: [],
+  logo_url: "", sponsors: [], content_blocks: [],
 };
 
 /* ─── Ticket PDF with Template ─── */
@@ -133,8 +156,13 @@ async function generateTicketPDF(tickets: Array<{
     const { width, height } = page.getSize();
     const m = isDinLang ? 20 : 30; // margin
 
-    // Background
+    // Background (gradient not supported in pdf-lib natively, use solid)
     page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
+    // If gradient enabled, draw a second overlay rectangle with the "to" color at reduced opacity
+    if (tpl.gradient?.enabled) {
+      const [toR, toG, toB] = hexToRgb(tpl.gradient.color_to);
+      page.drawRectangle({ x: 0, y: 0, width: width / 2, height, color: rgb(toR, toG, toB), opacity: 0.3 });
+    }
     // Accent bar
     page.drawRectangle({ x: 0, y: height - (isDinLang ? 4 : 6), width, height: isDinLang ? 4 : 6, color: acColor });
 
@@ -185,6 +213,49 @@ async function generateTicketPDF(tickets: Array<{
         y -= 10;
         page.drawText(d.value.substring(0, 40), { x: m, y, size: 9, font: fontBold, color: txColor });
         y -= 14;
+      }
+
+      // Content blocks
+      const blocks = (tpl.content_blocks || []).filter(b => b.enabled);
+      for (const block of blocks) {
+        if (y < m + 10) break;
+        if (block.type === "text" && block.text) {
+          const sz = block.font_size === "lg" ? 9 : block.font_size === "sm" ? 6 : 7;
+          const f = block.bold ? fontBold : fontRegular;
+          const lines = wrapText(block.text, f, sz, textAreaW);
+          for (const line of lines) {
+            if (y < m + 10) break;
+            page.drawText(line, { x: m, y, size: sz, font: f, color: txColor });
+            y -= sz + 3;
+          }
+          y -= 4;
+        }
+        if (block.type === "image" && block.image_url) {
+          try {
+            const imgRes = await fetch(block.image_url);
+            const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
+            const ct = imgRes.headers.get("content-type") || "";
+            const img = ct.includes("png") ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+            const imgW = textAreaW * ((block.image_width || 60) / 100);
+            const imgH = imgW * (img.height / img.width);
+            if (y - imgH > m) {
+              page.drawImage(img, { x: m, y: y - imgH, width: imgW, height: imgH });
+              y -= imgH + 6;
+            }
+          } catch (e) { console.error("Block image failed:", e); }
+        }
+        if (block.type === "info_list") {
+          if (block.list_title) {
+            page.drawText(block.list_title.toUpperCase(), { x: m, y, size: 6, font: fontBold, color: acColor });
+            y -= 10;
+          }
+          for (const item of (block.items || [])) {
+            if (!item || y < m + 10) break;
+            page.drawText(`• ${item}`, { x: m + 4, y, size: 7, font: fontRegular, color: txColor });
+            y -= 10;
+          }
+          y -= 4;
+        }
       }
 
       // Sponsors at bottom
@@ -275,7 +346,50 @@ async function generateTicketPDF(tickets: Array<{
         y -= 22;
       }
 
-      if (tpl.show_qr_code) {
+      // Content blocks (A4)
+      const blocksA4 = (tpl.content_blocks || []).filter(b => b.enabled);
+      const contentW = width - m * 2;
+      for (const block of blocksA4) {
+        if (y < 250) break; // leave room for QR
+        if (block.type === "text" && block.text) {
+          const sz = block.font_size === "lg" ? 12 : block.font_size === "sm" ? 8 : 10;
+          const f = block.bold ? fontBold : fontRegular;
+          const lines = wrapText(block.text, f, sz, contentW);
+          for (const line of lines) {
+            if (y < 250) break;
+            page.drawText(line, { x: m, y, size: sz, font: f, color: txColor });
+            y -= sz + 4;
+          }
+          y -= 6;
+        }
+        if (block.type === "image" && block.image_url) {
+          try {
+            const imgRes = await fetch(block.image_url);
+            const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
+            const ct = imgRes.headers.get("content-type") || "";
+            const img = ct.includes("png") ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+            const imgW = contentW * ((block.image_width || 60) / 100);
+            const imgH = imgW * (img.height / img.width);
+            if (y - imgH > 250) {
+              page.drawImage(img, { x: m, y: y - imgH, width: imgW, height: imgH });
+              y -= imgH + 10;
+            }
+          } catch (e) { console.error("Block image failed:", e); }
+        }
+        if (block.type === "info_list") {
+          if (block.list_title) {
+            page.drawText(block.list_title.toUpperCase(), { x: m, y, size: 8, font: fontBold, color: acColor });
+            y -= 14;
+          }
+          for (const item of (block.items || [])) {
+            if (!item || y < 250) break;
+            page.drawText(`• ${item}`, { x: m + 6, y, size: 9, font: fontRegular, color: txColor });
+            y -= 14;
+          }
+          y -= 6;
+        }
+      }
+
         try {
           const qrBytes = await fetchQRCode(ticket.qr_code);
           const qrImage = await pdfDoc.embedPng(qrBytes);
