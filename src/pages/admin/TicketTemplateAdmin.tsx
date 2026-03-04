@@ -122,6 +122,9 @@ const TicketPreview = ({ tpl }: { tpl: TicketTemplate }) => {
         {/* QR section */}
         {tpl.show_qr_code && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33`, paddingLeft: "12px" } : {}) }}>
+            {tpl.show_category && (
+              <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
+            )}
             <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
             </div>
