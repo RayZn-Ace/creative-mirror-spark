@@ -556,6 +556,30 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions: {
+        Row: {
+          granted: boolean
+          id: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          granted?: boolean
+          id?: string
+          permission: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          granted?: boolean
+          id?: string
+          permission?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scanner_links: {
         Row: {
           active: boolean
@@ -972,6 +996,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
