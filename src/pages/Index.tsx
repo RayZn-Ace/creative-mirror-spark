@@ -38,10 +38,10 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
         <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">{gt.heroDesc}</p>
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="https://mammamia-partymotto.ticket.io/?view=table" target="_blank" rel="noopener noreferrer"
+        <Link to="/termine"
           className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
           <Ticket className="w-5 h-5" /> {gt.heroTicketBtn}
-        </a>
+        </Link>
       </motion.div>
     </div>
     <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 w-6 h-10 rounded-full border-2 border-foreground/30 flex items-start justify-center p-2">
