@@ -1071,11 +1071,14 @@ export interface GlobalTranslations {
   navMyTickets: string;
   navTickets: string;
   // Erleben dropdown
-  navPhotos: string;
-  navPastEvents: string;
+  navForWho: string;
+  navMedia: string;
+  navBlog: string;
   // Zusammenarbeit dropdown
-  navAbiklasse: string;
-  navPromoter: string;
+  navBookUs: string;
+  navRegisterLocation: string;
+  navPartner: string;
+  navInfluencer: string;
   navJobs: string;
   // Landing page
   heroTitle: string;
@@ -1191,8 +1194,8 @@ export interface GlobalTranslations {
 
 const globalDe: GlobalTranslations = {
   navHome: "Startseite", navDatesTickets: "Termine & Tickets", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
-  navPhotos: "Fotos & Media", navPastEvents: "Vergangene Events",
-  navAbiklasse: "Abiklasse auffüllen", navPromoter: "Promoter werden", navJobs: "Jobs",
+  navForWho: "Für wen?", navMedia: "Media", navBlog: "Blog",
+  navBookUs: "Uns Buchen!", navRegisterLocation: "Location anmelden", navPartner: "Partner werden", navInfluencer: "Influencer", navJobs: "Jobs",
   heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "Die größte ABBA Sing-Along Party-Tour Europas. Über 250.000 Fans weltweit.", heroTicketBtn: "Tickets sichern",
   trustCities: "STÄDTE", trustCountries: "LÄNDER", trustFollowers: "FOLLOWER", trustFans: "FANS",
   whatIsTitle1: "Was ist die", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Die weltweit größte ABBA Party! Ein einzigartiges Sing-Along Erlebnis mit den Songs, die Generationen geprägt haben. Zieh dein glitzerndstes Outfit an, bring deine Freunde mit und mach dich bereit für Dancing Queen, Mamma Mia, Waterloo und mehr!",
@@ -1218,8 +1221,8 @@ const globalDe: GlobalTranslations = {
 
 const globalEn: GlobalTranslations = {
   navHome: "Home", navDatesTickets: "Dates & Tickets", navExperience: "Experience", navCollaboration: "Collaborate", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Rebooking", navMyTickets: "My Tickets", navTickets: "Tickets",
-  navPhotos: "Photos & Media", navPastEvents: "Past Events",
-  navAbiklasse: "Prom class special", navPromoter: "Become a Promoter", navJobs: "Jobs",
+  navForWho: "For whom?", navMedia: "Media", navBlog: "Blog",
+  navBookUs: "Book Us!", navRegisterLocation: "Register Location", navPartner: "Become a Partner", navInfluencer: "Influencer", navJobs: "Jobs",
   heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "The largest ABBA sing-along party tour in Europe. Over 250,000 fans worldwide.", heroTicketBtn: "Get Tickets",
   trustCities: "CITIES", trustCountries: "COUNTRIES", trustFollowers: "FOLLOWERS", trustFans: "FANS",
   whatIsTitle1: "What is the", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "The world's biggest ABBA party! A unique sing-along experience with the songs that shaped generations. Put on your glitteriest outfit, bring your friends and get ready for Dancing Queen, Mamma Mia, Waterloo and more!",
@@ -1245,8 +1248,8 @@ const globalEn: GlobalTranslations = {
 
 const globalNl: GlobalTranslations = {
   navHome: "Home", navDatesTickets: "Data & Tickets", navExperience: "Beleef", navCollaboration: "Samenwerken", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Omboeken", navMyTickets: "Mijn Tickets", navTickets: "Tickets",
-  navPhotos: "Foto's & Media", navPastEvents: "Vorige Evenementen",
-  navAbiklasse: "Eindexamenklas", navPromoter: "Word Promoter", navJobs: "Jobs",
+  navForWho: "Voor wie?", navMedia: "Media", navBlog: "Blog",
+  navBookUs: "Boek ons!", navRegisterLocation: "Locatie aanmelden", navPartner: "Word Partner", navInfluencer: "Influencer", navJobs: "Jobs",
   heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "De grootste ABBA sing-along partytour van Europa. Meer dan 250.000 fans wereldwijd.", heroTicketBtn: "Tickets kopen",
   trustCities: "STEDEN", trustCountries: "LANDEN", trustFollowers: "VOLGERS", trustFans: "FANS",
   whatIsTitle1: "Wat is de", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Het grootste ABBA-feest ter wereld! Een unieke sing-along ervaring met de nummers die generaties hebben gevormd.",
@@ -1272,8 +1275,8 @@ const globalNl: GlobalTranslations = {
 
 const globalFr: GlobalTranslations = {
   navHome: "Accueil", navDatesTickets: "Dates & Billets", navExperience: "Découvrir", navCollaboration: "Collaboration", navFaqSupport: "FAQ & Support", navTicketRebooking: "Échange de billets", navMyTickets: "Mes Billets", navTickets: "Billets",
-  navPhotos: "Photos & Médias", navPastEvents: "Événements passés",
-  navAbiklasse: "Classe de terminale", navPromoter: "Devenir Promoteur", navJobs: "Emplois",
+  navForWho: "Pour qui?", navMedia: "Médias", navBlog: "Blog",
+  navBookUs: "Réservez-nous!", navRegisterLocation: "Inscrire un lieu", navPartner: "Devenir Partenaire", navInfluencer: "Influenceur", navJobs: "Emplois",
   heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "La plus grande tournée ABBA sing-along d'Europe. Plus de 250 000 fans dans le monde.", heroTicketBtn: "Acheter des billets",
   trustCities: "VILLES", trustCountries: "PAYS", trustFollowers: "ABONNÉS", trustFans: "FANS",
   whatIsTitle1: "Qu'est-ce que la", whatIsTitle2: "GIMME GIMME PARTY ?", whatIsDesc: "La plus grande fête ABBA au monde ! Une expérience sing-along unique avec les chansons qui ont marqué des générations.",
@@ -1299,8 +1302,8 @@ const globalFr: GlobalTranslations = {
 
 const globalPl: GlobalTranslations = {
   navHome: "Strona główna", navDatesTickets: "Terminy & Bilety", navExperience: "Przeżyj", navCollaboration: "Współpraca", navFaqSupport: "FAQ & Wsparcie", navTicketRebooking: "Zmiana biletu", navMyTickets: "Moje Bilety", navTickets: "Bilety",
-  navPhotos: "Zdjęcia & Media", navPastEvents: "Przeszłe wydarzenia",
-  navAbiklasse: "Klasa maturalna", navPromoter: "Zostań Promotorem", navJobs: "Praca",
+  navForWho: "Dla kogo?", navMedia: "Media", navBlog: "Blog",
+  navBookUs: "Zarezerwuj nas!", navRegisterLocation: "Zarejestruj lokal", navPartner: "Zostań Partnerem", navInfluencer: "Influencer", navJobs: "Praca",
   heroTitle: "GIMME GIMME", heroSubtitle: "THE ULTIMATE ABBA NIGHT", heroDesc: "Największa trasa koncertowa ABBA sing-along w Europie. Ponad 250 000 fanów na całym świecie.", heroTicketBtn: "Kup bilety",
   trustCities: "MIAST", trustCountries: "KRAJÓW", trustFollowers: "OBSERWUJĄCYCH", trustFans: "FANÓW",
   whatIsTitle1: "Czym jest", whatIsTitle2: "GIMME GIMME PARTY?", whatIsDesc: "Największa impreza ABBA na świecie! Unikalne przeżycie sing-along z piosenkami, które ukształtowały pokolenia.",

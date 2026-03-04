@@ -45,10 +45,10 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
             <h3 className="font-display text-lg text-foreground mb-4">{gt.footerLinks}</h3>
             <div className="flex flex-col gap-2">
               <Link to="/#events" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navDatesTickets}</Link>
-              <Link to="/fotos" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPhotos}</Link>
+              <Link to="/fotos" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navMedia}</Link>
               <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerFaq}</Link>
               <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navJobs}</Link>
-              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPromoter}</Link>
+              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.navPartner}</Link>
               <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">{gt.footerContact}</Link>
             </div>
           </div>
