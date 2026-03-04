@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
+import { AdDisplay } from "@/components/AdDisplay";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, type Translations } from "@/lib/i18n";
@@ -834,6 +835,9 @@ const CityPage = () => {
 
   return (
     <div className="min-h-screen pp-bg">
+      {/* Ticker ads at very top */}
+      <AdDisplay eventId={selectedEvent.id} type="ticker" />
+      
       <div className="pp-confetti-container">
         {Array.from({ length: 12 }, (_, i) => (
           <div key={`c${i}`} className={`pp-confetti pp-confetti--${i + 1}`} />
@@ -845,6 +849,9 @@ const CityPage = () => {
         <div className="pp-smoke pp-smoke--5" />
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-8 lg:py-12">
+        {/* Top banners */}
+        <AdDisplay eventId={selectedEvent.id} type="banner" position="top" />
+        
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
           <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
@@ -859,6 +866,12 @@ const CityPage = () => {
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
         </div>
+        {/* Interstitial ads */}
+        <AdDisplay eventId={selectedEvent.id} type="interstitial" />
+        
+        {/* Pop-up ads */}
+        <AdDisplay eventId={selectedEvent.id} type="popup" />
+        
         <CityFooter t={t} />
       </div>
       <AnimatePresence>

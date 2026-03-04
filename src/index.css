@@ -408,3 +408,12 @@
   z-index: 100;
   opacity: 0.92;
 }
+
+/* Ticker animation */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); }
+}
+.animate-ticker {
+  animation: ticker-scroll 12s linear infinite;
+}
