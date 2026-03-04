@@ -29,7 +29,7 @@ interface Event {
 const ScannerAdmin = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [tab, setTab] = useState<Tab>("links");
+  const [tab, setTab] = useState<Tab>("scanner");
   const [links, setLinks] = useState<ScannerLink[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState("");
