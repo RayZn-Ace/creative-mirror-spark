@@ -7,7 +7,7 @@ import {
   Plus, Trash2, Copy, ExternalLink, QrCode, ToggleLeft, ToggleRight,
   Link2, ScanLine, CalendarDays, Loader2, Camera, X, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Keyboard,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+// framer-motion removed – using CSS animations instead
 
 // === Sound & Haptic Feedback (from Nachtschicht Nexus) ===
 const playSound = (type: "success" | "wrong_event" | "already_checked_in" | "error") => {
@@ -660,116 +660,179 @@ const ScannerAdmin = () => {
               </div>
 
               {/* Scanner content */}
-              <AnimatePresence mode="wait">
-                {scanResult ? (
-                  <motion.div
-                    key="result"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="rounded-xl p-6 flex flex-col items-center gap-4"
-                    style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                  >
-                    {(() => {
-                      const cfg = statusConfig[scanResult.status] || statusConfig.error;
-                      const Icon = cfg.icon;
-                      return (
-                        <>
-                          <div className={`w-16 h-16 rounded-full flex items-center justify-center ${cfg.bg} border`}>
-                            <Icon className={`w-8 h-8 ${cfg.color}`} />
-                          </div>
-                          <div className={`text-sm font-black uppercase tracking-wider ${cfg.color}`}>{cfg.label}</div>
-                          {scanResult.error && <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{scanResult.error}</p>}
-                          {scanResult.ticket && (
-                            <div className="w-full space-y-1.5 rounded-lg p-3" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
-                              {scanResult.ticket.holder_name && (
-                                <div className="flex justify-between text-xs">
-                                  <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Name</span>
-                                  <span className="font-bold" style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.holder_name}</span>
-                                </div>
+              {scanMode === "camera" ? (
+                <div className="flex flex-col items-center gap-3">
+                  {cameraError ? (
+                    <div className="text-center py-8">
+                      <Camera className="w-10 h-10 mx-auto mb-2" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+                      <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{cameraError}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative w-full aspect-square max-w-[300px] mx-auto rounded-2xl overflow-hidden" style={{ border: "2px solid hsl(0 0% 100% / 0.15)" }}>
+                        <div id={scannerContainerId} style={{ width: "100%", height: "100%" }} />
+                        <style>{`#${scannerContainerId} video { object-fit: cover !important; width: 100% !important; height: 100% !important; }`}</style>
+
+                        {/* Result overlay ON TOP of camera */}
+                        {scanResult && (
+                          <div
+                            className="absolute inset-0 z-[100] flex flex-col items-center justify-center rounded-2xl cursor-pointer animate-fade-in"
+                            onClick={resetInlineScan}
+                            style={{
+                              touchAction: "manipulation",
+                              background: scanResult.status === "checked_in"
+                                ? "hsla(140, 70%, 40%, 0.95)"
+                                : scanResult.status === "already_checked_in"
+                                ? "linear-gradient(to bottom, hsla(0, 70%, 45%, 0.95), hsla(25, 80%, 45%, 0.95))"
+                                : scanResult.status === "wrong_event"
+                                ? "hsla(45, 80%, 45%, 0.95)"
+                                : "hsla(0, 70%, 45%, 0.95)",
+                              boxShadow: scanResult.status === "checked_in"
+                                ? "inset 0 0 0 4px hsla(140, 60%, 55%, 0.8)"
+                                : scanResult.status === "already_checked_in"
+                                ? "inset 0 0 0 4px hsla(25, 80%, 55%, 0.8)"
+                                : scanResult.status === "wrong_event"
+                                ? "inset 0 0 0 4px hsla(45, 70%, 55%, 0.8)"
+                                : "inset 0 0 0 4px hsla(0, 60%, 55%, 0.8)",
+                            }}
+                          >
+                            <div className="text-white text-center space-y-2 px-4">
+                              {scanResult.status === "checked_in" ? (
+                                <CheckCircle2 size={48} className="mx-auto drop-shadow-lg" />
+                              ) : scanResult.status === "wrong_event" ? (
+                                <AlertTriangle size={48} className="mx-auto drop-shadow-lg" />
+                              ) : (
+                                <XCircle size={48} className="mx-auto drop-shadow-lg" />
                               )}
-                              {scanResult.ticket.category && (
-                                <div className="flex justify-between text-xs">
-                                  <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Ticket</span>
-                                  <span className="font-semibold" style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.category}</span>
-                                </div>
+                              <h2 className="font-bold text-2xl tracking-wider drop-shadow-md">
+                                {scanResult.status === "checked_in"
+                                  ? "VALID ✓"
+                                  : scanResult.status === "already_checked_in"
+                                  ? "BEREITS GESCANNT"
+                                  : scanResult.status === "wrong_event"
+                                  ? "FALSCHES EVENT"
+                                  : scanResult.status === "cancelled"
+                                  ? "STORNIERT"
+                                  : "UNGÜLTIG"}
+                              </h2>
+                              {scanResult.ticket?.event && (
+                                <p className="text-sm font-medium bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 inline-block">
+                                  {scanResult.ticket.event}
+                                </p>
                               )}
-                              {scanResult.ticket.event && (
-                                <div className="flex justify-between text-xs">
-                                  <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Event</span>
-                                  <span style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.event}</span>
-                                </div>
+                              {scanResult.ticket?.holder_name && (
+                                <p className="text-xs opacity-80">{scanResult.ticket.holder_name}</p>
+                              )}
+                              {scanResult.ticket?.category && (
+                                <p className="text-sm font-semibold bg-white/25 backdrop-blur-sm rounded-md px-3 py-1 inline-block">
+                                  {scanResult.ticket.category}
+                                </p>
+                              )}
+                              {scanResult.status === "already_checked_in" && scanResult.checked_in_at && (
+                                <p className="text-xs opacity-70">
+                                  Eingecheckt: {new Date(scanResult.checked_in_at).toLocaleTimeString("de-DE")}
+                                </p>
+                              )}
+                              {scanResult.error && (
+                                <p className="text-xs opacity-80 font-mono bg-white/20 backdrop-blur-sm rounded px-2 py-1">
+                                  {scanResult.error}
+                                </p>
                               )}
                             </div>
-                          )}
-                          <button
-                            onClick={resetInlineScan}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all hover:bg-white/10"
-                            style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" /> Nächstes Ticket
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </motion.div>
-                ) : scanMode === "camera" ? (
-                  <motion.div
-                    key="camera"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-3"
-                  >
-                    {cameraError ? (
-                      <div className="text-center py-8">
-                        <Camera className="w-10 h-10 mx-auto mb-2" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-                        <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{cameraError}</p>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <>
-                        <div className="relative w-full aspect-square max-w-[300px] mx-auto rounded-2xl overflow-hidden" style={{ border: "2px solid hsl(0 0% 100% / 0.15)" }}>
-                          <div id={scannerContainerId} style={{ width: "100%", height: "100%" }} />
-                          <style>{`#${scannerContainerId} video { object-fit: cover !important; width: 100% !important; height: 100% !important; }`}</style>
-                        </div>
+                      {!scanResult && (
                         <p className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>QR-Code in den Rahmen halten</p>
-                      </>
-                    )}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="manual"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="rounded-xl p-6 flex flex-col items-center gap-4"
-                    style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                  >
-                    <Keyboard className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-                    <form onSubmit={handleManualSubmit} className="w-full space-y-3">
-                      <input
-                        type="text"
-                        value={manualCode}
-                        onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                        placeholder="XXXX-XXXX-XXXX-XXXX"
-                        className="w-full px-4 py-3 rounded-xl text-center text-sm font-mono font-bold tracking-[0.15em] focus:outline-none transition-all"
-                        style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
-                        autoComplete="off"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        disabled={scanningInProgress || !manualCode.trim()}
-                        className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-30 flex items-center justify-center gap-2"
-                        style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)", border: "1px solid hsl(330 80% 55% / 0.3)" }}
-                      >
-                        {scanningInProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                        {scanningInProgress ? "Prüfe…" : "Einchecken"}
-                      </button>
-                    </form>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      )}
+                    </>
+                  )}
+
+                  {scanningInProgress && (
+                    <div className="text-center text-sm animate-pulse" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                      Wird geprüft...
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Manual input */
+                <div
+                  className="rounded-xl p-6 flex flex-col items-center gap-4"
+                  style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
+                >
+                  {scanResult ? (
+                    <div className="w-full flex flex-col items-center gap-4 animate-fade-in">
+                      {(() => {
+                        const cfg = statusConfig[scanResult.status] || statusConfig.error;
+                        const Icon = cfg.icon;
+                        return (
+                          <>
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${cfg.bg} border`}>
+                              <Icon className={`w-8 h-8 ${cfg.color}`} />
+                            </div>
+                            <div className={`text-sm font-black uppercase tracking-wider ${cfg.color}`}>{cfg.label}</div>
+                            {scanResult.error && <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{scanResult.error}</p>}
+                            {scanResult.ticket && (
+                              <div className="w-full space-y-1.5 rounded-lg p-3" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                                {scanResult.ticket.holder_name && (
+                                  <div className="flex justify-between text-xs">
+                                    <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Name</span>
+                                    <span className="font-bold" style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.holder_name}</span>
+                                  </div>
+                                )}
+                                {scanResult.ticket.category && (
+                                  <div className="flex justify-between text-xs">
+                                    <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Ticket</span>
+                                    <span className="font-semibold" style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.category}</span>
+                                  </div>
+                                )}
+                                {scanResult.ticket.event && (
+                                  <div className="flex justify-between text-xs">
+                                    <span style={{ color: "hsl(0 0% 100% / 0.4)" }}>Event</span>
+                                    <span style={{ color: "hsl(0 0% 100%)" }}>{scanResult.ticket.event}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <button
+                              onClick={resetInlineScan}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all hover:bg-white/10"
+                              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" /> Nächstes Ticket
+                            </button>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <>
+                      <Keyboard className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+                      <form onSubmit={handleManualSubmit} className="w-full space-y-3">
+                        <input
+                          type="text"
+                          value={manualCode}
+                          onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                          placeholder="XXXX-XXXX-XXXX-XXXX"
+                          className="w-full px-4 py-3 rounded-xl text-center text-sm font-mono font-bold tracking-[0.15em] focus:outline-none transition-all"
+                          style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
+                          autoComplete="off"
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          disabled={scanningInProgress || !manualCode.trim()}
+                          className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-30 flex items-center justify-center gap-2"
+                          style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)", border: "1px solid hsl(330 80% 55% / 0.3)" }}
+                        >
+                          {scanningInProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                          {scanningInProgress ? "Prüfe…" : "Einchecken"}
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
