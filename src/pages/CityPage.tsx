@@ -767,11 +767,13 @@ const CityPage = () => {
       setT(translations);
 
       // Get events
+      const today = new Date().toISOString().split("T")[0];
       const { data: eventsData } = await supabase
         .from("events")
         .select("*")
         .eq("series_id", series.id)
         .eq("status", "published")
+        .gte("date", today)
         .order("date");
 
       if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
