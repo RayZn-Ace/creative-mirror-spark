@@ -22,6 +22,7 @@ const Muttizettel = lazy(() => import("./pages/Muttizettel"));
 const VergangeneEvents = lazy(() => import("./pages/VergangeneEvents"));
 const Abiklasse = lazy(() => import("./pages/Abiklasse"));
 const Jobs = lazy(() => import("./pages/Jobs"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="pages" element={<PagesAdmin />} />
               </Route>
 
+              <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
               <Route path="/:citySlug" element={<CityPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

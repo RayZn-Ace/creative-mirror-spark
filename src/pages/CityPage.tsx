@@ -418,7 +418,13 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   const [discountApplied, setDiscountApplied] = useState(false);
   const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(true);
-  const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); }, []);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutEmail, setCheckoutEmail] = useState("");
+  const [checkoutFirstName, setCheckoutFirstName] = useState("");
+  const [checkoutLastName, setCheckoutLastName] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
   const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
 
   useEffect(() => {
@@ -465,6 +471,54 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
     const newTotal = Object.values(newQuantities).reduce((a, b) => a + b, 0);
     if (newTotal === 0 && isActive) stopTimer();
     else if (val > prev && !isActive) startTimer();
+  };
+
+  const handleCheckout = async () => {
+    if (!checkoutEmail || !checkoutEmail.includes("@")) {
+      setCheckoutError("Bitte gib eine gültige E-Mail-Adresse ein.");
+      return;
+    }
+    setCheckoutLoading(true);
+    setCheckoutError("");
+
+    // Build items array from selected tickets
+    const allItems = ticketCategories.flatMap((c) => c.items);
+    const selectedItems = Object.entries(quantities)
+      .filter(([_, qty]) => qty > 0)
+      .map(([id, qty]) => {
+        const item = allItems.find((i) => i.id === id);
+        return { ticketId: id, name: item?.name || "", quantity: qty, priceEur: item?.priceEur || 0 };
+      });
+
+    const currency = getCurrencyForCity(event.city);
+    const redirectBase = window.location.origin;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-mollie-payment", {
+        body: {
+          email: checkoutEmail,
+          firstName: checkoutFirstName || null,
+          lastName: checkoutLastName || null,
+          eventId: event.id,
+          items: selectedItems,
+          currency,
+          discountCode: discountApplied ? discountCode : null,
+          redirectBase,
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setCheckoutError("Zahlung konnte nicht erstellt werden. Bitte versuche es erneut.");
+        setCheckoutLoading(false);
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setCheckoutError("Ein Fehler ist aufgetreten. Bitte versuche es erneut.");
+      setCheckoutLoading(false);
+    }
   };
 
   return (
@@ -520,10 +574,65 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           </div>
           {discountApplied && <p className="text-xs" style={{ color: "hsl(0 0% 100%)" }}>{t.discountApplied}</p>}
 
-          <motion.button className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4 flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-            {t.continueBtn} {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
-          </motion.button>
+          {!showCheckout ? (
+            <motion.button 
+              className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4 flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+              onClick={() => { if (totalItems > 0) setShowCheckout(true); }}
+              style={{ opacity: totalItems > 0 ? 1 : 0.5, cursor: totalItems > 0 ? "pointer" : "not-allowed" }}
+            >
+              {t.continueBtn} {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
+            </motion.button>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="space-y-3 p-4 rounded-2xl" 
+              style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
+            >
+              <h3 className="text-sm font-bold uppercase tracking-wider text-center" style={{ color: "hsl(0 0% 100%)" }}>
+                Checkout
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" placeholder="Vorname" value={checkoutFirstName}
+                  onChange={(e) => setCheckoutFirstName(e.target.value)}
+                  className="pp-form-input text-sm" />
+                <input type="text" placeholder="Nachname" value={checkoutLastName}
+                  onChange={(e) => setCheckoutLastName(e.target.value)}
+                  className="pp-form-input text-sm" />
+              </div>
+              <input type="email" placeholder="E-Mail *" value={checkoutEmail}
+                onChange={(e) => { setCheckoutEmail(e.target.value); setCheckoutError(""); }}
+                className="pp-form-input text-sm w-full" required />
+              {checkoutError && (
+                <p className="text-xs font-semibold" style={{ color: "hsl(0 70% 60%)" }}>{checkoutError}</p>
+              )}
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={() => setShowCheckout(false)}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold uppercase tracking-wide"
+                  style={{ background: "hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.25)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Zurück
+                </motion.button>
+                <motion.button
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                  className="flex-[2] py-3 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2"
+                  style={{ 
+                    background: checkoutLoading ? "hsl(0 0% 100% / 0.2)" : "hsl(140 60% 45%)", 
+                    color: "hsl(0 0% 100%)", 
+                    border: "1px solid hsl(0 0% 100% / 0.3)" 
+                  }}
+                  whileHover={checkoutLoading ? {} : { scale: 1.01 }} 
+                  whileTap={checkoutLoading ? {} : { scale: 0.98 }}
+                >
+                  {checkoutLoading ? "Wird geladen..." : "Jetzt bezahlen"} 
+                  {!checkoutLoading && <ArrowRight className="w-4 h-4" />}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
         </>
       )}
 

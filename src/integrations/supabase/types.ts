@@ -148,6 +148,68 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          created_at: string
+          currency: string
+          email: string
+          event_id: string | null
+          first_name: string | null
+          id: string
+          items: Json
+          last_name: string | null
+          mollie_payment_id: string | null
+          paid_at: string | null
+          redirect_url: string | null
+          service_fee: number
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          email: string
+          event_id?: string | null
+          first_name?: string | null
+          id?: string
+          items?: Json
+          last_name?: string | null
+          mollie_payment_id?: string | null
+          paid_at?: string | null
+          redirect_url?: string | null
+          service_fee?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          email?: string
+          event_id?: string | null
+          first_name?: string | null
+          id?: string
+          items?: Json
+          last_name?: string | null
+          mollie_payment_id?: string | null
+          paid_at?: string | null
+          redirect_url?: string | null
+          service_fee?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_contents: {
         Row: {
           content: Json | null
