@@ -161,7 +161,7 @@ const CityLabels = ({ markers, maxRevenue }: { markers: (CityDataItem & { lat: n
   return null;
 };
 
-export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
+export const CityHeatmap = ({ data, height = 480 }: { data: CityDataItem[]; height?: number | string }) => {
   const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
 
   const markers = useMemo(() =>
@@ -195,7 +195,7 @@ export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
       <MapContainer
         center={[51.1657, 10.4515]}
         zoom={5}
-        style={{ height: 480, width: "100%", background: "hsl(220 40% 8%)" }}
+        style={{ height, width: "100%", background: "hsl(220 40% 8%)" }}
         scrollWheelZoom={true}
         zoomControl={true}
       >
