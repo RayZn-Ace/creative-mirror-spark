@@ -1503,9 +1503,9 @@ const globalFallback = (lang: LangCode): GlobalTranslations => {
 export const getBrowserLang = (): LangCode => {
   const nav = typeof navigator !== "undefined" ? navigator.language || "" : "";
   const short = nav.split("-")[0].toLowerCase() as LangCode;
-  // Return detected language if we have translations, otherwise fall back to English
+  // Return detected language if we have translations, otherwise fall back to German
   if (globalTranslationsMap[short]) return short;
-  return "en";
+  return "de";
 };
 
 export const getGlobalTranslations = (lang?: LangCode): GlobalTranslations => {
