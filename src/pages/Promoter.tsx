@@ -1,80 +1,207 @@
 import { PageLayout } from "@/components/PageLayout";
-import { Megaphone, MessageCircle, Instagram, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const benefits = [
-  "Provision pro verkauftem Ticket",
-  "Gratis Eintritt zu allen Events",
-  "Exklusive Promoter-Partys",
-  "Flexible Arbeitszeiten",
-  "Nettes Team & gute Stimmung",
-];
+const Promoter = () => {
+  const [form, setForm] = useState({
+    stadtname: "",
+    locationname: "",
+    wunschdatum: "",
+    kapazitaet: "",
+    handynummer: "",
+    email: "",
+    kommentar: "",
+  });
+  const [agreed, setAgreed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
-const Promoter = () => (
-  <PageLayout title="Promoter werden" subtitle="Verdiene Geld mit Partys">
-    <div className="space-y-8">
-      <p className="text-base sm:text-lg" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-        Du liebst Partys und hast ein großes Netzwerk? Dann werde Teil unseres Promoter-Teams und verdiene dir nebenbei etwas dazu – während du das tust, was du am liebsten machst!
-      </p>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
-      <div>
-        <h2 className="text-lg font-bold uppercase mb-4" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-          Deine Vorteile
-        </h2>
-        <div className="space-y-3">
-          {benefits.map((benefit) => (
-            <div key={benefit} className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "hsl(0 70% 55%)" }} />
-              <span className="text-sm sm:text-base" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{benefit}</span>
-            </div>
-          ))}
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!agreed) {
+      toast.error("Bitte stimme der Datenschutzerklärung & AGB zu.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("support_tickets").insert({
+        subject: `Buchungsanfrage – ${form.locationname}, ${form.stadtname}`,
+        customer_email: form.email,
+        customer_name: form.locationname,
+        category: "location" as const,
+        source: "booking-form",
+        metadata: {
+          stadtname: form.stadtname,
+          locationname: form.locationname,
+          wunschdatum: form.wunschdatum,
+          kapazitaet: form.kapazitaet,
+          handynummer: form.handynummer,
+          kommentar: form.kommentar,
+        },
+      });
+      if (error) throw error;
+      setSent(true);
+      toast.success("Anfrage erfolgreich gesendet!");
+    } catch (err: any) {
+      toast.error("Fehler beim Senden: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <PageLayout title="" subtitle="">
+        <div className="max-w-xl mx-auto text-center py-16">
+          <h1
+            className="text-4xl md:text-5xl font-black uppercase mb-4"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            Danke! <span className="text-primary">🎉</span>
+          </h1>
+          <p className="text-muted-foreground">
+            Wir haben deine Anfrage erhalten und melden uns mit einem Angebot bei dir.
+          </p>
         </div>
-      </div>
+      </PageLayout>
+    );
+  }
 
-      <div>
-        <h2 className="text-lg font-bold uppercase mb-4" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-          So funktioniert's
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { step: "01", title: "Melde dich", desc: "Schreib uns per WhatsApp oder Instagram" },
-            { step: "02", title: "Erhalte deinen Code", desc: "Du bekommst einen persönlichen Promoter-Link" },
-            { step: "03", title: "Verdiene mit", desc: "Für jeden Verkauf über deinen Link gibt's Provision" },
-          ].map((s) => (
-            <div
-              key={s.step}
-              className="p-5 rounded-2xl"
-              style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-            >
-              <div className="text-2xl font-black mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 70% 50% / 0.5)" }}>
-                {s.step}
-              </div>
-              <div className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>{s.title}</div>
-              <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.desc}</div>
-            </div>
-          ))}
+  const inputStyle =
+    "w-full px-4 py-3 rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
+  const inputBg = "bg-[hsl(220,20%,14%)] border border-[hsl(220,15%,20%)]";
+
+  return (
+    <PageLayout title="" subtitle="">
+      <div className="max-w-xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1
+            className="text-4xl md:text-6xl font-black uppercase mb-4"
+            style={{ fontFamily: "'Orbitron', sans-serif" }}
+          >
+            UNS <span className="text-primary">BUCHEN!</span>
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Du möchtest uns bei dir in deiner Location / Stadt buchen? Gib uns alle Infos – wir melden uns mit Angebot.
+          </p>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-3 pt-2">
-        <a
-          href="https://wa.me/49123456789?text=Hi%2C%20ich%20m%C3%B6chte%20Promoter%20werden!"
-          target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.03]"
-          style={{ background: "hsl(142 70% 45%)", color: "white" }}
-        >
-          <MessageCircle className="w-4 h-4" /> Per WhatsApp bewerben
-        </a>
-        <a
-          href="https://instagram.com/nachtaktiv.events"
-          target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.03]"
-          style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)", color: "white" }}
-        >
-          <Instagram className="w-4 h-4" /> Per Instagram bewerben
-        </a>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Stadtname</label>
+            <input
+              type="text"
+              name="stadtname"
+              value={form.stadtname}
+              onChange={handleChange}
+              required
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Locationname</label>
+            <input
+              type="text"
+              name="locationname"
+              value={form.locationname}
+              onChange={handleChange}
+              required
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Wunschdatum</label>
+            <input
+              type="date"
+              name="wunschdatum"
+              value={form.wunschdatum}
+              onChange={handleChange}
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Kapazität</label>
+            <input
+              type="text"
+              name="kapazitaet"
+              value={form.kapazitaet}
+              onChange={handleChange}
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Handynummer</label>
+            <input
+              type="tel"
+              name="handynummer"
+              value={form.handynummer}
+              onChange={handleChange}
+              required
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">E-Mail</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className={`${inputStyle} ${inputBg}`}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Kommentar</label>
+            <textarea
+              name="kommentar"
+              value={form.kommentar}
+              onChange={handleChange}
+              rows={4}
+              className={`${inputStyle} ${inputBg} resize-none`}
+            />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 accent-primary"
+            />
+            <span className="text-xs text-muted-foreground">
+              Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+              <Link to="/datenschutz" className="text-primary hover:underline">Datenschutzerklärung</Link>
+              {" "}&{" "}
+              <Link to="/agb" className="text-primary hover:underline">AGB</Link>
+              {" "}zu.
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 bg-primary text-primary-foreground"
+          >
+            {loading ? "Wird gesendet..." : "Absenden"}
+          </button>
+        </form>
       </div>
-    </div>
-  </PageLayout>
-);
+    </PageLayout>
+  );
+};
 
 export default Promoter;
