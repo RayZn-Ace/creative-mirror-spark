@@ -135,7 +135,7 @@ const CityLabels = ({ markers, maxRevenue }: { markers: (CityDataItem & { lat: n
         `<div style="background:hsl(220 40% 12%);color:#fff;padding:8px 12px;border-radius:10px;border:1px solid hsl(0 0% 100%/0.1);font-size:12px;min-width:140px;">
           <div style="font-weight:800;font-size:13px;margin-bottom:4px">${m.name}</div>
           <div style="color:hsl(140 60% 55%);font-weight:700">${fmt(m.revenue)} €</div>
-          <div style="color:hsl(0 0% 100%/0.5);margin-top:2px">${m.orders} Bestellungen · ${m.tickets} Tickets</div>
+          <div style="color:#fff;margin-top:2px">${m.orders} Bestellungen · ${m.tickets} Tickets</div>
         </div>`,
         {
           direction: "top",
