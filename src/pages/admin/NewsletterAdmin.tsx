@@ -5,7 +5,7 @@ import {
   Mail, Send, Users, CheckCircle, AlertCircle, Loader2, Filter, Eye,
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
-  LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart,
+  LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -292,6 +292,64 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
   }
 };
 
+// ─── Color Schemes ─────────────────────────────────────────────
+interface ColorScheme {
+  id: string;
+  name: string;
+  icon: any;
+  bodyBg: string;
+  cardBg: string;
+  headerGradient: string;
+  headerText: string;
+  contentBg: string;
+  footerBg: string;
+  footerText: string;
+  footerBorder: string;
+}
+
+const COLOR_SCHEMES: ColorScheme[] = [
+  {
+    id: "light-pink", name: "Hell — Pink", icon: Sun,
+    bodyBg: "#f4f4f4", cardBg: "#ffffff", headerGradient: "linear-gradient(135deg,#e91e8c,#ff6b35)",
+    headerText: "#ffffff", contentBg: "#ffffff", footerBg: "#fafafa", footerText: "#999999", footerBorder: "#eeeeee",
+  },
+  {
+    id: "light-blue", name: "Hell — Blau", icon: Sun,
+    bodyBg: "#eef2f7", cardBg: "#ffffff", headerGradient: "linear-gradient(135deg,#667eea,#764ba2)",
+    headerText: "#ffffff", contentBg: "#ffffff", footerBg: "#f5f7fa", footerText: "#8899aa", footerBorder: "#e2e8f0",
+  },
+  {
+    id: "light-green", name: "Hell — Grün", icon: Sun,
+    bodyBg: "#f0f7f4", cardBg: "#ffffff", headerGradient: "linear-gradient(135deg,#11998e,#38ef7d)",
+    headerText: "#ffffff", contentBg: "#ffffff", footerBg: "#f5faf7", footerText: "#88aa99", footerBorder: "#d4e8dc",
+  },
+  {
+    id: "dark-neon", name: "Dunkel — Neon", icon: Moon,
+    bodyBg: "#0a0a0a", cardBg: "#1a1a2e", headerGradient: "linear-gradient(135deg,#00f5a0,#00d9f5)",
+    headerText: "#0a0a0a", contentBg: "#1a1a2e", footerBg: "#111122", footerText: "#666688", footerBorder: "#2a2a3e",
+  },
+  {
+    id: "dark-purple", name: "Dunkel — Lila", icon: Moon,
+    bodyBg: "#0f0515", cardBg: "#1a0a2e", headerGradient: "linear-gradient(135deg,#a855f7,#ec4899)",
+    headerText: "#ffffff", contentBg: "#1a0a2e", footerBg: "#150a22", footerText: "#6b5080", footerBorder: "#2a1a3e",
+  },
+  {
+    id: "dark-fire", name: "Dunkel — Feuer", icon: Moon,
+    bodyBg: "#0a0505", cardBg: "#1a1010", headerGradient: "linear-gradient(135deg,#f12711,#f5af19)",
+    headerText: "#ffffff", contentBg: "#1a1010", footerBg: "#110a0a", footerText: "#805050", footerBorder: "#2e1a1a",
+  },
+  {
+    id: "warm-sunset", name: "Warm — Sunset", icon: Paintbrush,
+    bodyBg: "#fff5ee", cardBg: "#ffffff", headerGradient: "linear-gradient(135deg,#ff6b35,#ff2d87)",
+    headerText: "#ffffff", contentBg: "#ffffff", footerBg: "#fff0e6", footerText: "#cc8866", footerBorder: "#ffe0cc",
+  },
+  {
+    id: "elegant-gold", name: "Elegant — Gold", icon: Paintbrush,
+    bodyBg: "#0d0d0d", cardBg: "#1a1a1a", headerGradient: "linear-gradient(135deg,#bf953f,#fcf6ba,#b38728)",
+    headerText: "#0d0d0d", contentBg: "#1a1a1a", footerBg: "#111111", footerText: "#666655", footerBorder: "#2a2a22",
+  },
+];
+
 // ─── Block Label ───────────────────────────────────────────────
 const blockLabel = (type: BlockType) => BLOCK_TYPES.find((b) => b.type === type)!;
 
@@ -319,6 +377,8 @@ const NewsletterAdmin = () => {
   const [showRecipients, setShowRecipients] = useState(false);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(true);
+  const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
+  const [showColorSchemes, setShowColorSchemes] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -391,6 +451,9 @@ const NewsletterAdmin = () => {
     setActiveTemplateId(template.id);
     setShowTemplates(false);
     setSelectedBlock(null);
+    // Auto-match a color scheme based on template
+    const matchScheme = COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
+    if (matchScheme) setColorScheme(matchScheme);
     toast.success(`Vorlage "${template.name}" geladen`);
   }, []);
 
@@ -399,27 +462,27 @@ const NewsletterAdmin = () => {
   // ─── Build HTML ────────────────────────────────────────────
   const buildHtml = useCallback(() => {
     const bodyContent = blocks.map(blockToHtml).join("");
-    const headerBg = activeTemplate?.headerGradient || "linear-gradient(135deg,#e91e8c,#ff6b35)";
+    const cs = colorScheme;
     return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:40px 0;">
+<body style="margin:0;padding:0;background:${cs.bodyBg};font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${cs.bodyBg};padding:40px 0;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-<tr><td style="background:${headerBg};padding:32px 40px;">
-<h1 style="margin:0;color:#fff;font-size:24px;font-weight:800;">${subject || "Newsletter"}</h1>
+<table width="600" cellpadding="0" cellspacing="0" style="background:${cs.cardBg};border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<tr><td style="background:${cs.headerGradient};padding:32px 40px;">
+<h1 style="margin:0;color:${cs.headerText};font-size:24px;font-weight:800;">${subject || "Newsletter"}</h1>
 </td></tr>
-<tr><td style="padding:32px 40px;">
+<tr><td style="padding:32px 40px;background:${cs.contentBg};">
 ${bodyContent}
 </td></tr>
-<tr><td style="padding:24px 40px;background:#fafafa;border-top:1px solid #eee;">
-<p style="margin:0;font-size:12px;color:#999;">Du erhältst diese E-Mail, weil du bei uns ein Ticket gekauft hast.</p>
+<tr><td style="padding:24px 40px;background:${cs.footerBg};border-top:1px solid ${cs.footerBorder};">
+<p style="margin:0;font-size:12px;color:${cs.footerText};">Du erhältst diese E-Mail, weil du bei uns ein Ticket gekauft hast.</p>
 </td></tr>
 </table>
 </td></tr>
 </table>
 </body></html>`;
-  }, [blocks, subject, activeTemplate]);
+  }, [blocks, subject, colorScheme]);
 
   const handleSend = async () => {
     if (!subject.trim()) { toast.error("Bitte Betreff ausfüllen"); return; }
@@ -510,6 +573,96 @@ ${bodyContent}
                         </motion.button>
                       );
                     })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Color Scheme Picker */}
+          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+            <button
+              onClick={() => setShowColorSchemes(!showColorSchemes)}
+              className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-all"
+            >
+              <Palette className="w-4 h-4" style={{ color: "hsl(45 90% 55%)" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider flex-1 text-left" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                Farbschema — {colorScheme.name}
+              </span>
+              <ChevronRight className="w-4 h-4 transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: showColorSchemes ? "rotate(90deg)" : "rotate(0deg)" }} />
+            </button>
+            <AnimatePresence>
+              {showColorSchemes && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                  <div className="px-4 pb-4 pt-2 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {COLOR_SCHEMES.map((cs) => {
+                        const isActive = colorScheme.id === cs.id;
+                        return (
+                          <motion.button
+                            key={cs.id}
+                            onClick={() => setColorScheme(cs)}
+                            className="relative flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-center transition-all"
+                            style={{
+                              background: isActive ? "hsl(0 0% 100% / 0.08)" : "hsl(0 0% 100% / 0.02)",
+                              border: `1px solid ${isActive ? "hsl(45 90% 55% / 0.4)" : "hsl(0 0% 100% / 0.04)"}`,
+                            }}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            <div className="w-full h-6 rounded overflow-hidden flex" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                              <div className="flex-1" style={{ background: cs.bodyBg }} />
+                              <div className="flex-1" style={{ background: cs.headerGradient }} />
+                              <div className="flex-1" style={{ background: cs.contentBg }} />
+                            </div>
+                            <span className="text-[8px] font-bold leading-tight" style={{ color: isActive ? "hsl(45 90% 55%)" : "hsl(0 0% 100% / 0.5)" }}>{cs.name}</span>
+                            {isActive && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: "hsl(45 90% 55%)" }} />}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.25)" }}>Farben anpassen</span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {([
+                          { key: "bodyBg" as const, label: "Hintergrund" },
+                          { key: "contentBg" as const, label: "Inhalt" },
+                          { key: "footerBg" as const, label: "Footer" },
+                          { key: "headerText" as const, label: "Header-Text" },
+                        ]).map(({ key, label }) => (
+                          <div key={key} className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={(colorScheme as any)[key]}
+                              onChange={(e) => setColorScheme({ ...colorScheme, [key]: e.target.value })}
+                              className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }}
+                            />
+                            <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Header-Gradient</span>
+                        <input
+                          type="color"
+                          value={colorScheme.headerGradient.match(/#[0-9a-fA-F]{6}/g)?.[0] || "#e91e8c"}
+                          onChange={(e) => {
+                            const colors = colorScheme.headerGradient.match(/#[0-9a-fA-F]{6}/g) || ["#e91e8c", "#ff6b35"];
+                            setColorScheme({ ...colorScheme, headerGradient: `linear-gradient(135deg,${e.target.value},${colors[1] || colors[0]})` });
+                          }}
+                          className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }}
+                        />
+                        <input
+                          type="color"
+                          value={colorScheme.headerGradient.match(/#[0-9a-fA-F]{6}/g)?.[1] || "#ff6b35"}
+                          onChange={(e) => {
+                            const colors = colorScheme.headerGradient.match(/#[0-9a-fA-F]{6}/g) || ["#e91e8c", "#ff6b35"];
+                            setColorScheme({ ...colorScheme, headerGradient: `linear-gradient(135deg,${colors[0]},${e.target.value})` });
+                          }}
+                          className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
