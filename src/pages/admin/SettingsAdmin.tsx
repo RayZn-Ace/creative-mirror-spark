@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette } from "lucide-react";
+import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3 } from "lucide-react";
 
 interface CompanyData {
   name: string; address: string; zip: string; city: string; country: string;
@@ -13,6 +13,7 @@ interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
+interface EditingUser { userId: string; currentRole: string; newRole: string; }
 interface PermissionRow { id: string; role: string; permission: string; granted: boolean; }
 interface CustomRole { id: string; name: string; display_name: string; color: string; is_system: boolean; }
 
@@ -167,6 +168,9 @@ const SettingsAdmin = () => {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState<string>("user");
   const [addingUser, setAddingUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<EditingUser | null>(null);
+  const [savingRole, setSavingRole] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
   // Permissions state
   const [permissions, setPermissions] = useState<PermissionRow[]>([]);
   const [permissionsLoading, setPermissionsLoading] = useState(false);
@@ -253,6 +257,53 @@ const SettingsAdmin = () => {
     const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
     if (error) toast.error(error.message);
     else { toast.success("Rolle entfernt"); loadUserRoles(); }
+  };
+
+  const deleteUserCompletely = async (userId: string) => {
+    if (!confirm("Diesen Benutzer wirklich komplett löschen? Das kann nicht rückgängig gemacht werden!")) return;
+    setDeletingUser(userId);
+    try {
+      // Delete user roles first
+      await supabase.from("user_roles").delete().eq("user_id", userId);
+      // Delete profile
+      await supabase.from("profiles").delete().eq("user_id", userId);
+      // Delete auth user via edge function
+      const { data, error } = await supabase.functions.invoke("delete-users", {
+        body: { userIds: [userId] },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Benutzer komplett gelöscht");
+      loadUserRoles();
+    } catch (err: any) {
+      toast.error(err.message || "Fehler beim Löschen");
+    }
+    setDeletingUser(null);
+  };
+
+  const changeUserRole = async () => {
+    if (!editingUser) return;
+    setSavingRole(true);
+    try {
+      // Delete old role
+      const { error: delError } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", editingUser.userId)
+        .eq("role", editingUser.currentRole as any);
+      if (delError) throw delError;
+      // Insert new role
+      const { error: insError } = await supabase
+        .from("user_roles")
+        .insert({ user_id: editingUser.userId, role: editingUser.newRole as any });
+      if (insError) throw insError;
+      toast.success("Rolle geändert");
+      setEditingUser(null);
+      loadUserRoles();
+    } catch (err: any) {
+      toast.error(err.message || "Fehler beim Ändern");
+    }
+    setSavingRole(false);
   };
 
   const togglePermission = useCallback(async (role: string, permission: string, currentGranted: boolean) => {
@@ -478,6 +529,8 @@ const SettingsAdmin = () => {
             ) : (
               userRoles.map(r => {
                 const color = getRoleColor(r.role);
+                const isEditing = editingUser?.userId === r.user_id && editingUser?.currentRole === r.role;
+                const isDeleting = deletingUser === r.user_id;
                 return (
                   <div key={r.id} className="rounded-xl p-3 flex items-center gap-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase" style={{ background: `${color}22`, color }}>
@@ -487,12 +540,44 @@ const SettingsAdmin = () => {
                       <p className="text-sm font-medium truncate" style={{ color: "hsl(0 0% 100%)" }}>{r.display_name || r.user_id}</p>
                       <p className="text-[10px] font-mono" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{r.user_id}</p>
                     </div>
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: `${color}22`, color }}>
-                      {getRoleDisplay(r.role)}
-                    </span>
-                    <button onClick={() => removeRole(r.id)} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={editingUser.newRole}
+                          onChange={e => setEditingUser({ ...editingUser, newRole: e.target.value })}
+                          style={{ ...inputStyle, fontSize: "11px", padding: "4px 8px", width: "auto", minWidth: "100px", colorScheme: "dark", backgroundColor: "hsl(220 50% 10%)" }}
+                        >
+                          {customRoles.length > 0 ? customRoles.map(cr => (
+                            <option key={cr.name} value={cr.name}>{cr.display_name}</option>
+                          )) : (
+                            <>
+                              <option value="admin">Admin</option>
+                              <option value="moderator">Moderator</option>
+                              <option value="user">User</option>
+                              <option value="scanner">Scanner</option>
+                            </>
+                          )}
+                        </select>
+                        <button onClick={changeUserRole} disabled={savingRole} className="p-1.5 rounded-lg hover:bg-white/10" style={{ color: "hsl(140 60% 50%)" }}>
+                          {savingRole ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                        </button>
+                        <button onClick={() => setEditingUser(null)} className="p-1.5 rounded-lg hover:bg-white/10" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: `${color}22`, color }}>
+                          {getRoleDisplay(r.role)}
+                        </span>
+                        <button onClick={() => setEditingUser({ userId: r.user_id, currentRole: r.role, newRole: r.role })} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }} title="Rolle ändern">
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => deleteUserCompletely(r.user_id)} disabled={isDeleting} className="p-1.5 rounded-lg hover:bg-white/5 disabled:opacity-50" style={{ color: "hsl(0 70% 55%)" }} title="Benutzer komplett löschen">
+                          {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
+                      </>
+                    )}
                   </div>
                 );
               })

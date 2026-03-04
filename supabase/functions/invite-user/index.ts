@@ -69,10 +69,10 @@ Deno.serve(async (req) => {
     }
 
     // Build redirect URL
-    const origin = req.headers.get("referer")?.replace(/\/$/, "") 
-      || req.headers.get("origin") 
+    const origin = req.headers.get("origin") 
+      || req.headers.get("referer")?.replace(/\/[^/]*$/, "")
       || "https://gimmetestooo.lovable.app";
-    const redirectTo = `${origin}/admin/login`;
+    const redirectTo = `${origin}/admin/register`;
 
     // Generate invite link (does NOT send email when using generateLink)
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
