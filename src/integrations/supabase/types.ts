@@ -69,12 +69,14 @@ export type Database = {
           info_sections: Json | null
           location_address: string | null
           location_name: string | null
+          open_air: boolean | null
           series_id: string | null
           service_fee_enabled: boolean | null
           service_fee_type: string | null
           service_fee_value: number | null
           service_fee_vat: number | null
           slug: string
+          sold_out: boolean | null
           sort_order: number | null
           status: string | null
           subtitle: string | null
@@ -96,12 +98,14 @@ export type Database = {
           info_sections?: Json | null
           location_address?: string | null
           location_name?: string | null
+          open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
           service_fee_type?: string | null
           service_fee_value?: number | null
           service_fee_vat?: number | null
           slug: string
+          sold_out?: boolean | null
           sort_order?: number | null
           status?: string | null
           subtitle?: string | null
@@ -123,12 +127,14 @@ export type Database = {
           info_sections?: Json | null
           location_address?: string | null
           location_name?: string | null
+          open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
           service_fee_type?: string | null
           service_fee_value?: number | null
           service_fee_vat?: number | null
           slug?: string
+          sold_out?: boolean | null
           sort_order?: number | null
           status?: string | null
           subtitle?: string | null

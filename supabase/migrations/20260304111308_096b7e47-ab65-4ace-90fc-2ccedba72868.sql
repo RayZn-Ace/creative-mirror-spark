@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN open_air boolean DEFAULT false, ADD COLUMN sold_out boolean DEFAULT false;
