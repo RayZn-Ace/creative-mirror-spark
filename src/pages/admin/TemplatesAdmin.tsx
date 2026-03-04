@@ -565,7 +565,7 @@ const EmailTab = () => {
             </div>
             {block.city_based && (
               <div className="text-[10px] px-2 py-1.5 rounded-lg" style={{ background: "hsl(280 80% 55% / 0.08)", color: "hsl(280 80% 65% / 0.8)" }}>
-                💡 Zeigt das nächste Event in der Stadt des Empfängers. Das Event, wofür das Ticket gekauft wurde, wird ausgelassen. Falls kein Event in seiner Stadt → nächstgelegenes.
+                💡 Zeigt das nächste Event in der Stadt des Empfängers (ohne das gekaufte). Falls keine Events in der Stadt → Hinweis + nächstgelegene Events mit ca. km-Entfernung.
               </div>
             )}
             <input type="text" value={block.title} onChange={(e) => updateBlock(block.id, { title: e.target.value })} placeholder="Event-Titel" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
@@ -595,7 +595,7 @@ const EmailTab = () => {
                   🏙️ Personalisiert nach Stadt
                 </span>
                 <span className="text-[10px]" style={{ color: "hsl(280 80% 65% / 0.7)" }}>
-                  Events aus der Stadt – ohne das bereits gekaufte Event
+                  Ohne gekauftes Event · Fallback: Termine in der Umgebung mit km
                 </span>
               </div>
             )}
@@ -673,13 +673,32 @@ const EmailTab = () => {
             <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>{block.heading}</div>
             {block.city_based ? (
               <>
-                {["Mamma Mia Party", "City Madness", "Neon Nights"].map((t, i) => (
+                {/* Beispiel: Events in der Stadt */}
+                {["Mamma Mia Party", "City Madness"].map((t, i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
                     <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{t}</span>
-                    <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>Beispiel · {{city: "Paderborn"}["city"]}</span>
+                    <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>15.03. · Paderborn</span>
                   </div>
                 ))}
-                <div style={{ fontSize: "9px", color: tpl.text_color + "66", marginTop: "4px", fontStyle: "italic" }}>Vorschau – wird beim Versand mit echten Events befüllt</div>
+                {/* Fallback-Vorschau */}
+                <div style={{ margin: "10px 0 6px", padding: "8px 10px", borderRadius: "8px", background: tpl.accent_color + "11", borderLeft: `2px solid ${tpl.accent_color}44` }}>
+                  <div style={{ fontSize: "10px", color: tpl.text_color + "aa", fontStyle: "italic", marginBottom: "6px" }}>
+                    Falls keine Events in der Stadt:
+                  </div>
+                  <div style={{ fontSize: "11px", color: tpl.text_color, fontStyle: "italic", marginBottom: "6px" }}>
+                    „Es sind bisher noch keine weiteren Termine in deiner Stadt bestätigt, aber hier hast du weitere Termine in der Umgebung:"
+                  </div>
+                  {[
+                    { title: "Neon Nights", city: "Bielefeld", km: "~45 km", date: "22.03." },
+                    { title: "Summer Bash", city: "Dortmund", km: "~120 km", date: "29.03." },
+                  ].map((ev, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{ev.title}</span>
+                      <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>{ev.date} · {ev.city} · {ev.km}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: "9px", color: tpl.text_color + "66", marginTop: "4px", fontStyle: "italic" }}>Vorschau – wird beim Versand dynamisch befüllt</div>
               </>
             ) : block.events.map((ev, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
