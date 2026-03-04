@@ -570,7 +570,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       <span>{event.city.toUpperCase()}</span>
     </div>
     <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <img src={headerImg} alt="Mamma Mia Party" className="max-w-[220px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+      <img src={headerImg} alt="Mamma Mia Party" className="w-[90%] max-w-[360px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
     </div>
     {events.length > 1 && (
       <div className="-mt-2 sm:mt-6">
