@@ -29,6 +29,8 @@ const cardStyle: React.CSSProperties = {
 
 const tooltipStyle = {
   contentStyle: { background: "hsl(220 40% 14%)", border: "1px solid hsl(0 0% 100% / 0.1)", borderRadius: 12, fontSize: 12, color: "#fff" },
+  labelStyle: { color: "#fff", fontWeight: 600 },
+  itemStyle: { color: "#fff" },
   cursor: { fill: "hsl(0 0% 100% / 0.04)" },
 };
 
