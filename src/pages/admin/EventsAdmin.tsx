@@ -1031,14 +1031,16 @@ const EventsAdmin = () => {
                                     {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{event.title}</span>
+                                        <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
+                                          {event.date || "Kein Datum"}{event.location_name ? ` · ${event.location_name}` : ""}{event.city ? `, ${event.city}` : ""}
+                                        </span>
                                         {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
                                         <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
                                           {event.status}
                                         </span>
                                       </div>
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.city} · {event.date || "Kein Datum"} · {event.tag}</span>
+                                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
                                         {eventStats[event.id] && (
                                           <>
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.12)", color: "hsl(200 80% 60%)" }}>
