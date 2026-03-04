@@ -55,7 +55,38 @@ function formatCurrency(amount: number): string {
   return amount.toFixed(2).replace(".", ",") + " €";
 }
 
-/* ─── Ticket PDF (unchanged design) ─── */
+/* ─── Hex to RGB ─── */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255];
+}
+
+/* ─── Template interface ─── */
+interface TicketTemplate {
+  format: "din_lang" | "a4";
+  background_color: string;
+  accent_color: string;
+  text_color: string;
+  show_event_title: boolean;
+  show_date: boolean;
+  show_time: boolean;
+  show_location: boolean;
+  show_address: boolean;
+  show_category: boolean;
+  show_holder_name: boolean;
+  show_qr_code: boolean;
+  logo_url: string;
+  sponsors: Array<{ type: "image" | "text"; value: string }>;
+}
+
+const defaultTpl: TicketTemplate = {
+  format: "din_lang", background_color: "#14141e", accent_color: "#d9338a", text_color: "#ffffff",
+  show_event_title: true, show_date: true, show_time: true, show_location: true,
+  show_address: true, show_category: true, show_holder_name: true, show_qr_code: true,
+  logo_url: "", sponsors: [],
+};
+
+/* ─── Ticket PDF with Template ─── */
 async function generateTicketPDF(tickets: Array<{
   qr_code: string;
   holder_name: string | null;
@@ -66,60 +97,200 @@ async function generateTicketPDF(tickets: Array<{
   event_time: string | null;
   location_name: string | null;
   location_address: string | null;
-}>): Promise<Uint8Array> {
+}>, tpl: TicketTemplate): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  for (const ticket of tickets) {
-    const page = pdfDoc.addPage([420, 600]);
-    const { width, height } = page.getSize();
+  const [bgR, bgG, bgB] = hexToRgb(tpl.background_color);
+  const [acR, acG, acB] = hexToRgb(tpl.accent_color);
+  const [txR, txG, txB] = hexToRgb(tpl.text_color);
+  const bgColor = rgb(bgR, bgG, bgB);
+  const acColor = rgb(acR, acG, acB);
+  const txColor = rgb(txR, txG, txB);
+  const txFaded = rgb(txR, txG, txB, 0.5);
+  const txSubtle = rgb(txR, txG, txB, 0.15);
 
-    page.drawRectangle({ x: 0, y: 0, width, height, color: rgb(0.08, 0.08, 0.12) });
-    page.drawRectangle({ x: 0, y: height - 6, width, height: 6, color: rgb(0.85, 0.2, 0.55) });
+  // DIN Lang: 595 x 281 pts (210x99mm), A4: 420 x 600 pts
+  const isDinLang = tpl.format === "din_lang";
+  const pageW = isDinLang ? 595 : 420;
+  const pageH = isDinLang ? 281 : 600;
 
-    page.drawText("TICKET", { x: 30, y: height - 50, size: 28, font: fontBold, color: rgb(1, 1, 1) });
-
-    const titleLines = wrapText(ticket.event_title.toUpperCase(), fontBold, 14, width - 60);
-    let yPos = height - 85;
-    for (const line of titleLines) {
-      page.drawText(line, { x: 30, y: yPos, size: 14, font: fontBold, color: rgb(0.85, 0.2, 0.55) });
-      yPos -= 20;
-    }
-
-    yPos -= 5;
-    page.drawRectangle({ x: 30, y: yPos, width: width - 60, height: 1, color: rgb(1, 1, 1, 0.15) });
-    yPos -= 25;
-
-    const details = [
-      { label: "DATUM", value: ticket.event_date ? formatDate(ticket.event_date) : "TBA" },
-      { label: "UHRZEIT", value: ticket.event_time || "TBA" },
-      { label: "ORT", value: ticket.location_name || "TBA" },
-      ...(ticket.location_address ? [{ label: "ADRESSE", value: ticket.location_address }] : []),
-      { label: "KATEGORIE", value: `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}` },
-      ...(ticket.holder_name ? [{ label: "NAME", value: ticket.holder_name }] : []),
-    ];
-
-    for (const d of details) {
-      page.drawText(d.label, { x: 30, y: yPos, size: 8, font: fontRegular, color: rgb(1, 1, 1, 0.5) });
-      yPos -= 14;
-      page.drawText(d.value, { x: 30, y: yPos, size: 11, font: fontBold, color: rgb(1, 1, 1) });
-      yPos -= 22;
-    }
-
+  // Try to embed logo once
+  let logoImage: any = null;
+  if (tpl.logo_url) {
     try {
-      const qrBytes = await fetchQRCode(ticket.qr_code);
-      const qrImage = await pdfDoc.embedPng(qrBytes);
-      const qrSize = 140;
-      const qrX = (width - qrSize) / 2;
-      const qrY = 60;
-      page.drawRectangle({ x: qrX - 10, y: qrY - 10, width: qrSize + 20, height: qrSize + 20, color: rgb(1, 1, 1) });
-      page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
-      const codeWidth = fontRegular.widthOfTextAtSize(ticket.qr_code, 9);
-      page.drawText(ticket.qr_code, { x: (width - codeWidth) / 2, y: qrY - 22, size: 9, font: fontRegular, color: rgb(1, 1, 1, 0.6) });
-    } catch (e) {
-      console.error("QR embed failed:", e);
-      page.drawText(ticket.qr_code, { x: 30, y: 100, size: 16, font: fontBold, color: rgb(1, 1, 1) });
+      const logoRes = await fetch(tpl.logo_url);
+      const logoBytes = new Uint8Array(await logoRes.arrayBuffer());
+      const ct = logoRes.headers.get("content-type") || "";
+      if (ct.includes("png")) logoImage = await pdfDoc.embedPng(logoBytes);
+      else logoImage = await pdfDoc.embedJpg(logoBytes);
+    } catch (e) { console.error("Logo embed failed:", e); }
+  }
+
+  for (const ticket of tickets) {
+    const page = pdfDoc.addPage([pageW, pageH]);
+    const { width, height } = page.getSize();
+    const m = isDinLang ? 20 : 30; // margin
+
+    // Background
+    page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
+    // Accent bar
+    page.drawRectangle({ x: 0, y: height - (isDinLang ? 4 : 6), width, height: isDinLang ? 4 : 6, color: acColor });
+
+    if (isDinLang) {
+      // ─── DIN Lang: horizontal layout ───
+      const qrAreaW = tpl.show_qr_code ? 160 : 0;
+      const textAreaW = width - m * 2 - qrAreaW;
+      let y = height - m - 8;
+
+      // Logo
+      if (logoImage) {
+        const logoH = 28;
+        const logoW = logoH * (logoImage.width / logoImage.height);
+        page.drawImage(logoImage, { x: m, y: y - logoH + 4, width: logoW, height: logoH });
+        y -= logoH + 6;
+      }
+
+      // TICKET label
+      page.drawText("TICKET", { x: m, y, size: 10, font: fontBold, color: acColor });
+      y -= 18;
+
+      // Event title
+      if (tpl.show_event_title) {
+        const titleLines = wrapText(ticket.event_title.toUpperCase(), fontBold, 13, textAreaW);
+        for (const line of titleLines) {
+          page.drawText(line, { x: m, y, size: 13, font: fontBold, color: acColor });
+          y -= 16;
+        }
+        y -= 4;
+      }
+
+      // Divider
+      page.drawRectangle({ x: m, y: y + 2, width: textAreaW, height: 0.5, color: txSubtle });
+      y -= 10;
+
+      // Details
+      const details: Array<{ label: string; value: string }> = [];
+      if (tpl.show_date) details.push({ label: "DATUM", value: ticket.event_date ? formatDate(ticket.event_date) : "TBA" });
+      if (tpl.show_time) details.push({ label: "UHRZEIT", value: ticket.event_time || "TBA" });
+      if (tpl.show_location) details.push({ label: "ORT", value: ticket.location_name || "TBA" });
+      if (tpl.show_address && ticket.location_address) details.push({ label: "ADRESSE", value: ticket.location_address });
+      if (tpl.show_category) details.push({ label: "KATEGORIE", value: `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}` });
+      if (tpl.show_holder_name && ticket.holder_name) details.push({ label: "NAME", value: ticket.holder_name });
+
+      for (const d of details) {
+        if (y < m + 10) break;
+        page.drawText(d.label, { x: m, y, size: 6, font: fontRegular, color: txFaded });
+        y -= 10;
+        page.drawText(d.value.substring(0, 40), { x: m, y, size: 9, font: fontBold, color: txColor });
+        y -= 14;
+      }
+
+      // Sponsors at bottom
+      if (tpl.sponsors.length > 0) {
+        let sx = m;
+        const sy = m;
+        for (const s of tpl.sponsors) {
+          if (s.type === "text") {
+            page.drawText(s.value, { x: sx, y: sy, size: 6, font: fontRegular, color: txFaded });
+            sx += fontRegular.widthOfTextAtSize(s.value, 6) + 12;
+          }
+        }
+      }
+
+      // QR Code (right side)
+      if (tpl.show_qr_code) {
+        // Dashed line separator
+        const sepX = width - qrAreaW;
+        for (let dy = m; dy < height - m; dy += 8) {
+          page.drawRectangle({ x: sepX, y: dy, width: 0.5, height: 4, color: txSubtle });
+        }
+
+        try {
+          const qrBytes = await fetchQRCode(ticket.qr_code);
+          const qrImage = await pdfDoc.embedPng(qrBytes);
+          const qrSize = 110;
+          const qrX = sepX + (qrAreaW - qrSize) / 2;
+          const qrY = (height - qrSize) / 2 + 10;
+          page.drawRectangle({ x: qrX - 6, y: qrY - 6, width: qrSize + 12, height: qrSize + 12, color: rgb(1, 1, 1) });
+          page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
+          const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 7);
+          page.drawText(ticket.qr_code, { x: sepX + (qrAreaW - codeW) / 2, y: qrY - 18, size: 7, font: fontRegular, color: txFaded });
+        } catch (e) {
+          console.error("QR embed failed:", e);
+          page.drawText(ticket.qr_code, { x: width - qrAreaW + 10, y: height / 2, size: 12, font: fontBold, color: txColor });
+        }
+      }
+
+    } else {
+      // ─── A4: vertical layout (original style, with template colors) ───
+      let y = height - m - 10;
+
+      if (logoImage) {
+        const logoH = 40;
+        const logoW = logoH * (logoImage.width / logoImage.height);
+        page.drawImage(logoImage, { x: m, y: y - logoH, width: logoW, height: logoH });
+        y -= logoH + 10;
+      }
+
+      page.drawText("TICKET", { x: m, y, size: 28, font: fontBold, color: txColor });
+      y -= 35;
+
+      if (tpl.show_event_title) {
+        const titleLines = wrapText(ticket.event_title.toUpperCase(), fontBold, 14, width - m * 2);
+        for (const line of titleLines) {
+          page.drawText(line, { x: m, y, size: 14, font: fontBold, color: acColor });
+          y -= 20;
+        }
+      }
+
+      y -= 5;
+      page.drawRectangle({ x: m, y, width: width - m * 2, height: 1, color: txSubtle });
+      y -= 25;
+
+      const details: Array<{ label: string; value: string }> = [];
+      if (tpl.show_date) details.push({ label: "DATUM", value: ticket.event_date ? formatDate(ticket.event_date) : "TBA" });
+      if (tpl.show_time) details.push({ label: "UHRZEIT", value: ticket.event_time || "TBA" });
+      if (tpl.show_location) details.push({ label: "ORT", value: ticket.location_name || "TBA" });
+      if (tpl.show_address && ticket.location_address) details.push({ label: "ADRESSE", value: ticket.location_address });
+      if (tpl.show_category) details.push({ label: "KATEGORIE", value: `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}` });
+      if (tpl.show_holder_name && ticket.holder_name) details.push({ label: "NAME", value: ticket.holder_name });
+
+      for (const d of details) {
+        page.drawText(d.label, { x: m, y, size: 8, font: fontRegular, color: txFaded });
+        y -= 14;
+        page.drawText(d.value, { x: m, y, size: 11, font: fontBold, color: txColor });
+        y -= 22;
+      }
+
+      if (tpl.show_qr_code) {
+        try {
+          const qrBytes = await fetchQRCode(ticket.qr_code);
+          const qrImage = await pdfDoc.embedPng(qrBytes);
+          const qrSize = 140;
+          const qrX = (width - qrSize) / 2;
+          const qrY = 60;
+          page.drawRectangle({ x: qrX - 10, y: qrY - 10, width: qrSize + 20, height: qrSize + 20, color: rgb(1, 1, 1) });
+          page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
+          const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 9);
+          page.drawText(ticket.qr_code, { x: (width - codeW) / 2, y: qrY - 22, size: 9, font: fontRegular, color: txFaded });
+        } catch (e) {
+          console.error("QR embed failed:", e);
+          page.drawText(ticket.qr_code, { x: m, y: 100, size: 16, font: fontBold, color: txColor });
+        }
+      }
+
+      // Sponsors at bottom
+      if (tpl.sponsors.length > 0) {
+        let sx = m;
+        for (const s of tpl.sponsors) {
+          if (s.type === "text") {
+            page.drawText(s.value, { x: sx, y: m, size: 7, font: fontRegular, color: txFaded });
+            sx += fontRegular.widthOfTextAtSize(s.value, 7) + 16;
+          }
+        }
+      }
     }
   }
 
@@ -434,7 +605,7 @@ Deno.serve(async (req) => {
         ticket_categories:ticket_category_id (name, category_group)
       `).eq("order_id", order_id),
       supabase.from("orders").select("*").eq("id", order_id).single(),
-      supabase.from("settings").select("key, value").in("key", ["company", "invoice", "email"]),
+      supabase.from("settings").select("key, value").in("key", ["company", "invoice", "email", "ticket_template"]),
     ]);
 
     if (ticketsRes.error || !ticketsRes.data?.length) {
@@ -460,6 +631,7 @@ Deno.serve(async (req) => {
     const company: CompanyData = settingsMap.company || {};
     const invoiceSettings = settingsMap.invoice || { prefix: "RE", next_number: 1 };
     const emailSettings = settingsMap.email || {};
+    const ticketTemplate: TicketTemplate = { ...defaultTpl, ...(settingsMap.ticket_template || {}) };
 
     // ─── Generate invoice number ───
     const year = new Date().getFullYear();
@@ -492,7 +664,7 @@ Deno.serve(async (req) => {
 
     // ─── Generate PDFs ───
     const [ticketPdfBytes, invoicePdfBytes] = await Promise.all([
-      generateTicketPDF(ticketData),
+      generateTicketPDF(ticketData, ticketTemplate),
       generateInvoicePDF({
         invoiceNumber,
         invoiceDate: formatDateShort(new Date().toISOString().split("T")[0]),
