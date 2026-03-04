@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Search, ChevronDown, ChevronUp, Mail, Phone, Calendar, ShoppingCart,
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
-  Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check,
+  Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check, Send, Loader2,
 } from "lucide-react";
 import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
 import { toast } from "sonner";
@@ -93,6 +93,48 @@ type TicketRow = {
 
 type TicketCategory = {
   id: string; name: string; event_id: string; price: number;
+};
+
+/* ─── Resend Tickets Button ─── */
+const ResendTicketsButton = ({ orderId }: { orderId: string }) => {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleResend = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (sending || sent) return;
+    if (!confirm("Tickets erneut per E-Mail versenden?")) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-tickets", {
+        body: { order_id: orderId },
+      });
+      if (error) throw error;
+      toast.success("Tickets wurden erneut versendet");
+      setSent(true);
+    } catch (err: any) {
+      toast.error("Fehler beim Versenden: " + (err.message || "Unbekannt"));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleResend}
+      disabled={sending || sent}
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all hover:scale-[1.03] disabled:opacity-50"
+      style={{
+        background: sent ? "hsl(140 60% 40% / 0.15)" : "hsl(215 90% 55% / 0.12)",
+        color: sent ? "hsl(140 60% 50%)" : "hsl(215 90% 60%)",
+        border: `1px solid ${sent ? "hsl(140 60% 40% / 0.25)" : "hsl(215 90% 55% / 0.2)"}`,
+      }}
+      title="Tickets erneut versenden"
+    >
+      {sending ? <Loader2 className="w-3 h-3 animate-spin" /> : sent ? <Check className="w-3 h-3" /> : <Send className="w-3 h-3" />}
+      {sent ? "Gesendet" : "Erneut senden"}
+    </button>
+  );
 };
 
 const CustomersAdmin = () => {
@@ -884,6 +926,7 @@ const CustomersAdmin = () => {
                                     <th className="text-left px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Event</th>
                                     <th className="text-left px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Status</th>
                                     <th className="text-right px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Betrag</th>
+                                    <th className="text-center px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Tickets</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -904,6 +947,11 @@ const CustomersAdmin = () => {
                                         </td>
                                         <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
                                           {formatCurrency(order.total_amount + order.service_fee)}
+                                        </td>
+                                        <td className="px-3 py-2 text-center">
+                                          {order.status === "paid" && (
+                                            <ResendTicketsButton orderId={order.id} />
+                                          )}
                                         </td>
                                       </tr>
                                     );
