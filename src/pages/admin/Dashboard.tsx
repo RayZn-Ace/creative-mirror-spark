@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { Pencil, Check, Plus, X, GripVertical, Columns2, Columns3 } from "lucide-react";
+import GridLayout, { useContainerWidth, verticalCompactor } from "react-grid-layout";
+import type { Layout } from "react-grid-layout";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+import { Pencil, Check, Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DashboardWidget, WidgetType, WIDGET_META, DEFAULT_LAYOUT } from "@/components/admin/dashboard/types";
+import { WidgetType, WIDGET_META } from "@/components/admin/dashboard/types";
 
-// Lazy load widgets
 const StatsWidget = lazy(() => import("@/components/admin/dashboard/widgets/StatsWidget"));
 const LiveEventsWidget = lazy(() => import("@/components/admin/dashboard/widgets/LiveEventsWidget"));
 const QuickActionsWidget = lazy(() => import("@/components/admin/dashboard/widgets/QuickActionsWidget"));
@@ -25,13 +27,31 @@ const WIDGET_COMPONENTS: Record<WidgetType, React.LazyExoticComponent<React.Comp
   upcoming_events: UpcomingEventsWidget,
 };
 
+const DEFAULT_GRID: Layout = [
+  { i: "stats", x: 0, y: 0, w: 4, h: 4, minW: 2, minH: 2 },
+  { i: "live_events", x: 0, y: 4, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: "recent_orders", x: 0, y: 9, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "revenue", x: 2, y: 9, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "upcoming_events", x: 0, y: 14, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "newsletter_stats", x: 2, y: 14, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "quick_actions", x: 0, y: 19, w: 4, h: 4, minW: 2, minH: 3 },
+];
+
+const ALL_WIDGET_TYPES: WidgetType[] = ["stats", "live_events", "quick_actions", "recent_orders", "revenue", "newsletter_stats", "upcoming_events"];
+
+interface SavedLayout {
+  grid: Layout;
+  hidden: string[];
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
-  const [layout, setLayout] = useState<DashboardWidget[]>(DEFAULT_LAYOUT);
+  const [gridLayout, setGridLayout] = useState<Layout>(DEFAULT_GRID);
+  const [hiddenWidgets, setHiddenWidgets] = useState<string[]>([]);
   const [editing, setEditing] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const { width, containerRef, mounted } = useContainerWidth();
 
-  // Load saved layout
   useEffect(() => {
     if (!user) return;
     supabase
@@ -40,57 +60,50 @@ const Dashboard = () => {
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.layout && Array.isArray(data.layout) && data.layout.length > 0) {
-          // Merge with defaults to catch new widgets
-          const saved = (data.layout as unknown) as DashboardWidget[];
-          const savedIds = new Set(saved.map((w) => w.id));
-          const merged = [
-            ...saved,
-            ...DEFAULT_LAYOUT.filter((w) => !savedIds.has(w.id)).map((w) => ({ ...w, visible: false })),
-          ];
-          setLayout(merged);
+        if (data?.layout && typeof data.layout === "object" && !Array.isArray(data.layout)) {
+          const saved = data.layout as unknown as SavedLayout;
+          if (saved.grid?.length) {
+            setGridLayout(saved.grid.map(g => ({ ...g, minW: g.minW ?? 2, minH: g.minH ?? 2 })));
+          }
+          if (saved.hidden) setHiddenWidgets(saved.hidden);
         }
         setLoaded(true);
       });
   }, [user]);
 
-  // Save layout
-  const saveLayout = useCallback(
-    async (newLayout: DashboardWidget[]) => {
-      if (!user) return;
-      const { error } = await supabase
-        .from("dashboard_layouts")
-        .upsert({ user_id: user.id, layout: newLayout as any, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
-      if (error) console.error("Save layout error:", error);
-    },
-    [user]
-  );
+  const saveLayout = useCallback(async (grid: Layout, hidden: string[]) => {
+    if (!user) return;
+    const payload: SavedLayout = { grid, hidden };
+    await supabase
+      .from("dashboard_layouts")
+      .upsert({ user_id: user.id, layout: payload as any, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  }, [user]);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const items = Array.from(layout);
-    const [moved] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, moved);
-    setLayout(items);
-  };
-
-  const toggleWidget = (id: string) => {
-    setLayout((prev) => prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
-  };
-
-  const toggleColSpan = (id: string) => {
-    setLayout((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, colSpan: w.colSpan === 1 ? 2 : 1 } : w))
-    );
-  };
+  const handleLayoutChange = useCallback((newLayout: Layout) => {
+    setGridLayout(prev => newLayout.map(nl => {
+      const existing = prev.find(p => p.i === nl.i);
+      return { ...nl, minW: existing?.minW ?? 2, minH: existing?.minH ?? 2 };
+    }));
+  }, []);
 
   const handleSave = () => {
-    saveLayout(layout);
+    saveLayout(gridLayout, hiddenWidgets);
     setEditing(false);
   };
 
-  const visibleWidgets = layout.filter((w) => w.visible);
-  const hiddenWidgets = layout.filter((w) => !w.visible);
+  const removeWidget = (id: string) => {
+    setHiddenWidgets(prev => [...prev, id]);
+    setGridLayout(prev => prev.filter(g => g.i !== id));
+  };
+
+  const addWidget = (type: string) => {
+    setHiddenWidgets(prev => prev.filter(h => h !== type));
+    const maxY = gridLayout.reduce((max, g) => Math.max(max, g.y + g.h), 0);
+    setGridLayout(prev => [...prev, { i: type, x: 0, y: maxY, w: 2, h: 4, minW: 2, minH: 2 }]);
+  };
+
+  const visibleGrid = gridLayout.filter(g => !hiddenWidgets.includes(g.i));
+  const hiddenList = ALL_WIDGET_TYPES.filter(t => hiddenWidgets.includes(t) || !gridLayout.find(g => g.i === t));
 
   if (!loaded) {
     return (
@@ -102,12 +115,8 @@ const Dashboard = () => {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1
-          className="text-lg sm:text-2xl font-black uppercase"
-          style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
-        >
+        <h1 className="text-lg sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
           Dashboard
         </h1>
         <button
@@ -124,32 +133,18 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* Hidden widgets drawer (edit mode) */}
       <AnimatePresence>
-        {editing && hiddenWidgets.length > 0 && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mb-4"
-          >
-            <div
-              className="rounded-xl p-3"
-              style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px dashed hsl(0 0% 100% / 0.12)" }}
-            >
-              <span className="text-[10px] font-bold uppercase tracking-wider mb-2 block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                Ausgeblendete Kacheln
-              </span>
+        {editing && hiddenList.length > 0 && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-4">
+            <div className="rounded-xl p-3" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px dashed hsl(0 0% 100% / 0.12)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider mb-2 block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Kachel hinzufügen</span>
               <div className="flex flex-wrap gap-2">
-                {hiddenWidgets.map((w) => (
-                  <button
-                    key={w.id}
-                    onClick={() => toggleWidget(w.id)}
+                {hiddenList.map((t) => (
+                  <button key={t} onClick={() => addWidget(t)}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:scale-105"
-                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                  >
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
                     <Plus className="w-3 h-3" />
-                    {WIDGET_META[w.type].label}
+                    {WIDGET_META[t as WidgetType].label}
                   </button>
                 ))}
               </div>
@@ -158,110 +153,56 @@ const Dashboard = () => {
         )}
       </AnimatePresence>
 
-      {/* Widget grid */}
-      {editing ? (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="dashboard" direction="vertical">
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="flex flex-col gap-2 sm:gap-3"
-              >
-                {visibleWidgets.map((widget, index) => (
-                  <Draggable key={widget.id} draggableId={widget.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className="rounded-xl sm:rounded-2xl overflow-hidden"
-                        style={{
-                          ...provided.draggableProps.style,
-                          background: snapshot.isDragging ? "hsl(0 0% 100% / 0.07)" : "hsl(0 0% 100% / 0.04)",
-                          border: snapshot.isDragging
-                            ? "2px solid hsl(270 60% 55% / 0.5)"
-                            : "1px solid hsl(0 0% 100% / 0.08)",
-                          boxShadow: snapshot.isDragging ? "0 12px 40px hsl(0 0% 0% / 0.5)" : "none",
-                          transition: snapshot.isDragging ? undefined : "background 0.2s, border 0.2s, box-shadow 0.2s",
-                        }}
+      <div ref={containerRef} className="dashboard-grid-container">
+        {mounted && (
+          <GridLayout
+            layout={visibleGrid}
+            width={width}
+            gridConfig={{ cols: 4, rowHeight: 40 }}
+            dragConfig={{ enabled: editing, bounded: false, threshold: 3 }}
+            resizeConfig={{ enabled: editing, handles: ["se"] }}
+            onLayoutChange={handleLayoutChange}
+            compactor={verticalCompactor}
+          >
+            {visibleGrid.map((item) => {
+              const type = item.i as WidgetType;
+              const Comp = WIDGET_COMPONENTS[type];
+              if (!Comp) return null;
+              return (
+                <div
+                  key={item.i}
+                  className="rounded-xl sm:rounded-2xl overflow-hidden h-full"
+                  style={{
+                    background: "hsl(0 0% 100% / 0.04)",
+                    border: editing ? "1px dashed hsl(270 60% 55% / 0.3)" : "1px solid hsl(0 0% 100% / 0.08)",
+                    transition: "border-color 0.2s",
+                  }}
+                >
+                  <div className="flex items-center justify-between px-3 py-1.5" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                      {WIDGET_META[type]?.label}
+                    </span>
+                    {editing && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeWidget(item.i); }}
+                        className="p-1 rounded hover:bg-white/10 transition-colors"
                       >
-                        {/* Edit toolbar */}
-                        <div
-                          {...provided.dragHandleProps}
-                          className="flex items-center justify-between px-3 py-2.5 cursor-grab active:cursor-grabbing select-none"
-                          style={{ background: "hsl(0 0% 100% / 0.03)", borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <GripVertical className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.25)" }} />
-                            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-                              {WIDGET_META[widget.type].label}
-                            </span>
-                            <span
-                              className="text-[9px] font-medium px-1.5 py-0.5 rounded"
-                              style={{
-                                background: widget.colSpan === 2 ? "hsl(200 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-                                color: widget.colSpan === 2 ? "hsl(200 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-                              }}
-                            >
-                              {widget.colSpan === 2 ? "Volle Breite" : "Halbe Breite"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => toggleColSpan(widget.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                              title={widget.colSpan === 1 ? "Breit machen" : "Schmal machen"}
-                            >
-                              {widget.colSpan === 1 ? (
-                                <Columns2 className="w-3.5 h-3.5" style={{ color: "hsl(200 80% 55%)" }} />
-                              ) : (
-                                <Columns3 className="w-3.5 h-3.5" style={{ color: "hsl(200 80% 55%)" }} />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => toggleWidget(widget.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                            >
-                              <X className="w-3.5 h-3.5" style={{ color: "hsl(0 60% 55%)" }} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                        <X className="w-3 h-3" style={{ color: "hsl(0 60% 55%)" }} />
+                      </button>
                     )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      ) : (
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          {visibleWidgets.map((widget, i) => (
-            <motion.div
-              key={widget.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl sm:rounded-2xl p-3 sm:p-4"
-              style={{
-                gridColumn: `span ${widget.colSpan}`,
-                background: "hsl(0 0% 100% / 0.04)",
-                border: "1px solid hsl(0 0% 100% / 0.08)",
-              }}
-            >
-              <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                  {WIDGET_META[widget.type].label}
-                </span>
-              </div>
-              <Suspense fallback={<WidgetSkeleton />}>
-                {(() => { const C = WIDGET_COMPONENTS[widget.type]; return <C />; })()}
-              </Suspense>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                  </div>
+                  <div className={`p-3 sm:p-4 overflow-auto ${editing ? "pointer-events-none opacity-50" : ""}`}
+                    style={{ height: "calc(100% - 28px)" }}>
+                    <Suspense fallback={<WidgetSkeleton />}>
+                      <Comp />
+                    </Suspense>
+                  </div>
+                </div>
+              );
+            })}
+          </GridLayout>
+        )}
+      </div>
     </div>
   );
 };
