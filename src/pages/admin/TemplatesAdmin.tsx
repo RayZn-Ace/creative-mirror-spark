@@ -60,6 +60,76 @@ const defaultEmailTemplate: EmailTemplate = {
   show_event_details: true,
 };
 
+/* ─── Email Presets ─── */
+const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<EmailTemplate> }> = [
+  {
+    name: "Party Classic",
+    emoji: "🎉",
+    template: {
+      subject: "Deine Tickets für {{event_title}} 🎉",
+      greeting: "Hey {{first_name}}",
+      intro_text: "vielen Dank für deine Bestellung! Dein(e) Ticket(s) sind im Anhang als PDF mit QR-Code(s) beigefügt.",
+      footer_text: "Bei Fragen antworte einfach auf diese E-Mail.\nWir freuen uns auf dich! 🎉",
+      accent_color: "#d9338a",
+    },
+  },
+  {
+    name: "Elegant & Formal",
+    emoji: "✨",
+    template: {
+      subject: "Ihre Tickets für {{event_title}}",
+      greeting: "Sehr geehrte/r {{name}}",
+      intro_text: "wir bestätigen hiermit Ihre Bestellung. Ihre Eintrittskarte(n) finden Sie als PDF im Anhang dieser E-Mail.",
+      footer_text: "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.\nMit freundlichen Grüßen",
+      accent_color: "#c8a84e",
+    },
+  },
+  {
+    name: "Festival Vibes",
+    emoji: "🔥",
+    template: {
+      subject: "LET'S GO! Deine Tickets für {{event_title}} 🔥",
+      greeting: "Yooo {{first_name}}",
+      intro_text: "deine Tickets sind ready! Check den Anhang – da findest du dein(e) Ticket(s) als PDF mit QR-Code. Screenshot oder Ausdruck reicht am Einlass!",
+      footer_text: "Stay hyped! 🔥🎶\nBei Fragen einfach antworten.",
+      accent_color: "#f97316",
+    },
+  },
+  {
+    name: "Minimalist",
+    emoji: "◻️",
+    template: {
+      subject: "Tickets: {{event_title}}",
+      greeting: "Hallo {{first_name}}",
+      intro_text: "anbei deine Tickets als PDF.",
+      footer_text: "Bis bald.",
+      accent_color: "#1a1a1a",
+    },
+  },
+  {
+    name: "Neon Night",
+    emoji: "💜",
+    template: {
+      subject: "🎶 Deine Tickets für {{event_title}}",
+      greeting: "Hey {{first_name}} 💜",
+      intro_text: "deine Tickets sind da! Im Anhang findest du dein(e) Ticket(s) als PDF. Zeig den QR-Code einfach am Einlass vor – fertig!",
+      footer_text: "Can't wait to see you! 💜✨\nFragen? Einfach antworten!",
+      accent_color: "#a855f7",
+    },
+  },
+  {
+    name: "Freundlich & Warm",
+    emoji: "☀️",
+    template: {
+      subject: "Deine Tickets sind da! {{event_title}} ☀️",
+      greeting: "Liebe/r {{first_name}}",
+      intro_text: "wie schön, dass du dabei bist! Deine Tickets findest du im Anhang als PDF mit QR-Code. Wir empfehlen dir, sie auf dem Handy zu speichern oder auszudrucken.",
+      footer_text: "Wir freuen uns riesig auf dich! ☀️\nBei Fragen sind wir nur eine Antwort entfernt.",
+      accent_color: "#38bdf8",
+    },
+  },
+];
+
 /* ─── Invoice Template Types ─── */
 interface InvoiceTemplate {
   accent_color: string;
@@ -80,6 +150,75 @@ const defaultInvoiceTemplate: InvoiceTemplate = {
   show_bank_details: true,
   footer_note: "",
 };
+
+/* ─── Invoice Presets ─── */
+const INVOICE_PRESETS: Array<{ name: string; emoji: string; template: Partial<InvoiceTemplate> }> = [
+  {
+    name: "Standard Pink",
+    emoji: "💖",
+    template: {
+      accent_color: "#d9338a",
+      payment_terms: "Zahlung erfolgte per Online-Überweisung. Keine weitere Zahlung erforderlich.",
+      footer_note: "Vielen Dank für Ihren Einkauf!",
+      show_bank_details: true,
+    },
+  },
+  {
+    name: "Business Classic",
+    emoji: "📋",
+    template: {
+      accent_color: "#1a1a1a",
+      payment_terms: "Betrag wurde per Onlinezahlung beglichen. Diese Rechnung dient als Zahlungsbestätigung.",
+      additional_text: "Es gelten unsere Allgemeinen Geschäftsbedingungen. Widerrufsrecht gemäß § 312g BGB ist bei Veranstaltungen ausgeschlossen.",
+      footer_note: "",
+      show_bank_details: true,
+    },
+  },
+  {
+    name: "Gold Premium",
+    emoji: "👑",
+    template: {
+      accent_color: "#c8a84e",
+      payment_terms: "Zahlung erhalten – vielen Dank.",
+      additional_text: "",
+      footer_note: "Wir schätzen Ihr Vertrauen und freuen uns auf Ihren Besuch.",
+      show_bank_details: true,
+    },
+  },
+  {
+    name: "Neon Modern",
+    emoji: "⚡",
+    template: {
+      accent_color: "#a855f7",
+      payment_terms: "Payment received via online transfer.",
+      additional_text: "",
+      footer_note: "Thanks for your order! 🎶",
+      show_bank_details: false,
+    },
+  },
+  {
+    name: "Ocean Blue",
+    emoji: "🌊",
+    template: {
+      accent_color: "#0ea5e9",
+      payment_terms: "Der Rechnungsbetrag wurde bereits beglichen.",
+      additional_text: "Bitte bewahren Sie diese Rechnung für Ihre Unterlagen auf.",
+      footer_note: "Wir freuen uns auf Sie!",
+      show_bank_details: true,
+    },
+  },
+  {
+    name: "Sunset Warm",
+    emoji: "🌅",
+    template: {
+      accent_color: "#f97316",
+      payment_terms: "Bezahlt per Online-Zahlung.",
+      additional_text: "",
+      footer_note: "Danke für deine Unterstützung! 🧡",
+      show_bank_details: true,
+    },
+  },
+];
 
 /* ─── Attachment Types ─── */
 interface Attachment {
@@ -197,6 +336,27 @@ const EmailTab = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-5">
+          {/* Email Presets */}
+          <div style={sectionStyle}>
+            <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Vorlagen</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {EMAIL_PRESETS.map((p) => (
+                <button key={p.name} onClick={() => setTpl(prev => ({ ...prev, ...p.template }))}
+                  className="flex items-center gap-2 p-2.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 text-left"
+                  style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <span className="text-base">{p.emoji}</span>
+                  <div>
+                    <div>{p.name}</div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: p.template.accent_color }} />
+                      <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{p.template.accent_color}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Subject */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Betreffzeile</h3>
@@ -390,6 +550,27 @@ const InvoiceTab = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-5">
+          {/* Invoice Presets */}
+          <div style={sectionStyle}>
+            <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Vorlagen</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {INVOICE_PRESETS.map((p) => (
+                <button key={p.name} onClick={() => setTpl(prev => ({ ...prev, ...p.template }))}
+                  className="flex items-center gap-2 p-2.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 text-left"
+                  style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <span className="text-base">{p.emoji}</span>
+                  <div>
+                    <div>{p.name}</div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="w-2 h-2 rounded-full" style={{ background: p.template.accent_color }} />
+                      <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{p.template.accent_color}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Colors & Logo */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Farben & Logo</h3>
