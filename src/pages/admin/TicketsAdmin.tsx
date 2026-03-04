@@ -27,6 +27,7 @@ interface EventOption {
   id: string;
   title: string;
   date: string | null;
+  city: string | null;
 }
 
 const inputStyle = {
@@ -47,7 +48,7 @@ const TicketsAdmin = () => {
   const load = async () => {
     const [ticketsRes, eventsRes] = await Promise.all([
       supabase.from("ticket_categories").select("*").order("sort_order"),
-      supabase.from("events").select("id, title, date").order("date", { ascending: false }),
+      supabase.from("events").select("id, title, date, city").order("date", { ascending: false }),
     ]);
     setTickets((ticketsRes.data as TicketRow[]) || []);
     setEvents((eventsRes.data as EventOption[]) || []);
@@ -77,8 +78,14 @@ const TicketsAdmin = () => {
     });
   };
 
-  const expandAll = () => {
-    setExpandedEvents(new Set(groupedTickets.keys()));
+  const allExpanded = expandedEvents.size >= groupedTickets.size && groupedTickets.size > 0;
+
+  const toggleAll = () => {
+    if (allExpanded) {
+      setExpandedEvents(new Set());
+    } else {
+      setExpandedEvents(new Set(groupedTickets.keys()));
+    }
   };
 
   const save = async () => {
@@ -168,11 +175,11 @@ const TicketsAdmin = () => {
           ))}
         </select>
         <button
-          onClick={expandAll}
+          onClick={toggleAll}
           className="px-3 py-2 rounded-lg text-xs font-medium transition-colors hover:bg-white/5"
           style={{ color: "hsl(0 0% 100% / 0.4)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
-          Alle aufklappen
+          {allExpanded ? "Alle einklappen" : "Alle aufklappen"}
         </button>
       </div>
 
@@ -209,6 +216,11 @@ const TicketsAdmin = () => {
                     {event?.date && (
                       <span className="text-xs ml-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                         {formatDate(event.date)}
+                      </span>
+                    )}
+                    {event?.city && (
+                      <span className="text-xs ml-2 px-2 py-0.5 rounded-full" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.4)" }}>
+                        📍 {event.city}
                       </span>
                     )}
                   </div>
