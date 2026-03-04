@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket } from "lucide-react";
+import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, Download } from "lucide-react";
 
 interface OrderData {
   id: string;
@@ -18,28 +18,52 @@ interface OrderData {
   paid_at: string | null;
 }
 
+interface TicketData {
+  id: string;
+  qr_code: string;
+  status: string;
+  holder_name: string | null;
+  holder_email: string | null;
+  ticket_category_id: string | null;
+  event_id: string;
+}
+
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<OrderData | null>(null);
+  const [tickets, setTickets] = useState<TicketData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!orderId) return;
 
     const fetchOrder = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("orders")
         .select("*")
         .eq("id", orderId)
         .maybeSingle();
 
-      if (data) setOrder(data as unknown as OrderData);
+      if (data) {
+        const orderData = data as unknown as OrderData;
+        setOrder(orderData);
+        if (orderData.status === "paid") {
+          fetchTickets();
+        }
+      }
       setLoading(false);
+    };
+
+    const fetchTickets = async () => {
+      const { data } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("order_id", orderId);
+      if (data) setTickets(data as unknown as TicketData[]);
     };
 
     fetchOrder();
 
-    // Poll for status updates (Mollie webhook may be slightly delayed)
     const interval = setInterval(async () => {
       const { data } = await supabase
         .from("orders")
@@ -49,6 +73,9 @@ const OrderConfirmation = () => {
       if (data) {
         const updated = data as unknown as OrderData;
         setOrder(updated);
+        if (updated.status === "paid") {
+          fetchTickets();
+        }
         if (updated.status === "paid" || updated.status === "cancelled" || updated.status === "failed") {
           clearInterval(interval);
         }
@@ -150,14 +177,67 @@ const OrderConfirmation = () => {
             </div>
           </div>
 
+          {/* Tickets with QR codes */}
+          {isPaid && tickets.length > 0 && (
+            <div className="space-y-4 mb-6">
+              <div className="h-px" style={{ background: "hsl(0 0% 100% / 0.15)" }} />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-center" style={{ color: "hsl(0 0% 100%)" }}>
+                Deine Tickets
+              </h2>
+              {tickets.map((ticket) => (
+                <motion.div
+                  key={ticket.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl"
+                  style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)" }}
+                >
+                  <div className="bg-white p-3 rounded-xl">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ticket.qr_code)}`}
+                      alt="QR Code"
+                      className="w-40 h-40 sm:w-48 sm:h-48"
+                    />
+                  </div>
+                  <div className="text-center">
+                    {ticket.holder_name && (
+                      <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{ticket.holder_name}</p>
+                    )}
+                    <p className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                      {ticket.qr_code.slice(0, 12).toUpperCase()}
+                    </p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                      style={{
+                        background: ticket.status === "valid" ? "hsl(140 70% 45% / 0.3)" : "hsl(0 70% 50% / 0.3)",
+                        color: ticket.status === "valid" ? "hsl(140 70% 65%)" : "hsl(0 70% 65%)",
+                        border: `1px solid ${ticket.status === "valid" ? "hsl(140 70% 45% / 0.5)" : "hsl(0 70% 50% / 0.5)"}`,
+                      }}
+                    >
+                      {ticket.status === "valid" ? "Gültig" : ticket.status === "checked_in" ? "Eingecheckt" : ticket.status}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
           {/* Actions */}
-          <Link
-            to="/"
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.01]"
-            style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.3)" }}
-          >
-            <ArrowLeft className="w-4 h-4" /> Zurück zur Startseite
-          </Link>
+          <div className="space-y-2">
+            <Link
+              to="/meine-tickets"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.01]"
+              style={{ background: "hsl(210 80% 50% / 0.4)", color: "hsl(0 0% 100%)", border: "1px solid hsl(210 80% 50% / 0.5)" }}
+            >
+              <Ticket className="w-4 h-4" /> Alle meine Tickets
+            </Link>
+            <Link
+              to="/"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.01]"
+              style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.3)" }}
+            >
+              <ArrowLeft className="w-4 h-4" /> Zurück zur Startseite
+            </Link>
+          </div>
         </motion.div>
       </div>
     </div>

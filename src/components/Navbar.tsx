@@ -124,6 +124,12 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="hidden lg:flex items-center gap-2 shrink-0">
+          <Link
+            to="/meine-tickets"
+            className="px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground"
+          >
+            Meine Tickets
+          </Link>
           <a
             href="https://mammamia-partymotto.ticket.io/?view=table"
             target="_blank"
@@ -193,6 +199,16 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
               ))}
+
+              <Link
+                to="/meine-tickets"
+                onClick={() => setOpen(false)}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname === "/meine-tickets" ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                Meine Tickets
+              </Link>
 
               <a
                 href="https://mammamia-partymotto.ticket.io/?view=table"
