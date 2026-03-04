@@ -6,104 +6,283 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// ─── City Coordinates (German cities) ──────────────────────────
-const CITY_COORDS: Record<string, [number, number]> = {
-  "berlin": [52.52, 13.405],
-  "hamburg": [53.5511, 9.9937],
-  "münchen": [48.1351, 11.582],
-  "munich": [48.1351, 11.582],
-  "köln": [50.9375, 6.9603],
-  "frankfurt": [50.1109, 8.6821],
-  "stuttgart": [48.7758, 9.1829],
-  "düsseldorf": [51.2277, 6.7735],
-  "dortmund": [51.5136, 7.4653],
-  "essen": [51.4556, 7.0116],
-  "leipzig": [51.3397, 12.3731],
-  "bremen": [53.0793, 8.8017],
-  "dresden": [51.0504, 13.7373],
-  "hannover": [52.3759, 9.732],
-  "nürnberg": [49.4521, 11.0767],
-  "duisburg": [51.4344, 6.7623],
-  "bochum": [51.4818, 7.2162],
-  "wuppertal": [51.2562, 7.1508],
-  "bielefeld": [52.0302, 8.5325],
-  "bonn": [50.7374, 7.0982],
-  "münster": [51.9607, 7.6261],
-  "karlsruhe": [49.0069, 8.4037],
-  "mannheim": [49.4875, 8.466],
-  "augsburg": [48.3705, 10.8978],
-  "wiesbaden": [50.0782, 8.2398],
-  "aachen": [50.7753, 6.0839],
-  "braunschweig": [52.2689, 10.5268],
-  "kiel": [54.3233, 10.1228],
-  "chemnitz": [50.8278, 12.9214],
-  "halle": [51.4828, 11.97],
-  "magdeburg": [52.1205, 11.6276],
-  "freiburg": [47.999, 7.8421],
-  "lübeck": [53.8655, 10.6866],
-  "erfurt": [50.9848, 11.0299],
-  "rostock": [54.0887, 12.1407],
-  "mainz": [49.9929, 8.2473],
-  "kassel": [51.3127, 9.4797],
-  "saarbrücken": [49.2402, 6.9969],
-  "potsdam": [52.3906, 13.0645],
-  "oldenburg": [53.1435, 8.2146],
-  "osnabrück": [52.2799, 8.0472],
-  "würzburg": [49.7913, 9.9534],
-  "regensburg": [49.0134, 12.1016],
-  "paderborn": [51.7189, 8.7575],
-  "heidelberg": [49.3988, 8.6724],
-  "darmstadt": [49.8728, 8.6512],
-  "ulm": [48.4011, 9.9876],
-  "göttingen": [51.5328, 9.9355],
-  "wolfsburg": [52.4227, 10.7865],
-  "heilbronn": [49.1427, 9.2109],
-  "pforzheim": [48.8922, 8.6946],
-  "offenbach": [50.0956, 8.7761],
-  "recklinghausen": [51.614, 7.1979],
-  "bottrop": [51.5247, 6.9286],
-  "trier": [49.7557, 6.6396],
-  "remscheid": [51.1787, 7.1896],
-  "siegen": [50.8748, 8.0243],
-  "salzgitter": [52.1542, 10.3306],
-  "jena": [50.9272, 11.5892],
-  "cottbus": [51.7563, 14.3329],
-  "schwerin": [53.6355, 11.4012],
-  "hildesheim": [52.1508, 9.9511],
-  "gera": [50.8813, 12.0835],
-  "gütersloh": [51.9033, 8.3855],
-  "plauen": [50.4974, 12.1378],
-  "ludwigsburg": [48.8975, 9.1925],
-  "esslingen": [48.7394, 9.3108],
-  "tübingen": [48.5216, 9.0576],
-  "konstanz": [47.6779, 9.1732],
-  "bamberg": [49.8988, 10.9028],
-  "bayreuth": [49.9427, 11.5761],
-  "erlangen": [49.5897, 11.0078],
-  "ingolstadt": [48.7665, 11.4258],
-  "passau": [48.5665, 13.4319],
-  "stralsund": [54.3146, 13.0897],
-  "greifswald": [54.0865, 13.3923],
-  "neubrandenburg": [53.5574, 13.2613],
-  "zwickau": [50.7189, 12.4964],
-  "weimar": [50.9795, 11.3235],
-  "fulda": [50.5558, 9.6808],
-  "marburg": [50.8021, 8.7668],
-  "gießen": [50.5841, 8.6784],
-  "detmold": [51.9386, 8.8788],
-  "lüneburg": [53.2494, 10.4115],
-  "celle": [52.6224, 10.0807],
-  "delmenhorst": [53.0508, 8.6317],
-  "wilhelmshaven": [53.5308, 8.1108],
-  "emden": [53.3669, 7.2061],
-  "lingen": [52.5222, 7.3222],
-  "nordhorn": [52.4352, 7.069],
-  "cloppenburg": [52.8474, 8.045],
-  "vechta": [52.7297, 8.2863],
-  "leer": [53.2297, 7.4528],
-  "aurich": [53.4711, 7.4834],
-  "papenburg": [53.0775, 7.3922],
-  "meppen": [52.6906, 7.2929],
+// ─── City Database: coords [lat, lng] + language ───────────────
+interface CityInfo { coords: [number, number]; lang: string }
+
+const CITIES: Record<string, CityInfo> = {
+  // Germany (de)
+  "berlin": { coords: [52.52, 13.405], lang: "de" },
+  "hamburg": { coords: [53.5511, 9.9937], lang: "de" },
+  "münchen": { coords: [48.1351, 11.582], lang: "de" },
+  "munich": { coords: [48.1351, 11.582], lang: "de" },
+  "köln": { coords: [50.9375, 6.9603], lang: "de" },
+  "frankfurt": { coords: [50.1109, 8.6821], lang: "de" },
+  "stuttgart": { coords: [48.7758, 9.1829], lang: "de" },
+  "düsseldorf": { coords: [51.2277, 6.7735], lang: "de" },
+  "dortmund": { coords: [51.5136, 7.4653], lang: "de" },
+  "essen": { coords: [51.4556, 7.0116], lang: "de" },
+  "leipzig": { coords: [51.3397, 12.3731], lang: "de" },
+  "bremen": { coords: [53.0793, 8.8017], lang: "de" },
+  "dresden": { coords: [51.0504, 13.7373], lang: "de" },
+  "hannover": { coords: [52.3759, 9.732], lang: "de" },
+  "nürnberg": { coords: [49.4521, 11.0767], lang: "de" },
+  "duisburg": { coords: [51.4344, 6.7623], lang: "de" },
+  "bochum": { coords: [51.4818, 7.2162], lang: "de" },
+  "wuppertal": { coords: [51.2562, 7.1508], lang: "de" },
+  "bielefeld": { coords: [52.0302, 8.5325], lang: "de" },
+  "bonn": { coords: [50.7374, 7.0982], lang: "de" },
+  "münster": { coords: [51.9607, 7.6261], lang: "de" },
+  "karlsruhe": { coords: [49.0069, 8.4037], lang: "de" },
+  "mannheim": { coords: [49.4875, 8.466], lang: "de" },
+  "augsburg": { coords: [48.3705, 10.8978], lang: "de" },
+  "wiesbaden": { coords: [50.0782, 8.2398], lang: "de" },
+  "aachen": { coords: [50.7753, 6.0839], lang: "de" },
+  "braunschweig": { coords: [52.2689, 10.5268], lang: "de" },
+  "kiel": { coords: [54.3233, 10.1228], lang: "de" },
+  "chemnitz": { coords: [50.8278, 12.9214], lang: "de" },
+  "halle": { coords: [51.4828, 11.97], lang: "de" },
+  "magdeburg": { coords: [52.1205, 11.6276], lang: "de" },
+  "freiburg": { coords: [47.999, 7.8421], lang: "de" },
+  "lübeck": { coords: [53.8655, 10.6866], lang: "de" },
+  "erfurt": { coords: [50.9848, 11.0299], lang: "de" },
+  "rostock": { coords: [54.0887, 12.1407], lang: "de" },
+  "mainz": { coords: [49.9929, 8.2473], lang: "de" },
+  "kassel": { coords: [51.3127, 9.4797], lang: "de" },
+  "saarbrücken": { coords: [49.2402, 6.9969], lang: "de" },
+  "potsdam": { coords: [52.3906, 13.0645], lang: "de" },
+  "oldenburg": { coords: [53.1435, 8.2146], lang: "de" },
+  "osnabrück": { coords: [52.2799, 8.0472], lang: "de" },
+  "würzburg": { coords: [49.7913, 9.9534], lang: "de" },
+  "regensburg": { coords: [49.0134, 12.1016], lang: "de" },
+  "paderborn": { coords: [51.7189, 8.7575], lang: "de" },
+  "heidelberg": { coords: [49.3988, 8.6724], lang: "de" },
+  "darmstadt": { coords: [49.8728, 8.6512], lang: "de" },
+  "ulm": { coords: [48.4011, 9.9876], lang: "de" },
+  "göttingen": { coords: [51.5328, 9.9355], lang: "de" },
+  "wolfsburg": { coords: [52.4227, 10.7865], lang: "de" },
+  "heilbronn": { coords: [49.1427, 9.2109], lang: "de" },
+  "pforzheim": { coords: [48.8922, 8.6946], lang: "de" },
+  "offenbach": { coords: [50.0956, 8.7761], lang: "de" },
+  "trier": { coords: [49.7557, 6.6396], lang: "de" },
+  "siegen": { coords: [50.8748, 8.0243], lang: "de" },
+  "jena": { coords: [50.9272, 11.5892], lang: "de" },
+  "cottbus": { coords: [51.7563, 14.3329], lang: "de" },
+  "schwerin": { coords: [53.6355, 11.4012], lang: "de" },
+  "hildesheim": { coords: [52.1508, 9.9511], lang: "de" },
+  "gütersloh": { coords: [51.9033, 8.3855], lang: "de" },
+  "ludwigsburg": { coords: [48.8975, 9.1925], lang: "de" },
+  "esslingen": { coords: [48.7394, 9.3108], lang: "de" },
+  "tübingen": { coords: [48.5216, 9.0576], lang: "de" },
+  "konstanz": { coords: [47.6779, 9.1732], lang: "de" },
+  "bamberg": { coords: [49.8988, 10.9028], lang: "de" },
+  "bayreuth": { coords: [49.9427, 11.5761], lang: "de" },
+  "erlangen": { coords: [49.5897, 11.0078], lang: "de" },
+  "ingolstadt": { coords: [48.7665, 11.4258], lang: "de" },
+  "passau": { coords: [48.5665, 13.4319], lang: "de" },
+  "fulda": { coords: [50.5558, 9.6808], lang: "de" },
+  "marburg": { coords: [50.8021, 8.7668], lang: "de" },
+  "gießen": { coords: [50.5841, 8.6784], lang: "de" },
+  "detmold": { coords: [51.9386, 8.8788], lang: "de" },
+  "lüneburg": { coords: [53.2494, 10.4115], lang: "de" },
+  "celle": { coords: [52.6224, 10.0807], lang: "de" },
+  "weimar": { coords: [50.9795, 11.3235], lang: "de" },
+  "zwickau": { coords: [50.7189, 12.4964], lang: "de" },
+
+  // Austria (de)
+  "wien": { coords: [48.2082, 16.3738], lang: "de" },
+  "vienna": { coords: [48.2082, 16.3738], lang: "de" },
+  "graz": { coords: [47.0707, 15.4395], lang: "de" },
+  "linz": { coords: [48.3069, 14.2858], lang: "de" },
+  "salzburg": { coords: [47.8095, 13.055], lang: "de" },
+  "innsbruck": { coords: [47.2692, 11.4041], lang: "de" },
+  "klagenfurt": { coords: [46.6247, 14.3053], lang: "de" },
+
+  // Switzerland (de/fr/it)
+  "zürich": { coords: [47.3769, 8.5417], lang: "de" },
+  "zurich": { coords: [47.3769, 8.5417], lang: "de" },
+  "bern": { coords: [46.948, 7.4474], lang: "de" },
+  "basel": { coords: [47.5596, 7.5886], lang: "de" },
+  "genf": { coords: [46.2044, 6.1432], lang: "fr" },
+  "genève": { coords: [46.2044, 6.1432], lang: "fr" },
+  "geneva": { coords: [46.2044, 6.1432], lang: "fr" },
+  "lausanne": { coords: [46.5197, 6.6323], lang: "fr" },
+  "lugano": { coords: [46.0037, 8.9511], lang: "it" },
+  "luzern": { coords: [47.0502, 8.3093], lang: "de" },
+  "st. gallen": { coords: [47.4245, 9.3767], lang: "de" },
+
+  // Netherlands (nl)
+  "amsterdam": { coords: [52.3676, 4.9041], lang: "nl" },
+  "rotterdam": { coords: [51.9225, 4.4792], lang: "nl" },
+  "den haag": { coords: [52.0705, 4.3007], lang: "nl" },
+  "the hague": { coords: [52.0705, 4.3007], lang: "nl" },
+  "utrecht": { coords: [52.0907, 5.1214], lang: "nl" },
+  "eindhoven": { coords: [51.4416, 5.4697], lang: "nl" },
+  "groningen": { coords: [53.2194, 6.5665], lang: "nl" },
+  "tilburg": { coords: [51.5555, 5.0913], lang: "nl" },
+  "breda": { coords: [51.5719, 4.7683], lang: "nl" },
+  "nijmegen": { coords: [51.8126, 5.8372], lang: "nl" },
+  "arnhem": { coords: [51.9851, 5.8987], lang: "nl" },
+  "maastricht": { coords: [50.8514, 5.6913], lang: "nl" },
+
+  // Belgium (nl/fr)
+  "brüssel": { coords: [50.8503, 4.3517], lang: "fr" },
+  "brussel": { coords: [50.8503, 4.3517], lang: "nl" },
+  "brussels": { coords: [50.8503, 4.3517], lang: "fr" },
+  "bruxelles": { coords: [50.8503, 4.3517], lang: "fr" },
+  "antwerpen": { coords: [51.2194, 4.4025], lang: "nl" },
+  "antwerp": { coords: [51.2194, 4.4025], lang: "nl" },
+  "gent": { coords: [51.0543, 3.7174], lang: "nl" },
+  "ghent": { coords: [51.0543, 3.7174], lang: "nl" },
+  "lüttich": { coords: [50.6292, 5.5797], lang: "fr" },
+  "liège": { coords: [50.6292, 5.5797], lang: "fr" },
+  "brügge": { coords: [51.2093, 3.2247], lang: "nl" },
+  "bruges": { coords: [51.2093, 3.2247], lang: "nl" },
+
+  // France (fr)
+  "paris": { coords: [48.8566, 2.3522], lang: "fr" },
+  "marseille": { coords: [43.2965, 5.3698], lang: "fr" },
+  "lyon": { coords: [45.764, 4.8357], lang: "fr" },
+  "toulouse": { coords: [43.6047, 1.4442], lang: "fr" },
+  "nice": { coords: [43.7102, 7.262], lang: "fr" },
+  "nantes": { coords: [47.2184, -1.5536], lang: "fr" },
+  "strasbourg": { coords: [48.5734, 7.7521], lang: "fr" },
+  "straßburg": { coords: [48.5734, 7.7521], lang: "fr" },
+  "montpellier": { coords: [43.6108, 3.8767], lang: "fr" },
+  "bordeaux": { coords: [44.8378, -0.5792], lang: "fr" },
+  "lille": { coords: [50.6292, 3.0573], lang: "fr" },
+
+  // Italy (it)
+  "rom": { coords: [41.9028, 12.4964], lang: "it" },
+  "roma": { coords: [41.9028, 12.4964], lang: "it" },
+  "rome": { coords: [41.9028, 12.4964], lang: "it" },
+  "mailand": { coords: [45.4642, 9.19], lang: "it" },
+  "milano": { coords: [45.4642, 9.19], lang: "it" },
+  "milan": { coords: [45.4642, 9.19], lang: "it" },
+  "neapel": { coords: [40.8518, 14.2681], lang: "it" },
+  "napoli": { coords: [40.8518, 14.2681], lang: "it" },
+  "naples": { coords: [40.8518, 14.2681], lang: "it" },
+  "turin": { coords: [45.0703, 7.6869], lang: "it" },
+  "torino": { coords: [45.0703, 7.6869], lang: "it" },
+  "florenz": { coords: [43.7696, 11.2558], lang: "it" },
+  "firenze": { coords: [43.7696, 11.2558], lang: "it" },
+  "florence": { coords: [43.7696, 11.2558], lang: "it" },
+  "venedig": { coords: [45.4408, 12.3155], lang: "it" },
+  "venezia": { coords: [45.4408, 12.3155], lang: "it" },
+  "venice": { coords: [45.4408, 12.3155], lang: "it" },
+  "bologna": { coords: [44.4949, 11.3426], lang: "it" },
+  "genova": { coords: [44.4056, 8.9463], lang: "it" },
+  "palermo": { coords: [38.1157, 13.3615], lang: "it" },
+  "verona": { coords: [45.4384, 10.9917], lang: "it" },
+
+  // Spain (es)
+  "madrid": { coords: [40.4168, -3.7038], lang: "es" },
+  "barcelona": { coords: [41.3874, 2.1686], lang: "es" },
+  "valencia": { coords: [39.4699, -0.3763], lang: "es" },
+  "sevilla": { coords: [37.3891, -5.9845], lang: "es" },
+  "seville": { coords: [37.3891, -5.9845], lang: "es" },
+  "málaga": { coords: [36.7213, -4.4214], lang: "es" },
+  "malaga": { coords: [36.7213, -4.4214], lang: "es" },
+  "bilbao": { coords: [43.263, -2.935], lang: "es" },
+  "palma": { coords: [39.5696, 2.6502], lang: "es" },
+  "ibiza": { coords: [38.9067, 1.4206], lang: "es" },
+
+  // Portugal (pt)
+  "lissabon": { coords: [38.7223, -9.1393], lang: "pt" },
+  "lisboa": { coords: [38.7223, -9.1393], lang: "pt" },
+  "lisbon": { coords: [38.7223, -9.1393], lang: "pt" },
+  "porto": { coords: [41.1579, -8.6291], lang: "pt" },
+
+  // UK (en)
+  "london": { coords: [51.5074, -0.1278], lang: "en" },
+  "manchester": { coords: [53.4808, -2.2426], lang: "en" },
+  "birmingham": { coords: [52.4862, -1.8904], lang: "en" },
+  "glasgow": { coords: [55.8642, -4.2518], lang: "en" },
+  "edinburgh": { coords: [55.9533, -3.1883], lang: "en" },
+  "liverpool": { coords: [53.4084, -2.9916], lang: "en" },
+  "bristol": { coords: [51.4545, -2.5879], lang: "en" },
+  "leeds": { coords: [53.8008, -1.5491], lang: "en" },
+
+  // Ireland (en)
+  "dublin": { coords: [53.3498, -6.2603], lang: "en" },
+  "cork": { coords: [51.8969, -8.4863], lang: "en" },
+
+  // Poland (pl)
+  "warschau": { coords: [52.2297, 21.0122], lang: "pl" },
+  "warszawa": { coords: [52.2297, 21.0122], lang: "pl" },
+  "warsaw": { coords: [52.2297, 21.0122], lang: "pl" },
+  "krakau": { coords: [50.0647, 19.945], lang: "pl" },
+  "kraków": { coords: [50.0647, 19.945], lang: "pl" },
+  "krakow": { coords: [50.0647, 19.945], lang: "pl" },
+  "breslau": { coords: [51.1079, 17.0385], lang: "pl" },
+  "wrocław": { coords: [51.1079, 17.0385], lang: "pl" },
+  "danzig": { coords: [54.352, 18.6466], lang: "pl" },
+  "gdańsk": { coords: [54.352, 18.6466], lang: "pl" },
+  "posen": { coords: [52.4064, 16.9252], lang: "pl" },
+  "poznań": { coords: [52.4064, 16.9252], lang: "pl" },
+
+  // Czech Republic (cs)
+  "prag": { coords: [50.0755, 14.4378], lang: "cs" },
+  "praha": { coords: [50.0755, 14.4378], lang: "cs" },
+  "prague": { coords: [50.0755, 14.4378], lang: "cs" },
+  "brünn": { coords: [49.1951, 16.6068], lang: "cs" },
+  "brno": { coords: [49.1951, 16.6068], lang: "cs" },
+
+  // Denmark (da)
+  "kopenhagen": { coords: [55.6761, 12.5683], lang: "da" },
+  "københavn": { coords: [55.6761, 12.5683], lang: "da" },
+  "copenhagen": { coords: [55.6761, 12.5683], lang: "da" },
+  "aarhus": { coords: [56.1629, 10.2039], lang: "da" },
+  "odense": { coords: [55.396, 10.3886], lang: "da" },
+
+  // Sweden (sv)
+  "stockholm": { coords: [59.3293, 18.0686], lang: "sv" },
+  "göteborg": { coords: [57.7089, 11.9746], lang: "sv" },
+  "gothenburg": { coords: [57.7089, 11.9746], lang: "sv" },
+  "malmö": { coords: [55.605, 13.0038], lang: "sv" },
+
+  // Norway (no)
+  "oslo": { coords: [59.9139, 10.7522], lang: "no" },
+  "bergen": { coords: [60.3913, 5.3221], lang: "no" },
+
+  // Finland (fi)
+  "helsinki": { coords: [60.1699, 24.9384], lang: "fi" },
+  "tampere": { coords: [61.4978, 23.761], lang: "fi" },
+
+  // Hungary (hu)
+  "budapest": { coords: [47.4979, 19.0402], lang: "hu" },
+
+  // Romania (ro)
+  "bukarest": { coords: [44.4268, 26.1025], lang: "ro" },
+  "bucurești": { coords: [44.4268, 26.1025], lang: "ro" },
+  "bucharest": { coords: [44.4268, 26.1025], lang: "ro" },
+  "cluj-napoca": { coords: [46.7712, 23.6236], lang: "ro" },
+
+  // Croatia (hr)
+  "zagreb": { coords: [45.815, 15.9819], lang: "hr" },
+  "split": { coords: [43.5081, 16.4402], lang: "hr" },
+  "dubrovnik": { coords: [42.6507, 18.0944], lang: "hr" },
+
+  // Greece (el)
+  "athen": { coords: [37.9838, 23.7275], lang: "el" },
+  "athens": { coords: [37.9838, 23.7275], lang: "el" },
+  "thessaloniki": { coords: [40.6401, 22.9444], lang: "el" },
+
+  // Turkey (tr)
+  "istanbul": { coords: [41.0082, 28.9784], lang: "tr" },
+  "ankara": { coords: [39.9334, 32.8597], lang: "tr" },
+  "izmir": { coords: [38.4237, 27.1428], lang: "tr" },
+  "antalya": { coords: [36.8969, 30.7133], lang: "tr" },
+
+  // Luxembourg (fr/de)
+  "luxemburg": { coords: [49.6117, 6.1319], lang: "fr" },
+  "luxembourg": { coords: [49.6117, 6.1319], lang: "fr" },
+};
+
+const LANG_NAMES: Record<string, string> = {
+  de: "German", en: "English", fr: "French", nl: "Dutch", it: "Italian",
+  es: "Spanish", pt: "Portuguese", pl: "Polish", cs: "Czech", da: "Danish",
+  sv: "Swedish", no: "Norwegian", fi: "Finnish", hu: "Hungarian", ro: "Romanian",
+  hr: "Croatian", el: "Greek", tr: "Turkish",
 };
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -114,8 +293,66 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function getCityCoords(city: string): [number, number] | null {
-  return CITY_COORDS[city.toLowerCase().trim()] || null;
+function getCityInfo(city: string): CityInfo | null {
+  return CITIES[city.toLowerCase().trim()] || null;
+}
+
+// ─── AI Translation ────────────────────────────────────────────
+async function translateHtml(html: string, targetLang: string): Promise<string> {
+  if (targetLang === "de") return html; // Already German, no translation needed
+
+  const langName = LANG_NAMES[targetLang] || targetLang;
+  const API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!API_KEY) {
+    console.warn("LOVABLE_API_KEY not set, skipping translation");
+    return html;
+  }
+
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional translator. Translate the following HTML email content from German to ${langName}. 
+CRITICAL RULES:
+- ONLY translate visible text content (headings, paragraphs, button labels, alt text)
+- Do NOT translate or modify any HTML tags, attributes, CSS styles, URLs, email addresses, or inline styles
+- Do NOT translate brand names, event names, city names, location names, or proper nouns
+- Do NOT translate voucher/discount codes (e.g. "PARTY2026")
+- Do NOT translate dates or times — keep them in their original format
+- Keep all HTML structure, comments (<!-- -->), and formatting exactly as-is
+- Return ONLY the translated HTML, nothing else — no markdown, no explanations
+- If you're unsure about a word, keep the original`
+          },
+          { role: "user", content: html }
+        ],
+        temperature: 0.1,
+        max_tokens: 16000,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("Translation API error:", res.status, await res.text());
+      return html;
+    }
+
+    const data = await res.json();
+    const translated = data.choices?.[0]?.message?.content;
+    if (!translated) return html;
+
+    // Strip markdown code fences if the model wrapped it
+    return translated.replace(/^```html?\n?/i, "").replace(/\n?```$/i, "").trim();
+  } catch (err) {
+    console.error("Translation error:", err);
+    return html;
+  }
 }
 
 // ─── Magic Mode: personalize HTML per recipient ────────────────
@@ -199,24 +436,23 @@ function personalizeHtml(
 ): string {
   let result = html;
 
-  const recipientCoords = recipientCity ? getCityCoords(recipientCity) : null;
+  const cityInfo = recipientCity ? getCityInfo(recipientCity) : null;
+  const recipientCoords = cityInfo?.coords || null;
 
   // Replace MAGIC_HIGHLIGHT
   const highlightRegex = /<!--MAGIC_HIGHLIGHT:(.*?)-->\s*<div[^>]*>[\s\S]*?<\/div><\/div>/g;
   result = result.replace(highlightRegex, (_match, configJson) => {
     try {
       const config = JSON.parse(configJson);
-      // Find next event in recipient's city only
       const cityEvent = recipientCity
         ? upcomingEvents.find((e) => e.city?.toLowerCase() === recipientCity.toLowerCase())
         : null;
-      // If no event in their city, find nearest event by distance
       if (!cityEvent && recipientCoords) {
         const eventsWithDistance = upcomingEvents
           .filter((e) => e.city)
           .map((e) => {
-            const coords = getCityCoords(e.city!);
-            const dist = coords ? getDistance(recipientCoords[0], recipientCoords[1], coords[0], coords[1]) : 99999;
+            const info = getCityInfo(e.city!);
+            const dist = info ? getDistance(recipientCoords[0], recipientCoords[1], info.coords[0], info.coords[1]) : 99999;
             return { ...e, distanceKm: dist };
           })
           .sort((a, b) => a.distanceKm - b.distanceKm);
@@ -237,47 +473,28 @@ function personalizeHtml(
       const config = JSON.parse(configJson);
 
       if (recipientCity) {
-        // Only show events in the recipient's city
         const inCity = upcomingEvents.filter((e) => e.city?.toLowerCase() === recipientCity.toLowerCase());
 
         if (inCity.length > 0) {
-          // Events exist in their city → show only those
           return buildEventListHtml(inCity, config, siteUrl);
         } else {
-          // No events in their city → show nearest cities with distance
           if (recipientCoords) {
             const eventsWithDistance: EventWithDistance[] = upcomingEvents
               .filter((e) => e.city)
               .map((e) => {
-                const coords = getCityCoords(e.city!);
-                const dist = coords ? getDistance(recipientCoords[0], recipientCoords[1], coords[0], coords[1]) : 99999;
+                const info = getCityInfo(e.city!);
+                const dist = info ? getDistance(recipientCoords[0], recipientCoords[1], info.coords[0], info.coords[1]) : 99999;
                 return { ...e, distanceKm: Math.round(dist) };
               })
               .sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
 
-            // Deduplicate by city (keep first/nearest date per city), then show list
-            const seenCities = new Set<string>();
-            const uniqueCityEvents: EventWithDistance[] = [];
-            for (const ev of eventsWithDistance) {
-              const cityKey = ev.city!.toLowerCase();
-              if (!seenCities.has(cityKey)) {
-                seenCities.add(cityKey);
-                uniqueCityEvents.push(ev);
-              } else {
-                // Also add same-city events (different dates)
-                uniqueCityEvents.push(ev);
-              }
-            }
-
             const introText = `In ${recipientCity} sind wir aktuell leider nicht, aber hier sind die nächsten Termine in deiner Nähe:`;
-            return buildEventListHtml(uniqueCityEvents, config, siteUrl, introText);
+            return buildEventListHtml(eventsWithDistance, config, siteUrl, introText);
           }
-          // No coords available, show all events
           return buildEventListHtml(upcomingEvents, config, siteUrl);
         }
       }
 
-      // No recipient city known, show all events
       return buildEventListHtml(upcomingEvents, config, siteUrl);
     } catch { return ""; }
   });
@@ -292,7 +509,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -318,7 +534,6 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    // Check admin role
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -358,12 +573,10 @@ Deno.serve(async (req) => {
     const from = `${fromName || "Newsletter"} <${fromEmail || "onboarding@resend.dev"}>`;
     const siteUrl = Deno.env.get("SITE_URL") || "https://gimmegimmeparty.com";
 
-    // If magic mode, pre-fetch events and recipient city data
     let upcomingEvents: EventRow[] = [];
     let recipientCityMap: Map<string, string | null> = new Map();
 
     if (magicMode) {
-      // Fetch upcoming published events sorted by date
       const today = new Date().toISOString().split("T")[0];
       const { data: eventsData } = await adminClient
         .from("events")
@@ -374,21 +587,17 @@ Deno.serve(async (req) => {
 
       upcomingEvents = (eventsData || []) as EventRow[];
 
-      // Fetch orders to map email → city (most recent order's event city)
       const { data: ordersData } = await adminClient
         .from("orders")
         .select("email, event_id")
         .in("email", recipients.map((e: string) => e.toLowerCase()));
 
-      // Build email → city map from orders
       const eventIds = new Set<string>();
       (ordersData || []).forEach((o: any) => { if (o.event_id) eventIds.add(o.event_id); });
 
-      // Create event ID → city lookup from upcoming + all events
       const eventCityMap = new Map<string, string>();
       upcomingEvents.forEach((e) => { if (e.city) eventCityMap.set(e.id, e.city); });
 
-      // Also look up cities for order event IDs not in upcoming events
       const missingIds = Array.from(eventIds).filter((id) => !eventCityMap.has(id));
       if (missingIds.length > 0) {
         const { data: extraEvents } = await adminClient
@@ -398,7 +607,6 @@ Deno.serve(async (req) => {
         (extraEvents || []).forEach((e: any) => { if (e.city) eventCityMap.set(e.id, e.city); });
       }
 
-      // Map each recipient email to their most frequent city
       const emailCityCounts = new Map<string, Map<string, number>>();
       (ordersData || []).forEach((o: any) => {
         const email = o.email.toLowerCase();
@@ -419,19 +627,40 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Pre-compute translation cache: translate once per language, not per recipient
+    const translationCache = new Map<string, string>();
+
     const results: { email: string; success: boolean; error?: string }[] = [];
 
-    // Send in batches of 10
     const batchSize = 10;
     for (let i = 0; i < recipients.length; i += batchSize) {
       const batch = recipients.slice(i, i + batchSize);
       const promises = batch.map(async (email: string) => {
         try {
-          // Personalize HTML if magic mode
           let personalizedHtml = html;
+          let recipientLang = "de"; // Default to German
+
           if (magicMode) {
             const recipientCity = recipientCityMap.get(email.toLowerCase()) || null;
             personalizedHtml = personalizeHtml(html, recipientCity, upcomingEvents, siteUrl);
+
+            // Determine recipient language from city
+            if (recipientCity) {
+              const info = getCityInfo(recipientCity);
+              if (info) recipientLang = info.lang;
+            }
+          }
+
+          // Translate if not German
+          if (recipientLang !== "de") {
+            const cacheKey = `${recipientLang}:${personalizedHtml.length}:${personalizedHtml.slice(0, 100)}`;
+            if (translationCache.has(cacheKey)) {
+              personalizedHtml = translationCache.get(cacheKey)!;
+            } else {
+              const translated = await translateHtml(personalizedHtml, recipientLang);
+              translationCache.set(cacheKey, translated);
+              personalizedHtml = translated;
+            }
           }
 
           const res = await fetch("https://api.resend.com/emails", {
