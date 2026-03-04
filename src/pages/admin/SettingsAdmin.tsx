@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus } from "lucide-react";
+import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X } from "lucide-react";
 
 interface CompanyData {
   name: string; address: string; zip: string; city: string; country: string;
@@ -13,6 +13,7 @@ interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
+interface PermissionRow { id: string; role: string; permission: string; granted: boolean; }
 
 const emptyCompany: CompanyData = { name: "", address: "", zip: "", city: "", country: "Deutschland", vat_id: "", managing_director: "", email: "", phone: "", bank_name: "", iban: "", bic: "" };
 const emptyInvoice: InvoiceData = { prefix: "RE", next_number: 1 };
@@ -49,10 +50,174 @@ const SectionCard = ({ icon: Icon, title, description, children, onSave, saving 
   </div>
 );
 
+// Permission categories with labels
+const PERMISSION_GROUPS: { label: string; icon: string; permissions: { key: string; label: string }[] }[] = [
+  {
+    label: "Dashboard",
+    icon: "📊",
+    permissions: [
+      { key: "dashboard.view", label: "Dashboard anzeigen" },
+      { key: "dashboard.customize", label: "Dashboard anpassen" },
+    ],
+  },
+  {
+    label: "Events",
+    icon: "📅",
+    permissions: [
+      { key: "events.view", label: "Events anzeigen" },
+      { key: "events.create", label: "Events erstellen" },
+      { key: "events.edit", label: "Events bearbeiten" },
+      { key: "events.delete", label: "Events löschen" },
+      { key: "events.publish", label: "Events veröffentlichen" },
+    ],
+  },
+  {
+    label: "Event-Serien",
+    icon: "📂",
+    permissions: [
+      { key: "series.view", label: "Serien anzeigen" },
+      { key: "series.create", label: "Serien erstellen" },
+      { key: "series.edit", label: "Serien bearbeiten" },
+      { key: "series.delete", label: "Serien löschen" },
+    ],
+  },
+  {
+    label: "Tickets",
+    icon: "🎫",
+    permissions: [
+      { key: "tickets.view", label: "Tickets anzeigen" },
+      { key: "tickets.create", label: "Tickets erstellen" },
+      { key: "tickets.edit", label: "Tickets bearbeiten" },
+      { key: "tickets.delete", label: "Tickets löschen" },
+      { key: "tickets.issue_free", label: "Gratis-Tickets ausstellen" },
+    ],
+  },
+  {
+    label: "Bestellungen",
+    icon: "🛒",
+    permissions: [
+      { key: "orders.view", label: "Bestellungen anzeigen" },
+      { key: "orders.refund", label: "Erstattungen durchführen" },
+      { key: "orders.export", label: "Bestellungen exportieren" },
+    ],
+  },
+  {
+    label: "Kunden",
+    icon: "👥",
+    permissions: [
+      { key: "customers.view", label: "Kunden anzeigen" },
+      { key: "customers.edit", label: "Kunden bearbeiten" },
+      { key: "customers.export", label: "Kunden exportieren" },
+      { key: "customers.delete", label: "Kunden löschen" },
+    ],
+  },
+  {
+    label: "Newsletter",
+    icon: "📧",
+    permissions: [
+      { key: "newsletter.view", label: "Newsletter anzeigen" },
+      { key: "newsletter.send", label: "Newsletter senden" },
+      { key: "newsletter.manage_lists", label: "Listen verwalten" },
+      { key: "newsletter.manage_subscribers", label: "Abonnenten verwalten" },
+      { key: "newsletter.export", label: "Abonnenten exportieren" },
+    ],
+  },
+  {
+    label: "Scanner",
+    icon: "📱",
+    permissions: [
+      { key: "scanner.view", label: "Scanner anzeigen" },
+      { key: "scanner.checkin", label: "Check-in durchführen" },
+      { key: "scanner.manage_links", label: "Scanner-Links verwalten" },
+    ],
+  },
+  {
+    label: "Coupons",
+    icon: "🏷️",
+    permissions: [
+      { key: "coupons.view", label: "Coupons anzeigen" },
+      { key: "coupons.create", label: "Coupons erstellen" },
+      { key: "coupons.edit", label: "Coupons bearbeiten" },
+      { key: "coupons.delete", label: "Coupons löschen" },
+    ],
+  },
+  {
+    label: "Analyse & Umsatz",
+    icon: "📈",
+    permissions: [
+      { key: "analytics.view", label: "Analysen anzeigen" },
+      { key: "analytics.export", label: "Daten exportieren" },
+    ],
+  },
+  {
+    label: "Support",
+    icon: "🎧",
+    permissions: [
+      { key: "support.view", label: "Tickets anzeigen" },
+      { key: "support.respond", label: "Tickets beantworten" },
+      { key: "support.manage", label: "Tickets verwalten" },
+      { key: "support.delete", label: "Tickets löschen" },
+    ],
+  },
+  {
+    label: "Werbemanager",
+    icon: "📢",
+    permissions: [
+      { key: "ads.view", label: "Werbung anzeigen" },
+      { key: "ads.create", label: "Werbung erstellen" },
+      { key: "ads.edit", label: "Werbung bearbeiten" },
+      { key: "ads.delete", label: "Werbung löschen" },
+    ],
+  },
+  {
+    label: "Seiten-Inhalte",
+    icon: "📄",
+    permissions: [
+      { key: "pages.view", label: "Seiten anzeigen" },
+      { key: "pages.edit", label: "Seiten bearbeiten" },
+    ],
+  },
+  {
+    label: "Tracking & Pixel",
+    icon: "🎯",
+    permissions: [
+      { key: "tracking.view", label: "Tracking anzeigen" },
+      { key: "tracking.manage", label: "Tracking verwalten" },
+    ],
+  },
+  {
+    label: "Vorlagen",
+    icon: "🎨",
+    permissions: [
+      { key: "templates.view", label: "Vorlagen anzeigen" },
+      { key: "templates.edit", label: "Vorlagen bearbeiten" },
+    ],
+  },
+  {
+    label: "Einstellungen",
+    icon: "⚙️",
+    permissions: [
+      { key: "settings.view", label: "Einstellungen anzeigen" },
+      { key: "settings.edit", label: "Einstellungen bearbeiten" },
+      { key: "settings.manage_users", label: "Benutzer verwalten" },
+      { key: "settings.manage_permissions", label: "Rechte verwalten" },
+    ],
+  },
+];
+
+const ROLES = ["admin", "moderator", "scanner", "user"] as const;
+const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
+  admin: { bg: "hsl(330 80% 55% / 0.15)", text: "hsl(330 80% 55%)" },
+  moderator: { bg: "hsl(270 60% 55% / 0.15)", text: "hsl(270 60% 55%)" },
+  scanner: { bg: "hsl(200 80% 55% / 0.15)", text: "hsl(200 80% 55%)" },
+  user: { bg: "hsl(0 0% 100% / 0.08)", text: "hsl(0 0% 100% / 0.5)" },
+};
+
 const tabs = [
   { key: "general", label: "Allgemein", icon: Settings },
   { key: "profile", label: "Mein Profil", icon: User },
-  { key: "users", label: "Benutzerverwaltung", icon: Users },
+  { key: "users", label: "Benutzer", icon: Users },
+  { key: "permissions", label: "Rechte", icon: Lock },
 ];
 
 const SettingsAdmin = () => {
@@ -71,6 +236,11 @@ const SettingsAdmin = () => {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState<string>("user");
   const [addingUser, setAddingUser] = useState(false);
+  // Permissions state
+  const [permissions, setPermissions] = useState<PermissionRow[]>([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+  const [togglingPerm, setTogglingPerm] = useState<string | null>(null);
+  const [selectedPermRole, setSelectedPermRole] = useState<string>("moderator");
 
   useEffect(() => {
     const load = async () => {
@@ -83,7 +253,6 @@ const SettingsAdmin = () => {
           if (row.key === "email") setEmailSettings({ ...emptyEmail, ...val });
         }
       }
-      // Load profile
       if (user) {
         const { data: profileData } = await supabase.from("profiles").select("display_name, avatar_url").eq("user_id", user.id).single();
         if (profileData) setProfile({ display_name: profileData.display_name || "", avatar_url: profileData.avatar_url || "" });
@@ -94,15 +263,26 @@ const SettingsAdmin = () => {
     loadUserRoles();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "permissions") loadPermissions();
+  }, [activeTab]);
+
   const loadUserRoles = async () => {
     const { data: roles } = await supabase.from("user_roles").select("*");
     if (!roles) { setUserRoles([]); return; }
-    // Fetch profiles for display names
     const userIds = [...new Set(roles.map(r => r.user_id))];
     const { data: profiles } = await supabase.from("profiles").select("user_id, display_name").in("user_id", userIds);
     const profileMap: Record<string, string> = {};
     (profiles || []).forEach(p => { profileMap[p.user_id] = p.display_name || ""; });
     setUserRoles(roles.map(r => ({ ...r, display_name: profileMap[r.user_id] || "", email: profileMap[r.user_id] || r.user_id })));
+  };
+
+  const loadPermissions = async () => {
+    setPermissionsLoading(true);
+    const { data, error } = await supabase.from("role_permissions").select("*");
+    if (error) { toast.error("Fehler beim Laden der Rechte"); console.error(error); }
+    else setPermissions(data || []);
+    setPermissionsLoading(false);
   };
 
   const save = async (key: string, value: any, setSaving: (v: boolean) => void) => {
@@ -129,24 +309,89 @@ const SettingsAdmin = () => {
     else { toast.success("Rolle entfernt"); loadUserRoles(); }
   };
 
+  const togglePermission = useCallback(async (role: string, permission: string, currentGranted: boolean) => {
+    const key = `${role}:${permission}`;
+    setTogglingPerm(key);
+    
+    const existing = permissions.find(p => p.role === role && p.permission === permission);
+    
+    if (existing) {
+      const { error } = await supabase
+        .from("role_permissions")
+        .update({ granted: !currentGranted, updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+      if (error) { toast.error("Fehler"); setTogglingPerm(null); return; }
+    } else {
+      const { error } = await supabase
+        .from("role_permissions")
+        .insert({ role: role as any, permission, granted: true });
+      if (error) { toast.error("Fehler"); setTogglingPerm(null); return; }
+    }
+    
+    // Optimistic update
+    setPermissions(prev => {
+      if (existing) {
+        return prev.map(p => p.id === existing.id ? { ...p, granted: !currentGranted } : p);
+      }
+      return [...prev, { id: crypto.randomUUID(), role, permission, granted: true }];
+    });
+    setTogglingPerm(null);
+  }, [permissions]);
+
+  const isGranted = useCallback((role: string, permission: string) => {
+    const p = permissions.find(pr => pr.role === role && pr.permission === permission);
+    return p?.granted ?? false;
+  }, [permissions]);
+
+  const grantAllForRole = async (role: string) => {
+    const allPerms = PERMISSION_GROUPS.flatMap(g => g.permissions.map(p => p.key));
+    const toInsert = allPerms.map(permission => ({
+      role: role as any,
+      permission,
+      granted: true,
+    }));
+    
+    // Upsert all
+    for (const perm of toInsert) {
+      await supabase
+        .from("role_permissions")
+        .upsert({ ...perm, updated_at: new Date().toISOString() }, { onConflict: "role,permission" });
+    }
+    toast.success(`Alle Rechte für ${role} aktiviert`);
+    loadPermissions();
+  };
+
+  const revokeAllForRole = async (role: string) => {
+    if (!confirm(`Wirklich alle Rechte für "${role}" entziehen?`)) return;
+    const { error } = await supabase
+      .from("role_permissions")
+      .update({ granted: false, updated_at: new Date().toISOString() })
+      .eq("role", role as any);
+    if (error) toast.error("Fehler");
+    else { toast.success(`Alle Rechte für ${role} deaktiviert`); loadPermissions(); }
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin" style={{ color: "hsl(0 0% 100% / 0.3)" }} /></div>;
 
   const setC = (field: keyof CompanyData) => (v: string) => setCompany((p) => ({ ...p, [field]: v }));
 
+  const grantedCount = (role: string) => permissions.filter(p => p.role === role && p.granted).length;
+  const totalPerms = PERMISSION_GROUPS.reduce((acc, g) => acc + g.permissions.length, 0);
+
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-3 mb-2">
         <Settings className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
         <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>Einstellungen</h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+      <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center whitespace-nowrap"
             style={{
               background: activeTab === t.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
               color: activeTab === t.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
@@ -244,7 +489,7 @@ const SettingsAdmin = () => {
             ) : (
               userRoles.map(r => (
                 <div key={r.id} className="rounded-xl p-3 flex items-center gap-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase" style={{ background: r.role === "admin" ? "hsl(330 80% 55% / 0.2)" : r.role === "scanner" ? "hsl(200 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.08)", color: r.role === "admin" ? "hsl(330 80% 55%)" : r.role === "scanner" ? "hsl(200 80% 55%)" : "hsl(0 0% 100% / 0.5)" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase" style={{ background: ROLE_COLORS[r.role]?.bg || ROLE_COLORS.user.bg, color: ROLE_COLORS[r.role]?.text || ROLE_COLORS.user.text }}>
                     {r.role[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -252,8 +497,8 @@ const SettingsAdmin = () => {
                     <p className="text-[10px] font-mono" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{r.user_id}</p>
                   </div>
                   <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{
-                    background: r.role === "admin" ? "hsl(330 80% 55% / 0.15)" : r.role === "scanner" ? "hsl(200 80% 55% / 0.15)" : r.role === "moderator" ? "hsl(270 60% 55% / 0.15)" : "hsl(0 0% 100% / 0.08)",
-                    color: r.role === "admin" ? "hsl(330 80% 55%)" : r.role === "scanner" ? "hsl(200 80% 55%)" : r.role === "moderator" ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.5)",
+                    background: ROLE_COLORS[r.role]?.bg || ROLE_COLORS.user.bg,
+                    color: ROLE_COLORS[r.role]?.text || ROLE_COLORS.user.text,
                   }}>
                     {r.role}
                   </span>
@@ -314,6 +559,147 @@ const SettingsAdmin = () => {
             </p>
           </div>
         </SectionCard>
+      )}
+
+      {/* Permissions Tab */}
+      {activeTab === "permissions" && (
+        <div className="space-y-6">
+          <SectionCard icon={Lock} title="Rechteverwaltung" description="Verwalte granulare Berechtigungen für jede Rolle. Wähle eine Rolle und passe die Rechte an.">
+            {permissionsLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+              </div>
+            ) : (
+              <>
+                {/* Role selector */}
+                <div className="flex gap-2 flex-wrap">
+                  {ROLES.map(role => (
+                    <button
+                      key={role}
+                      onClick={() => setSelectedPermRole(role)}
+                      className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all"
+                      style={{
+                        background: selectedPermRole === role ? ROLE_COLORS[role].bg : "hsl(0 0% 100% / 0.04)",
+                        color: selectedPermRole === role ? ROLE_COLORS[role].text : "hsl(0 0% 100% / 0.4)",
+                        border: selectedPermRole === role ? `1px solid ${ROLE_COLORS[role].text}` : "1px solid hsl(0 0% 100% / 0.08)",
+                      }}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Stats bar */}
+                <div className="flex items-center justify-between rounded-xl p-3" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: ROLE_COLORS[selectedPermRole].text }} />
+                    <span className="text-sm font-bold uppercase" style={{ color: ROLE_COLORS[selectedPermRole].text }}>
+                      {selectedPermRole}
+                    </span>
+                    <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      — {grantedCount(selectedPermRole)} / {totalPerms} Rechte aktiv
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => grantAllForRole(selectedPermRole)}
+                      className="text-[10px] font-bold uppercase px-3 py-1 rounded-lg transition-all hover:opacity-80"
+                      style={{ background: "hsl(140 60% 40% / 0.15)", color: "hsl(140 60% 50%)" }}
+                    >
+                      Alle aktivieren
+                    </button>
+                    <button
+                      onClick={() => revokeAllForRole(selectedPermRole)}
+                      className="text-[10px] font-bold uppercase px-3 py-1 rounded-lg transition-all hover:opacity-80"
+                      style={{ background: "hsl(0 60% 40% / 0.15)", color: "hsl(0 60% 50%)" }}
+                    >
+                      Alle deaktivieren
+                    </button>
+                  </div>
+                </div>
+
+                {/* Permission groups */}
+                <div className="space-y-3">
+                  {PERMISSION_GROUPS.map(group => {
+                    const groupGranted = group.permissions.filter(p => isGranted(selectedPermRole, p.key)).length;
+                    const allGranted = groupGranted === group.permissions.length;
+                    const someGranted = groupGranted > 0 && !allGranted;
+
+                    return (
+                      <div key={group.label} className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                        {/* Group header */}
+                        <div
+                          className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"
+                          style={{ background: "hsl(0 0% 100% / 0.04)" }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-base">{group.icon}</span>
+                            <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{group.label}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{
+                              background: allGranted ? "hsl(140 60% 40% / 0.15)" : someGranted ? "hsl(45 90% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+                              color: allGranted ? "hsl(140 60% 50%)" : someGranted ? "hsl(45 90% 50%)" : "hsl(0 0% 100% / 0.4)",
+                            }}>
+                              {groupGranted}/{group.permissions.length}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Permission items */}
+                        <div className="divide-y" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+                          {group.permissions.map(perm => {
+                            const granted = isGranted(selectedPermRole, perm.key);
+                            const toggling = togglingPerm === `${selectedPermRole}:${perm.key}`;
+                            return (
+                              <div
+                                key={perm.key}
+                                className="flex items-center justify-between px-4 py-2.5 transition-all hover:bg-white/[0.02]"
+                                style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-5 h-5 rounded flex items-center justify-center" style={{
+                                    background: granted ? "hsl(140 60% 40% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                                  }}>
+                                    {granted ? (
+                                      <Check className="w-3 h-3" style={{ color: "hsl(140 60% 50%)" }} />
+                                    ) : (
+                                      <X className="w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+                                    )}
+                                  </div>
+                                  <span className="text-xs" style={{ color: granted ? "hsl(0 0% 100% / 0.9)" : "hsl(0 0% 100% / 0.4)" }}>
+                                    {perm.label}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => togglePermission(selectedPermRole, perm.key, granted)}
+                                  disabled={toggling}
+                                  className="relative w-10 h-5 rounded-full transition-all duration-200"
+                                  style={{
+                                    background: granted ? "hsl(140 60% 40%)" : "hsl(0 0% 100% / 0.1)",
+                                  }}
+                                >
+                                  {toggling && (
+                                    <Loader2 className="w-3 h-3 animate-spin absolute inset-0 m-auto" style={{ color: "hsl(0 0% 100%)" }} />
+                                  )}
+                                  <div
+                                    className="absolute top-0.5 w-4 h-4 rounded-full transition-all duration-200"
+                                    style={{
+                                      background: "hsl(0 0% 100%)",
+                                      left: granted ? "calc(100% - 18px)" : "2px",
+                                      opacity: toggling ? 0.3 : 1,
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </SectionCard>
+        </div>
       )}
     </div>
   );
