@@ -43,6 +43,10 @@ const inputStyle = {
   color: "hsl(0 0% 100%)", borderRadius: "10px", padding: "10px 14px", fontSize: "14px",
   width: "100%", outline: "none",
 };
+const selectStyle = {
+  ...inputStyle, colorScheme: "dark" as const,
+  WebkitAppearance: "none" as const, backgroundColor: "hsl(220 50% 10%)",
+};
 const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "11px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "4px", display: "block" };
 
 const WerbemanagerAdmin = () => {
@@ -137,7 +141,7 @@ const WerbemanagerAdmin = () => {
             </div>
             <div>
               <label style={labelStyle}>Position</label>
-              <select value={editing.position || "top"} onChange={e => setEditing({ ...editing, position: e.target.value })} style={{ ...inputStyle, colorScheme: "dark" }}>
+              <select value={editing.position || "top"} onChange={e => setEditing({ ...editing, position: e.target.value })} style={selectStyle}>
                 <option value="top">Oben</option>
                 <option value="bottom">Unten</option>
                 <option value="middle">Mitte</option>
@@ -190,7 +194,7 @@ const WerbemanagerAdmin = () => {
               </label>
             </div>
             {!editing.is_global && (
-              <select value={editing.event_id || ""} onChange={e => setEditing({ ...editing, event_id: e.target.value || null })} style={{ ...inputStyle, colorScheme: "dark" }}>
+              <select value={editing.event_id || ""} onChange={e => setEditing({ ...editing, event_id: e.target.value || null })} style={selectStyle}>
                 <option value="">Event wählen...</option>
                 {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title} {ev.date ? `(${ev.date})` : ""}</option>)}
               </select>
