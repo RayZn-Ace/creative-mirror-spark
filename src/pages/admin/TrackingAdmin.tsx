@@ -50,15 +50,13 @@ const TrackingAdmin = () => {
   const [pixels, setPixels] = useState<TrackingPixel[]>([]);
   const [eventLogs, setEventLogs] = useState<EventLog[]>([]);
   const [activeTab, setActiveTab] = useState<"config" | "logs" | "test">("config");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newProvider, setNewProvider] = useState(PROVIDERS[0].id);
-  const [newPixelId, setNewPixelId] = useState("");
-  const [newLabel, setNewLabel] = useState("");
   const [logSearch, setLogSearch] = useState("");
   const [logFilter, setLogFilter] = useState<string>("all");
   const [testProvider, setTestProvider] = useState<string>("");
   const [testEvent, setTestEvent] = useState("PageView");
   const [testFiring, setTestFiring] = useState(false);
+  // Track inline edits per provider
+  const [editingIds, setEditingIds] = useState<Record<string, string>>({});
 
   const loadPixels = async () => {
     const { data } = await supabase.from("tracking_pixels").select("*").order("created_at", { ascending: false });
@@ -79,22 +77,17 @@ const TrackingAdmin = () => {
     loadEventLogs();
   }, []);
 
-  const addPixel = async () => {
-    if (!newPixelId.trim()) return;
-    const { error } = await supabase.from("tracking_pixels").insert({
-      provider: newProvider,
-      pixel_id: newPixelId.trim(),
-      label: newLabel.trim() || null,
-    });
-    if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+  const savePixelId = async (providerId: string) => {
+    const pixelIdValue = editingIds[providerId]?.trim();
+    if (!pixelIdValue) return;
+    const existing = pixels.find((p) => p.provider === providerId);
+    if (existing) {
+      await supabase.from("tracking_pixels").update({ pixel_id: pixelIdValue }).eq("id", existing.id);
     } else {
-      toast({ title: "Pixel hinzugefügt" });
-      setNewPixelId("");
-      setNewLabel("");
-      setShowAddForm(false);
-      loadPixels();
+      await supabase.from("tracking_pixels").insert({ provider: providerId, pixel_id: pixelIdValue, enabled: false });
     }
+    loadPixels();
+    toast({ title: "Pixel-ID gespeichert" });
   };
 
   const togglePixel = async (id: string, field: "enabled" | "test_mode", value: boolean) => {
@@ -173,176 +166,111 @@ const TrackingAdmin = () => {
 
       {/* CONFIGURATOR TAB */}
       {activeTab === "config" && (
-        <div className="space-y-4">
-          {/* Add Pixel Button */}
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-            style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
-          >
-            <Plus className="w-4 h-4" />
-            Pixel hinzufügen
-          </button>
+        <div className="space-y-3">
+          {PROVIDERS.map((provider, i) => {
+            const pixel = pixels.find((p) => p.provider === provider.id);
+            const currentPixelId = editingIds[provider.id] ?? pixel?.pixel_id ?? "";
+            const hasUnsavedChanges = editingIds[provider.id] !== undefined && editingIds[provider.id] !== (pixel?.pixel_id ?? "");
 
-          {/* Add Form */}
-          <AnimatePresence>
-            {showAddForm && (
+            return (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
+                key={provider.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="rounded-2xl p-4"
+                style={{ background: "hsl(0 0% 100% / 0.04)", border: `1px solid ${pixel?.enabled ? provider.color + "30" : "hsl(0 0% 100% / 0.08)"}` }}
               >
-                <div
-                  className="rounded-2xl p-5 space-y-4"
-                  style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                >
-                  <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                    Neues Pixel hinzufügen
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Anbieter</label>
-                      <select
-                        value={newProvider}
-                        onChange={(e) => setNewProvider(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm"
-                        style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                      >
-                        {PROVIDERS.map((p) => (
-                          <option key={p.id} value={p.id} style={{ background: "hsl(220 50% 10%)" }}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Pixel-ID</label>
-                      <input
-                        value={newPixelId}
-                        onChange={(e) => setNewPixelId(e.target.value)}
-                        placeholder={PROVIDERS.find((p) => p.id === newProvider)?.placeholder}
-                        className="w-full px-3 py-2 rounded-lg text-sm"
-                        style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Label (optional)</label>
-                      <input
-                        value={newLabel}
-                        onChange={(e) => setNewLabel(e.target.value)}
-                        placeholder="z.B. Hauptseite"
-                        className="w-full px-3 py-2 rounded-lg text-sm"
-                        style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-                      />
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  {/* Provider name + color dot */}
+                  <div className="flex items-center gap-3 sm:w-44 shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.15)" }} />
+                    <span className="text-sm font-bold" style={{ color: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.6)" }}>
+                      {provider.name}
+                    </span>
                   </div>
-                  <div className="flex gap-2">
+
+                  {/* Pixel ID input */}
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      value={currentPixelId}
+                      onChange={(e) => setEditingIds((prev) => ({ ...prev, [provider.id]: e.target.value }))}
+                      placeholder={provider.placeholder}
+                      className="flex-1 px-3 py-2 rounded-lg text-xs font-mono"
+                      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                    />
+                    {hasUnsavedChanges && (
+                      <button
+                        onClick={() => savePixelId(provider.id)}
+                        className="px-2.5 py-2 rounded-lg text-xs font-bold shrink-0"
+                        style={{ background: "hsl(150 60% 40%)", color: "hsl(0 0% 100%)" }}
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Test mode */}
+                    {pixel && (
+                      <button
+                        onClick={() => togglePixel(pixel.id, "test_mode", !pixel.test_mode)}
+                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{
+                          background: pixel.test_mode ? "hsl(45 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                          color: pixel.test_mode ? "hsl(45 80% 55%)" : "hsl(0 0% 100% / 0.3)",
+                        }}
+                        title="Testmodus"
+                      >
+                        <FlaskConical className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    {/* On/Off Switch */}
                     <button
-                      onClick={addPixel}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
-                      style={{ background: "hsl(150 60% 40%)", color: "hsl(0 0% 100%)" }}
+                      onClick={async () => {
+                        if (!pixel) {
+                          // Create with current input
+                          if (!currentPixelId.trim()) {
+                            toast({ title: "Pixel-ID eingeben", description: "Bitte erst eine Pixel-ID eingeben.", variant: "destructive" });
+                            return;
+                          }
+                          await supabase.from("tracking_pixels").insert({ provider: provider.id, pixel_id: currentPixelId.trim(), enabled: true });
+                          setEditingIds((prev) => { const n = { ...prev }; delete n[provider.id]; return n; });
+                          loadPixels();
+                        } else {
+                          togglePixel(pixel.id, "enabled", !pixel.enabled);
+                        }
+                      }}
+                      className="relative w-11 h-6 rounded-full transition-all duration-200"
+                      style={{
+                        background: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.1)",
+                      }}
                     >
-                      <Check className="w-4 h-4" /> Speichern
+                      <motion.div
+                        className="absolute top-0.5 w-5 h-5 rounded-full"
+                        style={{ background: "hsl(0 0% 100%)" }}
+                        animate={{ left: pixel?.enabled ? "calc(100% - 22px)" : "2px" }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
                     </button>
-                    <button
-                      onClick={() => setShowAddForm(false)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-                      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)" }}
-                    >
-                      <X className="w-4 h-4" /> Abbrechen
-                    </button>
+
+                    {/* Delete */}
+                    {pixel && (
+                      <button
+                        onClick={() => deletePixel(pixel.id)}
+                        className="p-1.5 rounded-lg transition-all hover:bg-red-500/10"
+                        style={{ color: "hsl(0 70% 50% / 0.4)" }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Pixel List */}
-          {pixels.length === 0 ? (
-            <div
-              className="rounded-2xl p-8 text-center"
-              style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-            >
-              <Activity className="w-8 h-8 mx-auto mb-3" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-              <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Noch keine Pixel konfiguriert</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {pixels.map((pixel, i) => {
-                const info = getProviderInfo(pixel.provider);
-                return (
-                  <motion.div
-                    key={pixel.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="rounded-2xl p-4"
-                    style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
-                  >
-                    <div className="flex flex-wrap items-center gap-3">
-                      {/* Provider badge */}
-                      <div
-                        className="px-3 py-1 rounded-lg text-xs font-bold uppercase"
-                        style={{ background: `${info.color}20`, color: info.color }}
-                      >
-                        {info.name}
-                      </div>
-
-                      {/* Pixel ID */}
-                      <code className="text-xs font-mono px-2 py-1 rounded" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)" }}>
-                        {pixel.pixel_id}
-                      </code>
-
-                      {pixel.label && (
-                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                          {pixel.label}
-                        </span>
-                      )}
-
-                      <div className="flex items-center gap-2 ml-auto">
-                        {/* Test mode toggle */}
-                        <button
-                          onClick={() => togglePixel(pixel.id, "test_mode", !pixel.test_mode)}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                          style={{
-                            background: pixel.test_mode ? "hsl(45 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-                            color: pixel.test_mode ? "hsl(45 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-                          }}
-                          title="Testmodus"
-                        >
-                          <FlaskConical className="w-3.5 h-3.5" />
-                          Test
-                        </button>
-
-                        {/* Enable toggle */}
-                        <button
-                          onClick={() => togglePixel(pixel.id, "enabled", !pixel.enabled)}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                          style={{
-                            background: pixel.enabled ? "hsl(150 60% 40% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-                            color: pixel.enabled ? "hsl(150 60% 40%)" : "hsl(0 0% 100% / 0.4)",
-                          }}
-                        >
-                          {pixel.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          {pixel.enabled ? "Aktiv" : "Inaktiv"}
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          onClick={() => deletePixel(pixel.id)}
-                          className="p-1.5 rounded-lg transition-all hover:bg-red-500/10"
-                          style={{ color: "hsl(0 70% 50% / 0.5)" }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+            );
+          })}
         </div>
       )}
 
