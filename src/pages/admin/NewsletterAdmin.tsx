@@ -6,12 +6,12 @@ import {
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
-  Star, CalendarDays, MapPin, Clock, Wand2, Calendar,
+  Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
 } from "lucide-react";
 import { toast } from "sonner";
 
 // ─── Block Types ───────────────────────────────────────────────
-type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list";
+type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list" | "voucher" | "timer";
 
 interface BaseBlock { id: string; type: BlockType }
 interface HeadingBlock extends BaseBlock { type: "heading"; text: string; level: 1 | 2 | 3; align: "left" | "center" | "right"; color: string }
@@ -22,8 +22,10 @@ interface DividerBlock extends BaseBlock { type: "divider"; color: string; style
 interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
 interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; magicMode?: boolean }
 interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string; magicMode?: boolean; magicLimit?: number }
+interface VoucherBlock extends BaseBlock { type: "voucher"; code: string; title: string; description: string; discount: string; validUntil: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; borderStyle: "dashed" | "solid" | "dotted" }
+interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
 
-type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock;
+type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock | VoucherBlock | TimerBlock;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -34,6 +36,8 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: any }[] = [
   { type: "button", label: "Button", icon: MousePointerClick },
   { type: "event-highlight", label: "Event Highlight", icon: Star },
   { type: "event-list", label: "Terminliste", icon: CalendarDays },
+  { type: "voucher", label: "Gutschein", icon: Gift },
+  { type: "timer", label: "Countdown", icon: Timer },
   { type: "divider", label: "Trennlinie", icon: Minus },
   { type: "spacer", label: "Abstand", icon: ChevronDown },
 ];
@@ -50,6 +54,8 @@ const createBlock = (type: BlockType, overrides?: Partial<any>): Block => {
       case "spacer": return { id, type, height: 24 };
       case "event-highlight": return { id, type, eventTitle: "MAMMA MIA Mitsing Konzert", eventDate: "21. März 2026", eventTime: "19:00 Uhr", eventLocation: "Stadthalle", eventCity: "Paderborn", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", magicMode: false };
       case "event-list": return { id, type, title: "Alle Termine", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }, { date: "28.03.", city: "Paderborn", location: "Stadthalle", url: "https://" }], accentColor: "#e91e8c", textColor: "#333333", bgColor: "#fafafa", magicMode: false, magicLimit: 5 };
+      case "voucher": return { id, type, code: "PARTY2026", title: "🎁 Dein Gutschein", description: "Spare bei deinem nächsten Ticket-Kauf!", discount: "15% Rabatt", validUntil: "31.03.2026", ctaText: "Jetzt einlösen", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#fff5f9", textColor: "#1a1a1a", borderStyle: "dashed" as const };
+      case "timer": return { id, type, title: "⏰ Nur noch wenige Tage!", targetDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0], expiredText: "Das Angebot ist abgelaufen!", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", style: "boxes" as const };
     }
   })();
   return overrides ? { ...base, ...overrides, id } as Block : base as Block;
@@ -168,14 +174,11 @@ const TEMPLATES: NewsletterTemplate[] = [
     blocks: () => [
       createBlock("heading", { text: "🔥 SPECIAL DEAL 🔥", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
-      createBlock("heading", { text: "Nur für kurze Zeit!", level: 2, align: "center", color: "#f5af19" }),
-      createBlock("text", { text: "Sichere dir jetzt exklusive Vorteile und spare bei deinem nächsten Ticket-Kauf. Dieses Angebot gilt nur solange der Vorrat reicht!", align: "center", color: "#333333" }),
-      createBlock("spacer", { height: 8 }),
-      createBlock("button", { text: "💰 Jetzt zuschlagen", url: "https://", bgColor: "#f12711", textColor: "#ffffff", align: "center", borderRadius: 12 }),
+      createBlock("timer", { title: "⏰ Angebot endet in:", targetDate: new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0], expiredText: "Das Angebot ist leider abgelaufen!", accentColor: "#f12711", bgColor: "#fff3f0", textColor: "#1a1a1a", style: "boxes" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("voucher", { code: "DEAL2026", title: "🎁 Exklusiver Rabatt", description: "Nur für Newsletter-Abonnenten!", discount: "20% Rabatt", validUntil: "31.03.2026", ctaText: "💰 Jetzt einlösen", ctaUrl: "https://", accentColor: "#f5af19", bgColor: "#fff8f0", textColor: "#1a1a1a", borderStyle: "dashed" }),
       createBlock("spacer", { height: 16 }),
       createBlock("event-list", { title: "Verfügbare Events", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }], accentColor: "#f5af19", textColor: "#333333", bgColor: "#fff8f0", magicMode: false }),
-      createBlock("spacer", { height: 8 }),
-      createBlock("text", { text: "⏰ Angebot endet am XX.XX.XXXX", align: "center", bold: true, color: "#f12711" }),
     ],
   },
   {
@@ -261,6 +264,44 @@ const TEMPLATES: NewsletterTemplate[] = [
       createBlock("text", { text: "Take a chance on me! 🌺", align: "center", italic: true, color: "#0ea5e9" }),
     ],
   },
+  {
+    id: "voucher-countdown",
+    name: "Gutschein & Countdown",
+    description: "Gutschein mit Countdown-Timer",
+    icon: Gift,
+    gradient: "linear-gradient(135deg, #ec4899, #8b5cf6)",
+    headerGradient: "linear-gradient(135deg, #8b5cf6, #a855f7)",
+    blocks: () => [
+      createBlock("heading", { text: "🎁 Exklusiv für dich!", level: 1, align: "center", color: "#ffffff" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("text", { text: "Nur für kurze Zeit — sichere dir deinen exklusiven Rabatt!", align: "center", color: "#555555" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("timer", { title: "⏳ Angebot läuft ab in:", targetDate: new Date(Date.now() + 5 * 86400000).toISOString().split("T")[0], expiredText: "Leider abgelaufen!", accentColor: "#8b5cf6", bgColor: "#f5f0ff", textColor: "#1a1a1a", style: "boxes" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("voucher", { code: "VIP2026", title: "🎟 VIP Gutschein", description: "Dein persönlicher Rabatt auf alle Events!", discount: "25% Rabatt", validUntil: "30.04.2026", ctaText: "🎉 Jetzt einlösen", ctaUrl: "https://", accentColor: "#ec4899", bgColor: "#fff0f6", textColor: "#1a1a1a", borderStyle: "dashed" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("event-highlight", { eventTitle: "", eventDate: "", eventTime: "", eventLocation: "", eventCity: "", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "", accentColor: "#8b5cf6", bgColor: "#f5f0ff", textColor: "#1a1a1a", magicMode: true }),
+    ],
+  },
+  {
+    id: "early-bird",
+    name: "Early Bird",
+    description: "Frühbucher-Aktion mit Timer",
+    icon: Timer,
+    gradient: "linear-gradient(135deg, #10b981, #059669)",
+    headerGradient: "linear-gradient(135deg, #10b981, #059669)",
+    blocks: () => [
+      createBlock("heading", { text: "🐣 Early Bird Tickets!", level: 1, align: "center", color: "#ffffff" }),
+      createBlock("spacer", { height: 8 }),
+      createBlock("text", { text: "Sei schnell und sichere dir die günstigsten Tickets — nur für begrenzte Zeit!", align: "center", color: "#555555" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("timer", { title: "Early Bird endet in:", targetDate: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0], expiredText: "Die Early Bird Phase ist vorbei!", accentColor: "#10b981", bgColor: "#f0fdf4", textColor: "#1a1a1a", style: "inline" }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("event-highlight", { eventTitle: "", eventDate: "", eventTime: "", eventLocation: "", eventCity: "", eventImage: "", ctaText: "🐣 Early Bird sichern", ctaUrl: "", accentColor: "#10b981", bgColor: "#f0fdf4", textColor: "#1a1a1a", magicMode: true }),
+      createBlock("spacer", { height: 16 }),
+      createBlock("event-list", { title: "Alle Termine", events: [], accentColor: "#10b981", textColor: "#333333", bgColor: "#f0fdf4", magicMode: true, magicLimit: 5 }),
+    ],
+  },
 ];
 
 // ─── Block to HTML ─────────────────────────────────────────────
@@ -322,6 +363,39 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
 <table width="100%" cellpadding="0" cellspacing="0" style="background:${block.bgColor};border-radius:8px;overflow:hidden;">
 <tbody>${rows}</tbody>
 </table></div>`;
+    }
+    case "voucher":
+      return `<div style="margin:0 0 16px;border:2px ${block.borderStyle} ${block.accentColor};border-radius:12px;background:${block.bgColor};overflow:hidden;">
+<div style="background:${block.accentColor};padding:12px 24px;text-align:center;">
+<span style="font-size:20px;font-weight:800;color:#ffffff;">${block.title}</span>
+</div>
+<div style="padding:24px;text-align:center;">
+<p style="margin:0 0 12px;font-size:14px;color:${block.textColor};">${block.description}</p>
+<div style="margin:0 0 16px;padding:16px;background:${block.accentColor}11;border-radius:8px;border:1px dashed ${block.accentColor}44;">
+<p style="margin:0 0 4px;font-size:28px;font-weight:900;color:${block.accentColor};">${block.discount}</p>
+<p style="margin:0;font-size:18px;font-weight:800;letter-spacing:4px;color:${block.textColor};">${block.code}</p>
+</div>
+<p style="margin:0 0 16px;font-size:12px;color:${block.textColor}88;">Gültig bis ${block.validUntil}</p>
+<a href="${block.ctaUrl}" style="display:inline-block;padding:14px 40px;background:${block.accentColor};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;border-radius:50px;">${block.ctaText}</a>
+</div></div>`;
+    case "timer": {
+      const timerHtml = block.style === "boxes"
+        ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
+${["Tage", "Std", "Min", "Sek"].map((label) => `<td style="padding:0 6px;text-align:center;">
+<div style="background:${block.accentColor};color:#ffffff;font-size:28px;font-weight:900;padding:12px 16px;border-radius:8px;min-width:50px;">00</div>
+<p style="margin:4px 0 0;font-size:10px;font-weight:700;color:${block.textColor}88;text-transform:uppercase;">${label}</p>
+</td>`).join("")}
+</tr></tbody></table>`
+        : block.style === "inline"
+        ? `<p style="font-size:32px;font-weight:900;color:${block.accentColor};text-align:center;margin:0;letter-spacing:2px;">00 : 00 : 00 : 00</p>
+<p style="font-size:10px;color:${block.textColor}88;text-align:center;margin:4px 0 0;">Tage : Stunden : Minuten : Sekunden</p>`
+        : `<p style="font-size:24px;font-weight:800;color:${block.accentColor};text-align:center;margin:0;">⏱ Noch 7 Tage übrig</p>`;
+      return `<!--TIMER:${JSON.stringify({ targetDate: block.targetDate, expiredText: block.expiredText, style: block.style, accentColor: block.accentColor, textColor: block.textColor, bgColor: block.bgColor })}-->
+<div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
+${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
+${timerHtml}
+<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate}</p>
+</div>`;
     }
     default:
       return "";
@@ -576,6 +650,70 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
           </div>
         </div>
       );
+    case "voucher":
+      return (
+        <div className="space-y-2">
+          <label className={labelCls} style={labelStyle}>Titel</label>
+          <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Beschreibung</label>
+          <input value={block.description} onChange={(e) => upd({ description: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls} style={labelStyle}>Rabatt</label>
+              <input value={block.discount} onChange={(e) => upd({ discount: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} placeholder="z.B. 15% Rabatt" />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>Code</label>
+              <input value={block.code} onChange={(e) => upd({ code: e.target.value.toUpperCase() })} className="w-full px-3 py-2 rounded-lg text-sm font-mono tracking-widest" style={inputStyle} />
+            </div>
+          </div>
+          <label className={labelCls} style={labelStyle}>Gültig bis</label>
+          <input value={block.validUntil} onChange={(e) => upd({ validUntil: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls} style={labelStyle}>CTA Text</label>
+              <input value={block.ctaText} onChange={(e) => upd({ ctaText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>CTA URL</label>
+              <input value={block.ctaUrl} onChange={(e) => upd({ ctaUrl: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+          </div>
+          <label className={labelCls} style={labelStyle}>Rahmen-Stil</label>
+          <div className="flex gap-1">
+            {(["dashed", "solid", "dotted"] as const).map((s) => (
+              <button key={s} onClick={() => upd({ borderStyle: s })} className="px-3 py-1 rounded-md text-[10px] font-bold" style={{ background: block.borderStyle === s ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.04)", color: block.borderStyle === s ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}>{s}</button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Akzent</label><input type="color" value={block.accentColor} onChange={(e) => upd({ accentColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>BG</label><input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Text</label><input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+          </div>
+        </div>
+      );
+    case "timer":
+      return (
+        <div className="space-y-2">
+          <label className={labelCls} style={labelStyle}>Titel</label>
+          <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Zieldatum</label>
+          <input type="date" value={block.targetDate} onChange={(e) => upd({ targetDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Text nach Ablauf</label>
+          <input value={block.expiredText} onChange={(e) => upd({ expiredText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Darstellung</label>
+          <div className="flex gap-1">
+            {([{ v: "boxes", l: "Boxen" }, { v: "inline", l: "Inline" }, { v: "minimal", l: "Minimal" }] as const).map(({ v, l }) => (
+              <button key={v} onClick={() => upd({ style: v })} className="px-3 py-1 rounded-md text-[10px] font-bold" style={{ background: block.style === v ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.04)", color: block.style === v ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}>{l}</button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Akzent</label><input type="color" value={block.accentColor} onChange={(e) => upd({ accentColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>BG</label><input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+            <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Text</label><input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
+          </div>
+        </div>
+      );
   }
 };
 
@@ -679,6 +817,12 @@ const NewsletterAdmin = () => {
       }
       if (b.type === "event-list") {
         return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fafafa", textColor: isDark ? "#cccccc" : "#333333" };
+      }
+      if (b.type === "voucher") {
+        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fff5f9", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
+      }
+      if (b.type === "timer") {
+        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
       }
       return b;
     }));
