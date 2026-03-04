@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Search, ChevronDown, ChevronUp, Mail, Phone, Calendar, ShoppingCart,
-  TrendingUp, User, CreditCard, X, ArrowUpDown, Eye,
+  TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
 } from "lucide-react";
 
 type Order = {
@@ -26,6 +26,7 @@ type EventInfo = {
   id: string;
   title: string;
   date: string | null;
+  city: string | null;
 };
 
 type Customer = {
@@ -56,7 +57,7 @@ const CustomersAdmin = () => {
     const load = async () => {
       const [ordersRes, eventsRes] = await Promise.all([
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("events").select("id, title, date"),
+        supabase.from("events").select("id, title, date, city"),
       ]);
       if (ordersRes.data) setOrders(ordersRes.data as unknown as Order[]);
       if (eventsRes.data) setEvents(eventsRes.data as unknown as EventInfo[]);
@@ -124,9 +125,26 @@ const CustomersAdmin = () => {
     return result;
   }, [customers, search, sortField, sortAsc, statusFilter]);
 
+  const eventMap = useMemo(() => {
+    const m = new Map<string, EventInfo>();
+    events.forEach((e) => m.set(e.id, e));
+    return m;
+  }, [events]);
+
   const getEventTitle = (eventId: string | null) => {
     if (!eventId) return "–";
-    return events.find((e) => e.id === eventId)?.title || "Unbekannt";
+    return eventMap.get(eventId)?.title || "Unbekannt";
+  };
+
+  const getCustomerCities = (customer: Customer): string[] => {
+    const cities = new Set<string>();
+    customer.orders.forEach((o) => {
+      if (o.event_id && o.status === "paid") {
+        const city = eventMap.get(o.event_id)?.city;
+        if (city) cities.add(city);
+      }
+    });
+    return Array.from(cities).sort();
   };
 
   const handleSort = (field: SortField) => {
@@ -288,9 +306,21 @@ const CustomersAdmin = () => {
                         </span>
                       )}
                     </div>
-                    <span className="text-xs truncate block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                      {customer.email}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs truncate" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        {customer.email}
+                      </span>
+                      {getCustomerCities(customer).map((city) => (
+                        <span
+                          key={city}
+                          className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
+                          style={{ background: "hsl(215 90% 55% / 0.12)", color: "hsl(215 90% 55%)" }}
+                        >
+                          <MapPin className="w-2.5 h-2.5" />
+                          {city}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className="hidden sm:flex items-center gap-4 shrink-0">
                     <div className="text-right">
