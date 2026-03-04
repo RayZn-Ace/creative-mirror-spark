@@ -78,6 +78,7 @@ const App = () => (
               <Route path="/location-anmelden" element={<LocationAnmelden />} />
               <Route path="/partner" element={<PartnerWerden />} />
               <Route path="/influencer" element={<InfluencerPage />} />
+              <Route path="/media" element={<Fotos />} />
               <Route path="/fotos" element={<Fotos />} />
               <Route path="/meine-tickets" element={<MeineTickets />} />
               <Route path="/muttizettel" element={<Muttizettel />} />
