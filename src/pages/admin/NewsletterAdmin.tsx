@@ -433,7 +433,6 @@ const AlignPicker = ({ value, onChange }: { value: string; onChange: (v: any) =>
 // ─── Placeholder Variables ─────────────────────────────────────
 const PLACEHOLDERS = [
   { tag: "{{name}}", label: "Name", icon: "👤" },
-  { tag: "{{vorname}}", label: "Vorname", icon: "🙋" },
   { tag: "{{city}}", label: "Stadt", icon: "📍" },
   { tag: "{{email}}", label: "E-Mail", icon: "✉️" },
 ];
