@@ -41,6 +41,7 @@ const ScannerAdmin = lazy(() => import("./pages/admin/ScannerAdmin"));
 const SettingsAdmin = lazy(() => import("./pages/admin/SettingsAdmin"));
 const TemplatesAdmin = lazy(() => import("./pages/admin/TemplatesAdmin"));
 const AnalyticsAdmin = lazy(() => import("./pages/admin/AnalyticsAdmin"));
+const CouponsAdmin = lazy(() => import("./pages/admin/CouponsAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const App = () => (
                 <Route path="scanner" element={<ScannerAdmin />} />
                 <Route path="settings" element={<SettingsAdmin />} />
                 <Route path="vorlagen" element={<TemplatesAdmin />} />
+                <Route path="coupons" element={<CouponsAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
