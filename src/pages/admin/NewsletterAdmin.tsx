@@ -48,8 +48,8 @@ const createBlock = (type: BlockType, overrides?: Partial<any>): Block => {
       case "button": return { id, type, text: "Jetzt Tickets sichern", url: "https://", bgColor: "#e91e8c", textColor: "#ffffff", align: "center" as const, borderRadius: 8 };
       case "divider": return { id, type, color: "#eeeeee", style: "solid" as const };
       case "spacer": return { id, type, height: 24 };
-      case "event-highlight": return { id, type, eventTitle: "MAMMA MIA Mitsing Konzert", eventDate: "21. März 2026", eventTime: "19:00 Uhr", eventLocation: "Stadthalle", eventCity: "Paderborn", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a" };
-      case "event-list": return { id, type, title: "Alle Termine", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }, { date: "28.03.", city: "Paderborn", location: "Stadthalle", url: "https://" }], accentColor: "#e91e8c", textColor: "#333333", bgColor: "#fafafa" };
+      case "event-highlight": return { id, type, eventTitle: "MAMMA MIA Mitsing Konzert", eventDate: "21. März 2026", eventTime: "19:00 Uhr", eventLocation: "Stadthalle", eventCity: "Paderborn", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", magicMode: false };
+      case "event-list": return { id, type, title: "Alle Termine", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }, { date: "28.03.", city: "Paderborn", location: "Stadthalle", url: "https://" }], accentColor: "#e91e8c", textColor: "#333333", bgColor: "#fafafa", magicMode: false, magicLimit: 5 };
     }
   })();
   return overrides ? { ...base, ...overrides, id } as Block : base as Block;
@@ -638,6 +638,23 @@ const NewsletterAdmin = () => {
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
 
+  // Sync event block colors when color scheme changes
+  const applyColorScheme = useCallback((cs: ColorScheme) => {
+    setColorScheme(cs);
+    const accentFromGradient = cs.headerGradient.match(/#[0-9a-fA-F]{6}/g)?.[0] || "#e91e8c";
+    // Determine if scheme is dark or light
+    const isDark = cs.bodyBg.startsWith("#0") || cs.bodyBg.startsWith("#1") || cs.bodyBg === "#0a0a0a";
+    setBlocks((prev) => prev.map((b) => {
+      if (b.type === "event-highlight") {
+        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
+      }
+      if (b.type === "event-list") {
+        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fafafa", textColor: isDark ? "#cccccc" : "#333333" };
+      }
+      return b;
+    }));
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       const [ordersRes, eventsRes] = await Promise.all([
@@ -711,7 +728,7 @@ const NewsletterAdmin = () => {
     setSelectedBlock(null);
     // Auto-match a color scheme based on template
     const matchScheme = COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
-    if (matchScheme) setColorScheme(matchScheme);
+    if (matchScheme) applyColorScheme(matchScheme);
     toast.success(`Vorlage "${template.name}" geladen`);
   }, []);
 
@@ -862,7 +879,7 @@ ${bodyContent}
                         return (
                           <motion.button
                             key={cs.id}
-                            onClick={() => setColorScheme(cs)}
+                            onClick={() => applyColorScheme(cs)}
                             className="relative flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-center transition-all"
                             style={{
                               background: isActive ? "hsl(0 0% 100% / 0.08)" : "hsl(0 0% 100% / 0.02)",
