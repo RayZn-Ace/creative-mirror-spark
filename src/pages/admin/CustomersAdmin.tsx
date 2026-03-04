@@ -1,11 +1,13 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Search, ChevronDown, ChevronUp, Mail, Phone, Calendar, ShoppingCart,
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
+  Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check,
 } from "lucide-react";
 import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
+import { toast } from "sonner";
 
 type Order = {
   id: string;
@@ -44,11 +46,60 @@ type Customer = {
 
 type SortField = "email" | "totalSpent" | "orderCount" | "lastOrder";
 
-// CitySearchFilter is imported from @/components/admin/CitySearchFilter
+/* ─── CSV Helpers ─── */
+const escapeCsv = (val: unknown): string => {
+  const s = String(val ?? "");
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+const downloadCsv = (filename: string, headers: string[], rows: string[][]) => {
+  const bom = "\uFEFF"; // Excel UTF-8 BOM
+  const csv = bom + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const parseCsvLine = (line: string): string[] => {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (ch === '"') inQuotes = false;
+      else current += ch;
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ";" || ch === ",") { result.push(current.trim()); current = ""; }
+      else current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+};
+
+type TicketRow = {
+  id: string; event_id: string; order_id: string; status: string;
+  checked_in_at: string | null; holder_name: string | null; holder_email: string | null;
+  qr_code: string; created_at: string; ticket_category_id: string | null;
+};
+
+type TicketCategory = {
+  id: string; name: string; event_id: string; price: number;
+};
 
 const CustomersAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [events, setEvents] = useState<EventInfo[]>([]);
+  const [allTickets, setAllTickets] = useState<TicketRow[]>([]);
+  const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
@@ -56,15 +107,24 @@ const CustomersAdmin = () => {
   const [sortAsc, setSortAsc] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importPreview, setImportPreview] = useState<{ headers: string[]; rows: string[][] } | null>(null);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
-      const [ordersRes, eventsRes] = await Promise.all([
+      const [ordersRes, eventsRes, ticketsRes, categoriesRes] = await Promise.all([
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase.from("events").select("id, title, date, city"),
+        supabase.from("tickets").select("id, event_id, order_id, status, checked_in_at, holder_name, holder_email, qr_code, created_at, ticket_category_id"),
+        supabase.from("ticket_categories").select("id, name, event_id, price"),
       ]);
       if (ordersRes.data) setOrders(ordersRes.data as unknown as Order[]);
       if (eventsRes.data) setEvents(eventsRes.data as unknown as EventInfo[]);
+      if (ticketsRes.data) setAllTickets(ticketsRes.data as unknown as TicketRow[]);
+      if (categoriesRes.data) setTicketCategories(categoriesRes.data as unknown as TicketCategory[]);
       setLoading(false);
     };
     load();
@@ -194,6 +254,222 @@ const CustomersAdmin = () => {
 
   const getStatus = (s: string) => statusColors[s] || { bg: "hsl(0 0% 100% / 0.06)", text: "hsl(0 0% 100% / 0.4)", label: s };
 
+  const catMap = useMemo(() => new Map(ticketCategories.map(c => [c.id, c])), [ticketCategories]);
+
+  /* ─── EXPORT FUNCTIONS ─── */
+  const exportCustomers = () => {
+    const headers = ["Name", "E-Mail", "Telefon", "Geburtsdatum", "Bestellungen", "Bezahlte Bestellungen", "Umsatz (€)", "Servicegebühren (€)", "Erste Bestellung", "Letzte Bestellung", "Städte", "Stammkunde"];
+    const rows = filteredCustomers.map(c => {
+      const paidOrders = c.orders.filter(o => o.status === "paid");
+      const serviceFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
+      const cities = getCustomerCities(c).join(", ");
+      return [
+        escapeCsv(c.name), escapeCsv(c.email), escapeCsv(c.phone), escapeCsv(c.birth_date ? formatDate(c.birth_date) : ""),
+        String(c.orderCount), String(paidOrders.length), c.totalSpent.toFixed(2).replace(".", ","), serviceFees.toFixed(2).replace(".", ","),
+        formatDate(c.firstOrder), formatDate(c.lastOrder), escapeCsv(cities), paidOrders.length > 2 ? "Ja" : "Nein",
+      ];
+    });
+    downloadCsv(`kunden-export-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+    toast.success(`${rows.length} Kunden exportiert`);
+    setShowExportModal(false);
+  };
+
+  const exportOrders = () => {
+    const headers = ["Bestell-ID", "Datum", "Bezahlt am", "Kunde", "E-Mail", "Telefon", "Geburtsdatum", "Event", "Stadt", "Status", "Betrag (€)", "Servicegebühr (€)", "Gesamt (€)", "Währung", "Zahlungs-ID"];
+    const rows = orders.filter(o => {
+      const d = new Date(o.created_at);
+      if (statusFilter !== "all" && o.status !== statusFilter) return false;
+      if (cityFilter !== "all") {
+        const city = o.event_id ? eventMap.get(o.event_id)?.city : null;
+        if (city !== cityFilter) return false;
+      }
+      return true;
+    }).map(o => {
+      const ev = o.event_id ? eventMap.get(o.event_id) : null;
+      return [
+        escapeCsv(o.id), formatDate(o.created_at), o.paid_at ? formatDate(o.paid_at) : "",
+        escapeCsv(o.name), escapeCsv(o.email), escapeCsv(o.phone),
+        o.birth_date ? formatDate(o.birth_date) : "",
+        escapeCsv(ev?.title), escapeCsv(ev?.city), o.status,
+        Number(o.total_amount).toFixed(2).replace(".", ","),
+        Number(o.service_fee).toFixed(2).replace(".", ","),
+        (Number(o.total_amount) + Number(o.service_fee)).toFixed(2).replace(".", ","),
+        o.currency, escapeCsv((o as any).mollie_payment_id),
+      ];
+    });
+    downloadCsv(`bestellungen-export-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+    toast.success(`${rows.length} Bestellungen exportiert`);
+    setShowExportModal(false);
+  };
+
+  const exportTickets = () => {
+    const headers = ["Ticket-ID", "QR-Code", "Event", "Stadt", "Event-Datum", "Ticket-Kategorie", "Preis (€)", "Inhaber Name", "Inhaber E-Mail", "Status", "Erstellt am", "Eingecheckt am", "Bestell-ID"];
+    const rows = allTickets.map(t => {
+      const ev = eventMap.get(t.event_id);
+      const cat = t.ticket_category_id ? catMap.get(t.ticket_category_id) : null;
+      return [
+        escapeCsv(t.id), escapeCsv(t.qr_code), escapeCsv(ev?.title), escapeCsv(ev?.city),
+        ev?.date ? formatDate(ev.date) : "", escapeCsv(cat?.name), cat ? cat.price.toFixed(2).replace(".", ",") : "",
+        escapeCsv(t.holder_name), escapeCsv(t.holder_email), t.status,
+        formatDate(t.created_at), t.checked_in_at ? formatDate(t.checked_in_at) : "", escapeCsv(t.order_id),
+      ];
+    });
+    downloadCsv(`tickets-export-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+    toast.success(`${rows.length} Tickets exportiert`);
+    setShowExportModal(false);
+  };
+
+  const exportEventReport = (eventId: string) => {
+    const ev = eventMap.get(eventId);
+    if (!ev) return;
+    const eventOrders = orders.filter(o => o.event_id === eventId);
+    const eventTickets = allTickets.filter(t => t.event_id === eventId);
+    const paidOrders = eventOrders.filter(o => o.status === "paid");
+    const checkedIn = eventTickets.filter(t => t.checked_in_at);
+    const totalRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+    const totalFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
+
+    // Summary sheet
+    const summaryHeaders = ["Kennzahl", "Wert"];
+    const summaryRows = [
+      ["Event", escapeCsv(ev.title)],
+      ["Stadt", escapeCsv(ev.city)],
+      ["Datum", ev.date ? formatDate(ev.date) : ""],
+      ["Bestellungen gesamt", String(eventOrders.length)],
+      ["Bezahlte Bestellungen", String(paidOrders.length)],
+      ["Umsatz (€)", totalRevenue.toFixed(2).replace(".", ",")],
+      ["Servicegebühren (€)", totalFees.toFixed(2).replace(".", ",")],
+      ["Tickets gesamt", String(eventTickets.length)],
+      ["Check-ins", String(checkedIn.length)],
+      ["Check-in-Rate", eventTickets.length > 0 ? `${((checkedIn.length / eventTickets.length) * 100).toFixed(1)}%` : "0%"],
+      ["", ""],
+      ["--- KÄUFER ---", ""],
+    ];
+
+    // Buyer details
+    const buyerHeaders = ["Name", "E-Mail", "Telefon", "Geburtsdatum", "Betrag (€)", "Servicegebühr (€)", "Status", "Bestellt am", "Bezahlt am"];
+    const buyerRows = eventOrders.map(o => [
+      escapeCsv(o.name), escapeCsv(o.email), escapeCsv(o.phone),
+      o.birth_date ? formatDate(o.birth_date) : "", Number(o.total_amount).toFixed(2).replace(".", ","),
+      Number(o.service_fee).toFixed(2).replace(".", ","), o.status, formatDate(o.created_at),
+      o.paid_at ? formatDate(o.paid_at) : "",
+    ]);
+
+    // Ticket details
+    const ticketHeaders = ["Ticket-ID", "Kategorie", "Preis (€)", "Inhaber", "E-Mail", "Status", "Check-in"];
+    const ticketRows = eventTickets.map(t => {
+      const cat = t.ticket_category_id ? catMap.get(t.ticket_category_id) : null;
+      return [
+        escapeCsv(t.id.slice(0, 8)), escapeCsv(cat?.name), cat ? cat.price.toFixed(2).replace(".", ",") : "",
+        escapeCsv(t.holder_name), escapeCsv(t.holder_email), t.status,
+        t.checked_in_at ? formatDate(t.checked_in_at) : "Nein",
+      ];
+    });
+
+    // Combine into one CSV
+    const bom = "\uFEFF";
+    const allLines = [
+      summaryHeaders.join(";"),
+      ...summaryRows.map(r => r.join(";")),
+      "",
+      buyerHeaders.join(";"),
+      ...buyerRows.map(r => r.join(";")),
+      "",
+      `--- TICKETS (${eventTickets.length}) ---`,
+      ticketHeaders.join(";"),
+      ...ticketRows.map(r => r.join(";")),
+    ];
+    const csv = bom + allLines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const slug = (ev.title || "event").toLowerCase().replace(/[^a-z0-9äöü]/g, "-").replace(/-+/g, "-");
+    a.download = `event-report-${slug}-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Event-Report für "${ev.title}" exportiert`);
+    setShowExportModal(false);
+  };
+
+  const exportCheckins = () => {
+    const headers = ["Event", "Stadt", "Event-Datum", "Ticket-ID", "Kategorie", "Inhaber Name", "Inhaber E-Mail", "Check-in Zeit"];
+    const rows = allTickets.filter(t => t.checked_in_at).map(t => {
+      const ev = eventMap.get(t.event_id);
+      const cat = t.ticket_category_id ? catMap.get(t.ticket_category_id) : null;
+      return [
+        escapeCsv(ev?.title), escapeCsv(ev?.city), ev?.date ? formatDate(ev.date) : "",
+        escapeCsv(t.id.slice(0, 8)), escapeCsv(cat?.name),
+        escapeCsv(t.holder_name), escapeCsv(t.holder_email),
+        t.checked_in_at ? new Date(t.checked_in_at).toLocaleString("de-DE") : "",
+      ];
+    });
+    downloadCsv(`checkins-export-${new Date().toISOString().split("T")[0]}.csv`, headers, rows);
+    toast.success(`${rows.length} Check-ins exportiert`);
+    setShowExportModal(false);
+  };
+
+  /* ─── IMPORT ─── */
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { toast.error("CSV muss mindestens Header + 1 Zeile haben"); return; }
+      const headers = parseCsvLine(lines[0]);
+      const rows = lines.slice(1).map(parseCsvLine);
+      setImportPreview({ headers, rows });
+      setShowImportModal(true);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const runImport = async () => {
+    if (!importPreview) return;
+    setImporting(true);
+    const { headers, rows } = importPreview;
+    const emailIdx = headers.findIndex(h => h.toLowerCase().includes("mail"));
+    const nameIdx = headers.findIndex(h => h.toLowerCase().includes("name") && !h.toLowerCase().includes("mail"));
+    const cityIdx = headers.findIndex(h => h.toLowerCase().includes("stadt") || h.toLowerCase().includes("city"));
+    const sourceIdx = headers.findIndex(h => h.toLowerCase().includes("quelle") || h.toLowerCase().includes("source"));
+
+    if (emailIdx === -1) {
+      toast.error("Spalte 'E-Mail' nicht gefunden");
+      setImporting(false);
+      return;
+    }
+
+    let imported = 0;
+    let skipped = 0;
+    for (const row of rows) {
+      const email = row[emailIdx]?.trim().toLowerCase();
+      if (!email || !email.includes("@")) { skipped++; continue; }
+      const payload: any = { email, source: sourceIdx >= 0 ? row[sourceIdx] || "csv-import" : "csv-import" };
+      if (nameIdx >= 0 && row[nameIdx]) payload.name = row[nameIdx];
+      if (cityIdx >= 0 && row[cityIdx]) payload.city = row[cityIdx];
+      const { error } = await supabase.from("newsletter_subscribers").upsert(payload, { onConflict: "email" });
+      if (error) skipped++;
+      else imported++;
+    }
+    toast.success(`${imported} importiert, ${skipped} übersprungen`);
+    setImporting(false);
+    setShowImportModal(false);
+    setImportPreview(null);
+  };
+
+  // Events with data for event-oriented export
+  const eventsWithOrders = useMemo(() => {
+    const map = new Map<string, number>();
+    orders.forEach(o => { if (o.event_id) map.set(o.event_id, (map.get(o.event_id) ?? 0) + 1); });
+    return events
+      .filter(e => map.has(e.id))
+      .map(e => ({ ...e, orderCount: map.get(e.id) ?? 0 }))
+      .sort((a, b) => b.orderCount - a.orderCount);
+  }, [events, orders]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -202,14 +478,196 @@ const CustomersAdmin = () => {
     );
   }
 
+  const modalBg: React.CSSProperties = { position: "fixed", inset: 0, zIndex: 50, background: "hsl(0 0% 0% / 0.7)", display: "flex", alignItems: "center", justifyContent: "center" };
+  const modalCard: React.CSSProperties = { background: "hsl(220 40% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)", borderRadius: 20, maxWidth: 700, width: "95%", maxHeight: "85vh", overflow: "auto", padding: 24 };
+  const exportBtn: React.CSSProperties = { background: "hsl(0 0% 100% / 0.05)", border: "1px solid hsl(0 0% 100% / 0.08)", borderRadius: 14, padding: "14px 18px", cursor: "pointer", textAlign: "left" as const, width: "100%", transition: "all 0.15s" };
+
   return (
     <div>
-      <h1
-        className="text-xl sm:text-2xl font-black uppercase mb-6"
-        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
-      >
-        Kunden
-      </h1>
+      {/* Hidden file input for import */}
+      <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileSelect} />
+
+      {/* ─── EXPORT MODAL ─── */}
+      {showExportModal && (
+        <div style={modalBg} onClick={() => setShowExportModal(false)}>
+          <div style={modalCard} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
+                <Download className="w-4 h-4 inline mr-2" style={{ color: "hsl(330 80% 55%)" }} />
+                CSV Export
+              </h2>
+              <button onClick={() => setShowExportModal(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Globale Exports</p>
+
+              <button onClick={exportCustomers} style={exportBtn} className="hover:border-white/20 hover:bg-white/[0.07]">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                  <div>
+                    <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Kundenliste</div>
+                    <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      Name, E-Mail, Telefon, Umsatz, Bestellungen, Städte ({filteredCustomers.length} Kunden)
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button onClick={exportOrders} style={exportBtn} className="hover:border-white/20 hover:bg-white/[0.07]">
+                <div className="flex items-center gap-3">
+                  <ShoppingCart className="w-5 h-5 shrink-0" style={{ color: "hsl(200 80% 55%)" }} />
+                  <div>
+                    <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Alle Bestellungen</div>
+                    <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      Komplett mit Käuferdetails, Events, Status, Beträge ({orders.length} Bestellungen)
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button onClick={exportTickets} style={exportBtn} className="hover:border-white/20 hover:bg-white/[0.07]">
+                <div className="flex items-center gap-3">
+                  <Ticket className="w-5 h-5 shrink-0" style={{ color: "hsl(140 60% 50%)" }} />
+                  <div>
+                    <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Alle Tickets</div>
+                    <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      QR-Codes, Kategorien, Preise, Inhaber, Check-in-Status ({allTickets.length} Tickets)
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              <button onClick={exportCheckins} style={exportBtn} className="hover:border-white/20 hover:bg-white/[0.07]">
+                <div className="flex items-center gap-3">
+                  <UserCheck className="w-5 h-5 shrink-0" style={{ color: "hsl(45 90% 55%)" }} />
+                  <div>
+                    <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Alle Check-ins</div>
+                    <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      Nur eingecheckte Tickets mit Zeitstempel ({allTickets.filter(t => t.checked_in_at).length} Check-ins)
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {eventsWithOrders.length > 0 && (
+                <>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mt-6 mb-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                    Event-Report (Komplett)
+                  </p>
+                  <div className="max-h-[300px] overflow-auto space-y-2 pr-1">
+                    {eventsWithOrders.map(ev => {
+                      const evTickets = allTickets.filter(t => t.event_id === ev.id);
+                      const checkedIn = evTickets.filter(t => t.checked_in_at).length;
+                      return (
+                        <button key={ev.id} onClick={() => exportEventReport(ev.id)} style={exportBtn} className="hover:border-white/20 hover:bg-white/[0.07]">
+                          <div className="flex items-center gap-3">
+                            <FileSpreadsheet className="w-4 h-4 shrink-0" style={{ color: "hsl(260 70% 60%)" }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{ev.title}</div>
+                              <div className="text-[10px] flex items-center gap-2 flex-wrap" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                                {ev.city && <span>{ev.city}</span>}
+                                {ev.date && <span>{formatDate(ev.date)}</span>}
+                                <span>{ev.orderCount} Bestellungen</span>
+                                <span>{evTickets.length} Tickets</span>
+                                <span>{checkedIn} Check-ins</span>
+                              </div>
+                            </div>
+                            <Download className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── IMPORT MODAL ─── */}
+      {showImportModal && importPreview && (
+        <div style={modalBg} onClick={() => { setShowImportModal(false); setImportPreview(null); }}>
+          <div style={modalCard} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
+                <Upload className="w-4 h-4 inline mr-2" style={{ color: "hsl(140 60% 50%)" }} />
+                CSV Import – Vorschau
+              </h2>
+              <button onClick={() => { setShowImportModal(false); setImportPreview(null); }} className="p-1.5 rounded-lg hover:bg-white/10">
+                <X className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+              </button>
+            </div>
+
+            <div className="rounded-xl overflow-hidden mb-4" style={{ border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+              <div className="overflow-x-auto max-h-[300px]">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                      {importPreview.headers.map((h, i) => (
+                        <th key={i} className="px-3 py-2 text-left font-bold uppercase tracking-wider whitespace-nowrap" style={{ color: "hsl(0 0% 100% / 0.4)", fontSize: 10 }}>
+                          {h}
+                          {h.toLowerCase().includes("mail") && <Check className="w-3 h-3 inline ml-1" style={{ color: "hsl(140 60% 50%)" }} />}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {importPreview.rows.slice(0, 10).map((row, i) => (
+                      <tr key={i} style={{ borderTop: "1px solid hsl(0 0% 100% / 0.04)" }}>
+                        {row.map((cell, j) => (
+                          <td key={j} className="px-3 py-2 whitespace-nowrap" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                {importPreview.rows.length} Zeilen erkannt · Import in Newsletter-Abonnenten
+                {importPreview.rows.length > 10 && ` (${importPreview.rows.length - 10} weitere nicht angezeigt)`}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowImportModal(false); setImportPreview(null); }}
+                  className="px-4 py-2 rounded-xl text-xs font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)" }}>
+                  Abbrechen
+                </button>
+                <button onClick={runImport} disabled={importing}
+                  className="px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2" style={{ background: "hsl(140 60% 45%)", color: "hsl(0 0% 100%)" }}>
+                  {importing ? "Importiere..." : <><Upload className="w-3.5 h-3.5" /> Jetzt importieren</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <h1
+          className="text-xl sm:text-2xl font-black uppercase"
+          style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
+        >
+          Kunden
+        </h1>
+        <div className="flex items-center gap-2">
+          <button onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02]"
+            style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+            <Upload className="w-3.5 h-3.5" /> CSV Import
+          </button>
+          <button onClick={() => setShowExportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02]"
+            style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+            <Download className="w-3.5 h-3.5" /> CSV Export
+          </button>
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
