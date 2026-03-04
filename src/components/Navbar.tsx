@@ -24,15 +24,18 @@ function buildNav(gt: GlobalTranslations) {
     {
       label: gt.navExperience,
       items: [
-        { label: gt.navPhotos, path: "/fotos" },
-        { label: gt.navPastEvents, path: "/vergangene-events" },
+        { label: gt.navForWho, path: "/ueber-uns" },
+        { label: gt.navMedia, path: "/fotos" },
+        { label: gt.navBlog, path: "/vergangene-events" },
       ],
     },
     {
       label: gt.navCollaboration,
       items: [
-        { label: gt.navAbiklasse, path: "/abiklasse" },
-        { label: gt.navPromoter, path: "/promoter" },
+        { label: gt.navBookUs, path: "/kontakt" },
+        { label: gt.navRegisterLocation, path: "/kontakt" },
+        { label: gt.navPartner, path: "/promoter" },
+        { label: gt.navInfluencer, path: "/kontakt" },
         { label: gt.navJobs, path: "/jobs" },
       ],
     },
