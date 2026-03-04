@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.send-tickets]
 verify_jwt = false
+
+[functions.issue-free-tickets]
+verify_jwt = false
