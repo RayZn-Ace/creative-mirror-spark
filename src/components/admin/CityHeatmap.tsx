@@ -1,5 +1,6 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 /* ─── Known city coordinates (DACH + Europe + Brazil) ─── */
@@ -54,7 +55,6 @@ const FitBounds = ({ coords }: { coords: [number, number][] }) => {
       map.setView(coords[0], 8);
       return;
     }
-    const L = require("leaflet") as typeof import("leaflet");
     const bounds = L.latLngBounds(coords.map(c => L.latLng(c[0], c[1])));
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
   }, [coords, map]);
@@ -104,8 +104,7 @@ export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
         {markers.map((m) => {
           const intensity = m.revenue / maxRevenue;
           const radius = 8 + intensity * 30;
-          // Color: low=blue, mid=magenta, high=hot pink
-          const hue = 330 - (1 - intensity) * 130; // 200 (blue) → 330 (pink)
+          const hue = 330 - (1 - intensity) * 130;
           const lightness = 45 + intensity * 15;
           return (
             <CircleMarker
