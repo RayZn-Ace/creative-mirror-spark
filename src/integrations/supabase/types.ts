@@ -144,6 +144,33 @@ export type Database = {
           },
         ]
       }
+      custom_roles: {
+        Row: {
+          color: string
+          created_at: string
+          display_name: string
+          id: string
+          is_system: boolean
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          display_name: string
+          id?: string
+          is_system?: boolean
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       dashboard_layouts: {
         Row: {
           created_at: string
@@ -561,21 +588,21 @@ export type Database = {
           granted: boolean
           id: string
           permission: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at: string
         }
         Insert: {
           granted?: boolean
           id?: string
           permission: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at?: string
         }
         Update: {
           granted?: boolean
           id?: string
           permission?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           updated_at?: string
         }
         Relationships: []
