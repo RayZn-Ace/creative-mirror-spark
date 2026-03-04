@@ -389,3 +389,22 @@
     color: hsl(0 0% 100%);
   }
 }
+
+/* react-grid-layout overrides for dark admin dashboard */
+.dashboard-grid-container .react-grid-item.react-grid-placeholder {
+  background: hsl(270 60% 55% / 0.2) !important;
+  border: 2px dashed hsl(270 60% 55% / 0.4) !important;
+  border-radius: 0.75rem;
+  opacity: 1 !important;
+}
+.dashboard-grid-container .react-grid-item > .react-resizable-handle::after {
+  border-color: hsl(0 0% 100% / 0.25) !important;
+}
+.dashboard-grid-container .react-grid-item > .react-resizable-handle:hover::after {
+  border-color: hsl(270 60% 55%) !important;
+}
+.dashboard-grid-container .react-grid-item.react-draggable-dragging {
+  box-shadow: 0 12px 40px hsl(0 0% 0% / 0.5) !important;
+  z-index: 100;
+  opacity: 0.92;
+}
