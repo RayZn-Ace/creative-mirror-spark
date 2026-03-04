@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -20,6 +20,7 @@ const navItems = [
   { label: "Scanner", href: "/admin/scanner", icon: QrCode },
   { label: "Coupons", href: "/admin/coupons", icon: Tag },
   { label: "Werbemanager", href: "/admin/werbemanager", icon: Megaphone },
+  { label: "Support", href: "/admin/support", icon: Headphones },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
