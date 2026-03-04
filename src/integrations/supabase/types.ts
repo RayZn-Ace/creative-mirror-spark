@@ -369,6 +369,47 @@ export type Database = {
         }
         Relationships: []
       }
+      scanner_links: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          event_id: string
+          expires_at: string | null
+          id: string
+          label: string | null
+          token: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_id: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          token?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_id?: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scanner_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_categories: {
         Row: {
           badge: string | null
@@ -424,6 +465,70 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          checked_in_at: string | null
+          checked_in_by: string | null
+          created_at: string
+          event_id: string
+          holder_email: string | null
+          holder_name: string | null
+          id: string
+          order_id: string
+          qr_code: string
+          status: string
+          ticket_category_id: string | null
+        }
+        Insert: {
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string
+          event_id: string
+          holder_email?: string | null
+          holder_name?: string | null
+          id?: string
+          order_id: string
+          qr_code: string
+          status?: string
+          ticket_category_id?: string | null
+        }
+        Update: {
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string
+          event_id?: string
+          holder_email?: string | null
+          holder_name?: string | null
+          id?: string
+          order_id?: string
+          qr_code?: string
+          status?: string
+          ticket_category_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_ticket_category_id_fkey"
+            columns: ["ticket_category_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -540,7 +645,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "scanner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -668,7 +773,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "scanner"],
     },
   },
 } as const

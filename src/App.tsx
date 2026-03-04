@@ -24,6 +24,7 @@ const VergangeneEvents = lazy(() => import("./pages/VergangeneEvents"));
 const Abiklasse = lazy(() => import("./pages/Abiklasse"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const Scanner = lazy(() => import("./pages/Scanner"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -36,6 +37,7 @@ const PagesAdmin = lazy(() => import("./pages/admin/PagesAdmin"));
 const TrackingAdminPage = lazy(() => import("./pages/admin/TrackingAdmin"));
 const CustomersAdmin = lazy(() => import("./pages/admin/CustomersAdmin"));
 const NewsletterAdmin = lazy(() => import("./pages/admin/NewsletterAdmin"));
+const ScannerAdmin = lazy(() => import("./pages/admin/ScannerAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -76,9 +78,11 @@ const App = () => (
                 <Route path="customers" element={<CustomersAdmin />} />
                 <Route path="newsletter" element={<NewsletterAdmin />} />
                 <Route path="tracking" element={<TrackingAdminPage />} />
+                <Route path="scanner" element={<ScannerAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
+              <Route path="/scan" element={<Scanner />} />
               <Route path="/:citySlug" element={<CityPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
