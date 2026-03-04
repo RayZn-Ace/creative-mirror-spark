@@ -20,7 +20,35 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase } = body;
+    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, country } = body;
+
+    // Country-based payment method mapping for Mollie
+    const COUNTRY_METHODS: Record<string, string[]> = {
+      DE: ["applepay", "bancontact", "creditcard", "eps", "giropay", "ideal", "klarna", "paypal", "sofort", "przelewy24"],
+      AT: ["applepay", "creditcard", "eps", "klarna", "paypal", "sofort"],
+      CH: ["applepay", "creditcard", "paypal", "twint"],
+      NL: ["applepay", "creditcard", "ideal", "klarna", "paypal"],
+      BE: ["applepay", "bancontact", "creditcard", "klarna", "paypal"],
+      FR: ["applepay", "creditcard", "klarna", "paypal"],
+      PL: ["applepay", "creditcard", "paypal", "przelewy24", "blik"],
+      CZ: ["applepay", "creditcard", "paypal"],
+      DK: ["applepay", "creditcard", "paypal"],
+      SE: ["applepay", "creditcard", "klarna", "paypal"],
+      NO: ["applepay", "creditcard", "klarna", "paypal"],
+      IT: ["applepay", "creditcard", "klarna", "paypal", "mybank"],
+      ES: ["applepay", "creditcard", "klarna", "paypal"],
+      PT: ["applepay", "creditcard", "paypal", "multibanco"],
+      GB: ["applepay", "creditcard", "klarna", "paypal"],
+      HU: ["applepay", "creditcard", "paypal"],
+      RO: ["applepay", "creditcard", "paypal"],
+      BG: ["applepay", "creditcard", "paypal"],
+      LU: ["applepay", "creditcard", "ideal", "paypal"],
+      FI: ["applepay", "creditcard", "klarna", "paypal"],
+    };
+
+    const paymentMethods = country && COUNTRY_METHODS[country.toUpperCase()]
+      ? COUNTRY_METHODS[country.toUpperCase()]
+      : undefined; // Let Mollie decide if country unknown
 
     // items: [{ ticketId, name, quantity, priceEur }]
     if (!email || !eventId || !items || items.length === 0) {
@@ -123,6 +151,7 @@ Deno.serve(async (req) => {
         description: `Tickets – Order ${order.id.slice(0, 8)}`,
         redirectUrl,
         webhookUrl,
+        ...(paymentMethods ? { method: paymentMethods } : {}),
         metadata: {
           order_id: order.id,
           discount_code: discountCode || null,
