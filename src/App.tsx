@@ -39,7 +39,7 @@ const CustomersAdmin = lazy(() => import("./pages/admin/CustomersAdmin"));
 const NewsletterAdmin = lazy(() => import("./pages/admin/NewsletterAdmin"));
 const ScannerAdmin = lazy(() => import("./pages/admin/ScannerAdmin"));
 const SettingsAdmin = lazy(() => import("./pages/admin/SettingsAdmin"));
-const TicketTemplateAdmin = lazy(() => import("./pages/admin/TicketTemplateAdmin"));
+const TemplatesAdmin = lazy(() => import("./pages/admin/TemplatesAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -82,7 +82,7 @@ const App = () => (
                 <Route path="tracking" element={<TrackingAdminPage />} />
                 <Route path="scanner" element={<ScannerAdmin />} />
                 <Route path="settings" element={<SettingsAdmin />} />
-                <Route path="ticket-template" element={<TicketTemplateAdmin />} />
+                <Route path="vorlagen" element={<TemplatesAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />

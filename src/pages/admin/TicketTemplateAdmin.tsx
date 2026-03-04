@@ -377,12 +377,8 @@ const TicketTemplateAdmin = () => {
 
   return (
     <div className="max-w-5xl space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Ticket className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
-          <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>Ticket-Vorlage</h1>
-        </div>
+      {/* Save button */}
+      <div className="flex justify-end">
         <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern

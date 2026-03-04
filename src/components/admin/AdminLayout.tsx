@@ -11,7 +11,7 @@ const navItems = [
   { label: "Event-Serien", href: "/admin/series", icon: Layers },
   { label: "Events", href: "/admin/events", icon: Calendar },
   { label: "Ticket-Kategorien", href: "/admin/tickets", icon: Ticket },
-  { label: "Ticket-Vorlage", href: "/admin/ticket-template", icon: Palette },
+  { label: "Vorlagen", href: "/admin/vorlagen", icon: Palette },
   { label: "Seiten-Inhalte", href: "/admin/pages", icon: FileText },
   { label: "Kunden", href: "/admin/customers", icon: Users },
   { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
@@ -77,7 +77,7 @@ const AdminLayout = () => {
       </div>
       <nav className="flex-1 px-3 space-y-1">
         {navItems.map((item) => {
-          const active = location.pathname === item.href;
+          const active = item.href === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
