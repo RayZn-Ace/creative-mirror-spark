@@ -58,15 +58,15 @@ const StatCard = ({ icon: Icon, label, value, sub, trend, color, onClick, active
         </span>
       )}
     </div>
-    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{label}</span>
+    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{label}</span>
     <span className="text-lg sm:text-xl font-black" style={{ color: "hsl(0 0% 100%)" }}>{value}</span>
-    {sub && <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{sub}</span>}
+    {sub && <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{sub}</span>}
   </div>
 );
 
 const SectionHeader = ({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) => (
   <div className="flex items-center justify-between mt-8 mb-4">
-    <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{children}</h2>
+    <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{children}</h2>
     {right}
   </div>
 );
@@ -431,7 +431,7 @@ const AnalyticsAdmin = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Daten laden...</div>
+        <div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Daten laden...</div>
       </div>
     );
   }
@@ -451,14 +451,14 @@ const AnalyticsAdmin = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-black" style={{ color: "hsl(0 0% 100%)" }}>Analyse & Umsatz</h1>
-          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+          <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
             {rangeStart.toLocaleDateString("de-DE")} – {rangeEnd.toLocaleDateString("de-DE")}
             {selectedEvent && ` · ${eventMap.get(selectedEvent)?.title}`}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Export */}
-          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white/5 transition-colors" style={{ border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.5)" }}>
+          <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white/5 transition-colors" style={{ border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.85)" }}>
             <Download className="w-3.5 h-3.5" /> CSV
           </button>
           {/* View mode */}
@@ -466,7 +466,7 @@ const AnalyticsAdmin = () => {
             {(["day", "week", "month"] as ViewMode[]).map(m => (
               <button key={m} onClick={() => setViewMode(m)}
                 className="px-3 py-2 text-xs font-medium transition-all"
-                style={{ background: viewMode === m ? "hsl(330 80% 55% / 0.2)" : "transparent", color: viewMode === m ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}
+                style={{ background: viewMode === m ? "hsl(330 80% 55% / 0.2)" : "transparent", color: viewMode === m ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.75)" }}
               >
                 {{ day: "Tag", week: "Woche", month: "Monat" }[m]}
               </button>
@@ -488,7 +488,7 @@ const AnalyticsAdmin = () => {
                   {RANGE_PRESETS.map(r => (
                     <button key={r.key} onClick={() => { setRangeKey(r.key); setShowRangeMenu(false); }}
                       className="w-full px-4 py-2.5 text-xs text-left transition-colors"
-                      style={{ background: rangeKey === r.key ? "hsl(330 80% 55% / 0.15)" : "transparent", color: rangeKey === r.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)" }}
+                      style={{ background: rangeKey === r.key ? "hsl(330 80% 55% / 0.15)" : "transparent", color: rangeKey === r.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.8)" }}
                     >
                       {r.label}
                     </button>
@@ -503,11 +503,11 @@ const AnalyticsAdmin = () => {
       {/* Event filter */}
       {selectedEvent && (
         <div className="mb-4 flex items-center gap-2">
-          <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Gefiltert nach:</span>
+          <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.75)" }}>Gefiltert nach:</span>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
             {eventMap.get(selectedEvent)?.title}
           </span>
-          <button onClick={() => setSelectedEvent(null)} className="text-xs underline" style={{ color: "hsl(0 0% 100% / 0.4)" }}>×</button>
+          <button onClick={() => setSelectedEvent(null)} className="text-xs underline" style={{ color: "hsl(0 0% 100% / 0.75)" }}>×</button>
         </div>
       )}
 
@@ -518,7 +518,7 @@ const AnalyticsAdmin = () => {
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
             style={{
               background: detailTab === tab.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
-              color: detailTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+              color: detailTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.75)",
               border: `1px solid ${detailTab === tab.key ? "hsl(330 80% 55% / 0.3)" : "transparent"}`,
             }}
           >
@@ -553,9 +553,9 @@ const AnalyticsAdmin = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
-                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={viewMode === "day" && chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
-                <YAxis yAxisId="left" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} interval={viewMode === "day" && chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis yAxisId="left" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `${fmt(v)}€` : v, name === "revenue" ? "Umsatz" : name === "orders" ? "Bestellungen" : "Tickets"]} />
                 <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="hsl(330 80% 55%)" fill="url(#revGrad)" strokeWidth={2} name="revenue" />
                 <Bar yAxisId="right" dataKey="orders" fill="hsl(260 70% 60%)" radius={[3, 3, 0, 0]} opacity={0.6} name="orders" />
@@ -594,8 +594,8 @@ const AnalyticsAdmin = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
-                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`, "Kumuliert"]} />
                 <Area type="monotone" dataKey="cumulative" stroke="hsl(140 60% 50%)" fill="url(#cumGrad)" strokeWidth={2} />
               </AreaChart>
@@ -603,7 +603,7 @@ const AnalyticsAdmin = () => {
           </div>
 
           {/* Detail table */}
-          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{dailyDetail.length} Einträge</span>}>
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{dailyDetail.length} Einträge</span>}>
             Detail-Tabelle
           </SectionHeader>
           <div style={cardStyle} className="overflow-hidden">
@@ -612,19 +612,19 @@ const AnalyticsAdmin = () => {
                 <thead>
                   <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
                     {["Datum", "Umsatz", "Bestellungen", "Tickets", "Ø Bestellwert", "Tickets/Best."].map(h => (
-                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)", fontSize: 10 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {dailyDetail.slice(0, 60).map((d, i) => (
                     <tr key={i} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
-                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{d.label}</td>
-                      <td className="px-4 py-2.5 font-bold" style={{ color: d.revenue > 0 ? "hsl(140 60% 50%)" : "hsl(0 0% 100% / 0.3)" }}>{d.revenue > 0 ? `${fmt(d.revenue)}€` : "–"}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.orders || "–"}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.tickets || "–"}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.avgOrder > 0 ? `${fmt(d.avgOrder)}€` : "–"}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{d.ticketsPerOrder > 0 ? d.ticketsPerOrder.toFixed(1) : "–"}</td>
+                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.9)" }}>{d.label}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: d.revenue > 0 ? "hsl(140 60% 50%)" : "hsl(0 0% 100% / 0.5)" }}>{d.revenue > 0 ? `${fmt(d.revenue)}€` : "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{d.orders || "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{d.tickets || "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{d.avgOrder > 0 ? `${fmt(d.avgOrder)}€` : "–"}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{d.ticketsPerOrder > 0 ? d.ticketsPerOrder.toFixed(1) : "–"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -649,8 +649,8 @@ const AnalyticsAdmin = () => {
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" />
-                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} interval={chartData.length > 14 ? Math.floor(chartData.length / 8) : 0} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="orders" name="Bestellungen" fill="hsl(260 70% 60%)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="tickets" name="Tickets" fill="hsl(330 80% 55%)" radius={[4, 4, 0, 0]} opacity={0.6} />
@@ -678,7 +678,7 @@ const AnalyticsAdmin = () => {
                     <div key={s.name} className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{s.name}</span>
+                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{s.name}</span>
                       </div>
                       <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{s.value}</span>
                     </div>
@@ -693,8 +693,8 @@ const AnalyticsAdmin = () => {
               <div style={cardStyle} className="p-5">
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={weekdayData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                    <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.75)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => [name === "revenue" ? `${fmt(v)}€` : v, name === "revenue" ? "Umsatz" : "Bestellungen"]} />
                     <Bar dataKey="orders" name="orders" fill="hsl(200 80% 55%)" radius={[3, 3, 0, 0]} />
                   </BarChart>
@@ -708,8 +708,8 @@ const AnalyticsAdmin = () => {
           <div style={cardStyle} className="p-5">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={peakData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
-                <XAxis dataKey="hour" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} interval={1} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <XAxis dataKey="hour" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 9 }} axisLine={false} tickLine={false} interval={1} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="count" name="Bestellungen" fill="hsl(200 80% 55%)" radius={[3, 3, 0, 0]}>
                   {peakData.map((_, i) => <Cell key={i} fill={`hsl(200 80% ${40 + (peakData[i].count / Math.max(...peakData.map(d => d.count), 1)) * 30}%)`} />)}
@@ -735,8 +735,8 @@ const AnalyticsAdmin = () => {
           <div style={cardStyle} className="p-5">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={ageData} margin={{ top: 4, right: 0, bottom: 0, left: -20 }}>
-                <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.4)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 100% / 0.75)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 9 }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="value" name="Kunden" fill="hsl(330 80% 55%)" radius={[4, 4, 0, 0]}>
                   {ageData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -746,7 +746,7 @@ const AnalyticsAdmin = () => {
           </div>
 
           {/* Top customers */}
-          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Top 20</span>}>
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Top 20</span>}>
             Top Kunden nach Umsatz
           </SectionHeader>
           <div style={cardStyle} className="overflow-hidden">
@@ -755,18 +755,18 @@ const AnalyticsAdmin = () => {
                 <thead>
                   <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
                     {["#", "Name", "E-Mail", "Bestellungen", "Tickets", "Umsatz"].map(h => (
-                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)", fontSize: 10 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {topCustomers.map((c, i) => (
                     <tr key={c.email} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
-                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{i + 1}</td>
-                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{c.name}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{c.email}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.orders}</td>
-                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.tickets}</td>
+                      <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{i + 1}</td>
+                      <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.95)" }}>{c.name}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.75)" }}>{c.email}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{c.orders}</td>
+                      <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{c.tickets}</td>
                       <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(c.revenue)}€</td>
                     </tr>
                   ))}
@@ -782,7 +782,7 @@ const AnalyticsAdmin = () => {
               {subsBySource.map((s, i) => (
                 <div key={s.name} className="flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="text-xs flex-1 capitalize" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{s.name}</span>
+                  <span className="text-xs flex-1 capitalize" style={{ color: "hsl(0 0% 100% / 0.9)" }}>{s.name}</span>
                   <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100%)" }}>{s.value}</span>
                   <div className="w-20 h-1.5 rounded-full" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
                     <div className="h-full rounded-full" style={{ width: `${(s.value / (subsBySource[0]?.value || 1)) * 100}%`, background: COLORS[i % COLORS.length] }} />
@@ -797,7 +797,7 @@ const AnalyticsAdmin = () => {
       {/* ═══════ EVENTS TAB ═══════ */}
       {detailTab === "events" && (
         <>
-          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{revenueByEvent.length} Events</span>}>
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{revenueByEvent.length} Events</span>}>
             Umsatz pro Event
           </SectionHeader>
           <div style={cardStyle} className="overflow-hidden">
@@ -806,24 +806,24 @@ const AnalyticsAdmin = () => {
                 <thead>
                   <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
                     {["#", "Event", "Stadt", "Umsatz", "Gebühren", "Bestellungen", "Tickets", ""].map(h => (
-                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                      <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)", fontSize: 10 }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {revenueByEvent.map((e, i) => (
                     <tr key={e.id} className="border-t hover:bg-white/[0.02] transition-colors" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
-                      <td className="px-4 py-3 font-bold" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{i + 1}</td>
-                      <td className="px-4 py-3 font-medium max-w-[200px] truncate" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{e.name}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{e.city}</td>
+                      <td className="px-4 py-3 font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{i + 1}</td>
+                      <td className="px-4 py-3 font-medium max-w-[200px] truncate" style={{ color: "hsl(0 0% 100% / 0.95)" }}>{e.name}</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{e.city}</td>
                       <td className="px-4 py-3 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(e.revenue)}€</td>
                       <td className="px-4 py-3" style={{ color: "hsl(40 90% 55%)" }}>{fmt(e.fee)}€</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{e.orders}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{e.tickets}</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{e.orders}</td>
+                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{e.tickets}</td>
                       <td className="px-4 py-3">
                         <button onClick={() => setSelectedEvent(selectedEvent === e.id ? null : e.id)}
                           className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                          style={{ color: selectedEvent === e.id ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}
+                          style={{ color: selectedEvent === e.id ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.6)" }}
                         >
                           <Filter className="w-3 h-3" />
                         </button>
@@ -840,8 +840,8 @@ const AnalyticsAdmin = () => {
           <div style={cardStyle} className="p-5">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={revenueByEvent.slice(0, 10)} layout="vertical" margin={{ top: 0, right: 4, bottom: 0, left: 0 }}>
-                <XAxis type="number" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" width={150} tick={{ fill: "hsl(0 0% 100% / 0.5)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis type="number" tick={{ fill: "hsl(0 0% 100% / 0.65)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={150} tick={{ fill: "hsl(0 0% 100% / 0.85)", fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`, "Umsatz"]} />
                 <Bar dataKey="revenue" fill="hsl(330 80% 55%)" radius={[0, 4, 4, 0]}>
                   {revenueByEvent.slice(0, 10).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -884,22 +884,22 @@ const AnalyticsAdmin = () => {
                   <thead>
                     <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
                       {["Stadt", "Umsatz", "Bestellungen", "Tickets"].map(h => (
-                        <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
+                        <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)", fontSize: 10 }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {cityData.map((c, i) => (
                       <tr key={c.name} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
-                        <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+                        <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
                           <div className="flex items-center gap-2">
                             <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
                             {c.name}
                           </div>
                         </td>
                         <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(c.revenue)}€</td>
-                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.orders}</td>
-                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.tickets}</td>
+                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{c.orders}</td>
+                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{c.tickets}</td>
                       </tr>
                     ))}
                   </tbody>
