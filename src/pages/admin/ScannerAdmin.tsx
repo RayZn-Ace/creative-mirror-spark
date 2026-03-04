@@ -9,6 +9,64 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// === Sound & Haptic Feedback (from Nachtschicht Nexus) ===
+const playSound = (type: "success" | "wrong_event" | "already_checked_in" | "error") => {
+  try {
+    const ctx = new AudioContext();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+
+    if (type === "success") {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.connect(gain);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    } else if (type === "wrong_event") {
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.connect(gain);
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.setValueAtTime(800, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(600, ctx.currentTime + 0.24);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } else if (type === "already_checked_in") {
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.connect(gain);
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.setValueAtTime(0.01, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.01, ctx.currentTime + 0.20);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime + 0.24);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    } else {
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.connect(gain);
+      osc.frequency.setValueAtTime(350, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    }
+  } catch {}
+};
+
+const vibrate = (pattern: number | number[]) => {
+  try { navigator.vibrate?.(pattern); } catch {}
+};
 type Tab = "links" | "scanner" | "bulk";
 
 interface ScannerLink {
@@ -55,6 +113,8 @@ const ScannerAdmin = () => {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = "admin-qr-reader";
   const activeEventId = useRef<string>("");
+  const autoResetTimer = useRef<ReturnType<typeof setTimeout>>();
+  const handleCheckInRef = useRef<(code: string) => Promise<void>>();
 
   useEffect(() => {
     loadData();
@@ -146,22 +206,75 @@ const ScannerAdmin = () => {
     const el = document.getElementById(scannerContainerId);
     if (!el) return;
     try {
-      const qr = new Html5Qrcode(scannerContainerId);
+      const qr = new Html5Qrcode(scannerContainerId, { verbose: false });
       html5QrCodeRef.current = qr;
-      await qr.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-        (decodedText) => {
-          if (decodedText && decodedText !== lastScannedCodeRef.current) {
-            lastScannedCodeRef.current = decodedText;
-            validateInlineTicket(decodedText);
-          }
-        },
-        () => {}
-      );
-    } catch {
-      setCameraError("Kamera-Zugriff verweigert.");
+
+      const containerWidth = el.clientWidth || Math.min(window.innerWidth - 48, 420);
+      const qrSize = Math.max(Math.floor(containerWidth * 0.72), 200);
+
+      const scanConfig = {
+        fps: 30,
+        qrbox: { width: qrSize, height: qrSize },
+        aspectRatio: 1,
+        disableFlip: true,
+        formatsToSupport: [0], // QR_CODE only
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      };
+
+      const onScanSuccess = (decodedText: string) => {
+        handleCheckInRef.current?.(decodedText);
+      };
+
+      let started = false;
+      // Try preferred rear camera first
+      try {
+        const cameras = await Html5Qrcode.getCameras();
+        const preferredCamera = cameras.find((c: any) => /back|rear|environment|hinten|rück/i.test(c.label || "")) || cameras[0];
+        if (preferredCamera?.id) {
+          await qr.start(preferredCamera.id, scanConfig, onScanSuccess, () => {});
+          started = true;
+        }
+      } catch {}
+
+      // Fallback: facingMode
+      if (!started) {
+        await qr.start({ facingMode: { ideal: "environment" } }, scanConfig, onScanSuccess, () => {});
+      }
+
+      // Force inline video for iOS Safari
+      let attempts = 0;
+      const forceInlineVideo = () => {
+        const videoEl = el.querySelector("video") as HTMLVideoElement | null;
+        if (!videoEl) return false;
+        videoEl.setAttribute("playsinline", "true");
+        videoEl.setAttribute("webkit-playsinline", "true");
+        videoEl.style.width = "100%";
+        videoEl.style.height = "100%";
+        videoEl.style.objectFit = "cover";
+        videoEl.style.borderRadius = "0.5rem";
+        const extraDivs = el.querySelectorAll("img[alt='Info icon'], a[href]");
+        extraDivs.forEach((e) => ((e as HTMLElement).style.display = "none"));
+        return true;
+      };
+      const inlineTimer = window.setInterval(() => {
+        attempts++;
+        if (forceInlineVideo() || attempts > 25) window.clearInterval(inlineTimer);
+      }, 120);
+      setTimeout(() => window.clearInterval(inlineTimer), 4000);
+
+    } catch (err: any) {
+      const msg = typeof err === "string" ? err : err?.message || "Unbekannter Fehler";
+      if (msg.includes("NotAllowedError") || msg.includes("Permission")) {
+        setCameraError("Kamera-Zugriff verweigert. Bitte erlaube den Kamerazugriff in den Browser-Einstellungen.");
+      } else if (msg.includes("NotFoundError") || msg.includes("Requested device not found")) {
+        setCameraError("Keine Kamera gefunden. Nutze die manuelle Eingabe.");
+      } else if (msg.includes("NotReadableError") || msg.includes("Could not start")) {
+        setCameraError("Kamera wird von einer anderen App verwendet.");
+      } else {
+        setCameraError(`Kamera-Fehler: ${msg}`);
+      }
       setScanMode("manual");
+      html5QrCodeRef.current = null;
     }
   }, []);
 
@@ -174,7 +287,24 @@ const ScannerAdmin = () => {
     return () => { stopCamera(); };
   }, [scannerActive, scanMode, scanResult]);
 
-  const validateInlineTicket = async (code: string) => {
+  // Keep screen awake while scanner is active
+  useEffect(() => {
+    let wakeLock: any = null;
+    if (scannerActive && "wakeLock" in navigator) {
+      (navigator as any).wakeLock.request("screen").then((wl: any) => { wakeLock = wl; }).catch(() => {});
+    }
+    return () => { wakeLock?.release?.(); };
+  }, [scannerActive]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+      if (autoResetTimer.current) clearTimeout(autoResetTimer.current);
+    };
+  }, [stopCamera]);
+
+  const validateInlineTicket = useCallback(async (code: string) => {
     if (scanningInProgress || !code.trim()) return;
     setScanningInProgress(true);
     setScanResult(null);
@@ -189,13 +319,39 @@ const ScannerAdmin = () => {
       });
       if (error) throw error;
       setScanResult(data);
-      if (navigator.vibrate) navigator.vibrate(data?.valid ? [100] : [100, 50, 100, 50, 100]);
+
+      // Sound & vibration feedback based on status
+      if (data?.status === "checked_in") {
+        playSound("success");
+        vibrate(100);
+      } else if (data?.status === "already_checked_in") {
+        playSound("already_checked_in");
+        vibrate([100, 50, 100, 50, 100]);
+      } else if (data?.status === "wrong_event") {
+        playSound("wrong_event");
+        vibrate([100, 50, 100]);
+      } else {
+        playSound("error");
+        vibrate([200, 100, 200]);
+      }
+
+      // Auto-reset after 3 seconds
+      if (autoResetTimer.current) clearTimeout(autoResetTimer.current);
+      autoResetTimer.current = setTimeout(() => {
+        setScanResult(null);
+        lastScannedCodeRef.current = null;
+      }, 3000);
     } catch {
       setScanResult({ valid: false, status: "error", error: "Netzwerkfehler" });
+      playSound("error");
+      vibrate([200, 100, 200]);
     } finally {
       setScanningInProgress(false);
     }
-  };
+  }, [scanningInProgress]);
+
+  // Keep ref updated so camera callback always calls latest version
+  useEffect(() => { handleCheckInRef.current = validateInlineTicket; }, [validateInlineTicket]);
 
   const openInlineScanner = () => {
     if (!allEventsMode && !scanEventId) return;
