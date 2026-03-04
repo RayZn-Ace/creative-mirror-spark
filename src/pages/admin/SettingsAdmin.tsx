@@ -265,13 +265,13 @@ const SettingsAdmin = () => {
             )}
           </div>
 
-          {/* Add role */}
+          {/* Invite by email */}
           <div className="rounded-xl p-4 mt-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Neue Rolle zuweisen</p>
+            <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Per E-Mail einladen</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-1">
-                <label style={{ ...labelStyle, fontSize: "10px" }}>User-ID</label>
-                <input value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} placeholder="User-UUID eingeben" style={{ ...inputStyle, fontSize: "12px" }} />
+                <label style={{ ...labelStyle, fontSize: "10px" }}>E-Mail</label>
+                <input value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} placeholder="name@beispiel.de" type="email" style={{ ...inputStyle, fontSize: "12px" }} />
               </div>
               <div>
                 <label style={{ ...labelStyle, fontSize: "10px" }}>Rolle</label>
@@ -287,23 +287,30 @@ const SettingsAdmin = () => {
                   disabled={addingUser || !newUserEmail.trim()}
                   onClick={async () => {
                     setAddingUser(true);
-                    const { error } = await supabase.from("user_roles").insert({ user_id: newUserEmail.trim(), role: newUserRole as any });
+                    try {
+                      const { data, error } = await supabase.functions.invoke("invite-user", {
+                        body: { email: newUserEmail.trim(), role: newUserRole },
+                      });
+                      if (error) throw error;
+                      if (data?.error) throw new Error(data.error);
+                      toast.success(data?.message || "Einladung gesendet");
+                      setNewUserEmail("");
+                      loadUserRoles();
+                    } catch (err: any) {
+                      toast.error(err.message || "Fehler beim Einladen");
+                    }
                     setAddingUser(false);
-                    if (error) { toast.error(error.message); return; }
-                    toast.success("Rolle zugewiesen");
-                    setNewUserEmail("");
-                    loadUserRoles();
                   }}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-center disabled:opacity-50"
                   style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
                 >
-                  {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  Zuweisen
+                  {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  Einladen
                 </button>
               </div>
             </div>
             <p className="text-[10px] mt-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-              Tipp: Die User-ID findest du im Profil des jeweiligen Benutzers.
+              Der Benutzer erhält eine E-Mail mit einem Registrierungslink und bekommt die Rolle automatisch zugewiesen.
             </p>
           </div>
         </SectionCard>
