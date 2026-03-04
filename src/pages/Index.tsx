@@ -285,15 +285,15 @@ const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
                   <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.locationName}</p>
                 </div>
               </div>
-              <a href={ev.ticketLink} target="_blank" rel="noopener noreferrer"
+              <Link to={`/${ev.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
                 className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
                 <Ticket className="w-4 h-4" />{gt.navTickets}
-              </a>
+              </Link>
             </motion.div>
           ))}
         </div>
         <div className="text-center">
-          <Link to="/vergangene-events" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+          <Link to="/termine" className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
             {gt.upcomingAllDates} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
