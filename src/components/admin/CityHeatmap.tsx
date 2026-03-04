@@ -203,6 +203,11 @@ export const CityHeatmap = ({ data }: { data: CityDataItem[] }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
+        {/* Extra label layer with bright text on top */}
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+          className="bright-map-labels"
+        />
         <FitBounds coords={coords} />
         <HeatLayer points={heatPoints} />
         <CityLabels markers={markers} maxRevenue={maxRevenue} />

@@ -51,3 +51,8 @@
 .city-heatmap-tooltip.leaflet-tooltip::before {
   display: none !important;
 }
+
+/* Brighten map labels */
+.bright-map-labels {
+  filter: brightness(2.5) contrast(1.1);
+}
