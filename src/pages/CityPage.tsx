@@ -588,8 +588,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           ) : (
             <motion.div 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="space-y-3 p-4 rounded-2xl" 
-              style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
+              className="space-y-3 p-5 rounded-2xl" 
+              style={{ background: "hsl(210 40% 18% / 0.85)", border: "1px solid hsl(0 0% 100% / 0.15)", backdropFilter: "blur(16px)", boxShadow: "0 8px 32px hsl(210 50% 5% / 0.5)" }}
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-center" style={{ color: "hsl(0 0% 100%)" }}>
                 {t.checkoutTitle}
