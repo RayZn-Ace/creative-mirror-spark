@@ -442,7 +442,12 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       .then(({ data }) => {
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
         const groups: Record<string, TicketItem[]> = {};
+        const now = new Date();
         for (const row of data) {
+          // Skip tickets outside sale window
+          if (row.sale_start && new Date(row.sale_start) > now) continue;
+          if (row.sale_end && new Date(row.sale_end) < now) continue;
+
           const group = row.category_group || "TICKETS";
           if (!groups[group]) groups[group] = [];
           const currency = getCurrencyForCity(event.city);

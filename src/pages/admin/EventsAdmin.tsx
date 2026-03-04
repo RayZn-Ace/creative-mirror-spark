@@ -80,6 +80,8 @@ interface TicketRow {
   badge: string | null;
   coming_soon: boolean | null;
   category_group: string | null;
+  sale_start: string | null;
+  sale_end: string | null;
 }
 
 interface SeriesOption {
@@ -96,7 +98,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   info_sections: [],
 };
 
-const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR" };
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -145,6 +147,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       badge: editingTicket.badge || null,
       coming_soon: editingTicket.coming_soon || false,
       category_group: editingTicket.category_group || "REGULAR",
+      sale_start: editingTicket.sale_start || null,
+      sale_end: editingTicket.sale_end || null,
       event_id: eventId,
     };
     if (editingTicket.id) {
@@ -202,6 +206,13 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                   Ausverkauft
                 </span>
               )}
+              {(t.sale_start || t.sale_end) && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)" }}>
+                  {t.sale_start ? new Date(t.sale_start).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "∞"}
+                  {" → "}
+                  {t.sale_end ? new Date(t.sale_end).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "∞"}
+                </span>
+              )}
             </div>
             {t.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t.description}</p>}
             {t.features && t.features.length > 0 && (
@@ -254,6 +265,29 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 <input type="checkbox" checked={editingTicket.coming_soon || false} onChange={(e) => setEditingTicket({ ...editingTicket, coming_soon: e.target.checked })} className="rounded w-4 h-4" />
                 Coming Soon
               </label>
+            </div>
+          </div>
+          {/* Sale Start / End */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Verkaufsstart (optional)</label>
+              <input
+                type="datetime-local"
+                value={editingTicket.sale_start || ""}
+                onChange={(e) => setEditingTicket({ ...editingTicket, sale_start: e.target.value || null })}
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Verkaufsende (optional)</label>
+              <input
+                type="datetime-local"
+                value={editingTicket.sale_end || ""}
+                onChange={(e) => setEditingTicket({ ...editingTicket, sale_end: e.target.value || null })}
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+              />
             </div>
           </div>
           {/* Features */}
