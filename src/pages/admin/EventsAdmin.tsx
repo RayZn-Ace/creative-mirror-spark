@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
-  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search,
+  ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -892,6 +892,42 @@ const EventsAdmin = () => {
     load();
   };
 
+  const duplicateEvent = async (event: EventRow) => {
+    // 1. Duplicate event as draft
+    const { id, ...rest } = event;
+    const dupEvent = {
+      ...rest,
+      title: `${rest.title} (Kopie)`,
+      slug: `${rest.slug}-kopie-${Date.now()}`,
+      status: "draft",
+    };
+    const { data: newEvent, error } = await supabase.from("events").insert(dupEvent as any).select().single();
+    if (error || !newEvent) { toast.error("Duplizieren fehlgeschlagen: " + (error?.message || "")); return; }
+
+    // 2. Duplicate ticket categories with proportional sale dates
+    const { data: ticketCats } = await supabase.from("ticket_categories").select("*").eq("event_id", id);
+    if (ticketCats && ticketCats.length > 0) {
+      const oldEventDate = event.date ? new Date(event.date).getTime() : null;
+      const newEventDate = dupEvent.date ? new Date(dupEvent.date).getTime() : null;
+      const dateShift = oldEventDate && newEventDate ? newEventDate - oldEventDate : 0;
+
+      const newTickets = ticketCats.map((tc: any) => {
+        const { id: _tid, created_at, updated_at, ...ticketRest } = tc;
+        let { sale_start, sale_end } = ticketRest;
+        if (dateShift !== 0) {
+          if (sale_start) sale_start = new Date(new Date(sale_start).getTime() + dateShift).toISOString();
+          if (sale_end) sale_end = new Date(new Date(sale_end).getTime() + dateShift).toISOString();
+        }
+        return { ...ticketRest, event_id: (newEvent as any).id, sale_start, sale_end };
+      });
+      await supabase.from("ticket_categories").insert(newTickets);
+    }
+
+    toast.success("Event dupliziert – öffne Entwurf");
+    await load();
+    setEditing(newEvent as unknown as EventRow);
+  };
+
   if (editing) {
     return (
       <EventEditView
@@ -1054,6 +1090,9 @@ const EventsAdmin = () => {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <button onClick={() => duplicateEvent(event)} className="p-2 rounded-lg hover:bg-white/5" title="Event duplizieren" style={{ color: "hsl(200 80% 60%)" }}>
+                                        <Copy className="w-4 h-4" />
+                                      </button>
                                       <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                                         {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                       </button>
