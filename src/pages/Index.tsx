@@ -241,11 +241,11 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
             </motion.div>
           ))}
         </div>
-        <a href={nextEvent.ticketLink} target="_blank" rel="noopener noreferrer"
+        <Link to={`/${nextEvent.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
           className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
           <Ticket className="w-5 h-5" />
           {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
-        </a>
+        </Link>
       </div>
     </section>
   );
