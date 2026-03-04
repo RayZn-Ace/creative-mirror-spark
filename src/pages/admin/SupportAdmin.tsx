@@ -262,6 +262,14 @@ export default function SupportAdmin() {
                   <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{timeAgo(msg.created_at)}</span>
                 </div>
                 <p className="text-sm whitespace-pre-wrap" style={{ color: "hsl(0 0% 100% / 0.85)" }}>{msg.content}</p>
+                {msg.sender_type === "customer" && msg.attachments && Array.isArray(msg.attachments) && (msg.attachments as Array<{original?: string; language?: string}>).length > 0 && (msg.attachments as Array<{original?: string; language?: string}>)[0]?.original && (
+                  <details className="mt-1">
+                    <summary className="text-[10px] cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                      Original ({(msg.attachments as Array<{original?: string; language?: string}>)[0]?.language?.toUpperCase()})
+                    </summary>
+                    <p className="text-xs mt-0.5 italic" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{(msg.attachments as Array<{original?: string; language?: string}>)[0]?.original}</p>
+                  </details>
+                )}
               </div>
             </div>
           ))}
