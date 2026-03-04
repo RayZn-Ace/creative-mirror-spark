@@ -212,7 +212,18 @@ async function generateTicketPDF(tickets: Array<{
           const qrImage = await pdfDoc.embedPng(qrBytes);
           const qrSize = 110;
           const qrX = sepX + (qrAreaW - qrSize) / 2;
-          const qrY = (height - qrSize) / 2 + 10;
+          const qrY = (height - qrSize) / 2;
+          // Category label above QR
+          if (tpl.show_category) {
+            const catLabel = `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`;
+            const catLines = wrapText(catLabel.toUpperCase(), fontBold, 8, qrAreaW - 20);
+            let catY = qrY + qrSize + 12 + (catLines.length - 1) * 11;
+            for (const cl of catLines) {
+              const clW = fontBold.widthOfTextAtSize(cl, 8);
+              page.drawText(cl, { x: sepX + (qrAreaW - clW) / 2, y: catY, size: 8, font: fontBold, color: acColor });
+              catY -= 11;
+            }
+          }
           page.drawRectangle({ x: qrX - 6, y: qrY - 6, width: qrSize + 12, height: qrSize + 12, color: rgb(1, 1, 1) });
           page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
           const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 7);
@@ -271,6 +282,12 @@ async function generateTicketPDF(tickets: Array<{
           const qrSize = 140;
           const qrX = (width - qrSize) / 2;
           const qrY = 60;
+          // Category label above QR
+          if (tpl.show_category) {
+            const catLabel = `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`;
+            const catW = fontBold.widthOfTextAtSize(catLabel.toUpperCase(), 10);
+            page.drawText(catLabel.toUpperCase(), { x: (width - catW) / 2, y: qrY + qrSize + 24, size: 10, font: fontBold, color: acColor });
+          }
           page.drawRectangle({ x: qrX - 10, y: qrY - 10, width: qrSize + 20, height: qrSize + 20, color: rgb(1, 1, 1) });
           page.drawImage(qrImage, { x: qrX, y: qrY, width: qrSize, height: qrSize });
           const codeW = fontRegular.widthOfTextAtSize(ticket.qr_code, 9);
