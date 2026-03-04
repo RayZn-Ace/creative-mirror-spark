@@ -326,6 +326,83 @@ export type Database = {
           },
         ]
       }
+      tracking_event_logs: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_name: string
+          id: string
+          page_url: string | null
+          pixel_id: string | null
+          provider: string
+          test_mode: boolean
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          page_url?: string | null
+          pixel_id?: string | null
+          provider: string
+          test_mode?: boolean
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          page_url?: string | null
+          pixel_id?: string | null
+          provider?: string
+          test_mode?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_event_logs_pixel_id_fkey"
+            columns: ["pixel_id"]
+            isOneToOne: false
+            referencedRelation: "tracking_pixels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracking_pixels: {
+        Row: {
+          config: Json | null
+          created_at: string
+          enabled: boolean
+          id: string
+          label: string | null
+          pixel_id: string
+          provider: string
+          test_mode: boolean
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          pixel_id: string
+          provider: string
+          test_mode?: boolean
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          pixel_id?: string
+          provider?: string
+          test_mode?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

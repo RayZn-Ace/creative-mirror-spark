@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import TrackingProvider from "@/components/TrackingProvider";
 import Index from "./pages/Index";
 const CityPage = lazy(() => import("./pages/CityPage"));
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const SeriesAdmin = lazy(() => import("./pages/admin/SeriesAdmin"));
 const EventsAdmin = lazy(() => import("./pages/admin/EventsAdmin"));
 const TicketsAdmin = lazy(() => import("./pages/admin/TicketsAdmin"));
 const PagesAdmin = lazy(() => import("./pages/admin/PagesAdmin"));
+const TrackingAdminPage = lazy(() => import("./pages/admin/TrackingAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
+            <TrackingProvider />
             <Routes>
               <Route path="/" element={<Index />} />
               
@@ -68,6 +71,7 @@ const App = () => (
                 <Route path="events" element={<EventsAdmin />} />
                 <Route path="tickets" element={<TicketsAdmin />} />
                 <Route path="pages" element={<PagesAdmin />} />
+                <Route path="tracking" element={<TrackingAdminPage />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />

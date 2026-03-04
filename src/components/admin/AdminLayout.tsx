@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Events", href: "/admin/events", icon: Calendar },
   { label: "Ticket-Kategorien", href: "/admin/tickets", icon: Ticket },
   { label: "Seiten-Inhalte", href: "/admin/pages", icon: FileText },
+  { label: "Tracking & Pixel", href: "/admin/tracking", icon: Activity },
 ];
 
 const AdminLayout = () => {
