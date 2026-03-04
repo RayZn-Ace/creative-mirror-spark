@@ -44,13 +44,14 @@ const ScannerAdmin = () => {
 
   // For direct scanner
   const [scanEventId, setScanEventId] = useState("");
+  const [allEventsMode, setAllEventsMode] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
   const [scanMode, setScanMode] = useState<"camera" | "manual">("camera");
   const [manualCode, setManualCode] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
   const [scanningInProgress, setScanningInProgress] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+  const lastScannedCodeRef = useRef<string | null>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = "admin-qr-reader";
   const activeEventId = useRef<string>("");
@@ -149,10 +150,10 @@ const ScannerAdmin = () => {
       html5QrCodeRef.current = qr;
       await qr.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 },
+        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
         (decodedText) => {
-          if (decodedText && decodedText !== lastScannedCode) {
-            setLastScannedCode(decodedText);
+          if (decodedText && decodedText !== lastScannedCodeRef.current) {
+            lastScannedCodeRef.current = decodedText;
             validateInlineTicket(decodedText);
           }
         },
@@ -162,7 +163,7 @@ const ScannerAdmin = () => {
       setCameraError("Kamera-Zugriff verweigert.");
       setScanMode("manual");
     }
-  }, [lastScannedCode]);
+  }, []);
 
   useEffect(() => {
     if (scannerActive && scanMode === "camera" && !scanResult) {
@@ -197,10 +198,10 @@ const ScannerAdmin = () => {
   };
 
   const openInlineScanner = () => {
-    if (!scanEventId) return;
-    activeEventId.current = scanEventId;
+    if (!allEventsMode && !scanEventId) return;
+    activeEventId.current = allEventsMode ? ALL_EVENTS_VALUE : scanEventId;
     setScanResult(null);
-    setLastScannedCode(null);
+    lastScannedCodeRef.current = null;
     setManualCode("");
     setCameraError(null);
     setScanMode("camera");
@@ -216,7 +217,7 @@ const ScannerAdmin = () => {
   const resetInlineScan = () => {
     setScanResult(null);
     setManualCode("");
-    setLastScannedCode(null);
+    lastScannedCodeRef.current = null;
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -375,36 +376,59 @@ const ScannerAdmin = () => {
                 <h3 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
                   Direkt scannen
                 </h3>
-                <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                  Wähle ein Event oder scanne für alle Events gleichzeitig.
-                </p>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Event suchen…"
-                  className="w-full px-3 py-2 rounded-lg text-sm mb-2"
-                  style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
-                />
-                <select
-                  value={scanEventId}
-                  onChange={(e) => setScanEventId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm mb-3"
-                  style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
+
+                {/* Alle Events Toggle */}
+                <div
+                  className="flex items-center justify-between px-3 py-2.5 rounded-lg mb-3 cursor-pointer"
+                  style={{ background: allEventsMode ? "hsl(270 60% 55% / 0.1)" : "hsl(0 0% 100% / 0.04)", border: `1px solid ${allEventsMode ? "hsl(270 60% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}` }}
+                  onClick={() => setAllEventsMode(!allEventsMode)}
                 >
-                  <option value="">Event auswählen…</option>
-                  <option value={ALL_EVENTS_VALUE}>⚡ Alle Events</option>
-                  {filteredEvents.map((e) => (
-                    <option key={e.id} value={e.id}>{e.title} {e.city ? `(${e.city})` : ""} {e.date ? `– ${e.date}` : ""}</option>
-                  ))}
-                </select>
+                  <span className="text-sm font-bold" style={{ color: allEventsMode ? "hsl(270 60% 65%)" : "hsl(0 0% 100% / 0.5)" }}>
+                    ⚡ Alle Events scannen
+                  </span>
+                  <div
+                    className="w-10 h-5 rounded-full relative transition-all"
+                    style={{ background: allEventsMode ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.15)" }}
+                  >
+                    <div
+                      className="w-4 h-4 rounded-full absolute top-0.5 transition-all"
+                      style={{ background: "hsl(0 0% 100%)", left: allEventsMode ? "22px" : "2px" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Event dropdown (only when allEventsMode is off) */}
+                {!allEventsMode && (
+                  <>
+                    <input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Event suchen…"
+                      className="w-full px-3 py-2 rounded-lg text-sm mb-2"
+                      style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
+                    />
+                    <select
+                      value={scanEventId}
+                      onChange={(e) => setScanEventId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg text-sm mb-3"
+                      style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
+                    >
+                      <option value="">Event auswählen…</option>
+                      {filteredEvents.map((e) => (
+                        <option key={e.id} value={e.id}>{e.title} {e.city ? `(${e.city})` : ""} {e.date ? `– ${e.date}` : ""}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
+
                 <button
                   onClick={openInlineScanner}
-                  disabled={!scanEventId}
+                  disabled={!allEventsMode && !scanEventId}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
-                  style={{ background: "hsl(200 80% 55%)", color: "hsl(0 0% 100%)" }}
+                  style={{ background: allEventsMode ? "hsl(270 60% 55%)" : "hsl(200 80% 55%)", color: "hsl(0 0% 100%)" }}
                 >
                   <ScanLine className="w-5 h-5" />
-                  {scanEventId === ALL_EVENTS_VALUE ? "Scanner starten (Alle Events)" : "Scanner starten"}
+                  {allEventsMode ? "Scanner starten (Alle Events)" : "Scanner starten"}
                 </button>
               </div>
 
@@ -414,18 +438,10 @@ const ScannerAdmin = () => {
                   Schnellzugriff
                 </h3>
                 <div className="space-y-1.5">
-                  <button
-                    onClick={() => { setScanEventId(ALL_EVENTS_VALUE); activeEventId.current = ALL_EVENTS_VALUE; setScannerActive(true); }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all hover:bg-white/5"
-                    style={{ border: "1px solid hsl(270 60% 55% / 0.3)", background: "hsl(270 60% 55% / 0.05)" }}
-                  >
-                    <span className="text-sm font-bold" style={{ color: "hsl(270 60% 65%)" }}>⚡ Alle Events</span>
-                    <ScanLine className="w-4 h-4 shrink-0" style={{ color: "hsl(270 60% 65%)" }} />
-                  </button>
                   {events.map((e) => (
                     <button
                       key={e.id}
-                      onClick={() => { setScanEventId(e.id); activeEventId.current = e.id; setScannerActive(true); }}
+                      onClick={() => { setScanEventId(e.id); setAllEventsMode(false); activeEventId.current = e.id; setScannerActive(true); setScanResult(null); lastScannedCodeRef.current = null; setManualCode(""); setCameraError(null); setScanMode("camera"); }}
                       className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all hover:bg-white/5"
                       style={{ border: "1px solid hsl(0 0% 100% / 0.06)" }}
                     >
@@ -556,8 +572,9 @@ const ScannerAdmin = () => {
                       </div>
                     ) : (
                       <>
-                        <div className="relative w-full aspect-square max-w-xs rounded-2xl overflow-hidden" style={{ border: "2px solid hsl(0 0% 100% / 0.15)" }}>
-                          <div id={scannerContainerId} className="w-full h-full" />
+                        <div className="relative w-full aspect-square max-w-[300px] mx-auto rounded-2xl overflow-hidden" style={{ border: "2px solid hsl(0 0% 100% / 0.15)" }}>
+                          <div id={scannerContainerId} style={{ width: "100%", height: "100%" }} />
+                          <style>{`#${scannerContainerId} video { object-fit: cover !important; width: 100% !important; height: 100% !important; }`}</style>
                         </div>
                         <p className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>QR-Code in den Rahmen halten</p>
                       </>
