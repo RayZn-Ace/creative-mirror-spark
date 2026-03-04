@@ -31,14 +31,14 @@ type EventLog = {
 };
 
 const PROVIDERS = [
-  { id: "google_analytics", name: "Google Analytics", placeholder: "G-XXXXXXXXXX", color: "hsl(45 80% 55%)" },
-  { id: "google_tag_manager", name: "Google Tag Manager", placeholder: "GTM-XXXXXXX", color: "hsl(45 60% 50%)" },
-  { id: "meta", name: "Meta Pixel", placeholder: "123456789012345", color: "hsl(215 90% 55%)" },
-  { id: "tiktok", name: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", color: "hsl(330 80% 55%)" },
-  { id: "snapchat", name: "Snapchat Pixel", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", color: "hsl(55 80% 55%)" },
-  { id: "pinterest", name: "Pinterest Tag", placeholder: "1234567890123", color: "hsl(0 70% 50%)" },
-  { id: "linkedin", name: "LinkedIn Insight", placeholder: "123456", color: "hsl(210 70% 50%)" },
-  { id: "twitter", name: "Twitter/X Pixel", placeholder: "xxxxx", color: "hsl(200 80% 55%)" },
+  { id: "google_analytics", name: "Google Analytics", placeholder: "G-XXXXXXXXXX", color: "hsl(45 80% 55%)", fields: [{ key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" }] },
+  { id: "google_tag_manager", name: "Google Tag Manager", placeholder: "GTM-XXXXXXX", color: "hsl(45 60% 50%)", fields: [{ key: "pixel_id", label: "Container ID", placeholder: "GTM-XXXXXXX" }] },
+  { id: "meta", name: "Meta Pixel", placeholder: "123456789012345", color: "hsl(215 90% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "123456789012345" }, { key: "capi_token", label: "Conversions API Token (optional)", placeholder: "EAAxxxxxxx..." }] },
+  { id: "tiktok", name: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", color: "hsl(330 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "CXXXXXXXXXXXXXXXXX" }, { key: "capi_token", label: "Events API Token (optional)", placeholder: "Token..." }] },
+  { id: "snapchat", name: "Snapchat Pixel", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", color: "hsl(55 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx" }, { key: "capi_token", label: "CAPI Token (optional)", placeholder: "Token..." }] },
+  { id: "pinterest", name: "Pinterest Tag", placeholder: "1234567890123", color: "hsl(0 70% 50%)", fields: [{ key: "pixel_id", label: "Tag ID", placeholder: "1234567890123" }] },
+  { id: "linkedin", name: "LinkedIn Insight", placeholder: "123456", color: "hsl(210 70% 50%)", fields: [{ key: "pixel_id", label: "Partner ID", placeholder: "123456" }] },
+  { id: "twitter", name: "Twitter/X Pixel", placeholder: "xxxxx", color: "hsl(200 80% 55%)", fields: [{ key: "pixel_id", label: "Pixel ID", placeholder: "xxxxx" }] },
 ];
 
 const STANDARD_EVENTS = [
@@ -77,17 +77,38 @@ const TrackingAdmin = () => {
     loadEventLogs();
   }, []);
 
-  const savePixelId = async (providerId: string) => {
-    const pixelIdValue = editingIds[providerId]?.trim();
-    if (!pixelIdValue) return;
-    const existing = pixels.find((p) => p.provider === providerId);
-    if (existing) {
-      await supabase.from("tracking_pixels").update({ pixel_id: pixelIdValue }).eq("id", existing.id);
-    } else {
-      await supabase.from("tracking_pixels").insert({ provider: providerId, pixel_id: pixelIdValue, enabled: false });
+  const savePixelId = async (providerId: string, fields: { key: string; value: string }[]) => {
+    const pixelIdField = fields.find((f) => f.key === "pixel_id");
+    if (!pixelIdField?.value.trim()) {
+      toast({ title: "Pixel-ID eingeben", variant: "destructive" });
+      return;
     }
+    const existing = pixels.find((p) => p.provider === providerId);
+    const config: Record<string, string> = {};
+    fields.filter((f) => f.key !== "pixel_id" && f.value.trim()).forEach((f) => { config[f.key] = f.value.trim(); });
+    
+    if (existing) {
+      await supabase.from("tracking_pixels").update({ pixel_id: pixelIdField.value.trim(), config }).eq("id", existing.id);
+    } else {
+      await supabase.from("tracking_pixels").insert({ provider: providerId, pixel_id: pixelIdField.value.trim(), enabled: true, config });
+    }
+    setEditingIds((prev) => { const n = { ...prev }; delete n[providerId]; return n; });
     loadPixels();
-    toast({ title: "Pixel-ID gespeichert" });
+    toast({ title: "Gespeichert" });
+  };
+
+  const handleToggleProvider = async (providerId: string, enable: boolean) => {
+    const existing = pixels.find((p) => p.provider === providerId);
+    if (enable && !existing) {
+      // Just create a placeholder — user will fill in IDs in the expanded section
+      await supabase.from("tracking_pixels").insert({ provider: providerId, pixel_id: "PENDING", enabled: false });
+      loadPixels();
+    } else if (!enable && existing) {
+      await supabase.from("tracking_pixels").delete().eq("id", existing.id);
+      setEditingIds((prev) => { const n = { ...prev }; delete n[providerId]; return n; });
+      loadPixels();
+      toast({ title: `${PROVIDERS.find(p => p.id === providerId)?.name} entfernt` });
+    }
   };
 
   const togglePixel = async (id: string, field: "enabled" | "test_mode", value: boolean) => {
@@ -166,108 +187,148 @@ const TrackingAdmin = () => {
 
       {/* CONFIGURATOR TAB */}
       {activeTab === "config" && (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {PROVIDERS.map((provider, i) => {
             const pixel = pixels.find((p) => p.provider === provider.id);
-            const currentPixelId = editingIds[provider.id] ?? pixel?.pixel_id ?? "";
-            const hasUnsavedChanges = editingIds[provider.id] !== undefined && editingIds[provider.id] !== (pixel?.pixel_id ?? "");
+            const isActive = !!pixel;
+            const pixelConfig = (pixel?.config || {}) as Record<string, string>;
 
             return (
               <motion.div
                 key={provider.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="rounded-2xl p-4"
-                style={{ background: "hsl(0 0% 100% / 0.04)", border: `1px solid ${pixel?.enabled ? provider.color + "30" : "hsl(0 0% 100% / 0.08)"}` }}
+                transition={{ delay: i * 0.03 }}
+                className="rounded-2xl overflow-hidden"
+                style={{ background: "hsl(0 0% 100% / 0.04)", border: `1px solid ${isActive ? provider.color + "25" : "hsl(0 0% 100% / 0.06)"}` }}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  {/* Provider name + color dot */}
-                  <div className="flex items-center gap-3 sm:w-44 shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.15)" }} />
-                    <span className="text-sm font-bold" style={{ color: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.6)" }}>
+                {/* Header row — always visible */}
+                <div
+                  className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none"
+                  onClick={() => handleToggleProvider(provider.id, !isActive)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full" style={{ background: isActive ? provider.color : "hsl(0 0% 100% / 0.12)" }} />
+                    <span className="text-sm font-bold" style={{ color: isActive ? "hsl(0 0% 100%)" : "hsl(0 0% 100% / 0.45)" }}>
                       {provider.name}
                     </span>
+                    {pixel?.enabled && (
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(150 60% 40% / 0.12)", color: "hsl(150 60% 40%)" }}>
+                        Live
+                      </span>
+                    )}
+                    {pixel?.test_mode && (
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(45 80% 55% / 0.12)", color: "hsl(45 80% 55%)" }}>
+                        Test
+                      </span>
+                    )}
                   </div>
-
-                  {/* Pixel ID input */}
-                  <div className="flex-1 flex items-center gap-2">
-                    <input
-                      value={currentPixelId}
-                      onChange={(e) => setEditingIds((prev) => ({ ...prev, [provider.id]: e.target.value }))}
-                      placeholder={provider.placeholder}
-                      className="flex-1 px-3 py-2 rounded-lg text-xs font-mono"
-                      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                  {/* Switch */}
+                  <div
+                    className="relative w-11 h-6 rounded-full transition-all duration-200"
+                    style={{ background: isActive ? provider.color : "hsl(0 0% 100% / 0.1)" }}
+                    onClick={(e) => { e.stopPropagation(); handleToggleProvider(provider.id, !isActive); }}
+                  >
+                    <motion.div
+                      className="absolute top-0.5 w-5 h-5 rounded-full"
+                      style={{ background: "hsl(0 0% 100%)" }}
+                      animate={{ left: isActive ? "calc(100% - 22px)" : "2px" }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
-                    {hasUnsavedChanges && (
-                      <button
-                        onClick={() => savePixelId(provider.id)}
-                        className="px-2.5 py-2 rounded-lg text-xs font-bold shrink-0"
-                        style={{ background: "hsl(150 60% 40%)", color: "hsl(0 0% 100%)" }}
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Test mode */}
-                    {pixel && (
-                      <button
-                        onClick={() => togglePixel(pixel.id, "test_mode", !pixel.test_mode)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
-                        style={{
-                          background: pixel.test_mode ? "hsl(45 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                          color: pixel.test_mode ? "hsl(45 80% 55%)" : "hsl(0 0% 100% / 0.3)",
-                        }}
-                        title="Testmodus"
-                      >
-                        <FlaskConical className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-
-                    {/* On/Off Switch */}
-                    <button
-                      onClick={async () => {
-                        if (!pixel) {
-                          // Create with current input
-                          if (!currentPixelId.trim()) {
-                            toast({ title: "Pixel-ID eingeben", description: "Bitte erst eine Pixel-ID eingeben.", variant: "destructive" });
-                            return;
-                          }
-                          await supabase.from("tracking_pixels").insert({ provider: provider.id, pixel_id: currentPixelId.trim(), enabled: true });
-                          setEditingIds((prev) => { const n = { ...prev }; delete n[provider.id]; return n; });
-                          loadPixels();
-                        } else {
-                          togglePixel(pixel.id, "enabled", !pixel.enabled);
-                        }
-                      }}
-                      className="relative w-11 h-6 rounded-full transition-all duration-200"
-                      style={{
-                        background: pixel?.enabled ? provider.color : "hsl(0 0% 100% / 0.1)",
-                      }}
-                    >
-                      <motion.div
-                        className="absolute top-0.5 w-5 h-5 rounded-full"
-                        style={{ background: "hsl(0 0% 100%)" }}
-                        animate={{ left: pixel?.enabled ? "calc(100% - 22px)" : "2px" }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    </button>
-
-                    {/* Delete */}
-                    {pixel && (
-                      <button
-                        onClick={() => deletePixel(pixel.id)}
-                        className="p-1.5 rounded-lg transition-all hover:bg-red-500/10"
-                        style={{ color: "hsl(0 70% 50% / 0.4)" }}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
                   </div>
                 </div>
+
+                {/* Expanded settings — only when active */}
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-4 pt-1 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                        {/* Field inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {provider.fields.map((field) => {
+                            const savedValue = field.key === "pixel_id" ? (pixel?.pixel_id === "PENDING" ? "" : pixel?.pixel_id ?? "") : (pixelConfig[field.key] ?? "");
+                            const editKey = `${provider.id}__${field.key}`;
+                            const currentVal = editingIds[editKey] ?? savedValue;
+
+                            return (
+                              <div key={field.key}>
+                                <label className="text-[11px] font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                                  {field.label}
+                                </label>
+                                <input
+                                  value={currentVal}
+                                  onChange={(e) => setEditingIds((prev) => ({ ...prev, [editKey]: e.target.value }))}
+                                  placeholder={field.placeholder}
+                                  className="w-full px-3 py-2 rounded-lg text-xs font-mono"
+                                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Action row */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          {/* Save */}
+                          <button
+                            onClick={() => {
+                              const fieldValues = provider.fields.map((f) => ({
+                                key: f.key,
+                                value: editingIds[`${provider.id}__${f.key}`] ?? (f.key === "pixel_id" ? (pixel?.pixel_id === "PENDING" ? "" : pixel?.pixel_id ?? "") : (pixelConfig[f.key] ?? "")),
+                              }));
+                              savePixelId(provider.id, fieldValues);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-[1.02]"
+                            style={{ background: provider.color, color: "hsl(0 0% 100%)" }}
+                          >
+                            <Check className="w-3.5 h-3.5" /> Speichern
+                          </button>
+
+                          {/* Enable / Disable live */}
+                          <button
+                            onClick={() => pixel && togglePixel(pixel.id, "enabled", !pixel.enabled)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                            style={{
+                              background: pixel?.enabled ? "hsl(150 60% 40% / 0.12)" : "hsl(0 0% 100% / 0.06)",
+                              color: pixel?.enabled ? "hsl(150 60% 40%)" : "hsl(0 0% 100% / 0.4)",
+                            }}
+                          >
+                            {pixel?.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            {pixel?.enabled ? "Live" : "Deaktiviert"}
+                          </button>
+
+                          {/* Test mode */}
+                          <button
+                            onClick={() => pixel && togglePixel(pixel.id, "test_mode", !pixel.test_mode)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                            style={{
+                              background: pixel?.test_mode ? "hsl(45 80% 55% / 0.12)" : "hsl(0 0% 100% / 0.06)",
+                              color: pixel?.test_mode ? "hsl(45 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+                            }}
+                          >
+                            <FlaskConical className="w-3.5 h-3.5" />
+                            Testmodus
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            onClick={() => deletePixel(pixel!.id)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/10 ml-auto"
+                            style={{ color: "hsl(0 70% 50% / 0.5)" }}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Entfernen
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}
