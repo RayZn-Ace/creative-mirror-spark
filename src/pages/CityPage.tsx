@@ -5,6 +5,7 @@ import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Su
 import { AdDisplay } from "@/components/AdDisplay";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
@@ -396,15 +397,28 @@ const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; cu
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         {nearby.map((ev) => (
           <Link key={ev.slug} to={`/${ev.slug}`}
-            className="group flex flex-col items-center py-4 sm:py-5 px-3 rounded-2xl text-center transition-all hover:scale-[1.03] backdrop-blur-sm"
-            style={{ background: "linear-gradient(135deg, hsl(210 70% 45% / 0.35), hsl(200 60% 55% / 0.2))", border: "1px solid hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
-            <MapPin className="w-4 h-4 mb-1.5 opacity-60 group-hover:opacity-100 transition-opacity" />
-            <span className="text-sm sm:text-base font-black uppercase tracking-wide">{ev.city}</span>
-            {ev.km !== null && (
-              <span className="text-[10px] sm:text-xs mt-1 font-semibold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                ~{ev.km} {t.kmAway}
-              </span>
-            )}
+            className="group relative flex flex-col items-center justify-end py-4 sm:py-5 px-3 rounded-2xl text-center transition-all hover:scale-[1.03] overflow-hidden"
+            style={{ minHeight: "120px", border: "1px solid hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>
+            {/* Landmark background */}
+            <div className="absolute inset-0 z-0">
+              <img
+                src={getCityLandmarkUrl(ev.city)}
+                alt={ev.city}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(210 70% 10% / 0.85) 0%, hsl(210 70% 15% / 0.5) 50%, hsl(210 70% 20% / 0.3) 100%)" }} />
+            </div>
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center">
+              <MapPin className="w-4 h-4 mb-1.5 opacity-70 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+              <span className="text-sm sm:text-base font-black uppercase tracking-wide drop-shadow-lg">{ev.city}</span>
+              {ev.km !== null && (
+                <span className="text-[10px] sm:text-xs mt-1 font-semibold drop-shadow-md" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+                  ~{ev.km} {t.kmAway}
+                </span>
+              )}
+            </div>
           </Link>
         ))}
       </div>
