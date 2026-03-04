@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Calendar, ArrowRight, Ticket, Navigation, Filter, X, ChevronDown } from "lucide-react";
+import { Search, MapPin, Calendar, ArrowRight, Ticket, Navigation, X, ChevronDown, Sun, XCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
@@ -425,7 +425,7 @@ export default function Termine() {
                   )}
 
                   <div className="p-5">
-                    {/* City name + distance (no image fallback) */}
+                    {/* City name + distance */}
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
@@ -443,21 +443,29 @@ export default function Termine() {
                       )}
                     </div>
 
-                    {/* Next date */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm font-medium">{formatDate(group.events[0].date)}</span>
-                      {group.events[0].openAir && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">OPEN AIR</span>
-                      )}
+                    {/* All dates listed */}
+                    <div className="space-y-1.5 mb-4">
+                      {group.events.map((ev) => (
+                        <div key={ev.id} className="flex items-center gap-2 text-sm">
+                          <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className={`font-medium ${ev.soldOut ? "line-through text-muted-foreground" : ""}`}>
+                            {formatDate(ev.date)}
+                          </span>
+                          {ev.openAir && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
+                              <Sun className="w-2.5 h-2.5" />
+                              OPEN AIR
+                            </span>
+                          )}
+                          {ev.soldOut && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-destructive/20 text-destructive">
+                              <XCircle className="w-2.5 h-2.5" />
+                              SOLD OUT
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
-
-                    {/* More dates count */}
-                    {group.events.length > 1 && (
-                      <p className="text-xs text-muted-foreground mb-3">
-                        + {group.events.length - 1} {t.moreDates}
-                      </p>
-                    )}
 
                     {/* CTA */}
                     <div className="flex items-center justify-between">
