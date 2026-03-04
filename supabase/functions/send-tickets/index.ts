@@ -390,6 +390,7 @@ async function generateTicketPDF(tickets: Array<{
         }
       }
 
+      if (tpl.show_qr_code) {
         try {
           const qrBytes = await fetchQRCode(ticket.qr_code);
           const qrImage = await pdfDoc.embedPng(qrBytes);
