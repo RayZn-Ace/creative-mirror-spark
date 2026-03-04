@@ -1,1 +1,7 @@
 project_id = "ilmdapnqqvxpwjsbrdfe"
+
+[functions.mollie-webhook]
+verify_jwt = false
+
+[functions.create-mollie-payment]
+verify_jwt = false
