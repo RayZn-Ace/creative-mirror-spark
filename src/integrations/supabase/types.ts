@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_placements: {
+        Row: {
+          active: boolean
+          click_url: string | null
+          config: Json | null
+          content: string | null
+          created_at: string
+          end_date: string | null
+          event_id: string | null
+          id: string
+          image_url: string | null
+          is_global: boolean
+          position: string | null
+          sort_order: number | null
+          start_date: string | null
+          title: string
+          type: Database["public"]["Enums"]["ad_placement_type"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          click_url?: string | null
+          config?: Json | null
+          content?: string | null
+          created_at?: string
+          end_date?: string | null
+          event_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_global?: boolean
+          position?: string | null
+          sort_order?: number | null
+          start_date?: string | null
+          title: string
+          type: Database["public"]["Enums"]["ad_placement_type"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          click_url?: string | null
+          config?: Json | null
+          content?: string | null
+          created_at?: string
+          end_date?: string | null
+          event_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_global?: boolean
+          position?: string | null
+          sort_order?: number | null
+          start_date?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["ad_placement_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_placements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           active: boolean
@@ -767,6 +832,12 @@ export type Database = {
       }
     }
     Enums: {
+      ad_placement_type:
+        | "banner"
+        | "popup"
+        | "ticker"
+        | "interstitial"
+        | "ticket_ad"
       app_role: "admin" | "moderator" | "user" | "scanner"
     }
     CompositeTypes: {
@@ -895,6 +966,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_placement_type: [
+        "banner",
+        "popup",
+        "ticker",
+        "interstitial",
+        "ticket_ad",
+      ],
       app_role: ["admin", "moderator", "user", "scanner"],
     },
   },

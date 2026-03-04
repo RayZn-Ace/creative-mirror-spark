@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -19,6 +19,7 @@ const navItems = [
   { label: "Tracking & Pixel", href: "/admin/tracking", icon: Activity },
   { label: "Scanner", href: "/admin/scanner", icon: QrCode },
   { label: "Coupons", href: "/admin/coupons", icon: Tag },
+  { label: "Werbemanager", href: "/admin/werbemanager", icon: Megaphone },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
