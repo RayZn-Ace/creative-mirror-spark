@@ -420,8 +420,9 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutEmail, setCheckoutEmail] = useState("");
-  const [checkoutFirstName, setCheckoutFirstName] = useState("");
-  const [checkoutLastName, setCheckoutLastName] = useState("");
+  const [checkoutName, setCheckoutName] = useState("");
+  const [checkoutBirthDate, setCheckoutBirthDate] = useState("");
+  const [checkoutPhone, setCheckoutPhone] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
@@ -475,7 +476,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
   const handleCheckout = async () => {
     if (!checkoutEmail || !checkoutEmail.includes("@")) {
-      setCheckoutError("Bitte gib eine gültige E-Mail-Adresse ein.");
+      setCheckoutError(t.invalidEmail);
       return;
     }
     setCheckoutLoading(true);
@@ -497,8 +498,9 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       const { data, error } = await supabase.functions.invoke("create-mollie-payment", {
         body: {
           email: checkoutEmail,
-          firstName: checkoutFirstName || null,
-          lastName: checkoutLastName || null,
+          name: checkoutName || null,
+          birthDate: checkoutBirthDate || null,
+          phone: checkoutPhone || null,
           eventId: event.id,
           items: selectedItems,
           currency,
@@ -590,19 +592,21 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
               style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
             >
               <h3 className="text-sm font-bold uppercase tracking-wider text-center" style={{ color: "hsl(0 0% 100%)" }}>
-                Checkout
+                {t.checkoutTitle}
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="text" placeholder="Vorname" value={checkoutFirstName}
-                  onChange={(e) => setCheckoutFirstName(e.target.value)}
-                  className="pp-form-input text-sm" />
-                <input type="text" placeholder="Nachname" value={checkoutLastName}
-                  onChange={(e) => setCheckoutLastName(e.target.value)}
-                  className="pp-form-input text-sm" />
-              </div>
-              <input type="email" placeholder="E-Mail *" value={checkoutEmail}
+              <input type="text" placeholder={t.namePlaceholder} value={checkoutName}
+                onChange={(e) => setCheckoutName(e.target.value)}
+                className="pp-form-input text-sm w-full" />
+              <input type="date" placeholder={t.birthDatePlaceholder} value={checkoutBirthDate}
+                onChange={(e) => setCheckoutBirthDate(e.target.value)}
+                className="pp-form-input text-sm w-full"
+                style={{ colorScheme: "dark" }} />
+              <input type="email" placeholder={t.emailPlaceholder} value={checkoutEmail}
                 onChange={(e) => { setCheckoutEmail(e.target.value); setCheckoutError(""); }}
                 className="pp-form-input text-sm w-full" required />
+              <input type="tel" placeholder={t.phonePlaceholder} value={checkoutPhone}
+                onChange={(e) => setCheckoutPhone(e.target.value)}
+                className="pp-form-input text-sm w-full" />
               {checkoutError && (
                 <p className="text-xs font-semibold" style={{ color: "hsl(0 70% 60%)" }}>{checkoutError}</p>
               )}
@@ -613,7 +617,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
                   style={{ background: "hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.25)" }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Zurück
+                  {t.backBtn}
                 </motion.button>
                 <motion.button
                   onClick={handleCheckout}
@@ -627,7 +631,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
                   whileHover={checkoutLoading ? {} : { scale: 1.01 }} 
                   whileTap={checkoutLoading ? {} : { scale: 0.98 }}
                 >
-                  {checkoutLoading ? "Wird geladen..." : "Jetzt bezahlen"} 
+                  {checkoutLoading ? t.checkoutLoadingBtn : t.payNowBtn} 
                   {!checkoutLoading && <ArrowRight className="w-4 h-4" />}
                 </motion.button>
               </div>

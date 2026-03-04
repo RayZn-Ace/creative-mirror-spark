@@ -150,16 +150,17 @@ export type Database = {
       }
       orders: {
         Row: {
+          birth_date: string | null
           created_at: string
           currency: string
           email: string
           event_id: string | null
-          first_name: string | null
           id: string
           items: Json
-          last_name: string | null
           mollie_payment_id: string | null
+          name: string | null
           paid_at: string | null
+          phone: string | null
           redirect_url: string | null
           service_fee: number
           status: string
@@ -167,16 +168,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          birth_date?: string | null
           created_at?: string
           currency?: string
           email: string
           event_id?: string | null
-          first_name?: string | null
           id?: string
           items?: Json
-          last_name?: string | null
           mollie_payment_id?: string | null
+          name?: string | null
           paid_at?: string | null
+          phone?: string | null
           redirect_url?: string | null
           service_fee?: number
           status?: string
@@ -184,16 +186,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          birth_date?: string | null
           created_at?: string
           currency?: string
           email?: string
           event_id?: string | null
-          first_name?: string | null
           id?: string
           items?: Json
-          last_name?: string | null
           mollie_payment_id?: string | null
+          name?: string | null
           paid_at?: string | null
+          phone?: string | null
           redirect_url?: string | null
           service_fee?: number
           status?: string

@@ -45,6 +45,16 @@ export interface Translations {
   monthsShort: string[];
   badgeMap: Record<string, string>;
   ticketDescMap: Record<string, string>;
+  // Checkout
+  checkoutTitle: string;
+  namePlaceholder: string;
+  birthDatePlaceholder: string;
+  emailPlaceholder: string;
+  phonePlaceholder: string;
+  backBtn: string;
+  payNowBtn: string;
+  checkoutLoadingBtn: string;
+  invalidEmail: string;
 }
 
 /* ─── Helper: build eventInfoContent for any language ─── */
@@ -52,6 +62,45 @@ const makeEventInfo = (
   partyLine: string, introLine: string, hitsLine: string, dressIntro: string, dressDesc: string, startLabel: string, timeUnit: string
 ) => (weekday: string, date: string, venue: string, address: string, time: string) =>
   `🎉 ${partyLine} 🎶\n\n${introLine} 🎤 ✨\n\n${hitsLine}\n\n📅 ${weekday}, ${date}\n📍 ${venue} – ${address}\n🕐 ${startLabel}: ${time}${timeUnit}\n\n🪩 ${dressIntro}:\n${dressDesc}`;
+
+/* ─── Checkout translations per language ─── */
+const checkoutI18n: Record<string, Pick<Translations, "checkoutTitle" | "namePlaceholder" | "birthDatePlaceholder" | "emailPlaceholder" | "phonePlaceholder" | "backBtn" | "payNowBtn" | "checkoutLoadingBtn" | "invalidEmail">> = {
+  de: { checkoutTitle: "Checkout", namePlaceholder: "Name *", birthDatePlaceholder: "Geburtsdatum *", emailPlaceholder: "E-Mail *", phonePlaceholder: "Telefon", backBtn: "Zurück", payNowBtn: "Jetzt bezahlen", checkoutLoadingBtn: "Wird geladen...", invalidEmail: "Bitte gib eine gültige E-Mail-Adresse ein." },
+  nl: { checkoutTitle: "Afrekenen", namePlaceholder: "Naam *", birthDatePlaceholder: "Geboortedatum *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefoon", backBtn: "Terug", payNowBtn: "Nu betalen", checkoutLoadingBtn: "Laden...", invalidEmail: "Voer een geldig e-mailadres in." },
+  fr: { checkoutTitle: "Paiement", namePlaceholder: "Nom *", birthDatePlaceholder: "Date de naissance *", emailPlaceholder: "E-mail *", phonePlaceholder: "Téléphone", backBtn: "Retour", payNowBtn: "Payer maintenant", checkoutLoadingBtn: "Chargement...", invalidEmail: "Veuillez entrer une adresse e-mail valide." },
+  en: { checkoutTitle: "Checkout", namePlaceholder: "Name *", birthDatePlaceholder: "Date of birth *", emailPlaceholder: "Email *", phonePlaceholder: "Phone", backBtn: "Back", payNowBtn: "Pay now", checkoutLoadingBtn: "Loading...", invalidEmail: "Please enter a valid email address." },
+  pl: { checkoutTitle: "Kasa", namePlaceholder: "Imię i nazwisko *", birthDatePlaceholder: "Data urodzenia *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Wstecz", payNowBtn: "Zapłać teraz", checkoutLoadingBtn: "Ładowanie...", invalidEmail: "Podaj prawidłowy adres e-mail." },
+  hr: { checkoutTitle: "Plaćanje", namePlaceholder: "Ime *", birthDatePlaceholder: "Datum rođenja *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Natrag", payNowBtn: "Plati sada", checkoutLoadingBtn: "Učitavanje...", invalidEmail: "Unesi valjanu e-mail adresu." },
+  pt: { checkoutTitle: "Pagamento", namePlaceholder: "Nome *", birthDatePlaceholder: "Data de nascimento *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefone", backBtn: "Voltar", payNowBtn: "Pagar agora", checkoutLoadingBtn: "Carregando...", invalidEmail: "Insira um e-mail válido." },
+  it: { checkoutTitle: "Pagamento", namePlaceholder: "Nome *", birthDatePlaceholder: "Data di nascita *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefono", backBtn: "Indietro", payNowBtn: "Paga ora", checkoutLoadingBtn: "Caricamento...", invalidEmail: "Inserisci un indirizzo e-mail valido." },
+  es: { checkoutTitle: "Pago", namePlaceholder: "Nombre *", birthDatePlaceholder: "Fecha de nacimiento *", emailPlaceholder: "Correo *", phonePlaceholder: "Teléfono", backBtn: "Volver", payNowBtn: "Pagar ahora", checkoutLoadingBtn: "Cargando...", invalidEmail: "Introduce un correo electrónico válido." },
+  cs: { checkoutTitle: "Platba", namePlaceholder: "Jméno *", birthDatePlaceholder: "Datum narození *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Zpět", payNowBtn: "Zaplatit", checkoutLoadingBtn: "Načítání...", invalidEmail: "Zadej platný e-mail." },
+  da: { checkoutTitle: "Betaling", namePlaceholder: "Navn *", birthDatePlaceholder: "Fødselsdato *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Tilbage", payNowBtn: "Betal nu", checkoutLoadingBtn: "Indlæser...", invalidEmail: "Indtast en gyldig e-mailadresse." },
+  sv: { checkoutTitle: "Betalning", namePlaceholder: "Namn *", birthDatePlaceholder: "Födelsedatum *", emailPlaceholder: "E-post *", phonePlaceholder: "Telefon", backBtn: "Tillbaka", payNowBtn: "Betala nu", checkoutLoadingBtn: "Laddar...", invalidEmail: "Ange en giltig e-postadress." },
+  no: { checkoutTitle: "Betaling", namePlaceholder: "Navn *", birthDatePlaceholder: "Fødselsdato *", emailPlaceholder: "E-post *", phonePlaceholder: "Telefon", backBtn: "Tilbake", payNowBtn: "Betal nå", checkoutLoadingBtn: "Laster...", invalidEmail: "Skriv inn en gyldig e-postadresse." },
+  fi: { checkoutTitle: "Maksu", namePlaceholder: "Nimi *", birthDatePlaceholder: "Syntymäaika *", emailPlaceholder: "Sähköposti *", phonePlaceholder: "Puhelin", backBtn: "Takaisin", payNowBtn: "Maksa nyt", checkoutLoadingBtn: "Ladataan...", invalidEmail: "Anna kelvollinen sähköpostiosoite." },
+  hu: { checkoutTitle: "Fizetés", namePlaceholder: "Név *", birthDatePlaceholder: "Születési dátum *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Vissza", payNowBtn: "Fizess most", checkoutLoadingBtn: "Betöltés...", invalidEmail: "Adj meg érvényes e-mail címet." },
+  ro: { checkoutTitle: "Plată", namePlaceholder: "Nume *", birthDatePlaceholder: "Data nașterii *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Înapoi", payNowBtn: "Plătește acum", checkoutLoadingBtn: "Se încarcă...", invalidEmail: "Introduceți o adresă de e-mail validă." },
+  bg: { checkoutTitle: "Плащане", namePlaceholder: "Име *", birthDatePlaceholder: "Дата на раждане *", emailPlaceholder: "Имейл *", phonePlaceholder: "Телефон", backBtn: "Назад", payNowBtn: "Плати сега", checkoutLoadingBtn: "Зареждане...", invalidEmail: "Въведете валиден имейл адрес." },
+  el: { checkoutTitle: "Πληρωμή", namePlaceholder: "Όνομα *", birthDatePlaceholder: "Ημερομηνία γέννησης *", emailPlaceholder: "Email *", phonePlaceholder: "Τηλέφωνο", backBtn: "Πίσω", payNowBtn: "Πληρωμή τώρα", checkoutLoadingBtn: "Φόρτωση...", invalidEmail: "Εισάγετε μια έγκυρη διεύθυνση email." },
+  tr: { checkoutTitle: "Ödeme", namePlaceholder: "Ad *", birthDatePlaceholder: "Doğum tarihi *", emailPlaceholder: "E-posta *", phonePlaceholder: "Telefon", backBtn: "Geri", payNowBtn: "Şimdi öde", checkoutLoadingBtn: "Yükleniyor...", invalidEmail: "Geçerli bir e-posta adresi girin." },
+  sr: { checkoutTitle: "Plaćanje", namePlaceholder: "Ime *", birthDatePlaceholder: "Datum rođenja *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Nazad", payNowBtn: "Plati sada", checkoutLoadingBtn: "Učitavanje...", invalidEmail: "Unesi ispravnu e-mail adresu." },
+  sl: { checkoutTitle: "Plačilo", namePlaceholder: "Ime *", birthDatePlaceholder: "Datum rojstva *", emailPlaceholder: "E-pošta *", phonePlaceholder: "Telefon", backBtn: "Nazaj", payNowBtn: "Plačaj zdaj", checkoutLoadingBtn: "Nalaganje...", invalidEmail: "Vnesite veljaven e-poštni naslov." },
+  sk: { checkoutTitle: "Platba", namePlaceholder: "Meno *", birthDatePlaceholder: "Dátum narodenia *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefón", backBtn: "Späť", payNowBtn: "Zaplatiť", checkoutLoadingBtn: "Načítavanie...", invalidEmail: "Zadajte platnú e-mailovú adresu." },
+  lt: { checkoutTitle: "Mokėjimas", namePlaceholder: "Vardas *", birthDatePlaceholder: "Gimimo data *", emailPlaceholder: "El. paštas *", phonePlaceholder: "Telefonas", backBtn: "Atgal", payNowBtn: "Mokėti dabar", checkoutLoadingBtn: "Kraunama...", invalidEmail: "Įveskite galiojantį el. pašto adresą." },
+  lv: { checkoutTitle: "Maksājums", namePlaceholder: "Vārds *", birthDatePlaceholder: "Dzimšanas datums *", emailPlaceholder: "E-pasts *", phonePlaceholder: "Tālrunis", backBtn: "Atpakaļ", payNowBtn: "Maksāt tagad", checkoutLoadingBtn: "Ielādē...", invalidEmail: "Ievadiet derīgu e-pasta adresi." },
+  et: { checkoutTitle: "Makse", namePlaceholder: "Nimi *", birthDatePlaceholder: "Sünnikuupäev *", emailPlaceholder: "E-post *", phonePlaceholder: "Telefon", backBtn: "Tagasi", payNowBtn: "Maksa nüüd", checkoutLoadingBtn: "Laadimine...", invalidEmail: "Sisestage kehtiv e-posti aadress." },
+  ru: { checkoutTitle: "Оплата", namePlaceholder: "Имя *", birthDatePlaceholder: "Дата рождения *", emailPlaceholder: "E-mail *", phonePlaceholder: "Телефон", backBtn: "Назад", payNowBtn: "Оплатить", checkoutLoadingBtn: "Загрузка...", invalidEmail: "Введите действительный адрес электронной почты." },
+  uk: { checkoutTitle: "Оплата", namePlaceholder: "Ім'я *", birthDatePlaceholder: "Дата народження *", emailPlaceholder: "E-mail *", phonePlaceholder: "Телефон", backBtn: "Назад", payNowBtn: "Оплатити", checkoutLoadingBtn: "Завантаження...", invalidEmail: "Введіть дійсну адресу електронної пошти." },
+  sq: { checkoutTitle: "Pagesa", namePlaceholder: "Emri *", birthDatePlaceholder: "Data e lindjes *", emailPlaceholder: "Email *", phonePlaceholder: "Telefon", backBtn: "Prapa", payNowBtn: "Paguaj tani", checkoutLoadingBtn: "Po ngarkohet...", invalidEmail: "Vendosni një adresë email të vlefshme." },
+  bs: { checkoutTitle: "Plaćanje", namePlaceholder: "Ime *", birthDatePlaceholder: "Datum rođenja *", emailPlaceholder: "E-mail *", phonePlaceholder: "Telefon", backBtn: "Nazad", payNowBtn: "Plati sada", checkoutLoadingBtn: "Učitavanje...", invalidEmail: "Unesite ispravnu e-mail adresu." },
+  ka: { checkoutTitle: "გადახდა", namePlaceholder: "სახელი *", birthDatePlaceholder: "დაბადების თარიღი *", emailPlaceholder: "ელ.ფოსტა *", phonePlaceholder: "ტელეფონი", backBtn: "უკან", payNowBtn: "გადაიხადე ახლა", checkoutLoadingBtn: "იტვირთება...", invalidEmail: "შეიყვანეთ ვალიდური ელ.ფოსტა." },
+  ja: { checkoutTitle: "お支払い", namePlaceholder: "お名前 *", birthDatePlaceholder: "生年月日 *", emailPlaceholder: "メール *", phonePlaceholder: "電話番号", backBtn: "戻る", payNowBtn: "今すぐ支払う", checkoutLoadingBtn: "読込中...", invalidEmail: "有効なメールアドレスを入力してください。" },
+  ko: { checkoutTitle: "결제", namePlaceholder: "이름 *", birthDatePlaceholder: "생년월일 *", emailPlaceholder: "이메일 *", phonePlaceholder: "전화번호", backBtn: "뒤로", payNowBtn: "지금 결제", checkoutLoadingBtn: "로딩 중...", invalidEmail: "유효한 이메일 주소를 입력하세요." },
+  zh: { checkoutTitle: "付款", namePlaceholder: "姓名 *", birthDatePlaceholder: "出生日期 *", emailPlaceholder: "电子邮件 *", phonePlaceholder: "电话", backBtn: "返回", payNowBtn: "立即付款", checkoutLoadingBtn: "加载中...", invalidEmail: "请输入有效的电子邮件地址。" },
+  ar: { checkoutTitle: "الدفع", namePlaceholder: "* الاسم", birthDatePlaceholder: "* تاريخ الميلاد", emailPlaceholder: "* البريد الإلكتروني", phonePlaceholder: "الهاتف", backBtn: "رجوع", payNowBtn: "ادفع الآن", checkoutLoadingBtn: "جارٍ التحميل...", invalidEmail: "يرجى إدخال بريد إلكتروني صالح." },
+  th: { checkoutTitle: "ชำระเงิน", namePlaceholder: "ชื่อ *", birthDatePlaceholder: "วันเกิด *", emailPlaceholder: "อีเมล *", phonePlaceholder: "โทรศัพท์", backBtn: "กลับ", payNowBtn: "จ่ายเลย", checkoutLoadingBtn: "กำลังโหลด...", invalidEmail: "กรุณากรอกอีเมลที่ถูกต้อง" },
+};
 
 /* ─── Standard badge & ticket desc maps ─── */
 const badgeDe = { "FAST AUSVERKAUFT": "FAST AUSVERKAUFT", "84% schon weg": "84% schon weg", "FANLIEBLING": "FANLIEBLING" };
@@ -64,8 +113,9 @@ const descDe = {
 };
 
 /* ─── All Languages ─── */
+type BaseTranslations = Omit<Translations, "checkoutTitle" | "namePlaceholder" | "birthDatePlaceholder" | "emailPlaceholder" | "phonePlaceholder" | "backBtn" | "payNowBtn" | "checkoutLoadingBtn" | "invalidEmail">;
 
-const de: Translations = {
+const de: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "AB", clock: "UHR", selectDate: "Wähle deinen Termin",
   soldOutLabel: "Ausverkauft", reservedFor: "Reserviert für:", soldOutTitle: "AUSVERKAUFT",
   soldOutDesc: "Dieses Event ist leider ausverkauft. Schau dir unsere anderen Termine an!",
@@ -86,7 +136,7 @@ const de: Translations = {
   badgeMap: badgeDe, ticketDescMap: descDe,
 };
 
-const nl: Translations = {
+const nl: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "VANAF", clock: "UUR", selectDate: "Kies je datum",
   soldOutLabel: "Uitverkocht", reservedFor: "Gereserveerd voor:", soldOutTitle: "UITVERKOCHT",
   soldOutDesc: "Dit evenement is helaas uitverkocht. Bekijk onze andere data!",
@@ -108,7 +158,7 @@ const nl: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Toegangsprijs", "LAST CHANCE TICKET": "Voordelig toegang · Toegang ook bij uitverkochte evenementen", "LAST MINUTE TICKET": "Reguliere toegang", "DELUXE TICKET": "Geldig ticket + Toegang zonder wachtrij via de VIP-ingang", "FAN TICKET": "VIP-ingang + Exclusieve stoffen verzamelband + LED-haarkrans" },
 };
 
-const fr: Translations = {
+const fr: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "DÈS", clock: "H", selectDate: "Choisis ta date",
   soldOutLabel: "Épuisé", reservedFor: "Réservé pour :", soldOutTitle: "ÉPUISÉ",
   soldOutDesc: "Cet événement est malheureusement complet. Découvre nos autres dates !",
@@ -130,7 +180,7 @@ const fr: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Prix d'entrée", "LAST CHANCE TICKET": "Entrée à prix réduit · Accès même en cas de sold out", "LAST MINUTE TICKET": "Entrée standard", "DELUXE TICKET": "Billet valide + Entrée sans file via l'entrée VIP", "FAN TICKET": "Entrée VIP + Bracelet collector exclusif + Couronne LED" },
 };
 
-const en: Translations = {
+const en: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "FROM", clock: "", selectDate: "Choose your date",
   soldOutLabel: "Sold Out", reservedFor: "Reserved for:", soldOutTitle: "SOLD OUT",
   soldOutDesc: "This event is unfortunately sold out. Check out our other dates!",
@@ -152,7 +202,7 @@ const en: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Entry price", "LAST CHANCE TICKET": "Discounted entry · Access even at sold-out events", "LAST MINUTE TICKET": "Regular entry", "DELUXE TICKET": "Valid ticket + Skip-the-line via VIP entrance", "FAN TICKET": "VIP entrance + Exclusive collectible wristband + LED crown" },
 };
 
-const pl: Translations = {
+const pl: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "", selectDate: "Wybierz datę",
   soldOutLabel: "Wyprzedane", reservedFor: "Zarezerwowano na:", soldOutTitle: "WYPRZEDANE",
   soldOutDesc: "To wydarzenie jest niestety wyprzedane. Sprawdź inne terminy!",
@@ -174,7 +224,7 @@ const pl: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Cena wejścia", "LAST CHANCE TICKET": "Zniżkowe wejście · Wejście także na wyprzedane wydarzenia", "LAST MINUTE TICKET": "Regularne wejście", "DELUXE TICKET": "Ważny bilet + Wejście bez kolejki przez VIP", "FAN TICKET": "Wejście VIP + Ekskluzywna opaska + Wianek LED" },
 };
 
-const hr: Translations = {
+const hr: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "SATI", selectDate: "Odaberi datum",
   soldOutLabel: "Rasprodano", reservedFor: "Rezervirano za:", soldOutTitle: "RASPRODANO",
   soldOutDesc: "Ovaj događaj je nažalost rasprodan. Pogledaj naše druge termine!",
@@ -196,7 +246,7 @@ const hr: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Cijena ulaznice", "LAST CHANCE TICKET": "Sniženi ulaz · Ulaz i na rasprodane događaje", "LAST MINUTE TICKET": "Redovni ulaz", "DELUXE TICKET": "Valjana ulaznica + Ulaz bez čekanja kroz VIP", "FAN TICKET": "VIP ulaz + Ekskluzivna traka + LED vijenac" },
 };
 
-const pt: Translations = {
+const pt: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "A PARTIR DAS", clock: "H", selectDate: "Escolha sua data",
   soldOutLabel: "Esgotado", reservedFor: "Reservado por:", soldOutTitle: "ESGOTADO",
   soldOutDesc: "Este evento está esgotado. Confira nossas outras datas!",
@@ -218,7 +268,7 @@ const pt: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Preço de entrada", "LAST CHANCE TICKET": "Entrada com desconto · Acesso mesmo em eventos esgotados", "LAST MINUTE TICKET": "Entrada regular", "DELUXE TICKET": "Ingresso válido + Entrada sem fila pela VIP", "FAN TICKET": "Entrada VIP + Pulseira colecionável + Coroa de LED" },
 };
 
-const it: Translations = {
+const it: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "DALLE", clock: "", selectDate: "Scegli la tua data",
   soldOutLabel: "Esaurito", reservedFor: "Riservato per:", soldOutTitle: "ESAURITO",
   soldOutDesc: "Questo evento è purtroppo esaurito. Scopri le altre date!",
@@ -240,7 +290,7 @@ const it: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Prezzo d'ingresso", "LAST CHANCE TICKET": "Ingresso scontato · Accesso anche a eventi esauriti", "LAST MINUTE TICKET": "Ingresso regolare", "DELUXE TICKET": "Biglietto valido + Ingresso senza coda via VIP", "FAN TICKET": "Ingresso VIP + Braccialetto esclusivo + Corona LED" },
 };
 
-const es: Translations = {
+const es: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "DESDE", clock: "H", selectDate: "Elige tu fecha",
   soldOutLabel: "Agotado", reservedFor: "Reservado para:", soldOutTitle: "AGOTADO",
   soldOutDesc: "Este evento está agotado. ¡Mira nuestras otras fechas!",
@@ -262,7 +312,7 @@ const es: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Precio de entrada", "LAST CHANCE TICKET": "Entrada con descuento · Acceso incluso en eventos agotados", "LAST MINUTE TICKET": "Entrada regular", "DELUXE TICKET": "Entrada válida + Acceso sin cola por VIP", "FAN TICKET": "Entrada VIP + Pulsera coleccionable + Corona LED" },
 };
 
-const cs: Translations = {
+const cs: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "", selectDate: "Vyber si datum",
   soldOutLabel: "Vyprodáno", reservedFor: "Rezervováno pro:", soldOutTitle: "VYPRODÁNO",
   soldOutDesc: "Tato akce je bohužel vyprodána. Podívej se na další termíny!",
@@ -284,7 +334,7 @@ const cs: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Vstupné", "LAST CHANCE TICKET": "Zvýhodněný vstup · Vstup i na vyprodané akce", "LAST MINUTE TICKET": "Běžný vstup", "DELUXE TICKET": "Platná vstupenka + Vstup bez fronty přes VIP", "FAN TICKET": "VIP vstup + Exkluzivní sběratelský náramek + LED věnec" },
 };
 
-const da: Translations = {
+const da: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "FRA", clock: "", selectDate: "Vælg din dato",
   soldOutLabel: "Udsolgt", reservedFor: "Reserveret til:", soldOutTitle: "UDSOLGT",
   soldOutDesc: "Denne begivenhed er desværre udsolgt. Se vores andre datoer!",
@@ -306,7 +356,7 @@ const da: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Indgangspris", "LAST CHANCE TICKET": "Nedsat adgang · Adgang selv til udsolgte events", "LAST MINUTE TICKET": "Normal adgang", "DELUXE TICKET": "Gyldig billet + Spring køen over via VIP", "FAN TICKET": "VIP-indgang + Eksklusivt armbånd + LED-krone" },
 };
 
-const sv: Translations = {
+const sv: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "FRÅN", clock: "", selectDate: "Välj ditt datum",
   soldOutLabel: "Slutsålt", reservedFor: "Reserverat för:", soldOutTitle: "SLUTSÅLT",
   soldOutDesc: "Detta event är tyvärr slutsålt. Kolla våra andra datum!",
@@ -328,7 +378,7 @@ const sv: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Inträde", "LAST CHANCE TICKET": "Rabatterat inträde · Tillgång även vid slutsålda event", "LAST MINUTE TICKET": "Ordinarie inträde", "DELUXE TICKET": "Giltig biljett + Gå förbi kön via VIP", "FAN TICKET": "VIP-ingång + Exklusivt armband + LED-krona" },
 };
 
-const no: Translations = {
+const no: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "FRA", clock: "", selectDate: "Velg din dato",
   soldOutLabel: "Utsolgt", reservedFor: "Reservert for:", soldOutTitle: "UTSOLGT",
   soldOutDesc: "Dette arrangementet er dessverre utsolgt. Sjekk våre andre datoer!",
@@ -350,7 +400,7 @@ const no: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Inngangspris", "LAST CHANCE TICKET": "Rabattert inngang · Tilgang selv ved utsolgte events", "LAST MINUTE TICKET": "Ordinær inngang", "DELUXE TICKET": "Gyldig billett + Hopp over køen via VIP", "FAN TICKET": "VIP-inngang + Eksklusivt armbånd + LED-krone" },
 };
 
-const fi: Translations = {
+const fi: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "ALK.", clock: "", selectDate: "Valitse päivämääräsi",
   soldOutLabel: "Loppuunmyyty", reservedFor: "Varattu:", soldOutTitle: "LOPPUUNMYYTY",
   soldOutDesc: "Tämä tapahtuma on valitettavasti loppuunmyyty. Tutustu muihin päivämääriin!",
@@ -372,7 +422,7 @@ const fi: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Sisäänpääsyhinta", "LAST CHANCE TICKET": "Alennettu sisäänpääsy · Pääsy myös loppuunmyytyihin tapahtumiin", "LAST MINUTE TICKET": "Normaali sisäänpääsy", "DELUXE TICKET": "Voimassa oleva lippu + Ohita jono VIP-sisäänkäynnistä", "FAN TICKET": "VIP-sisäänpääsy + Keräilyranneke + LED-seppele" },
 };
 
-const hu: Translations = {
+const hu: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "", clock: "-TÓL", selectDate: "Válaszd ki a dátumod",
   soldOutLabel: "Elfogyott", reservedFor: "Foglalva:", soldOutTitle: "ELFOGYOTT",
   soldOutDesc: "Ez az esemény sajnos elfogyott. Nézd meg a többi időpontot!",
@@ -394,7 +444,7 @@ const hu: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Belépőjegy", "LAST CHANCE TICKET": "Kedvezményes belépés · Belépés elfogyott eseményekre is", "LAST MINUTE TICKET": "Normál belépés", "DELUXE TICKET": "Érvényes jegy + Soron kívüli belépés VIP-en át", "FAN TICKET": "VIP belépés + Exkluzív karkötő + LED koszorú" },
 };
 
-const ro: Translations = {
+const ro: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "DE LA", clock: "", selectDate: "Alege data ta",
   soldOutLabel: "Epuizat", reservedFor: "Rezervat pentru:", soldOutTitle: "EPUIZAT",
   soldOutDesc: "Acest eveniment este din păcate epuizat. Verifică celelalte date!",
@@ -416,7 +466,7 @@ const ro: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Preț de intrare", "LAST CHANCE TICKET": "Intrare cu reducere · Acces chiar și la evenimente epuizate", "LAST MINUTE TICKET": "Intrare regulară", "DELUXE TICKET": "Bilet valid + Acces fără coadă prin VIP", "FAN TICKET": "Intrare VIP + Brățară colecționabilă + Coroană LED" },
 };
 
-const bg: Translations = {
+const bg: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "ОТ", clock: "Ч", selectDate: "Избери дата",
   soldOutLabel: "Разпродадено", reservedFor: "Резервирано за:", soldOutTitle: "РАЗПРОДАДЕНО",
   soldOutDesc: "Това събитие за съжаление е разпродадено. Разгледай другите дати!",
@@ -438,7 +488,7 @@ const bg: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Цена за вход", "LAST CHANCE TICKET": "Намален вход · Достъп дори при разпродадени събития", "LAST MINUTE TICKET": "Редовен вход", "DELUXE TICKET": "Валиден билет + Вход без опашка през VIP", "FAN TICKET": "VIP вход + Ексклузивна гривна + LED венец" },
 };
 
-const el: Translations = {
+const el: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "ΑΠΌ", clock: "", selectDate: "Επίλεξε ημερομηνία",
   soldOutLabel: "Εξαντλημένο", reservedFor: "Κρατημένο για:", soldOutTitle: "ΕΞΑΝΤΛΗΘΗΚΕ",
   soldOutDesc: "Αυτό το event είναι δυστυχώς εξαντλημένο. Δες τις άλλες ημερομηνίες!",
@@ -460,7 +510,7 @@ const el: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Τιμή εισόδου", "LAST CHANCE TICKET": "Μειωμένη είσοδος · Πρόσβαση ακόμα και σε sold-out events", "LAST MINUTE TICKET": "Κανονική είσοδος", "DELUXE TICKET": "Έγκυρο εισιτήριο + Είσοδος χωρίς ουρά μέσω VIP", "FAN TICKET": "VIP είσοδος + Συλλεκτικό βραχιόλι + LED στεφάνι" },
 };
 
-const tr: Translations = {
+const tr: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "SAAT", clock: "", selectDate: "Tarihini seç",
   soldOutLabel: "Tükendi", reservedFor: "Rezerve:", soldOutTitle: "TÜKENDİ",
   soldOutDesc: "Bu etkinlik maalesef tükendi. Diğer tarihlere göz at!",
@@ -482,7 +532,7 @@ const tr: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Giriş fiyatı", "LAST CHANCE TICKET": "İndirimli giriş · Tükenmiş etkinliklere de erişim", "LAST MINUTE TICKET": "Normal giriş", "DELUXE TICKET": "Geçerli bilet + VIP'ten sırasız giriş", "FAN TICKET": "VIP giriş + Koleksiyon bilekliği + LED taç" },
 };
 
-const sr: Translations = {
+const sr: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "Č", selectDate: "Izaberi datum",
   soldOutLabel: "Rasprodato", reservedFor: "Rezervisano za:", soldOutTitle: "RASPRODATO",
   soldOutDesc: "Ovaj događaj je nažalost rasprodat. Pogledaj ostale datume!",
@@ -504,7 +554,7 @@ const sr: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Cena ulaznice", "LAST CHANCE TICKET": "Snižen ulaz · Ulaz i na rasprodate događaje", "LAST MINUTE TICKET": "Regularan ulaz", "DELUXE TICKET": "Važeća karta + Ulaz bez reda preko VIP", "FAN TICKET": "VIP ulaz + Ekskluzivna narukvica + LED venac" },
 };
 
-const sl: Translations = {
+const sl: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "", selectDate: "Izberi datum",
   soldOutLabel: "Razprodano", reservedFor: "Rezervirano za:", soldOutTitle: "RAZPRODANO",
   soldOutDesc: "Ta dogodek je žal razprodan. Oglej si druge termine!",
@@ -526,7 +576,7 @@ const sl: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Cena vstopnice", "LAST CHANCE TICKET": "Znižan vstop · Dostop tudi na razprodane dogodke", "LAST MINUTE TICKET": "Redni vstop", "DELUXE TICKET": "Veljavna vstopnica + Vstop brez čakanja prek VIP", "FAN TICKET": "VIP vstop + Ekskluzivna zapestnica + LED venec" },
 };
 
-const sk: Translations = {
+const sk: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "", selectDate: "Vyber si dátum",
   soldOutLabel: "Vypredané", reservedFor: "Rezervované pre:", soldOutTitle: "VYPREDANÉ",
   soldOutDesc: "Táto akcia je bohužiaľ vypredaná. Pozri si ďalšie termíny!",
@@ -548,7 +598,7 @@ const sk: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Vstupné", "LAST CHANCE TICKET": "Zľavnený vstup · Vstup aj na vypredané akcie", "LAST MINUTE TICKET": "Bežný vstup", "DELUXE TICKET": "Platný lístok + Vstup bez radu cez VIP", "FAN TICKET": "VIP vstup + Exkluzívny náramok + LED veniec" },
 };
 
-const lt: Translations = {
+const lt: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "NUO", clock: "VAL.", selectDate: "Pasirink datą",
   soldOutLabel: "Išparduota", reservedFor: "Rezervuota:", soldOutTitle: "IŠPARDUOTA",
   soldOutDesc: "Šis renginys, deja, išparduotas. Peržiūrėk kitas datas!",
@@ -570,7 +620,7 @@ const lt: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Įėjimo kaina", "LAST CHANCE TICKET": "Nuolaida · Įėjimas net į išparduotus renginius", "LAST MINUTE TICKET": "Įprastas įėjimas", "DELUXE TICKET": "Galiojantis bilietas + Įėjimas be eilės per VIP", "FAN TICKET": "VIP įėjimas + Ekskluzyvus kolekcinis dirželis + LED vainikas" },
 };
 
-const lv: Translations = {
+const lv: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "NO", clock: "", selectDate: "Izvēlies datumu",
   soldOutLabel: "Izpārdots", reservedFor: "Rezervēts:", soldOutTitle: "IZPĀRDOTS",
   soldOutDesc: "Šis pasākums diemžēl ir izpārdots. Apskati citus datumus!",
@@ -592,7 +642,7 @@ const lv: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Ieejas cena", "LAST CHANCE TICKET": "Atlaide · Ieeja arī izpārdotos pasākumos", "LAST MINUTE TICKET": "Parastā ieeja", "DELUXE TICKET": "Derīga biļete + Ieeja bez rindas caur VIP", "FAN TICKET": "VIP ieeja + Ekskluzīva rokassprādze + LED vainags" },
 };
 
-const et: Translations = {
+const et: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "ALATES", clock: "", selectDate: "Vali oma kuupäev",
   soldOutLabel: "Välja müüdud", reservedFor: "Reserveeritud:", soldOutTitle: "VÄLJA MÜÜDUD",
   soldOutDesc: "See sündmus on kahjuks välja müüdud. Vaata teisi kuupäevi!",
@@ -614,7 +664,7 @@ const et: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Sissepääsu hind", "LAST CHANCE TICKET": "Soodushind · Sissepääs ka väljamüüdud sündmustele", "LAST MINUTE TICKET": "Tavahind", "DELUXE TICKET": "Kehtiv pilet + Sissepääs ilma järjekorrata VIP kaudu", "FAN TICKET": "VIP sissepääs + Eksklusiivne käevõru + LED pärg" },
 };
 
-const ru: Translations = {
+const ru: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "С", clock: "", selectDate: "Выберите дату",
   soldOutLabel: "Распродано", reservedFor: "Зарезервировано:", soldOutTitle: "РАСПРОДАНО",
   soldOutDesc: "Это мероприятие, к сожалению, распродано. Посмотрите другие даты!",
@@ -636,7 +686,7 @@ const ru: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Цена входа", "LAST CHANCE TICKET": "Скидка · Доступ даже на распроданные мероприятия", "LAST MINUTE TICKET": "Обычный вход", "DELUXE TICKET": "Действующий билет + Вход без очереди через VIP", "FAN TICKET": "VIP вход + Эксклюзивный браслет + LED венок" },
 };
 
-const uk: Translations = {
+const uk: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "ВІД", clock: "", selectDate: "Обери дату",
   soldOutLabel: "Розпродано", reservedFor: "Зарезервовано:", soldOutTitle: "РОЗПРОДАНО",
   soldOutDesc: "Ця подія, на жаль, розпродана. Переглянь інші дати!",
@@ -658,7 +708,7 @@ const uk: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Ціна входу", "LAST CHANCE TICKET": "Знижка · Доступ навіть на розпродані події", "LAST MINUTE TICKET": "Звичайний вхід", "DELUXE TICKET": "Дійсний квиток + Вхід без черги через VIP", "FAN TICKET": "VIP вхід + Ексклюзивний браслет + LED вінок" },
 };
 
-const sq: Translations = {
+const sq: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "NGA", clock: "", selectDate: "Zgjidh datën tënde",
   soldOutLabel: "E shitur", reservedFor: "E rezervuar:", soldOutTitle: "E SHITUR",
   soldOutDesc: "Ky event fatkeqësisht është shitur. Shiko datat e tjera!",
@@ -680,7 +730,7 @@ const sq: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Çmimi i hyrjes", "LAST CHANCE TICKET": "Hyrje me zbritje · Akses edhe në evente të shitura", "LAST MINUTE TICKET": "Hyrje e rregullt", "DELUXE TICKET": "Biletë e vlefshme + Hyrje pa radhë përmes VIP", "FAN TICKET": "Hyrje VIP + Byzylyk ekskluziv + Kurorë LED" },
 };
 
-const bs: Translations = {
+const bs: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "OD", clock: "", selectDate: "Odaberi datum",
   soldOutLabel: "Rasprodano", reservedFor: "Rezervisano za:", soldOutTitle: "RASPRODANO",
   soldOutDesc: "Ovaj događaj je nažalost rasprodan. Pogledaj druge datume!",
@@ -702,7 +752,7 @@ const bs: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "Cijena ulaznice", "LAST CHANCE TICKET": "Snižen ulaz · Ulaz i na rasprodane događaje", "LAST MINUTE TICKET": "Regularan ulaz", "DELUXE TICKET": "Važeća karta + Ulaz bez reda kroz VIP", "FAN TICKET": "VIP ulaz + Ekskluzivna narukvica + LED vijenac" },
 };
 
-const ka: Translations = {
+const ka: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "", clock: "სთ", selectDate: "აირჩიე თარიღი",
   soldOutLabel: "გაყიდულია", reservedFor: "დაჯავშნილია:", soldOutTitle: "გაყიდულია",
   soldOutDesc: "ეს ღონისძიება სამწუხაროდ გაყიდულია. ნახე სხვა თარიღები!",
@@ -724,7 +774,7 @@ const ka: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "შესვლის ფასი", "LAST CHANCE TICKET": "ფასდაკლებული შესვლა · წვდომა გაყიდულ ღონისძიებებზეც", "LAST MINUTE TICKET": "სტანდარტული შესვლა", "DELUXE TICKET": "მოქმედი ბილეთი + რიგის გარეშე VIP-ით", "FAN TICKET": "VIP შესვლა + ექსკლუზიური სამაჯური + LED გვირგვინი" },
 };
 
-const ja: Translations = {
+const ja: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "", clock: "時", selectDate: "日付を選択",
   soldOutLabel: "完売", reservedFor: "予約済み:", soldOutTitle: "完売",
   soldOutDesc: "このイベントは残念ながら完売です。他の日程をご覧ください！",
@@ -746,7 +796,7 @@ const ja: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "入場料", "LAST CHANCE TICKET": "割引入場 · 完売イベントへのアクセスも可能", "LAST MINUTE TICKET": "通常入場", "DELUXE TICKET": "有効チケット + VIPから列なしで入場", "FAN TICKET": "VIP入場 + 限定リストバンド + LEDクラウン" },
 };
 
-const ko: Translations = {
+const ko: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "", clock: "시", selectDate: "날짜를 선택하세요",
   soldOutLabel: "매진", reservedFor: "예약됨:", soldOutTitle: "매진",
   soldOutDesc: "이 이벤트는 안타깝게도 매진되었습니다. 다른 날짜를 확인하세요!",
@@ -768,7 +818,7 @@ const ko: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "입장료", "LAST CHANCE TICKET": "할인 입장 · 매진 이벤트에도 접근 가능", "LAST MINUTE TICKET": "일반 입장", "DELUXE TICKET": "유효 티켓 + VIP를 통한 줄 없는 입장", "FAN TICKET": "VIP 입장 + 한정 팔찌 + LED 크라운" },
 };
 
-const zh: Translations = {
+const zh: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "", clock: "时", selectDate: "选择日期",
   soldOutLabel: "已售罄", reservedFor: "已预订:", soldOutTitle: "已售罄",
   soldOutDesc: "此活动很遗憾已售罄。查看其他日期吧！",
@@ -790,7 +840,7 @@ const zh: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "门票价格", "LAST CHANCE TICKET": "优惠入场 · 即使售罄也可进入", "LAST MINUTE TICKET": "普通入场", "DELUXE TICKET": "有效门票 + VIP免排队入场", "FAN TICKET": "VIP入场 + 限量手环 + LED花冠" },
 };
 
-const ar: Translations = {
+const ar: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "من", clock: "", selectDate: "اختر تاريخك",
   soldOutLabel: "نفذت", reservedFor: "محجوز لـ:", soldOutTitle: "نفذت",
   soldOutDesc: "هذا الحدث للأسف نفذ. تحقق من التواريخ الأخرى!",
@@ -812,7 +862,7 @@ const ar: Translations = {
   ticketDescMap: { "EARLY BIRD TICKET": "سعر الدخول", "LAST CHANCE TICKET": "دخول مخفض · وصول حتى للأحداث المنفذة", "LAST MINUTE TICKET": "دخول عادي", "DELUXE TICKET": "تذكرة صالحة + دخول بدون طابور عبر VIP", "FAN TICKET": "دخول VIP + سوار حصري + تاج LED" },
 };
 
-const th: Translations = {
+const th: BaseTranslations = {
   tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "เริ่ม", clock: "น.", selectDate: "เลือกวันที่",
   soldOutLabel: "ขายหมด", reservedFor: "จองแล้ว:", soldOutTitle: "ขายหมด",
   soldOutDesc: "อีเวนต์นี้ขายหมดแล้ว ดูวันอื่นได้เลย!",
@@ -835,7 +885,7 @@ const th: Translations = {
 };
 
 /* ─── All translations map ─── */
-const translations: Record<LangCode, Translations> = {
+const baseTranslations: Record<LangCode, BaseTranslations> = {
   de, nl, fr, en, pl, hr, pt, it, es, cs, da, sv, no, fi,
   hu, ro, bg, el, tr, sr, sl, sk, lt, lv, et, ru, uk, sq, bs, ka, ja, ko, zh, ar, th,
 };
@@ -929,7 +979,9 @@ export const getLangForCity = (city: string): LangCode => CITY_LANG[city] || "de
 
 export const getTranslations = (city: string): Translations => {
   const lang = getLangForCity(city);
-  return translations[lang];
+  const base = baseTranslations[lang];
+  const checkout = checkoutI18n[lang] || checkoutI18n.de;
+  return { ...base, ...checkout } as Translations;
 };
 
 export const getCurrencyForCity = (city: string): string => {
