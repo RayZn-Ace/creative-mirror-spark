@@ -1,13 +1,14 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Analyse & Umsatz", href: "/admin/analytics", icon: BarChart3 },
   { label: "Event-Serien", href: "/admin/series", icon: Layers },
   { label: "Events", href: "/admin/events", icon: Calendar },
   { label: "Ticket-Kategorien", href: "/admin/tickets", icon: Ticket },
