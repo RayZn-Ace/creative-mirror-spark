@@ -6,11 +6,12 @@ import {
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
+  Star, CalendarDays, MapPin, Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 
 // ─── Block Types ───────────────────────────────────────────────
-type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer";
+type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list";
 
 interface BaseBlock { id: string; type: BlockType }
 interface HeadingBlock extends BaseBlock { type: "heading"; text: string; level: 1 | 2 | 3; align: "left" | "center" | "right"; color: string }
@@ -19,8 +20,10 @@ interface ImageBlock extends BaseBlock { type: "image"; src: string; alt: string
 interface ButtonBlock extends BaseBlock { type: "button"; text: string; url: string; bgColor: string; textColor: string; align: "left" | "center" | "right"; borderRadius: number }
 interface DividerBlock extends BaseBlock { type: "divider"; color: string; style: "solid" | "dashed" | "dotted" }
 interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
+interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string }
+interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string }
 
-type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock;
+type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -29,6 +32,8 @@ const BLOCK_TYPES: { type: BlockType; label: string; icon: any }[] = [
   { type: "text", label: "Text", icon: Type },
   { type: "image", label: "Bild", icon: Image },
   { type: "button", label: "Button", icon: MousePointerClick },
+  { type: "event-highlight", label: "Event Highlight", icon: Star },
+  { type: "event-list", label: "Terminliste", icon: CalendarDays },
   { type: "divider", label: "Trennlinie", icon: Minus },
   { type: "spacer", label: "Abstand", icon: ChevronDown },
 ];
@@ -43,6 +48,8 @@ const createBlock = (type: BlockType, overrides?: Partial<any>): Block => {
       case "button": return { id, type, text: "Jetzt Tickets sichern", url: "https://", bgColor: "#e91e8c", textColor: "#ffffff", align: "center" as const, borderRadius: 8 };
       case "divider": return { id, type, color: "#eeeeee", style: "solid" as const };
       case "spacer": return { id, type, height: 24 };
+      case "event-highlight": return { id, type, eventTitle: "MAMMA MIA Mitsing Konzert", eventDate: "21. März 2026", eventTime: "19:00 Uhr", eventLocation: "Stadthalle", eventCity: "Paderborn", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a" };
+      case "event-list": return { id, type, title: "Alle Termine", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }, { date: "28.03.", city: "Paderborn", location: "Stadthalle", url: "https://" }], accentColor: "#e91e8c", textColor: "#333333", bgColor: "#fafafa" };
     }
   })();
   return overrides ? { ...base, ...overrides, id } as Block : base as Block;
@@ -244,6 +251,33 @@ const blockToHtml = (block: Block): string => {
       return `<hr style="border:none;border-top:1px ${block.style} ${block.color};margin:16px 0;" />`;
     case "spacer":
       return `<div style="height:${block.height}px;"></div>`;
+    case "event-highlight":
+      return `<div style="margin:0 0 16px;border-radius:12px;overflow:hidden;background:${block.bgColor};border:1px solid ${block.accentColor}22;">
+${block.eventImage ? `<img src="${block.eventImage}" alt="${block.eventTitle}" style="width:100%;height:auto;display:block;" />` : `<div style="height:8px;background:${block.accentColor};"></div>`}
+<div style="padding:24px;">
+<h2 style="margin:0 0 12px;font-size:22px;font-weight:800;color:${block.textColor};">${block.eventTitle}</h2>
+<table cellpadding="0" cellspacing="0" style="margin:0 0 16px;"><tbody>
+<tr><td style="padding:4px 12px 4px 0;font-size:14px;color:${block.accentColor};font-weight:700;">📅</td><td style="padding:4px 0;font-size:14px;color:${block.textColor};">${block.eventDate} · ${block.eventTime}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;font-size:14px;color:${block.accentColor};font-weight:700;">📍</td><td style="padding:4px 0;font-size:14px;color:${block.textColor};">${block.eventLocation}, ${block.eventCity}</td></tr>
+</tbody></table>
+<div style="text-align:center;"><a href="${block.ctaUrl}" style="display:inline-block;padding:14px 40px;background:${block.accentColor};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;border-radius:50px;">${block.ctaText}</a></div>
+</div></div>`;
+    case "event-list": {
+      const rows = block.events.map((ev) =>
+        `<tr>
+<td style="padding:10px 12px;font-size:14px;font-weight:700;color:${block.accentColor};border-bottom:1px solid ${block.accentColor}15;white-space:nowrap;">${ev.date}</td>
+<td style="padding:10px 12px;font-size:14px;color:${block.textColor};border-bottom:1px solid ${block.accentColor}15;"><strong>${ev.city}</strong><br/><span style="font-size:12px;color:${block.textColor}99;">${ev.location}</span></td>
+<td style="padding:10px 12px;border-bottom:1px solid ${block.accentColor}15;text-align:right;"><a href="${ev.url}" style="display:inline-block;padding:6px 16px;background:${block.accentColor};color:#ffffff;text-decoration:none;font-weight:700;font-size:11px;border-radius:50px;text-transform:uppercase;">Tickets</a></td>
+</tr>`
+      ).join("");
+      return `<div style="margin:0 0 16px;">
+${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color:${block.textColor};text-align:center;">${block.title}</h3>` : ""}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:${block.bgColor};border-radius:8px;overflow:hidden;">
+<tbody>${rows}</tbody>
+</table></div>`;
+    }
+    default:
+      return "";
   }
 };
 
@@ -357,6 +391,100 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
         <div className="flex items-center gap-2">
           <label className="text-[10px]" style={labelStyle}>Höhe: {block.height}px</label>
           <input type="range" min={8} max={80} value={block.height} onChange={(e) => upd({ height: Number(e.target.value) })} className="flex-1" />
+        </div>
+      );
+    case "event-highlight":
+      return (
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls} style={labelStyle}>Event-Titel</label>
+              <input value={block.eventTitle} onChange={(e) => upd({ eventTitle: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>Stadt</label>
+              <input value={block.eventCity} onChange={(e) => upd({ eventCity: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls} style={labelStyle}>Datum</label>
+              <input value={block.eventDate} onChange={(e) => upd({ eventDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>Uhrzeit</label>
+              <input value={block.eventTime} onChange={(e) => upd({ eventTime: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>Location</label>
+            <input value={block.eventLocation} onChange={(e) => upd({ eventLocation: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          </div>
+          <div>
+            <label className={labelCls} style={labelStyle}>Bild-URL (optional)</label>
+            <input value={block.eventImage} onChange={(e) => upd({ eventImage: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className={labelCls} style={labelStyle}>CTA-Text</label>
+              <input value={block.ctaText} onChange={(e) => upd({ ctaText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+            <div>
+              <label className={labelCls} style={labelStyle}>CTA-URL</label>
+              <input value={block.ctaUrl} onChange={(e) => upd({ ctaUrl: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>Akzent</label>
+              <input type="color" value={block.accentColor} onChange={(e) => upd({ accentColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>Hintergrund</label>
+              <input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>Text</label>
+              <input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+          </div>
+        </div>
+      );
+    case "event-list":
+      return (
+        <div className="space-y-2">
+          <div>
+            <label className={labelCls} style={labelStyle}>Titel</label>
+            <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls} style={labelStyle}>Termine</label>
+            {block.events.map((ev, i) => (
+              <div key={i} className="grid grid-cols-[60px_1fr_1fr_auto] gap-1.5 items-center">
+                <input value={ev.date} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], date: e.target.value }; upd({ events: evts }); }} placeholder="Datum" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                <input value={ev.city} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], city: e.target.value }; upd({ events: evts }); }} placeholder="Stadt" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                <input value={ev.location} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], location: e.target.value }; upd({ events: evts }); }} placeholder="Location" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                <button onClick={() => { const evts = block.events.filter((_, j) => j !== i); upd({ events: evts }); }} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.5)" }}><Trash2 className="w-3 h-3" /></button>
+              </div>
+            ))}
+            <button onClick={() => upd({ events: [...block.events, { date: "", city: "", location: "", url: "https://" }] })} className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg hover:bg-white/[0.04]" style={{ color: "hsl(330 80% 55% / 0.7)" }}>
+              <Plus className="w-3 h-3" /> Termin hinzufügen
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>Akzent</label>
+              <input type="color" value={block.accentColor} onChange={(e) => upd({ accentColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>BG</label>
+              <input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+            <div className="flex items-center gap-1">
+              <label className="text-[9px]" style={labelStyle}>Text</label>
+              <input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} />
+            </div>
+          </div>
         </div>
       );
   }
@@ -816,7 +944,7 @@ ${bodyContent}
               <AnimatePresence>
                 {showAddMenu && (
                   <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute z-10 top-full mt-1 left-0 right-0 rounded-xl overflow-hidden shadow-xl" style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-                    <div className="grid grid-cols-3 gap-1 p-2">
+                    <div className="grid grid-cols-4 gap-1 p-2">
                       {BLOCK_TYPES.map(({ type, label, icon: I }) => (
                         <button key={type} onClick={() => addBlock(type)} className="flex flex-col items-center gap-1.5 py-3 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white/[0.06] transition-all" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
                           <I className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
@@ -830,47 +958,6 @@ ${bodyContent}
             </div>
           </div>
 
-          {/* Recipients (collapsible) */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-            <button
-              onClick={() => setShowRecipients(!showRecipients)}
-              className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-all"
-            >
-              <Users className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider flex-1 text-left" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-                Empfänger ({recipients.length})
-              </span>
-              <ChevronRight className="w-4 h-4 transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: showRecipients ? "rotate(90deg)" : "rotate(0deg)" }} />
-            </button>
-            <AnimatePresence>
-              {showRecipients && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                  <div className="px-5 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                    <div className="flex items-center gap-3 pt-3">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={onlyPaid} onChange={(e) => setOnlyPaid(e.target.checked)} className="rounded" />
-                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Nur bezahlte Kunden</span>
-                      </label>
-                      <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="px-2 py-1 rounded-lg text-xs" style={inputStyle}>
-                        <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
-                        {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-1 max-h-[200px] overflow-y-auto">
-                      {recipients.slice(0, 20).map((r) => (
-                        <div key={r.email} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px]" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
-                          <Mail className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
-                          <span className="truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
-                        </div>
-                      ))}
-                      {recipients.length > 20 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 20} weitere</p>}
-                      {recipients.length === 0 && <p className="text-[10px] text-center py-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Empfänger mit diesen Filtern</p>}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
 
           {/* Send button */}
           <motion.button
@@ -895,18 +982,62 @@ ${bodyContent}
           </AnimatePresence>
         </div>
 
-        {/* Right: Live Preview (sticky) */}
+        {/* Right: Live Preview + Recipients */}
         <div className="hidden xl:block">
-          <div className="sticky top-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Eye className="w-3.5 h-3.5" style={{ color: "hsl(215 90% 55%)" }} />
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Live-Vorschau</span>
+          <div className="sticky top-4 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Eye className="w-3.5 h-3.5" style={{ color: "hsl(215 90% 55%)" }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Live-Vorschau</span>
+              </div>
+              <div
+                className="rounded-2xl overflow-hidden shadow-xl"
+                style={{ border: "1px solid hsl(0 0% 100% / 0.08)", transform: "scale(0.85)", transformOrigin: "top center" }}
+              >
+                <div style={{ background: "#f4f4f4" }} dangerouslySetInnerHTML={{ __html: buildHtml() }} />
+              </div>
             </div>
-            <div
-              className="rounded-2xl overflow-hidden shadow-xl"
-              style={{ border: "1px solid hsl(0 0% 100% / 0.08)", transform: "scale(0.85)", transformOrigin: "top center" }}
-            >
-              <div style={{ background: "#f4f4f4" }} dangerouslySetInnerHTML={{ __html: buildHtml() }} />
+
+            {/* Recipients */}
+            <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+              <button
+                onClick={() => setShowRecipients(!showRecipients)}
+                className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-all"
+              >
+                <Users className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider flex-1 text-left" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                  Empfänger ({recipients.length})
+                </span>
+                <ChevronRight className="w-4 h-4 transition-transform" style={{ color: "hsl(0 0% 100% / 0.3)", transform: showRecipients ? "rotate(90deg)" : "rotate(0deg)" }} />
+              </button>
+              <AnimatePresence>
+                {showRecipients && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                    <div className="px-5 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                      <div className="flex items-center gap-3 pt-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={onlyPaid} onChange={(e) => setOnlyPaid(e.target.checked)} className="rounded" />
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Nur bezahlte Kunden</span>
+                        </label>
+                        <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="px-2 py-1 rounded-lg text-xs" style={inputStyle}>
+                          <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
+                          {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-1 max-h-[200px] overflow-y-auto">
+                        {recipients.slice(0, 20).map((r) => (
+                          <div key={r.email} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px]" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                            <Mail className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
+                            <span className="truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
+                          </div>
+                        ))}
+                        {recipients.length > 20 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 20} weitere</p>}
+                        {recipients.length === 0 && <p className="text-[10px] text-center py-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Empfänger mit diesen Filtern</p>}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
