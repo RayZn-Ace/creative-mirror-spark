@@ -25,7 +25,9 @@ export type Database = {
           event_id: string | null
           id: string
           image_url: string | null
+          impression_count: number
           is_global: boolean
+          max_impressions: number | null
           position: string | null
           sort_order: number | null
           start_date: string | null
@@ -43,7 +45,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           image_url?: string | null
+          impression_count?: number
           is_global?: boolean
+          max_impressions?: number | null
           position?: string | null
           sort_order?: number | null
           start_date?: string | null
@@ -61,7 +65,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           image_url?: string | null
+          impression_count?: number
           is_global?: boolean
+          max_impressions?: number | null
           position?: string | null
           sort_order?: number | null
           start_date?: string | null
