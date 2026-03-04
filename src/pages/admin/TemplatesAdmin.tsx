@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Palette, Mail, FileText, Paperclip, Save, Loader2, Upload, X, Plus, Eye,
+  Type, Minus, Image, MousePointerClick, Calendar, Star, ArrowUp, ArrowDown, Trash2,
 } from "lucide-react";
 
 /* ─── Shared styles ─── */
@@ -37,6 +38,17 @@ const TABS = [
 
 type TabId = typeof TABS[number]["id"];
 
+/* ─── Email Block Types ─── */
+type EmailBlock =
+  | { type: "text"; id: string; content: string }
+  | { type: "heading"; id: string; content: string }
+  | { type: "divider"; id: string }
+  | { type: "event_highlight"; id: string; title: string; date: string; time: string; location: string; image_url: string }
+  | { type: "event_list"; id: string; heading: string; events: Array<{ title: string; date: string; location: string }> }
+  | { type: "cta_button"; id: string; text: string; url: string }
+  | { type: "image"; id: string; url: string; alt: string }
+  | { type: "spacer"; id: string; height: number };
+
 /* ─── Email Template Types ─── */
 interface EmailTemplate {
   subject: string;
@@ -44,9 +56,13 @@ interface EmailTemplate {
   intro_text: string;
   footer_text: string;
   accent_color: string;
+  bg_color: string;
+  text_color: string;
+  card_bg: string;
   logo_url: string;
   show_order_summary: boolean;
   show_event_details: boolean;
+  blocks: EmailBlock[];
 }
 
 const defaultEmailTemplate: EmailTemplate = {
@@ -55,13 +71,19 @@ const defaultEmailTemplate: EmailTemplate = {
   intro_text: "vielen Dank für deine Bestellung! Dein(e) Ticket(s) sind im Anhang als PDF mit QR-Code(s) beigefügt.",
   footer_text: "Bei Fragen antworte einfach auf diese E-Mail.\nWir freuen uns auf dich! 🎉",
   accent_color: "#d9338a",
+  bg_color: "#ffffff",
+  text_color: "#333333",
+  card_bg: "#f9f9f9",
   logo_url: "",
   show_order_summary: true,
   show_event_details: true,
+  blocks: [],
 };
 
+const uid = () => Math.random().toString(36).slice(2, 9);
+
 /* ─── Email Presets ─── */
-const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<EmailTemplate> }> = [
+const EMAIL_PRESETS: Array<{ name: string; emoji: string; dark?: boolean; template: Partial<EmailTemplate> }> = [
   {
     name: "Party Classic",
     emoji: "🎉",
@@ -71,6 +93,9 @@ const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<Emai
       intro_text: "vielen Dank für deine Bestellung! Dein(e) Ticket(s) sind im Anhang als PDF mit QR-Code(s) beigefügt.",
       footer_text: "Bei Fragen antworte einfach auf diese E-Mail.\nWir freuen uns auf dich! 🎉",
       accent_color: "#d9338a",
+      bg_color: "#ffffff",
+      text_color: "#333333",
+      card_bg: "#f9f9f9",
     },
   },
   {
@@ -82,6 +107,9 @@ const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<Emai
       intro_text: "wir bestätigen hiermit Ihre Bestellung. Ihre Eintrittskarte(n) finden Sie als PDF im Anhang dieser E-Mail.",
       footer_text: "Für Rückfragen stehen wir Ihnen gerne zur Verfügung.\nMit freundlichen Grüßen",
       accent_color: "#c8a84e",
+      bg_color: "#ffffff",
+      text_color: "#1a1a1a",
+      card_bg: "#faf8f4",
     },
   },
   {
@@ -93,6 +121,9 @@ const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<Emai
       intro_text: "deine Tickets sind ready! Check den Anhang – da findest du dein(e) Ticket(s) als PDF mit QR-Code. Screenshot oder Ausdruck reicht am Einlass!",
       footer_text: "Stay hyped! 🔥🎶\nBei Fragen einfach antworten.",
       accent_color: "#f97316",
+      bg_color: "#ffffff",
+      text_color: "#333333",
+      card_bg: "#fff7ed",
     },
   },
   {
@@ -104,17 +135,85 @@ const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<Emai
       intro_text: "anbei deine Tickets als PDF.",
       footer_text: "Bis bald.",
       accent_color: "#1a1a1a",
+      bg_color: "#ffffff",
+      text_color: "#333333",
+      card_bg: "#f5f5f5",
+    },
+  },
+  // ─── DARK PRESETS ───
+  {
+    name: "Midnight Club",
+    emoji: "🌙",
+    dark: true,
+    template: {
+      subject: "🌙 Deine Tickets für {{event_title}}",
+      greeting: "Hey {{first_name}}",
+      intro_text: "deine Tickets sind da! Im Anhang findest du alles als PDF mit QR-Code. Einfach am Einlass vorzeigen – fertig!",
+      footer_text: "See you on the dancefloor! 🌙\nFragen? Einfach antworten.",
+      accent_color: "#d9338a",
+      bg_color: "#0f0f0f",
+      text_color: "#e0e0e0",
+      card_bg: "#1a1a1a",
     },
   },
   {
     name: "Neon Night",
     emoji: "💜",
+    dark: true,
     template: {
       subject: "🎶 Deine Tickets für {{event_title}}",
       greeting: "Hey {{first_name}} 💜",
       intro_text: "deine Tickets sind da! Im Anhang findest du dein(e) Ticket(s) als PDF. Zeig den QR-Code einfach am Einlass vor – fertig!",
       footer_text: "Can't wait to see you! 💜✨\nFragen? Einfach antworten!",
       accent_color: "#a855f7",
+      bg_color: "#0a0a12",
+      text_color: "#d4d4e8",
+      card_bg: "#16162a",
+    },
+  },
+  {
+    name: "Dark Gold",
+    emoji: "👑",
+    dark: true,
+    template: {
+      subject: "Ihre Eintrittskarten – {{event_title}} 👑",
+      greeting: "Guten Abend {{name}}",
+      intro_text: "Ihre Tickets liegen als PDF im Anhang bereit. Wir wünschen Ihnen einen unvergesslichen Abend.",
+      footer_text: "Mit exklusiven Grüßen,\nIhr GIMME GIMME Team",
+      accent_color: "#c8a84e",
+      bg_color: "#111111",
+      text_color: "#d4cfc4",
+      card_bg: "#1c1a15",
+    },
+  },
+  {
+    name: "Cyber Punk",
+    emoji: "⚡",
+    dark: true,
+    template: {
+      subject: "⚡ TICKETS READY – {{event_title}}",
+      greeting: "Yo {{first_name}}",
+      intro_text: "Your tickets are attached as PDF. Show the QR at the door. LET'S GO!",
+      footer_text: "Stay electric. ⚡\nQuestions? Hit reply.",
+      accent_color: "#22d3ee",
+      bg_color: "#050510",
+      text_color: "#c4f0f8",
+      card_bg: "#0c1829",
+    },
+  },
+  {
+    name: "Dark Sunset",
+    emoji: "🌅",
+    dark: true,
+    template: {
+      subject: "Deine Tickets – {{event_title}} 🌅",
+      greeting: "Hey {{first_name}}",
+      intro_text: "vielen Dank für deine Bestellung! Deine Tickets findest du als PDF im Anhang.",
+      footer_text: "Wir freuen uns auf dich! 🧡\nBei Fragen einfach antworten.",
+      accent_color: "#f97316",
+      bg_color: "#0f0a07",
+      text_color: "#e8d5c4",
+      card_bg: "#1a1208",
     },
   },
   {
@@ -126,6 +225,9 @@ const EMAIL_PRESETS: Array<{ name: string; emoji: string; template: Partial<Emai
       intro_text: "wie schön, dass du dabei bist! Deine Tickets findest du im Anhang als PDF mit QR-Code. Wir empfehlen dir, sie auf dem Handy zu speichern oder auszudrucken.",
       footer_text: "Wir freuen uns riesig auf dich! ☀️\nBei Fragen sind wir nur eine Antwort entfernt.",
       accent_color: "#38bdf8",
+      bg_color: "#ffffff",
+      text_color: "#333333",
+      card_bg: "#f0f9ff",
     },
   },
 ];
@@ -282,11 +384,39 @@ import TicketTemplateAdmin from "./TicketTemplateAdmin";
 
 const TicketTab = () => <TicketTemplateAdmin />;
 
+/* ─── Block Add Menu ─── */
+const BLOCK_TYPES: Array<{ type: EmailBlock["type"]; label: string; icon: any; desc: string }> = [
+  { type: "text", label: "Text", icon: Type, desc: "Freitext-Absatz" },
+  { type: "heading", label: "Überschrift", icon: Type, desc: "Fette Headline" },
+  { type: "divider", label: "Trennlinie", icon: Minus, desc: "Horizontale Linie" },
+  { type: "event_highlight", label: "Event Highlight", icon: Star, desc: "Einzelnes Event hervorheben" },
+  { type: "event_list", label: "Terminliste", icon: Calendar, desc: "Mehrere Events auflisten" },
+  { type: "cta_button", label: "Button", icon: MousePointerClick, desc: "Call-to-Action Link" },
+  { type: "image", label: "Bild", icon: Image, desc: "Bild einfügen" },
+  { type: "spacer", label: "Abstand", icon: Minus, desc: "Vertikaler Abstand" },
+];
+
+const createBlock = (type: EmailBlock["type"]): EmailBlock => {
+  const id = uid();
+  switch (type) {
+    case "text": return { type: "text", id, content: "Hier steht dein Text..." };
+    case "heading": return { type: "heading", id, content: "Deine Überschrift" };
+    case "divider": return { type: "divider", id };
+    case "event_highlight": return { type: "event_highlight", id, title: "Mamma Mia Party", date: "15.03.2026", time: "22:00", location: "Baggi / Osho", image_url: "" };
+    case "event_list": return { type: "event_list", id, heading: "Unsere nächsten Events", events: [{ title: "Mamma Mia Party", date: "15.03.2026", location: "Baggi / Osho" }, { title: "City Madness", date: "22.03.2026", location: "Residenz" }] };
+    case "cta_button": return { type: "cta_button", id, text: "Jetzt Tickets sichern", url: "https://gimmegimmeparty.com" };
+    case "image": return { type: "image", id, url: "", alt: "" };
+    case "spacer": return { type: "spacer", id, height: 24 };
+    default: return { type: "text", id, content: "" };
+  }
+};
+
 /* ─── Email Tab ─── */
 const EmailTab = () => {
   const [tpl, setTpl] = useState<EmailTemplate>(defaultEmailTemplate);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showBlockMenu, setShowBlockMenu] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -298,7 +428,6 @@ const EmailTab = () => {
 
   const save = async () => {
     setSaving(true);
-    // upsert
     const { data: existing } = await supabase.from("settings").select("id").eq("key", "email_template").maybeSingle();
     if (existing) {
       await supabase.from("settings").update({ value: tpl as any, updated_at: new Date().toISOString() }).eq("key", "email_template");
@@ -321,9 +450,166 @@ const EmailTab = () => {
     toast.success("Logo hochgeladen");
   };
 
+  const addBlock = (type: EmailBlock["type"]) => {
+    setTpl(p => ({ ...p, blocks: [...p.blocks, createBlock(type)] }));
+    setShowBlockMenu(false);
+  };
+
+  const updateBlock = (id: string, updates: any) => {
+    setTpl(p => ({ ...p, blocks: p.blocks.map(b => b.id === id ? { ...b, ...updates } : b) }));
+  };
+
+  const removeBlock = (id: string) => {
+    setTpl(p => ({ ...p, blocks: p.blocks.filter(b => b.id !== id) }));
+  };
+
+  const moveBlock = (id: string, dir: -1 | 1) => {
+    setTpl(p => {
+      const idx = p.blocks.findIndex(b => b.id === id);
+      if ((dir === -1 && idx === 0) || (dir === 1 && idx === p.blocks.length - 1)) return p;
+      const arr = [...p.blocks];
+      [arr[idx], arr[idx + dir]] = [arr[idx + dir], arr[idx]];
+      return { ...p, blocks: arr };
+    });
+  };
+
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin" style={{ color: "hsl(0 0% 100% / 0.3)" }} /></div>;
 
   const placeholders = ["{{first_name}}", "{{name}}", "{{event_title}}", "{{date}}", "{{time}}", "{{location}}", "{{ticket_count}}", "{{invoice_number}}"];
+
+  /* ─── Block Editor Item ─── */
+  const renderBlockEditor = (block: EmailBlock) => {
+    const wrapper = (children: React.ReactNode) => (
+      <div key={block.id} className="relative group" style={{ ...sectionStyle, padding: "16px" }}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+            {BLOCK_TYPES.find(b => b.type === block.type)?.label}
+          </span>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => moveBlock(block.id, -1)} className="p-1 rounded" style={{ color: "hsl(0 0% 100% / 0.4)" }}><ArrowUp className="w-3 h-3" /></button>
+            <button onClick={() => moveBlock(block.id, 1)} className="p-1 rounded" style={{ color: "hsl(0 0% 100% / 0.4)" }}><ArrowDown className="w-3 h-3" /></button>
+            <button onClick={() => removeBlock(block.id)} className="p-1 rounded" style={{ color: "hsl(0 70% 50%)" }}><Trash2 className="w-3 h-3" /></button>
+          </div>
+        </div>
+        {children}
+      </div>
+    );
+
+    switch (block.type) {
+      case "text":
+        return wrapper(
+          <textarea value={block.content} onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+            rows={2} className="w-full text-sm px-3 py-2 rounded-lg resize-none" style={inputStyle} />
+        );
+      case "heading":
+        return wrapper(
+          <input type="text" value={block.content} onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+            className="w-full text-sm font-bold px-3 py-2 rounded-lg" style={inputStyle} />
+        );
+      case "divider":
+        return wrapper(<div className="h-px w-full" style={{ background: "hsl(0 0% 100% / 0.1)" }} />);
+      case "event_highlight":
+        return wrapper(
+          <div className="space-y-2">
+            <input type="text" value={block.title} onChange={(e) => updateBlock(block.id, { title: e.target.value })} placeholder="Event-Titel" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+            <div className="grid grid-cols-3 gap-2">
+              <input type="text" value={block.date} onChange={(e) => updateBlock(block.id, { date: e.target.value })} placeholder="Datum" className="text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+              <input type="text" value={block.time} onChange={(e) => updateBlock(block.id, { time: e.target.value })} placeholder="Uhrzeit" className="text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+              <input type="text" value={block.location} onChange={(e) => updateBlock(block.id, { location: e.target.value })} placeholder="Location" className="text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+            </div>
+            <input type="text" value={block.image_url} onChange={(e) => updateBlock(block.id, { image_url: e.target.value })} placeholder="Bild-URL (optional)" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+          </div>
+        );
+      case "event_list":
+        return wrapper(
+          <div className="space-y-2">
+            <input type="text" value={block.heading} onChange={(e) => updateBlock(block.id, { heading: e.target.value })} placeholder="Überschrift" className="w-full text-sm font-bold px-3 py-2 rounded-lg" style={inputStyle} />
+            {block.events.map((ev, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <input type="text" value={ev.title} onChange={(e) => { const evs = [...block.events]; evs[i] = { ...evs[i], title: e.target.value }; updateBlock(block.id, { events: evs }); }}
+                  placeholder="Titel" className="flex-1 text-xs px-2 py-1.5 rounded-lg" style={inputStyle} />
+                <input type="text" value={ev.date} onChange={(e) => { const evs = [...block.events]; evs[i] = { ...evs[i], date: e.target.value }; updateBlock(block.id, { events: evs }); }}
+                  placeholder="Datum" className="w-24 text-xs px-2 py-1.5 rounded-lg" style={inputStyle} />
+                <input type="text" value={ev.location} onChange={(e) => { const evs = [...block.events]; evs[i] = { ...evs[i], location: e.target.value }; updateBlock(block.id, { events: evs }); }}
+                  placeholder="Location" className="w-28 text-xs px-2 py-1.5 rounded-lg" style={inputStyle} />
+                <button onClick={() => { const evs = block.events.filter((_, j) => j !== i); updateBlock(block.id, { events: evs }); }}
+                  style={{ color: "hsl(0 70% 50%)" }}><X className="w-3 h-3" /></button>
+              </div>
+            ))}
+            <button onClick={() => updateBlock(block.id, { events: [...block.events, { title: "", date: "", location: "" }] })}
+              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg" style={{ color: "hsl(330 80% 55%)", background: "hsl(330 80% 55% / 0.1)" }}>
+              <Plus className="w-3 h-3" /> Event hinzufügen
+            </button>
+          </div>
+        );
+      case "cta_button":
+        return wrapper(
+          <div className="space-y-2">
+            <input type="text" value={block.text} onChange={(e) => updateBlock(block.id, { text: e.target.value })} placeholder="Button-Text" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+            <input type="text" value={block.url} onChange={(e) => updateBlock(block.id, { url: e.target.value })} placeholder="https://..." className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+          </div>
+        );
+      case "image":
+        return wrapper(
+          <div className="space-y-2">
+            <input type="text" value={block.url} onChange={(e) => updateBlock(block.id, { url: e.target.value })} placeholder="Bild-URL" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+            <input type="text" value={block.alt} onChange={(e) => updateBlock(block.id, { alt: e.target.value })} placeholder="Alt-Text" className="w-full text-sm px-3 py-2 rounded-lg" style={inputStyle} />
+          </div>
+        );
+      case "spacer":
+        return wrapper(
+          <div className="flex items-center gap-2">
+            <label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Höhe (px)</label>
+            <input type="number" value={block.height} onChange={(e) => updateBlock(block.id, { height: parseInt(e.target.value) || 8 })}
+              className="w-20 text-sm px-2 py-1.5 rounded-lg" style={inputStyle} />
+          </div>
+        );
+      default: return null;
+    }
+  };
+
+  /* ─── Block Preview Item ─── */
+  const renderBlockPreview = (block: EmailBlock) => {
+    switch (block.type) {
+      case "text":
+        return <p key={block.id} style={{ fontSize: "12px", color: tpl.text_color, lineHeight: 1.6, margin: "0 0 12px", whiteSpace: "pre-line" }}>{block.content}</p>;
+      case "heading":
+        return <h3 key={block.id} style={{ fontSize: "16px", fontWeight: 800, color: tpl.text_color, margin: "0 0 8px" }}>{block.content}</h3>;
+      case "divider":
+        return <hr key={block.id} style={{ border: "none", borderTop: `1px solid ${tpl.accent_color}33`, margin: "12px 0" }} />;
+      case "event_highlight":
+        return (
+          <div key={block.id} style={{ background: tpl.card_bg, borderRadius: "10px", padding: "14px", marginBottom: "12px", borderLeft: `3px solid ${tpl.accent_color}` }}>
+            {block.image_url && <img src={block.image_url} alt="" style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", objectFit: "cover" }} />}
+            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title}</div>
+            <div style={{ fontSize: "11px", color: tpl.text_color + "99", marginTop: "4px" }}>{block.date} · {block.time} · {block.location}</div>
+          </div>
+        );
+      case "event_list":
+        return (
+          <div key={block.id} style={{ marginBottom: "12px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>{block.heading}</div>
+            {block.events.map((ev, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{ev.title}</span>
+                <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>{ev.date} · {ev.location}</span>
+              </div>
+            ))}
+          </div>
+        );
+      case "cta_button":
+        return (
+          <div key={block.id} style={{ textAlign: "center", margin: "16px 0" }}>
+            <span style={{ display: "inline-block", background: tpl.accent_color, color: "#fff", padding: "10px 24px", borderRadius: "8px", fontSize: "13px", fontWeight: 700, textDecoration: "none" }}>{block.text}</span>
+          </div>
+        );
+      case "image":
+        return block.url ? <img key={block.id} src={block.url} alt={block.alt} style={{ width: "100%", borderRadius: "8px", marginBottom: "12px" }} /> : null;
+      case "spacer":
+        return <div key={block.id} style={{ height: block.height }} />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -338,18 +624,19 @@ const EmailTab = () => {
         <div className="lg:col-span-3 space-y-5">
           {/* Email Presets */}
           <div style={sectionStyle}>
-            <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Vorlagen</h3>
+            <h3 className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>Vorlagen</h3>
+            <p className="text-[11px] mb-3" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Hell & Dunkel – Klicken zum Anwenden</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {EMAIL_PRESETS.map((p) => (
                 <button key={p.name} onClick={() => setTpl(prev => ({ ...prev, ...p.template }))}
                   className="flex items-center gap-2 p-2.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 text-left"
-                  style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  style={{ background: p.dark ? "hsl(0 0% 4%)" : "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)", border: `1px solid ${p.dark ? p.template.accent_color + "44" : "hsl(0 0% 100% / 0.08)"}` }}>
                   <span className="text-base">{p.emoji}</span>
                   <div>
                     <div>{p.name}</div>
                     <div className="flex items-center gap-1 mt-0.5">
                       <span className="w-2 h-2 rounded-full" style={{ background: p.template.accent_color }} />
-                      <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{p.template.accent_color}</span>
+                      <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{p.dark ? "Dark" : "Light"}</span>
                     </div>
                   </div>
                 </button>
@@ -360,11 +647,8 @@ const EmailTab = () => {
           {/* Subject */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Betreffzeile</h3>
-            <input
-              type="text" value={tpl.subject}
-              onChange={(e) => setTpl(p => ({ ...p, subject: e.target.value }))}
-              className="w-full text-sm px-3 py-2.5 rounded-lg" style={inputStyle}
-            />
+            <input type="text" value={tpl.subject} onChange={(e) => setTpl(p => ({ ...p, subject: e.target.value }))}
+              className="w-full text-sm px-3 py-2.5 rounded-lg" style={inputStyle} />
             <div className="flex flex-wrap gap-1.5 mt-2">
               {["{{event_title}}", "{{date}}", "{{ticket_count}}"].map(p => (
                 <button key={p} onClick={() => setTpl(prev => ({ ...prev, subject: prev.subject + " " + p }))}
@@ -376,24 +660,55 @@ const EmailTab = () => {
           {/* Greeting + Text */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Begrüßung</h3>
-            <input type="text" value={tpl.greeting}
-              onChange={(e) => setTpl(p => ({ ...p, greeting: e.target.value }))}
-              className="w-full text-sm px-3 py-2.5 rounded-lg mb-3" style={inputStyle}
-            />
+            <input type="text" value={tpl.greeting} onChange={(e) => setTpl(p => ({ ...p, greeting: e.target.value }))}
+              className="w-full text-sm px-3 py-2.5 rounded-lg mb-3" style={inputStyle} />
             <label style={labelStyle}>Einleitungstext</label>
-            <textarea value={tpl.intro_text}
-              onChange={(e) => setTpl(p => ({ ...p, intro_text: e.target.value }))}
-              rows={3} className="w-full text-sm px-3 py-2.5 rounded-lg resize-none" style={inputStyle}
-            />
+            <textarea value={tpl.intro_text} onChange={(e) => setTpl(p => ({ ...p, intro_text: e.target.value }))}
+              rows={3} className="w-full text-sm px-3 py-2.5 rounded-lg resize-none" style={inputStyle} />
+          </div>
+
+          {/* ─── BLOCK EDITOR ─── */}
+          <div style={sectionStyle}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Inhaltsblöcke</h3>
+              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{tpl.blocks.length} Blöcke</span>
+            </div>
+
+            <div className="space-y-2">
+              {tpl.blocks.map(block => renderBlockEditor(block))}
+            </div>
+
+            {/* Add Block */}
+            <div className="mt-3 relative">
+              <button onClick={() => setShowBlockMenu(!showBlockMenu)}
+                className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl text-xs font-bold transition-all"
+                style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(330 80% 55%)", border: "1px dashed hsl(330 80% 55% / 0.3)" }}>
+                <Plus className="w-4 h-4" /> Block hinzufügen
+              </button>
+              {showBlockMenu && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 rounded-xl p-2 z-50 grid grid-cols-2 gap-1.5"
+                  style={{ background: "hsl(0 0% 8%)", border: "1px solid hsl(0 0% 100% / 0.1)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+                  {BLOCK_TYPES.map(bt => (
+                    <button key={bt.type} onClick={() => addBlock(bt.type)}
+                      className="flex items-center gap-2 p-2.5 rounded-lg text-left transition-all hover:scale-[1.02]"
+                      style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)" }}>
+                      <bt.icon className="w-4 h-4 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                      <div>
+                        <div className="text-[11px] font-bold">{bt.label}</div>
+                        <div className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{bt.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Footer-Text</h3>
-            <textarea value={tpl.footer_text}
-              onChange={(e) => setTpl(p => ({ ...p, footer_text: e.target.value }))}
-              rows={3} className="w-full text-sm px-3 py-2.5 rounded-lg resize-none" style={inputStyle}
-            />
+            <textarea value={tpl.footer_text} onChange={(e) => setTpl(p => ({ ...p, footer_text: e.target.value }))}
+              rows={3} className="w-full text-sm px-3 py-2.5 rounded-lg resize-none" style={inputStyle} />
           </div>
 
           {/* Toggles */}
@@ -416,16 +731,23 @@ const EmailTab = () => {
           {/* Colors & Logo */}
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Farben & Logo</h3>
-            <div className="flex items-center gap-4 mb-4">
-              <div>
-                <label style={labelStyle}>Akzentfarbe</label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={tpl.accent_color} onChange={(e) => setTpl(p => ({ ...p, accent_color: e.target.value }))}
-                    className="w-8 h-8 rounded-lg cursor-pointer border-0" style={{ background: "transparent" }} />
-                  <input type="text" value={tpl.accent_color} onChange={(e) => setTpl(p => ({ ...p, accent_color: e.target.value }))}
-                    className="w-24 text-xs font-mono px-2 py-1.5 rounded-lg" style={inputStyle} />
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              {[
+                { key: "accent_color" as const, label: "Akzent" },
+                { key: "bg_color" as const, label: "Hintergrund" },
+                { key: "text_color" as const, label: "Text" },
+                { key: "card_bg" as const, label: "Karten" },
+              ].map(c => (
+                <div key={c.key}>
+                  <label style={labelStyle}>{c.label}</label>
+                  <div className="flex items-center gap-1.5">
+                    <input type="color" value={tpl[c.key]} onChange={(e) => setTpl(p => ({ ...p, [c.key]: e.target.value }))}
+                      className="w-7 h-7 rounded-lg cursor-pointer border-0" style={{ background: "transparent" }} />
+                    <input type="text" value={tpl[c.key]} onChange={(e) => setTpl(p => ({ ...p, [c.key]: e.target.value }))}
+                      className="w-20 text-[10px] font-mono px-2 py-1 rounded-lg" style={inputStyle} />
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
             <div>
               <label style={labelStyle}>E-Mail Logo</label>
@@ -461,34 +783,42 @@ const EmailTab = () => {
               <Eye className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
               <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Vorschau</span>
             </div>
-            <div className="rounded-xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+            <div className="rounded-xl overflow-hidden" style={{ background: tpl.bg_color, border: "1px solid hsl(0 0% 100% / 0.1)" }}>
               {/* Accent bar */}
               <div style={{ height: "4px", background: tpl.accent_color }} />
               <div style={{ padding: "24px", fontFamily: "-apple-system, sans-serif" }}>
                 {tpl.logo_url && <img src={tpl.logo_url} alt="" style={{ height: "32px", marginBottom: "16px", objectFit: "contain" }} />}
-                <p style={{ fontSize: "14px", color: "#333", lineHeight: 1.6, margin: "0 0 16px" }}>
+                <p style={{ fontSize: "14px", color: tpl.text_color, lineHeight: 1.6, margin: "0 0 16px" }}>
                   {tpl.greeting.replace("{{first_name}}", "Max").replace("{{name}}", "Max Mustermann")},<br /><br />
                   {tpl.intro_text}
                 </p>
                 {tpl.show_event_details && (
-                  <div style={{ background: "#f9f9f9", borderRadius: "8px", padding: "16px", marginBottom: "16px" }}>
-                    <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#999", fontWeight: 600, marginBottom: "4px" }}>Event</div>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a", marginBottom: "8px" }}>Mamma Mia Party</div>
-                    <div style={{ fontSize: "12px", color: "#666" }}>15.03.2026 · 22:00 Uhr · Baggi / Osho</div>
+                  <div style={{ background: tpl.card_bg, borderRadius: "8px", padding: "16px", marginBottom: "16px" }}>
+                    <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: tpl.text_color + "88", fontWeight: 600, marginBottom: "4px" }}>Event</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>Mamma Mia Party</div>
+                    <div style={{ fontSize: "12px", color: tpl.text_color + "99" }}>15.03.2026 · 22:00 Uhr · Baggi / Osho</div>
                   </div>
                 )}
                 {tpl.show_order_summary && (
-                  <div style={{ borderTop: "1px solid #eee", paddingTop: "12px", marginBottom: "16px" }}>
-                    <div style={{ fontSize: "12px", color: "#666", display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <div style={{ borderTop: `1px solid ${tpl.text_color}22`, paddingTop: "12px", marginBottom: "16px" }}>
+                    <div style={{ fontSize: "12px", color: tpl.text_color + "99", display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                       <span>2x Early Bird</span><span>19,98 €</span>
                     </div>
-                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#1a1a1a", display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color, display: "flex", justifyContent: "space-between" }}>
                       <span>Gesamt</span><span>19,98 €</span>
                     </div>
                   </div>
                 )}
-                <div style={{ borderTop: "1px solid #eee", paddingTop: "16px" }}>
-                  <p style={{ fontSize: "11px", color: "#999", margin: 0, whiteSpace: "pre-line" }}>{tpl.footer_text}</p>
+
+                {/* Render blocks in preview */}
+                {tpl.blocks.length > 0 && (
+                  <div style={{ borderTop: `1px solid ${tpl.text_color}22`, paddingTop: "12px", marginBottom: "12px" }}>
+                    {tpl.blocks.map(block => renderBlockPreview(block))}
+                  </div>
+                )}
+
+                <div style={{ borderTop: `1px solid ${tpl.text_color}22`, paddingTop: "16px" }}>
+                  <p style={{ fontSize: "11px", color: tpl.text_color + "88", margin: 0, whiteSpace: "pre-line" }}>{tpl.footer_text}</p>
                 </div>
               </div>
             </div>
