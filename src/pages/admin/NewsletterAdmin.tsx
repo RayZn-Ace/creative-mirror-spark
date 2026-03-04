@@ -6,7 +6,7 @@ import {
   Plus, Trash2, GripVertical, Type, Heading1, Image, MousePointerClick, Minus,
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
-  Star, CalendarDays, MapPin, Clock,
+  Star, CalendarDays, MapPin, Clock, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,8 +20,8 @@ interface ImageBlock extends BaseBlock { type: "image"; src: string; alt: string
 interface ButtonBlock extends BaseBlock { type: "button"; text: string; url: string; bgColor: string; textColor: string; align: "left" | "center" | "right"; borderRadius: number }
 interface DividerBlock extends BaseBlock { type: "divider"; color: string; style: "solid" | "dashed" | "dotted" }
 interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
-interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string }
-interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string }
+interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; magicMode?: boolean }
+interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string; magicMode?: boolean; magicLimit?: number }
 
 type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock;
 
@@ -252,6 +252,15 @@ const blockToHtml = (block: Block): string => {
     case "spacer":
       return `<div style="height:${block.height}px;"></div>`;
     case "event-highlight":
+      if (block.magicMode) {
+        return `<!--MAGIC_HIGHLIGHT:${JSON.stringify({ accentColor: block.accentColor, bgColor: block.bgColor, textColor: block.textColor, ctaText: block.ctaText })}-->
+<div style="margin:0 0 16px;border-radius:12px;overflow:hidden;background:${block.bgColor};border:1px solid ${block.accentColor}22;">
+<div style="height:8px;background:${block.accentColor};"></div>
+<div style="padding:24px;text-align:center;">
+<p style="margin:0;font-size:14px;color:${block.accentColor};font-weight:700;">✨ Magic Modus ✨</p>
+<p style="margin:8px 0 0;font-size:12px;color:${block.textColor}99;">Wird automatisch mit dem nächsten Event in der Stadt des Empfängers befüllt</p>
+</div></div>`;
+      }
       return `<div style="margin:0 0 16px;border-radius:12px;overflow:hidden;background:${block.bgColor};border:1px solid ${block.accentColor}22;">
 ${block.eventImage ? `<img src="${block.eventImage}" alt="${block.eventTitle}" style="width:100%;height:auto;display:block;" />` : `<div style="height:8px;background:${block.accentColor};"></div>`}
 <div style="padding:24px;">
@@ -263,6 +272,15 @@ ${block.eventImage ? `<img src="${block.eventImage}" alt="${block.eventTitle}" s
 <div style="text-align:center;"><a href="${block.ctaUrl}" style="display:inline-block;padding:14px 40px;background:${block.accentColor};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;border-radius:50px;">${block.ctaText}</a></div>
 </div></div>`;
     case "event-list": {
+      if (block.magicMode) {
+        return `<!--MAGIC_EVENT_LIST:${JSON.stringify({ accentColor: block.accentColor, textColor: block.textColor, bgColor: block.bgColor, title: block.title, limit: block.magicLimit || 5 })}-->
+<div style="margin:0 0 16px;">
+${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color:${block.textColor};text-align:center;">${block.title}</h3>` : ""}
+<div style="background:${block.bgColor};border-radius:8px;padding:20px;text-align:center;">
+<p style="margin:0;font-size:14px;color:${block.accentColor};font-weight:700;">✨ Magic Modus ✨</p>
+<p style="margin:8px 0 0;font-size:12px;color:${block.textColor}99;">Zeigt automatisch die nächsten Termine in der Stadt des Empfängers</p>
+</div></div>`;
+      }
       const rows = block.events.map((ev) =>
         `<tr>
 <td style="padding:10px 12px;font-size:14px;font-weight:700;color:${block.accentColor};border-bottom:1px solid ${block.accentColor}15;white-space:nowrap;">${ev.date}</td>
@@ -396,44 +414,67 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
     case "event-highlight":
       return (
         <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className={labelCls} style={labelStyle}>Event-Titel</label>
-              <input value={block.eventTitle} onChange={(e) => upd({ eventTitle: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          {/* Magic Mode Toggle */}
+          <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: block.magicMode ? "hsl(270 80% 55% / 0.12)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${block.magicMode ? "hsl(270 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}` }}>
+            <Wand2 className="w-4 h-4 shrink-0" style={{ color: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.3)" }} />
+            <div className="flex-1">
+              <span className="text-[11px] font-bold" style={{ color: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.5)" }}>Magic Modus</span>
+              <p className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Zeigt automatisch das nächste Event in der Stadt des Empfängers</p>
             </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Stadt</label>
-              <input value={block.eventCity} onChange={(e) => upd({ eventCity: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-            </div>
+            <button onClick={() => upd({ magicMode: !block.magicMode })} className="w-10 h-5 rounded-full relative transition-all" style={{ background: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.1)" }}>
+              <div className="absolute top-0.5 w-4 h-4 rounded-full transition-all" style={{ background: "#fff", left: block.magicMode ? "22px" : "2px" }} />
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className={labelCls} style={labelStyle}>Datum</label>
-              <input value={block.eventDate} onChange={(e) => upd({ eventDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          {!block.magicMode && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls} style={labelStyle}>Event-Titel</label>
+                  <input value={block.eventTitle} onChange={(e) => upd({ eventTitle: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+                <div>
+                  <label className={labelCls} style={labelStyle}>Stadt</label>
+                  <input value={block.eventCity} onChange={(e) => upd({ eventCity: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls} style={labelStyle}>Datum</label>
+                  <input value={block.eventDate} onChange={(e) => upd({ eventDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+                <div>
+                  <label className={labelCls} style={labelStyle}>Uhrzeit</label>
+                  <input value={block.eventTime} onChange={(e) => upd({ eventTime: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls} style={labelStyle}>Location</label>
+                <input value={block.eventLocation} onChange={(e) => upd({ eventLocation: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+              </div>
+              <div>
+                <label className={labelCls} style={labelStyle}>Bild-URL (optional)</label>
+                <input value={block.eventImage} onChange={(e) => upd({ eventImage: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={labelCls} style={labelStyle}>CTA-Text</label>
+                  <input value={block.ctaText} onChange={(e) => upd({ ctaText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+                <div>
+                  <label className={labelCls} style={labelStyle}>CTA-URL</label>
+                  <input value={block.ctaUrl} onChange={(e) => upd({ ctaUrl: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+                </div>
+              </div>
+            </>
+          )}
+          {block.magicMode && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={labelCls} style={labelStyle}>CTA-Text</label>
+                <input value={block.ctaText} onChange={(e) => upd({ ctaText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+              </div>
             </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>Uhrzeit</label>
-              <input value={block.eventTime} onChange={(e) => upd({ eventTime: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls} style={labelStyle}>Location</label>
-            <input value={block.eventLocation} onChange={(e) => upd({ eventLocation: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-          </div>
-          <div>
-            <label className={labelCls} style={labelStyle}>Bild-URL (optional)</label>
-            <input value={block.eventImage} onChange={(e) => upd({ eventImage: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className={labelCls} style={labelStyle}>CTA-Text</label>
-              <input value={block.ctaText} onChange={(e) => upd({ ctaText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-            </div>
-            <div>
-              <label className={labelCls} style={labelStyle}>CTA-URL</label>
-              <input value={block.ctaUrl} onChange={(e) => upd({ ctaUrl: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
-            </div>
-          </div>
+          )}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <label className="text-[9px]" style={labelStyle}>Akzent</label>
@@ -453,24 +494,43 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
     case "event-list":
       return (
         <div className="space-y-2">
+          {/* Magic Mode Toggle */}
+          <div className="flex items-center gap-2 p-2.5 rounded-lg" style={{ background: block.magicMode ? "hsl(270 80% 55% / 0.12)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${block.magicMode ? "hsl(270 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}` }}>
+            <Wand2 className="w-4 h-4 shrink-0" style={{ color: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.3)" }} />
+            <div className="flex-1">
+              <span className="text-[11px] font-bold" style={{ color: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.5)" }}>Magic Modus</span>
+              <p className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Zeigt automatisch Termine in der Stadt des Empfängers</p>
+            </div>
+            <button onClick={() => upd({ magicMode: !block.magicMode })} className="w-10 h-5 rounded-full relative transition-all" style={{ background: block.magicMode ? "hsl(270 80% 55%)" : "hsl(0 0% 100% / 0.1)" }}>
+              <div className="absolute top-0.5 w-4 h-4 rounded-full transition-all" style={{ background: "#fff", left: block.magicMode ? "22px" : "2px" }} />
+            </button>
+          </div>
           <div>
             <label className={labelCls} style={labelStyle}>Titel</label>
             <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           </div>
-          <div className="space-y-1.5">
-            <label className={labelCls} style={labelStyle}>Termine</label>
-            {block.events.map((ev, i) => (
-              <div key={i} className="grid grid-cols-[60px_1fr_1fr_auto] gap-1.5 items-center">
-                <input value={ev.date} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], date: e.target.value }; upd({ events: evts }); }} placeholder="Datum" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
-                <input value={ev.city} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], city: e.target.value }; upd({ events: evts }); }} placeholder="Stadt" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
-                <input value={ev.location} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], location: e.target.value }; upd({ events: evts }); }} placeholder="Location" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
-                <button onClick={() => { const evts = block.events.filter((_, j) => j !== i); upd({ events: evts }); }} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.5)" }}><Trash2 className="w-3 h-3" /></button>
-              </div>
-            ))}
-            <button onClick={() => upd({ events: [...block.events, { date: "", city: "", location: "", url: "https://" }] })} className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg hover:bg-white/[0.04]" style={{ color: "hsl(330 80% 55% / 0.7)" }}>
-              <Plus className="w-3 h-3" /> Termin hinzufügen
-            </button>
-          </div>
+          {block.magicMode && (
+            <div>
+              <label className={labelCls} style={labelStyle}>Max. Termine anzeigen</label>
+              <input type="number" min={1} max={20} value={block.magicLimit || 5} onChange={(e) => upd({ magicLimit: Number(e.target.value) })} className="w-20 px-2 py-1.5 rounded text-xs" style={inputStyle} />
+            </div>
+          )}
+          {!block.magicMode && (
+            <div className="space-y-1.5">
+              <label className={labelCls} style={labelStyle}>Termine</label>
+              {block.events.map((ev, i) => (
+                <div key={i} className="grid grid-cols-[60px_1fr_1fr_auto] gap-1.5 items-center">
+                  <input value={ev.date} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], date: e.target.value }; upd({ events: evts }); }} placeholder="Datum" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                  <input value={ev.city} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], city: e.target.value }; upd({ events: evts }); }} placeholder="Stadt" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                  <input value={ev.location} onChange={(e) => { const evts = [...block.events]; evts[i] = { ...evts[i], location: e.target.value }; upd({ events: evts }); }} placeholder="Location" className="px-2 py-1.5 rounded text-[10px]" style={inputStyle} />
+                  <button onClick={() => { const evts = block.events.filter((_, j) => j !== i); upd({ events: evts }); }} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.5)" }}><Trash2 className="w-3 h-3" /></button>
+                </div>
+              ))}
+              <button onClick={() => upd({ events: [...block.events, { date: "", city: "", location: "", url: "https://" }] })} className="flex items-center gap-1 text-[10px] font-bold px-2 py-1.5 rounded-lg hover:bg-white/[0.04]" style={{ color: "hsl(330 80% 55% / 0.7)" }}>
+                <Plus className="w-3 h-3" /> Termin hinzufügen
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <label className="text-[9px]" style={labelStyle}>Akzent</label>
@@ -690,6 +750,8 @@ ${bodyContent}
     setSending(true);
     setSent(null);
 
+    const hasMagic = blocks.some((b) => (b.type === "event-highlight" || b.type === "event-list") && (b as any).magicMode);
+
     try {
       const { data, error } = await supabase.functions.invoke("send-newsletter", {
         body: {
@@ -698,6 +760,7 @@ ${bodyContent}
           recipients: recipients.map((r) => r.email),
           fromName: fromName.trim(),
           fromEmail: fromEmail.trim(),
+          magicMode: hasMagic,
         },
       });
       if (error) throw error;
