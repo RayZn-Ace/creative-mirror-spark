@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity, Plus, Trash2, Eye, EyeOff, FlaskConical, Check, X, Search,
-  BarChart3, Code2, TestTube, ChevronDown, Settings2, Zap,
+  BarChart3, Code2, TestTube, ChevronDown, Settings2, Zap, HelpCircle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -30,97 +30,253 @@ type EventLog = {
   created_at: string;
 };
 
-type ProviderField = { key: string; label: string; placeholder: string; type?: "text" | "toggle"; description?: string };
+type ProviderField = { key: string; label: string; placeholder: string; type?: "text" | "toggle"; description?: string; required?: boolean; guide?: string[] };
 
 const PROVIDERS: { id: string; name: string; placeholder: string; color: string; fields: ProviderField[] }[] = [
   {
     id: "google_analytics", name: "Google Analytics 4", placeholder: "G-XXXXXXXXXX", color: "hsl(45 80% 55%)",
     fields: [
-      { key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX" },
-      { key: "cross_domains", label: "Cross-Domain Tracking (kommasepariert)", placeholder: "shop.example.com, checkout.example.com", description: "Session-Tracking über mehrere Domains" },
-      { key: "enhanced_measurement", label: "Enhanced Measurement", placeholder: "", type: "toggle", description: "Scrolls, Outbound Clicks, Site Search, Video, File Downloads automatisch tracken" },
-      { key: "debug_mode", label: "Debug Mode (DebugView)", placeholder: "", type: "toggle", description: "Echtzeit-Debugging in Google Analytics" },
+      { key: "pixel_id", label: "Measurement ID", placeholder: "G-XXXXXXXXXX", required: true, guide: [
+        "Gehe zu analytics.google.com und logge dich ein.",
+        "Klicke links unten auf ⚙️ Verwaltung (Admin).",
+        "Unter 'Property' klicke auf Datenstreams → Wähle deinen Web-Stream.",
+        "Kopiere die Mess-ID (beginnt mit G-).",
+        "Füge sie hier ein."
+      ] },
+      { key: "cross_domains", label: "Cross-Domain Tracking (kommasepariert)", placeholder: "shop.example.com, checkout.example.com", description: "Session-Tracking über mehrere Domains", guide: [
+        "Gib alle Domains ein, über die deine Nutzer navigieren (z.B. Hauptseite + Shop).",
+        "Trenne mehrere Domains mit Komma.",
+        "Dadurch wird ein Nutzer über beide Domains als eine Session gezählt.",
+        "In GA4 unter Verwaltung → Datenstreams → Tag-Einstellungen → Domains konfigurieren findest du die gleiche Einstellung."
+      ] },
+      { key: "enhanced_measurement", label: "Enhanced Measurement", placeholder: "", type: "toggle", description: "Scrolls, Outbound Clicks, Site Search, Video, File Downloads automatisch tracken", guide: [
+        "Aktiviere diesen Schalter, um automatisch zusätzliche Events zu erfassen.",
+        "GA4 trackt dann: Scrolltiefe, ausgehende Links, Website-Suche, Video-Wiedergabe, Datei-Downloads.",
+        "Du brauchst keinen zusätzlichen Code – alles läuft automatisch."
+      ] },
+      { key: "debug_mode", label: "Debug Mode (DebugView)", placeholder: "", type: "toggle", description: "Echtzeit-Debugging in Google Analytics", guide: [
+        "Aktiviere dies zum Testen deiner Events.",
+        "Gehe in GA4 zu Verwaltung → DebugView.",
+        "Dort siehst du in Echtzeit alle Events, die von dieser Seite gesendet werden.",
+        "⚠️ Deaktiviere den Debug Mode wieder, bevor du live gehst."
+      ] },
     ],
   },
   {
     id: "google_tag_manager", name: "Google Tag Manager", placeholder: "GTM-XXXXXXX", color: "hsl(45 60% 50%)",
     fields: [
-      { key: "pixel_id", label: "Container ID", placeholder: "GTM-XXXXXXX" },
-      { key: "gtm_auth", label: "Environment Auth (optional)", placeholder: "abc123xyz", description: "Für GTM-Environments (Staging/Preview)" },
-      { key: "gtm_preview", label: "Environment Preview ID", placeholder: "env-123", description: "Preview-Container für Testumgebungen" },
-      { key: "data_layer_name", label: "DataLayer Name", placeholder: "dataLayer", description: "Custom DataLayer-Name" },
+      { key: "pixel_id", label: "Container ID", placeholder: "GTM-XXXXXXX", required: true, guide: [
+        "Gehe zu tagmanager.google.com und logge dich ein.",
+        "Wähle deinen Container aus oder erstelle einen neuen.",
+        "Die Container-ID steht oben rechts (beginnt mit GTM-).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "gtm_auth", label: "Environment Auth", placeholder: "abc123xyz", description: "Für GTM-Environments (Staging/Preview)", guide: [
+        "Gehe in GTM zu Verwaltung → Environments.",
+        "Wähle das gewünschte Environment (z.B. Staging).",
+        "Klicke auf 'Snippet abrufen' → Kopiere den gtm_auth Wert aus der URL.",
+        "Nur nötig, wenn du verschiedene GTM-Versionen für Test/Live nutzen willst."
+      ] },
+      { key: "gtm_preview", label: "Environment Preview ID", placeholder: "env-123", description: "Preview-Container für Testumgebungen", guide: [
+        "Steht im gleichen Snippet wie gtm_auth.",
+        "Suche nach gtm_preview= in der URL.",
+        "Kopiere den Wert (z.B. env-123)."
+      ] },
+      { key: "data_layer_name", label: "DataLayer Name", placeholder: "dataLayer", description: "Custom DataLayer-Name", guide: [
+        "Standardmäßig heißt der DataLayer 'dataLayer' – du musst hier nichts ändern.",
+        "Nur ändern, wenn du einen Custom DataLayer-Namen in deinem GTM-Setup verwendest.",
+        "Falls unsicher: lass dieses Feld leer."
+      ] },
     ],
   },
   {
     id: "meta", name: "Meta Pixel (Facebook/Instagram)", placeholder: "123456789012345", color: "hsl(215 90% 55%)",
     fields: [
-      { key: "pixel_id", label: "Pixel ID", placeholder: "123456789012345" },
-      { key: "capi_token", label: "Conversions API Access Token", placeholder: "EAAxxxxxxx...", description: "Server-seitiges Tracking für bessere Datenqualität" },
-      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST12345", description: "Aus Events Manager → Test Events" },
-      { key: "advanced_matching", label: "Advanced Matching (automatisch)", placeholder: "", type: "toggle", description: "E-Mail, Telefon etc. automatisch hashen und senden" },
-      { key: "domain_verification", label: "Domain Verification Meta-Tag", placeholder: "xxxxxxxxxxxxxxxxx", description: "Verifizierungs-String für Meta Business Suite" },
-      { key: "external_id", label: "External ID Parameter", placeholder: "user_id", description: "Custom Nutzer-ID für besseres Matching" },
+      { key: "pixel_id", label: "Pixel ID", placeholder: "123456789012345", required: true, guide: [
+        "Gehe zu business.facebook.com → Events Manager.",
+        "Klicke links auf 'Datenquellen' und wähle dein Pixel aus.",
+        "Die Pixel-ID steht oben unter dem Pixel-Namen (15-stellige Zahl).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "capi_token", label: "Conversions API Access Token", placeholder: "EAAxxxxxxx...", description: "Server-seitiges Tracking für bessere Datenqualität (empfohlen)", guide: [
+        "Gehe zu business.facebook.com → Events Manager → Dein Pixel.",
+        "Klicke auf 'Einstellungen' (Settings).",
+        "Scrolle zu 'Conversions API' → Klicke auf 'Access Token generieren'.",
+        "Kopiere den generierten Token (beginnt mit EAA...).",
+        "💡 Empfohlen für bessere Datenqualität, da iOS-Einschränkungen das Browser-Tracking limitieren."
+      ] },
+      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST12345", description: "Aus Events Manager → Test Events", guide: [
+        "Gehe zu Events Manager → Dein Pixel → 'Events testen' Tab.",
+        "Dort steht oben ein Test Event Code (z.B. TEST12345).",
+        "Trage ihn hier ein, um Events im Testmodus zu verifizieren.",
+        "⚠️ Entferne den Code wieder, bevor du live gehst."
+      ] },
+      { key: "advanced_matching", label: "Advanced Matching (automatisch)", placeholder: "", type: "toggle", description: "E-Mail, Telefon etc. automatisch hashen und senden", guide: [
+        "Aktiviere dies, um Kundendaten (E-Mail, Telefon) automatisch gehasht an Meta zu senden.",
+        "Verbessert die Zuordnung von Website-Aktionen zu Facebook-Profilen um bis zu 30%.",
+        "Daten werden mit SHA-256 verschlüsselt – Meta sieht nie die Rohdaten.",
+        "⚠️ Stelle sicher, dass deine Datenschutzerklärung dies abdeckt."
+      ] },
+      { key: "domain_verification", label: "Domain Verification Meta-Tag", placeholder: "xxxxxxxxxxxxxxxxx", description: "Verifizierungs-String für Meta Business Suite", guide: [
+        "Gehe zu business.facebook.com → Business-Einstellungen → Brand Safety → Domains.",
+        "Klicke auf 'Domain hinzufügen' und gib deine Domain ein.",
+        "Wähle 'Meta-Tag-Verifizierung' und kopiere den Content-Wert.",
+        "Füge ihn hier ein – er wird automatisch als Meta-Tag auf deiner Seite eingefügt."
+      ] },
+      { key: "external_id", label: "External ID Parameter", placeholder: "user_id", description: "Custom Nutzer-ID für besseres Matching", guide: [
+        "Falls du eine eigene User-ID hast (z.B. aus deinem Login-System), trage den Parameter-Namen hier ein.",
+        "Meta nutzt diese ID, um Nutzer über Geräte hinweg zuzuordnen.",
+        "Meistens nicht nötig – Advanced Matching reicht in den meisten Fällen."
+      ] },
     ],
   },
   {
     id: "tiktok", name: "TikTok Pixel", placeholder: "CXXXXXXXXXXXXXXXXX", color: "hsl(330 80% 55%)",
     fields: [
-      { key: "pixel_id", label: "Pixel ID", placeholder: "CXXXXXXXXXXXXXXXXX" },
-      { key: "capi_token", label: "Events API Access Token", placeholder: "Token...", description: "Server-to-Server Tracking" },
-      { key: "advanced_matching", label: "Automatic Advanced Matching", placeholder: "", type: "toggle", description: "E-Mail, Telefon automatisch aus Formularen erfassen" },
-      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST...", description: "Für Server-Event-Tests" },
+      { key: "pixel_id", label: "Pixel ID", placeholder: "CXXXXXXXXXXXXXXXXX", required: true, guide: [
+        "Gehe zu ads.tiktok.com → Tools → Events → Web Events.",
+        "Klicke auf 'Pixel verwalten' oder erstelle einen neuen.",
+        "Die Pixel-ID steht unter dem Pixel-Namen (beginnt mit C...).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "capi_token", label: "Events API Access Token", placeholder: "Token...", description: "Server-to-Server Tracking (empfohlen)", guide: [
+        "Gehe zu ads.tiktok.com → Tools → Events → Web Events → Dein Pixel.",
+        "Klicke auf 'Einstellungen' → Scrolle zu 'Events API'.",
+        "Generiere einen Access Token und kopiere ihn.",
+        "💡 Empfohlen für bessere Match-Raten, besonders bei iOS-Nutzern."
+      ] },
+      { key: "advanced_matching", label: "Automatic Advanced Matching", placeholder: "", type: "toggle", description: "E-Mail, Telefon automatisch aus Formularen erfassen", guide: [
+        "Aktiviere dies, damit TikTok automatisch Formularfelder (E-Mail, Telefon) erkennt.",
+        "Die Daten werden gehasht (SHA-256) und an TikTok gesendet.",
+        "Verbessert die Zuordnung von Website-Aktionen zu TikTok-Nutzern.",
+        "Findest du auch unter ads.tiktok.com → Events Manager → Pixel-Einstellungen."
+      ] },
+      { key: "test_event_code", label: "Test Event Code", placeholder: "TEST...", description: "Für Server-Event-Tests", guide: [
+        "Gehe zu Events Manager → Dein Pixel → 'Events testen' Tab.",
+        "Kopiere den angezeigten Test Event Code.",
+        "Events mit diesem Code werden nur als Test gezählt.",
+        "⚠️ Entferne den Code wieder, bevor du live gehst."
+      ] },
     ],
   },
   {
     id: "snapchat", name: "Snapchat Pixel", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", color: "hsl(55 80% 55%)",
     fields: [
-      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx" },
-      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Event-Tracking" },
-      { key: "advanced_matching", label: "Advanced Matching", placeholder: "", type: "toggle", description: "User-Informationen für besseres Targeting" },
+      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx", required: true, guide: [
+        "Gehe zu ads.snapchat.com → Events Manager.",
+        "Wähle dein Snap Pixel aus oder erstelle eins.",
+        "Kopiere die Pixel-ID (UUID-Format).",
+      ] },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Event-Tracking", guide: [
+        "Gehe zu Events Manager → Dein Pixel → Einstellungen.",
+        "Unter 'Conversions API' generiere einen Token.",
+        "Ermöglicht serverseitiges Tracking unabhängig vom Browser."
+      ] },
+      { key: "advanced_matching", label: "Advanced Matching", placeholder: "", type: "toggle", description: "User-Informationen für besseres Targeting", guide: [
+        "Aktiviere dies für besseres Ad-Targeting.",
+        "Snapchat kann Nutzer besser zuordnen, wenn E-Mail/Telefon-Daten verfügbar sind.",
+        "Daten werden gehasht übertragen."
+      ] },
     ],
   },
   {
     id: "pinterest", name: "Pinterest Tag", placeholder: "1234567890123", color: "hsl(0 70% 50%)",
     fields: [
-      { key: "pixel_id", label: "Tag ID", placeholder: "1234567890123" },
-      { key: "capi_token", label: "Conversions API Token", placeholder: "pina_...", description: "Serverseitiges Tracking" },
-      { key: "enhanced_match", label: "Enhanced Match", placeholder: "", type: "toggle", description: "Automatisches Matching von Kundendaten" },
+      { key: "pixel_id", label: "Tag ID", placeholder: "1234567890123", required: true, guide: [
+        "Gehe zu ads.pinterest.com → Conversions → Tag Manager.",
+        "Deine Tag-ID steht oben (13-stellige Zahl).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "pina_...", description: "Serverseitiges Tracking", guide: [
+        "Gehe zu ads.pinterest.com → Conversions → Conversions API.",
+        "Erstelle einen API-Token (beginnt mit pina_...).",
+        "Ermöglicht serverseitige Event-Übermittlung."
+      ] },
+      { key: "enhanced_match", label: "Enhanced Match", placeholder: "", type: "toggle", description: "Automatisches Matching von Kundendaten", guide: [
+        "Aktiviere dies, um Kundendaten für besseres Matching zu nutzen.",
+        "Pinterest kann Nutzer besser zuordnen und Kampagnen besser optimieren."
+      ] },
     ],
   },
   {
     id: "linkedin", name: "LinkedIn Insight Tag", placeholder: "123456", color: "hsl(210 70% 50%)",
     fields: [
-      { key: "pixel_id", label: "Partner ID", placeholder: "123456" },
-      { key: "conversion_id", label: "Conversion ID", placeholder: "12345678", description: "Für spezifische Conversion-Aktionen" },
+      { key: "pixel_id", label: "Partner ID", placeholder: "123456", required: true, guide: [
+        "Gehe zu linkedin.com/campaignmanager → Account Assets → Insight Tag.",
+        "Deine Partner-ID steht im Insight-Tag-Code (6-stellige Zahl).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "conversion_id", label: "Conversion ID", placeholder: "12345678", description: "Für spezifische Conversion-Aktionen", guide: [
+        "Gehe zu Campaign Manager → Conversions → Erstelle eine Conversion.",
+        "Nach dem Erstellen bekommst du eine Conversion-ID.",
+        "Trage sie hier ein, um spezifische Aktionen zu tracken (z.B. Käufe)."
+      ] },
     ],
   },
   {
     id: "twitter", name: "Twitter/X Pixel", placeholder: "xxxxx", color: "hsl(200 80% 55%)",
     fields: [
-      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxx" },
-      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Conversion-Tracking" },
+      { key: "pixel_id", label: "Pixel ID", placeholder: "xxxxx", required: true, guide: [
+        "Gehe zu ads.twitter.com → Tools → Events Manager.",
+        "Erstelle ein Pixel oder wähle ein bestehendes aus.",
+        "Kopiere die Pixel-ID und füge sie hier ein."
+      ] },
+      { key: "capi_token", label: "Conversions API Token", placeholder: "Token...", description: "Server-seitiges Conversion-Tracking", guide: [
+        "Gehe zu Events Manager → API-Einstellungen.",
+        "Generiere einen Conversions API Token.",
+        "Ermöglicht Tracking unabhängig von Browser-Einschränkungen."
+      ] },
     ],
   },
   {
     id: "google_ads", name: "Google Ads", placeholder: "AW-XXXXXXXXX", color: "hsl(30 80% 50%)",
     fields: [
-      { key: "pixel_id", label: "Conversion ID", placeholder: "AW-XXXXXXXXX" },
-      { key: "conversion_label", label: "Conversion Label", placeholder: "AbCdEfGhIj...", description: "Label für Conversion-Aktionen" },
-      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für bessere Zuordnung" },
+      { key: "pixel_id", label: "Conversion ID", placeholder: "AW-XXXXXXXXX", required: true, guide: [
+        "Gehe zu ads.google.com → Tools → Conversions.",
+        "Wähle eine Conversion-Aktion oder erstelle eine neue.",
+        "Unter 'Tag einrichten' findest du die Conversion-ID (beginnt mit AW-).",
+        "Kopiere sie und füge sie hier ein."
+      ] },
+      { key: "conversion_label", label: "Conversion Label", placeholder: "AbCdEfGhIj...", description: "Label für Conversion-Aktionen", guide: [
+        "Das Conversion Label steht im gleichen Tag-Snippet wie die Conversion-ID.",
+        "Es ist ein alphanumerischer String (z.B. AbCdEfGhIj...).",
+        "Jede Conversion-Aktion hat ein eigenes Label."
+      ] },
+      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für bessere Zuordnung", guide: [
+        "Aktiviere dies, um gehashte Kundendaten an Google zu senden.",
+        "Verbessert die Conversion-Zuordnung um bis zu 17%.",
+        "Muss auch in Google Ads unter Tools → Conversions → Einstellungen aktiviert sein."
+      ] },
     ],
   },
   {
     id: "hotjar", name: "Hotjar", placeholder: "1234567", color: "hsl(15 85% 55%)",
     fields: [
-      { key: "pixel_id", label: "Site ID", placeholder: "1234567" },
-      { key: "snippet_version", label: "Snippet Version", placeholder: "6", description: "Standard: 6" },
+      { key: "pixel_id", label: "Site ID", placeholder: "1234567", required: true, guide: [
+        "Gehe zu hotjar.com und logge dich ein.",
+        "Klicke oben links auf dein Projekt/deine Organisation.",
+        "Die Site-ID steht unter dem Projektnamen (7-stellige Zahl).",
+        "Alternativ: Gehe zu Einstellungen → Tracking Code → Dort steht die hjid."
+      ] },
+      { key: "snippet_version", label: "Snippet Version", placeholder: "6", description: "Standard: 6 – nur ändern wenn nötig", guide: [
+        "Die Snippet-Version ist standardmäßig 6 – du musst hier normalerweise nichts ändern.",
+        "Nur ändern, wenn Hotjar dir eine andere Version empfiehlt."
+      ] },
     ],
   },
   {
     id: "microsoft_ads", name: "Microsoft/Bing Ads", placeholder: "12345678", color: "hsl(195 80% 45%)",
     fields: [
-      { key: "pixel_id", label: "UET Tag ID", placeholder: "12345678" },
-      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für verbesserte Attribution" },
+      { key: "pixel_id", label: "UET Tag ID", placeholder: "12345678", required: true, guide: [
+        "Gehe zu ads.microsoft.com → Tools → UET Tag.",
+        "Erstelle einen Tag oder wähle einen bestehenden aus.",
+        "Kopiere die Tag-ID (8-stellige Zahl)."
+      ] },
+      { key: "enhanced_conversions", label: "Enhanced Conversions", placeholder: "", type: "toggle", description: "First-Party-Daten für verbesserte Attribution", guide: [
+        "Aktiviere dies für bessere Conversion-Zuordnung.",
+        "Muss auch in Microsoft Ads unter UET-Tag-Einstellungen aktiviert sein.",
+        "Sendet gehashte Kundendaten für genaueres Tracking."
+      ] },
     ],
   },
 ];
@@ -141,6 +297,8 @@ const TrackingAdmin = () => {
   const [testFiring, setTestFiring] = useState(false);
   // Track inline edits per provider
   const [editingIds, setEditingIds] = useState<Record<string, string>>({});
+  // Track which guide is open
+  const [openGuide, setOpenGuide] = useState<string | null>(null);
 
   const loadPixels = async () => {
     const { data } = await supabase.from("tracking_pixels").select("*").order("created_at", { ascending: false });
@@ -338,45 +496,99 @@ const TrackingAdmin = () => {
                           {provider.fields.map((field) => {
                             const savedValue = field.key === "pixel_id" ? (pixel?.pixel_id === "PENDING" ? "" : pixel?.pixel_id ?? "") : (pixelConfig[field.key] ?? "");
                             const editKey = `${provider.id}__${field.key}`;
+                            const guideKey = `${provider.id}__${field.key}`;
                             const currentVal = editingIds[editKey] ?? savedValue;
+                            const isGuideOpen = openGuide === guideKey;
+
+                            const HelpButton = () => field.guide ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setOpenGuide(isGuideOpen ? null : guideKey); }}
+                                className="p-0.5 rounded transition-all"
+                                style={{ color: isGuideOpen ? provider.color : "hsl(0 0% 100% / 0.25)" }}
+                                title="Anleitung anzeigen"
+                              >
+                                <HelpCircle className="w-3.5 h-3.5" />
+                              </button>
+                            ) : null;
+
+                            const GuidePanel = () => (field.guide && isGuideOpen) ? (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="col-span-full rounded-xl p-3 mt-1"
+                                style={{ background: `${provider.color}08`, border: `1px solid ${provider.color}20` }}
+                              >
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <HelpCircle className="w-3.5 h-3.5" style={{ color: provider.color }} />
+                                  <span className="text-[11px] font-bold" style={{ color: provider.color }}>Schritt-für-Schritt Anleitung</span>
+                                </div>
+                                <ol className="space-y-1.5">
+                                  {field.guide.map((step, si) => (
+                                    <li key={si} className="flex gap-2 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                                      <span className="font-bold shrink-0" style={{ color: provider.color }}>{si + 1}.</span>
+                                      <span>{step}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </motion.div>
+                            ) : null;
+
+                            const OptionalBadge = () => !field.required ? (
+                              <span className="text-[9px] font-medium uppercase px-1.5 py-0.5 rounded ml-1" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.3)" }}>
+                                Optional
+                              </span>
+                            ) : null;
 
                             if (field.type === "toggle") {
                               const isOn = currentVal === "true" || currentVal === "1";
                               return (
-                                <div key={field.key} className="flex items-center justify-between rounded-lg px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
-                                  <div>
-                                    <span className="text-[11px] font-medium block" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{field.label}</span>
-                                    {field.description && <span className="text-[10px] block mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{field.description}</span>}
+                                <div key={field.key} className="col-span-full">
+                                  <div className="flex items-center justify-between rounded-lg px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-[11px] font-medium" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{field.label}</span>
+                                        <OptionalBadge />
+                                        <HelpButton />
+                                      </div>
+                                      {field.description && <span className="text-[10px] block mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{field.description}</span>}
+                                    </div>
+                                    <button
+                                      onClick={() => setEditingIds((prev) => ({ ...prev, [editKey]: String(!isOn) }))}
+                                      className="relative w-9 h-5 rounded-full transition-all duration-200 shrink-0 ml-3"
+                                      style={{ background: isOn ? provider.color : "hsl(0 0% 100% / 0.1)" }}
+                                    >
+                                      <motion.div
+                                        className="absolute top-0.5 w-4 h-4 rounded-full"
+                                        style={{ background: "hsl(0 0% 100%)" }}
+                                        animate={{ left: isOn ? "calc(100% - 18px)" : "2px" }}
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                      />
+                                    </button>
                                   </div>
-                                  <button
-                                    onClick={() => setEditingIds((prev) => ({ ...prev, [editKey]: String(!isOn) }))}
-                                    className="relative w-9 h-5 rounded-full transition-all duration-200 shrink-0 ml-3"
-                                    style={{ background: isOn ? provider.color : "hsl(0 0% 100% / 0.1)" }}
-                                  >
-                                    <motion.div
-                                      className="absolute top-0.5 w-4 h-4 rounded-full"
-                                      style={{ background: "hsl(0 0% 100%)" }}
-                                      animate={{ left: isOn ? "calc(100% - 18px)" : "2px" }}
-                                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                    />
-                                  </button>
+                                  <AnimatePresence><GuidePanel /></AnimatePresence>
                                 </div>
                               );
                             }
 
                             return (
-                              <div key={field.key}>
-                                <label className="text-[11px] font-medium mb-1 block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                                  {field.label}
-                                </label>
+                              <div key={field.key} className={field.guide && isGuideOpen ? "col-span-full" : ""}>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <label className="text-[11px] font-medium" style={{ color: field.required ? "hsl(0 0% 100% / 0.5)" : "hsl(0 0% 100% / 0.35)" }}>
+                                    {field.label}
+                                  </label>
+                                  <OptionalBadge />
+                                  <HelpButton />
+                                </div>
                                 {field.description && <span className="text-[10px] block mb-1.5" style={{ color: "hsl(0 0% 100% / 0.25)" }}>{field.description}</span>}
                                 <input
                                   value={currentVal}
                                   onChange={(e) => setEditingIds((prev) => ({ ...prev, [editKey]: e.target.value }))}
                                   placeholder={field.placeholder}
                                   className="w-full px-3 py-2 rounded-lg text-xs font-mono"
-                                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                                  style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.8)", border: `1px solid ${field.required ? "hsl(0 0% 100% / 0.12)" : "hsl(0 0% 100% / 0.07)"}` }}
                                 />
+                                <AnimatePresence><GuidePanel /></AnimatePresence>
                               </div>
                             );
                           })}
