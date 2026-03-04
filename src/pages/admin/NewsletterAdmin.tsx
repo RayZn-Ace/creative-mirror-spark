@@ -7,6 +7,7 @@ import {
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
   Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
+  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -403,8 +404,14 @@ ${timerHtml}
 };
 
 // ─── Data Types ────────────────────────────────────────────────
-type Order = { email: string; name: string | null; status: string; event_id: string | null };
+type Order = { email: string; name: string | null; status: string; event_id: string | null; birth_date: string | null };
 type EventInfo = { id: string; title: string; city: string | null };
+type Subscriber = { id: string; email: string; name: string | null; tags: string[]; city: string | null; birth_date: string | null; source: string; unsubscribed: boolean };
+type NLList = { id: string; name: string; description: string | null; color: string | null; member_count?: number };
+
+type RecipientMode = "smart" | "list" | "manual";
+type OrderFilter = "all" | "paid" | "unpaid" | "cancelled";
+type AgeFilter = { min: number | null; max: number | null };
 
 // ─── Shared input style ────────────────────────────────────────
 const inputStyle = { background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" };
@@ -782,6 +789,8 @@ const blockLabel = (type: BlockType) => BLOCK_TYPES.find((b) => b.type === type)
 const NewsletterAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [events, setEvents] = useState<EventInfo[]>([]);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [nlLists, setNlLists] = useState<NLList[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState<{ sent: number; failed: number } | null>(null);
@@ -794,52 +803,64 @@ const NewsletterAdmin = () => {
   ]);
   const [fromName, setFromName] = useState("GIMME Events");
   const [fromEmail, setFromEmail] = useState("newsletter@gimmegimmeparty.com");
+
+  // Recipient filters
+  const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");
   const [cityFilter, setCityFilter] = useState<string>("all");
-  const [onlyPaid, setOnlyPaid] = useState(true);
+  const [orderFilter, setOrderFilter] = useState<OrderFilter>("paid");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [ageFilter, setAgeFilter] = useState<AgeFilter>({ min: null, max: null });
+  const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
+  const [manualEmails, setManualEmails] = useState<string>("");
+  const [recipientSearch, setRecipientSearch] = useState("");
+
+  // UI state
   const [preview, setPreview] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [showRecipients, setShowRecipients] = useState(false);
+  const [showRecipients, setShowRecipients] = useState(true);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(true);
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
 
+  // List/subscriber management
+  const [showListManager, setShowListManager] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [newSubEmail, setNewSubEmail] = useState("");
+  const [newSubName, setNewSubName] = useState("");
+  const [newSubTags, setNewSubTags] = useState("");
+  const [newSubCity, setNewSubCity] = useState("");
+
   // Sync event block colors when color scheme changes
   const applyColorScheme = useCallback((cs: ColorScheme) => {
     setColorScheme(cs);
     const accentFromGradient = cs.headerGradient.match(/#[0-9a-fA-F]{6}/g)?.[0] || "#e91e8c";
-    // Determine if scheme is dark or light
     const isDark = cs.bodyBg.startsWith("#0") || cs.bodyBg.startsWith("#1") || cs.bodyBg === "#0a0a0a";
     setBlocks((prev) => prev.map((b) => {
-      if (b.type === "event-highlight") {
-        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
-      }
-      if (b.type === "event-list") {
-        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fafafa", textColor: isDark ? "#cccccc" : "#333333" };
-      }
-      if (b.type === "voucher") {
-        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fff5f9", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
-      }
-      if (b.type === "timer") {
-        return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
-      }
+      if (b.type === "event-highlight") return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
+      if (b.type === "event-list") return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fafafa", textColor: isDark ? "#cccccc" : "#333333" };
+      if (b.type === "voucher") return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#fff5f9", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
+      if (b.type === "timer") return { ...b, accentColor: accentFromGradient, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" };
       return b;
     }));
   }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      const [ordersRes, eventsRes] = await Promise.all([
-        supabase.from("orders").select("email, name, status, event_id"),
-        supabase.from("events").select("id, title, city"),
-      ]);
-      if (ordersRes.data) setOrders(ordersRes.data as Order[]);
-      if (eventsRes.data) setEvents(eventsRes.data as EventInfo[]);
-      setLoading(false);
-    };
-    load();
+  const loadData = useCallback(async () => {
+    const [ordersRes, eventsRes, subsRes, listsRes] = await Promise.all([
+      supabase.from("orders").select("email, name, status, event_id, birth_date"),
+      supabase.from("events").select("id, title, city"),
+      supabase.from("newsletter_subscribers").select("*"),
+      supabase.from("newsletter_lists").select("*"),
+    ]);
+    if (ordersRes.data) setOrders(ordersRes.data as Order[]);
+    if (eventsRes.data) setEvents(eventsRes.data as EventInfo[]);
+    if (subsRes.data) setSubscribers(subsRes.data as Subscriber[]);
+    if (listsRes.data) setNlLists(listsRes.data as NLList[]);
+    setLoading(false);
   }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   const eventMap = useMemo(() => {
     const m = new Map<string, EventInfo>();
@@ -850,22 +871,141 @@ const NewsletterAdmin = () => {
   const allCities = useMemo(() => {
     const cities = new Set<string>();
     events.forEach((e) => { if (e.city) cities.add(e.city); });
+    subscribers.forEach((s) => { if (s.city) cities.add(s.city); });
     return Array.from(cities).sort();
-  }, [events]);
+  }, [events, subscribers]);
+
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    subscribers.forEach((s) => s.tags?.forEach((t) => tags.add(t)));
+    return Array.from(tags).sort();
+  }, [subscribers]);
+
+  // Calculate age from birth_date
+  const getAge = (birthDate: string | null): number | null => {
+    if (!birthDate) return null;
+    const bd = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - bd.getFullYear();
+    const m = today.getMonth() - bd.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+    return age;
+  };
 
   const recipients = useMemo(() => {
-    const emailMap = new Map<string, string | null>();
+    const emailMap = new Map<string, { email: string; name: string | null }>();
+
+    if (recipientMode === "manual") {
+      // Parse manual emails
+      const emails = manualEmails.split(/[\n,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => e.includes("@"));
+      emails.forEach((email) => emailMap.set(email, { email, name: null }));
+      return Array.from(emailMap.values());
+    }
+
+    if (recipientMode === "list") {
+      // From newsletter subscribers in selected lists (TODO: load list members)
+      subscribers.forEach((s) => {
+        if (s.unsubscribed) return;
+        emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
+      });
+      return Array.from(emailMap.values());
+    }
+
+    // Smart mode: combine orders + subscribers with filters
+    // 1. Orders
     orders.forEach((o) => {
-      if (onlyPaid && o.status !== "paid") return;
+      // Order status filter
+      if (orderFilter === "paid" && o.status !== "paid") return;
+      if (orderFilter === "cancelled" && o.status !== "cancelled") return;
+      if (orderFilter === "unpaid" && o.status === "paid") return;
+
+      // City filter
       if (cityFilter !== "all") {
         const eventCity = o.event_id ? eventMap.get(o.event_id)?.city : null;
         if (eventCity !== cityFilter) return;
       }
+
+      // Age filter
+      if (ageFilter.min != null || ageFilter.max != null) {
+        const age = getAge(o.birth_date);
+        if (age === null) return;
+        if (ageFilter.min != null && age < ageFilter.min) return;
+        if (ageFilter.max != null && age > ageFilter.max) return;
+      }
+
       const email = o.email.toLowerCase().trim();
-      if (!emailMap.has(email)) emailMap.set(email, o.name);
+      if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
     });
-    return Array.from(emailMap.entries()).map(([email, name]) => ({ email, name }));
-  }, [orders, onlyPaid, cityFilter, eventMap]);
+
+    // 2. Subscribers matching filters
+    subscribers.forEach((s) => {
+      if (s.unsubscribed) return;
+
+      // Tag filter
+      if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
+
+      // City filter for subscribers
+      if (cityFilter !== "all" && s.city !== cityFilter) return;
+
+      // Age filter
+      if (ageFilter.min != null || ageFilter.max != null) {
+        const age = getAge(s.birth_date);
+        if (age === null) return;
+        if (ageFilter.min != null && age < ageFilter.min) return;
+        if (ageFilter.max != null && age > ageFilter.max) return;
+      }
+
+      const email = s.email.toLowerCase().trim();
+      if (!emailMap.has(email)) emailMap.set(email, { email, name: s.name });
+    });
+
+    // Search filter
+    let result = Array.from(emailMap.values());
+    if (recipientSearch) {
+      const q = recipientSearch.toLowerCase();
+      result = result.filter((r) => r.email.includes(q) || (r.name && r.name.toLowerCase().includes(q)));
+    }
+
+    return result;
+  }, [orders, subscribers, orderFilter, cityFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds]);
+
+  // Add subscriber
+  const addSubscriber = async () => {
+    if (!newSubEmail.trim()) return;
+    const { error } = await supabase.from("newsletter_subscribers").upsert({
+      email: newSubEmail.trim().toLowerCase(),
+      name: newSubName.trim() || null,
+      tags: newSubTags.trim() ? newSubTags.split(",").map((t) => t.trim()) : [],
+      city: newSubCity.trim() || null,
+      source: "manual",
+    }, { onConflict: "email" });
+    if (error) { toast.error("Fehler: " + error.message); return; }
+    toast.success("Abonnent hinzugefügt");
+    setNewSubEmail(""); setNewSubName(""); setNewSubTags(""); setNewSubCity("");
+    loadData();
+  };
+
+  // Add list
+  const addList = async () => {
+    if (!newListName.trim()) return;
+    const { error } = await supabase.from("newsletter_lists").insert({ name: newListName.trim() });
+    if (error) { toast.error("Fehler: " + error.message); return; }
+    toast.success("Liste erstellt");
+    setNewListName("");
+    loadData();
+  };
+
+  // Delete subscriber
+  const deleteSubscriber = async (id: string) => {
+    await supabase.from("newsletter_subscribers").delete().eq("id", id);
+    loadData();
+  };
+
+  // Delete list
+  const deleteList = async (id: string) => {
+    await supabase.from("newsletter_lists").delete().eq("id", id);
+    loadData();
+  };
 
   // ─── Block operations ──────────────────────────────────────
   const addBlock = useCallback((type: BlockType) => {
@@ -1251,7 +1391,7 @@ ${bodyContent}
               </div>
             </div>
 
-            {/* Recipients */}
+            {/* Recipients & Filters */}
             <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
               <button
                 onClick={() => setShowRecipients(!showRecipients)}
@@ -1267,24 +1407,214 @@ ${bodyContent}
                 {showRecipients && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                     <div className="px-5 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                      <div className="flex items-center gap-3 pt-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={onlyPaid} onChange={(e) => setOnlyPaid(e.target.checked)} className="rounded" />
-                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Nur bezahlte Kunden</span>
-                        </label>
-                        <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="px-2 py-1 rounded-lg text-xs" style={inputStyle}>
-                          <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
-                          {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
-                        </select>
+                      {/* Mode Tabs */}
+                      <div className="flex gap-1 pt-3">
+                        {([
+                          { mode: "smart" as RecipientMode, label: "Smart Filter", icon: Filter },
+                          { mode: "list" as RecipientMode, label: "Listen", icon: List },
+                          { mode: "manual" as RecipientMode, label: "Manuell", icon: UserPlus },
+                        ]).map(({ mode, label, icon: I }) => (
+                          <button
+                            key={mode}
+                            onClick={() => setRecipientMode(mode)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                            style={{
+                              background: recipientMode === mode ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.03)",
+                              color: recipientMode === mode ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+                              border: `1px solid ${recipientMode === mode ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
+                            }}
+                          >
+                            <I className="w-3 h-3" /> {label}
+                          </button>
+                        ))}
                       </div>
-                      <div className="space-y-1 max-h-[200px] overflow-y-auto">
-                        {recipients.slice(0, 20).map((r) => (
+
+                      {/* Smart Filter Mode */}
+                      {recipientMode === "smart" && (
+                        <div className="space-y-2.5">
+                          {/* Order Status */}
+                          <div>
+                            <label className={labelCls} style={labelStyle}>Bestellstatus</label>
+                            <div className="flex flex-wrap gap-1">
+                              {([
+                                { v: "paid" as OrderFilter, l: "Bezahlt", icon: CheckCircle, clr: "hsl(150 60% 40%)" },
+                                { v: "unpaid" as OrderFilter, l: "Unbezahlt", icon: Clock, clr: "hsl(45 80% 55%)" },
+                                { v: "cancelled" as OrderFilter, l: "Storniert", icon: XCircle, clr: "hsl(0 70% 55%)" },
+                                { v: "all" as OrderFilter, l: "Alle", icon: Users, clr: "hsl(215 90% 55%)" },
+                              ]).map(({ v, l, icon: I, clr }) => (
+                                <button
+                                  key={v}
+                                  onClick={() => setOrderFilter(v)}
+                                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all"
+                                  style={{
+                                    background: orderFilter === v ? `${clr.replace(")", " / 0.15)")}` : "hsl(0 0% 100% / 0.03)",
+                                    color: orderFilter === v ? clr : "hsl(0 0% 100% / 0.4)",
+                                    border: `1px solid ${orderFilter === v ? `${clr.replace(")", " / 0.3)")}` : "transparent"}`,
+                                  }}
+                                >
+                                  <I className="w-3 h-3" /> {l}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* City Filter */}
+                          <div>
+                            <label className={labelCls} style={labelStyle}>Stadt</label>
+                            <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="w-full px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle}>
+                              <option value="all" style={{ background: "hsl(220 50% 10%)" }}>Alle Städte</option>
+                              {allCities.map((c) => <option key={c} value={c} style={{ background: "hsl(220 50% 10%)" }}>{c}</option>)}
+                            </select>
+                          </div>
+
+                          {/* Age Filter */}
+                          <div>
+                            <label className={labelCls} style={labelStyle}>Alter</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                placeholder="Min"
+                                value={ageFilter.min ?? ""}
+                                onChange={(e) => setAgeFilter({ ...ageFilter, min: e.target.value ? Number(e.target.value) : null })}
+                                className="w-20 px-2.5 py-1.5 rounded-lg text-xs"
+                                style={inputStyle}
+                              />
+                              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>bis</span>
+                              <input
+                                type="number"
+                                placeholder="Max"
+                                value={ageFilter.max ?? ""}
+                                onChange={(e) => setAgeFilter({ ...ageFilter, max: e.target.value ? Number(e.target.value) : null })}
+                                className="w-20 px-2.5 py-1.5 rounded-lg text-xs"
+                                style={inputStyle}
+                              />
+                              {(ageFilter.min != null || ageFilter.max != null) && (
+                                <button onClick={() => setAgeFilter({ min: null, max: null })} className="p-1 rounded hover:bg-white/[0.05]" style={{ color: "hsl(0 70% 55% / 0.5)" }}><X className="w-3 h-3" /></button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Tags */}
+                          {allTags.length > 0 && (
+                            <div>
+                              <label className={labelCls} style={labelStyle}>Tags</label>
+                              <div className="flex flex-wrap gap-1">
+                                {allTags.map((tag) => {
+                                  const active = selectedTags.includes(tag);
+                                  return (
+                                    <button
+                                      key={tag}
+                                      onClick={() => setSelectedTags(active ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag])}
+                                      className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all"
+                                      style={{
+                                        background: active ? "hsl(270 70% 55% / 0.15)" : "hsl(0 0% 100% / 0.03)",
+                                        color: active ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+                                        border: `1px solid ${active ? "hsl(270 70% 55% / 0.3)" : "transparent"}`,
+                                      }}
+                                    >
+                                      <Tag className="w-2.5 h-2.5" /> {tag}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* List Mode */}
+                      {recipientMode === "list" && (
+                        <div className="space-y-2">
+                          {nlLists.length === 0 ? (
+                            <p className="text-[11px] py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Listen erstellt</p>
+                          ) : (
+                            nlLists.map((list) => {
+                              const active = selectedListIds.includes(list.id);
+                              return (
+                                <div key={list.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: active ? "hsl(330 80% 55% / 0.08)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${active ? "hsl(330 80% 55% / 0.2)" : "transparent"}` }}>
+                                  <input type="checkbox" checked={active} onChange={() => setSelectedListIds(active ? selectedListIds.filter((id) => id !== list.id) : [...selectedListIds, list.id])} />
+                                  <span className="text-xs font-bold flex-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{list.name}</span>
+                                  <button onClick={() => deleteList(list.id)} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.4)" }}><Trash2 className="w-3 h-3" /></button>
+                                </div>
+                              );
+                            })
+                          )}
+                          <div className="flex gap-1.5">
+                            <input value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="Neue Liste..." className="flex-1 px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
+                            <button onClick={addList} className="px-3 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Manual Mode */}
+                      {recipientMode === "manual" && (
+                        <div className="space-y-2">
+                          <label className={labelCls} style={labelStyle}>E-Mails (eine pro Zeile, oder kommagetrennt)</label>
+                          <textarea
+                            value={manualEmails}
+                            onChange={(e) => setManualEmails(e.target.value)}
+                            placeholder={"max@example.com\nanna@example.com\ntom@example.com"}
+                            rows={5}
+                            className="w-full px-3 py-2 rounded-lg text-xs font-mono"
+                            style={inputStyle}
+                          />
+                        </div>
+                      )}
+
+                      {/* Subscriber Management */}
+                      <div>
+                        <button
+                          onClick={() => setShowListManager(!showListManager)}
+                          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-all"
+                          style={{ color: "hsl(215 90% 55% / 0.6)" }}
+                        >
+                          <UserPlus className="w-3 h-3" /> Abonnent hinzufügen
+                          <ChevronRight className="w-3 h-3 transition-transform" style={{ transform: showListManager ? "rotate(90deg)" : "rotate(0deg)" }} />
+                        </button>
+                        <AnimatePresence>
+                          {showListManager && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                              <div className="space-y-2 pt-2">
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  <input value={newSubEmail} onChange={(e) => setNewSubEmail(e.target.value)} placeholder="E-Mail *" className="px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
+                                  <input value={newSubName} onChange={(e) => setNewSubName(e.target.value)} placeholder="Name" className="px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                  <input value={newSubTags} onChange={(e) => setNewSubTags(e.target.value)} placeholder="Tags (kommagetrennt)" className="px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
+                                  <input value={newSubCity} onChange={(e) => setNewSubCity(e.target.value)} placeholder="Stadt" className="px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
+                                </div>
+                                <button onClick={addSubscriber} className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider" style={{ background: "hsl(215 90% 55% / 0.15)", color: "hsl(215 90% 55%)" }}>
+                                  Hinzufügen
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Search */}
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
+                        <input
+                          value={recipientSearch}
+                          onChange={(e) => setRecipientSearch(e.target.value)}
+                          placeholder="Empfänger suchen..."
+                          className="w-full pl-7 pr-3 py-1.5 rounded-lg text-xs"
+                          style={inputStyle}
+                        />
+                      </div>
+
+                      {/* Recipient List */}
+                      <div className="space-y-1 max-h-[250px] overflow-y-auto">
+                        {recipients.slice(0, 30).map((r) => (
                           <div key={r.email} className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px]" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
                             <Mail className="w-3 h-3 shrink-0" style={{ color: "hsl(215 90% 55% / 0.5)" }} />
-                            <span className="truncate" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
+                            <span className="truncate flex-1" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{r.name ? `${r.name} – ` : ""}{r.email}</span>
                           </div>
                         ))}
-                        {recipients.length > 20 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 20} weitere</p>}
+                        {recipients.length > 30 && <p className="text-[10px] text-center pt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>+{recipients.length - 30} weitere</p>}
                         {recipients.length === 0 && <p className="text-[10px] text-center py-3" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Empfänger mit diesen Filtern</p>}
                       </div>
                     </div>

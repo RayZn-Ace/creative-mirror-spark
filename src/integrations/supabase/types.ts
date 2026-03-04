@@ -148,6 +148,108 @@ export type Database = {
           },
         ]
       }
+      newsletter_list_members: {
+        Row: {
+          created_at: string
+          id: string
+          list_id: string
+          subscriber_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          list_id: string
+          subscriber_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          list_id?: string
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_list_members_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_list_members_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_lists: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          birth_date: string | null
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          source: string | null
+          tags: string[] | null
+          unsubscribed: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          tags?: string[] | null
+          unsubscribed?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          source?: string | null
+          tags?: string[] | null
+          unsubscribed?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           birth_date: string | null
