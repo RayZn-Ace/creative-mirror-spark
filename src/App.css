@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Leaflet tooltip override for dark theme */
+.city-heatmap-tooltip.leaflet-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.city-heatmap-tooltip.leaflet-tooltip::before {
+  display: none !important;
+}
