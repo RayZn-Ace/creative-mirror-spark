@@ -18,7 +18,18 @@ export type WidgetType =
   | "recent_checkins"
   | "sales_chart"
   | "event_calendar"
-  | "scanner_activity";
+  | "scanner_activity"
+  | "city_breakdown"
+  | "avg_order_value"
+  | "payment_status"
+  | "peak_hours"
+  | "age_distribution"
+  | "repeat_customers"
+  | "service_fee_revenue"
+  | "next_event_countdown"
+  | "welcome_greeting"
+  | "capacity_overview"
+  | "revenue_by_event";
 
 export const WIDGET_META: Record<WidgetType, { label: string; description: string; icon: string; defaultW: number; defaultH: number }> = {
   stats: { label: "Statistiken", description: "Übersicht über Serien, Events, Tickets & Seiten", icon: "BarChart3", defaultW: 4, defaultH: 4 },
@@ -34,6 +45,17 @@ export const WIDGET_META: Record<WidgetType, { label: string; description: strin
   sales_chart: { label: "Verkaufs-Chart", description: "Ticket-Verkäufe der letzten 7 Tage als Diagramm", icon: "LineChart", defaultW: 4, defaultH: 5 },
   event_calendar: { label: "Event-Kalender", description: "Monatsübersicht aller geplanten Events", icon: "Calendar", defaultW: 2, defaultH: 5 },
   scanner_activity: { label: "Scanner-Aktivität", description: "Aktive Scanner-Links und deren Status", icon: "QrCode", defaultW: 2, defaultH: 4 },
+  city_breakdown: { label: "Städte-Verteilung", description: "Ticketverkäufe aufgeteilt nach Stadt", icon: "MapPin", defaultW: 2, defaultH: 5 },
+  avg_order_value: { label: "Ø Bestellwert", description: "Durchschnittlicher Warenkorbwert über Zeit", icon: "Receipt", defaultW: 2, defaultH: 4 },
+  payment_status: { label: "Zahlungsstatus", description: "Verteilung der Bestellungen nach Status (bezahlt, ausstehend, abgelaufen)", icon: "CreditCard", defaultW: 2, defaultH: 4 },
+  peak_hours: { label: "Peak-Zeiten", description: "Zu welchen Uhrzeiten werden die meisten Tickets gekauft?", icon: "Clock", defaultW: 2, defaultH: 5 },
+  age_distribution: { label: "Altersverteilung", description: "Altersgruppen der Ticket-Käufer", icon: "Users", defaultW: 2, defaultH: 5 },
+  repeat_customers: { label: "Stammkunden", description: "Kunden die mehrfach bestellt haben", icon: "Heart", defaultW: 2, defaultH: 5 },
+  service_fee_revenue: { label: "Servicegebühren", description: "Einnahmen aus Servicegebühren separat", icon: "Coins", defaultW: 2, defaultH: 4 },
+  next_event_countdown: { label: "Nächstes Event", description: "Countdown zum nächsten anstehenden Event", icon: "Timer", defaultW: 2, defaultH: 4 },
+  welcome_greeting: { label: "Begrüßung", description: "Personalisierte Begrüßung mit Uhrzeit und Datum", icon: "Sparkles", defaultW: 2, defaultH: 3 },
+  capacity_overview: { label: "Kapazitäts-Check", description: "Wie viele Tickets sind pro Event noch verfügbar", icon: "Gauge", defaultW: 2, defaultH: 5 },
+  revenue_by_event: { label: "Umsatz pro Event", description: "Umsatz-Ranking der Events", icon: "PiggyBank", defaultW: 2, defaultH: 5 },
 };
 
 export const DEFAULT_LAYOUT: DashboardWidget[] = [
