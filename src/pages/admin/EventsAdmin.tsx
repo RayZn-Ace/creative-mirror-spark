@@ -895,7 +895,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
                 {scrapeResults.map((url, i) => (
                   <div key={i} onClick={() => toggleScrapeResult(url)} className="relative cursor-pointer aspect-square rounded-lg overflow-hidden transition-all" style={{ border: selectedScrapeResults.has(url) ? "2px solid hsl(150 60% 50%)" : "2px solid transparent", opacity: selectedScrapeResults.has(url) ? 1 : 0.5 }}>
                     {isVideo ? (
-                      <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+                      <video src={url + "#t=0.5"} className="w-full h-full object-cover" muted preload="metadata" playsInline />
                     ) : (
                       <img src={url} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     )}
@@ -917,7 +917,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           {storageFiles.map((url, i) => (
             <div key={`s-${i}`} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
               {isVideo ? (
-                <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+                <video src={url + "#t=0.5"} className="w-full h-full object-cover" muted preload="metadata" playsInline />
               ) : (
                 <img src={url} className="w-full h-full object-cover" />
               )}
@@ -933,7 +933,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           {externalUrls.map((url, i) => (
             <div key={`e-${i}`} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(200 60% 50% / 0.2)" }}>
               {isVideo ? (
-                <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+                <video src={url + "#t=0.5"} className="w-full h-full object-cover" muted preload="metadata" playsInline />
               ) : (
                 <img src={url} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
               )}
