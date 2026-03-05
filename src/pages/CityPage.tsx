@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun, ArrowLeft } from "lucide-react";
@@ -7,6 +7,7 @@ import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
+import { useSeoMeta } from "@/hooks/useSeoMeta";
 
 /* ─── Types ─── */
 interface GalleryConfig {
@@ -1302,6 +1303,53 @@ const CityPage = () => {
   const [showWhatsapp, setShowWhatsapp] = useState(false);
   const [t, setT] = useState<Translations>(getTranslations("Berlin"));
 
+  // SEO meta tags
+  const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
+  const seoJsonLd = useMemo(() => {
+    if (!selectedEvent || !cityName) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: `MAMMA MIA Party ${cityName} – GIMME GIMME`,
+      description: `Die größte ABBA Party in ${cityName}! Sing-Along Erlebnis mit den Songs von ABBA – GIMME GIMME PARTY. Jetzt Tickets sichern!`,
+      startDate: selectedEvent.date ? `${selectedEvent.date.split('.').reverse().join('-')}T${selectedEvent.time || '20:00'}:00` : undefined,
+      eventStatus: selectedEvent.soldOut ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: {
+        "@type": "Place",
+        name: selectedEvent.venue,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: cityName,
+          streetAddress: selectedEvent.address,
+        },
+      },
+      organizer: {
+        "@type": "Organization",
+        name: "GIMME GIMME Party",
+        url: "https://gimmetestooo.lovable.app",
+      },
+      image: getCityLandmarkUrl(cityName),
+      offers: {
+        "@type": "AggregateOffer",
+        url: `https://gimmetestooo.lovable.app/${citySlug}`,
+        availability: selectedEvent.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+        priceCurrency: "EUR",
+      },
+    } as Record<string, unknown>;
+  }, [cityName, selectedEvent, citySlug]);
+
+  useSeoMeta({
+    title: cityName ? `MAMMA MIA Party ${cityName} – GIMME GIMME | Tickets & Termine` : "GIMME GIMME PARTY",
+    description: cityName
+      ? `MAMMA MIA Party in ${cityName} ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY Tickets ab sofort verfügbar. Jetzt Tickets sichern!`
+      : "Die weltweit größte ABBA Party!",
+    canonical: citySlug ? `https://gimmetestooo.lovable.app/${citySlug}` : undefined,
+    ogImage: cityName ? `https://gimmetestooo.lovable.app${getCityLandmarkUrl(cityName)}` : undefined,
+    ogType: "event",
+    jsonLd: seoJsonLd,
+  });
+
   useEffect(() => {
     if (!citySlug) return;
     setLoading(true);
@@ -1393,7 +1441,7 @@ const CityPage = () => {
     );
   }
 
-  const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
+  // selectedEvent already declared above for SEO
 
   return (
     <div className="min-h-screen pp-bg">
