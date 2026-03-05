@@ -403,13 +403,22 @@ const VideoSlideshowTile = ({ files, startIdx, aspectClass, intervalMs }: { file
   return (
     <div className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
       {ytId ? (
-        <iframe
-          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=0&controls=0&modestbranding=1&rel=0&playsinline=1`}
-          className="absolute inset-0 w-full h-full"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-          style={{ border: 0 }}
-        />
+        /* Oversized iframe + overflow:hidden crops YouTube's overlay UI (title, channel, logo) */
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <iframe
+            src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&rel=0&playsinline=1&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&origin=${window.location.origin}`}
+            className="absolute"
+            style={{
+              top: "-60px",
+              left: "-10px",
+              width: "calc(100% + 20px)",
+              height: "calc(100% + 120px)",
+              border: 0,
+            }}
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+          />
+        </div>
       ) : (
         <video
           ref={videoRef}
