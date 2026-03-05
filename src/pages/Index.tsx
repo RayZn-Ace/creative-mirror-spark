@@ -9,6 +9,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
+import SocialProofToast from "@/components/SocialProofToast";
 import { events, getNextEvent } from "@/data/events";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
 import heroBg from "@/assets/hero-crowd.jpg";
@@ -571,6 +572,7 @@ export default function Index() {
       </main>
       <Footer gt={gt} />
       <SupportChatbot />
+      <SocialProofToast />
     </div>
   );
 }
