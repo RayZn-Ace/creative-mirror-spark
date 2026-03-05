@@ -35,16 +35,18 @@ const CITY_ALIASES: Record<string, string[]> = {
   Zürich: ["Zurich", "Zurigo", "Zúrich", "Curych"],
 };
 
-/** Check if a city matches a search query (including multilingual aliases) */
+/** Normalize diacritics: ã→a, ü→u, é→e etc. */
+const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/** Check if a city matches a search query (including multilingual aliases + diacritics) */
 const cityMatchesSearch = (city: string, query: string): boolean => {
-  const q = query.toLowerCase();
-  if (city.toLowerCase().includes(q)) return true;
+  const q = normalize(query);
+  if (normalize(city).includes(q)) return true;
   const aliases = CITY_ALIASES[city];
-  if (aliases) return aliases.some(a => a.toLowerCase().includes(q));
-  // Reverse lookup for case-insensitive city key match
+  if (aliases) return aliases.some(a => normalize(a).includes(q));
   for (const [key, list] of Object.entries(CITY_ALIASES)) {
     if (key.toLowerCase() === city.toLowerCase()) {
-      return list.some(a => a.toLowerCase().includes(q));
+      return list.some(a => normalize(a).includes(q));
     }
   }
   return false;
