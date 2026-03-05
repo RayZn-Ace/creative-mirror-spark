@@ -574,6 +574,39 @@ export type Database = {
         }
         Relationships: []
       }
+      page_visits: {
+        Row: {
+          created_at: string
+          id: string
+          left_at: string | null
+          page_url: string | null
+          referrer: string | null
+          referrer_source: string | null
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          left_at?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          referrer_source?: string | null
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          left_at?: string | null
+          page_url?: string | null
+          referrer?: string | null
+          referrer_source?: string | null
+          session_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       pending_invitations: {
         Row: {
           claimed: boolean

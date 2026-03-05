@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
+import VisitorTracker from "@/components/VisitorTracker";
 import Index from "./pages/Index";
 const CityPage = lazy(() => import("./pages/CityPage"));
 import NotFound from "./pages/NotFound";
@@ -65,6 +66,7 @@ const App = () => (
         <AuthProvider>
           <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
             <TrackingProvider />
+            <VisitorTracker />
             <Routes>
               <Route path="/" element={<Index />} />
               

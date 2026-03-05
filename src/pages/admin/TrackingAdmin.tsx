@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity, Plus, Trash2, Eye, EyeOff, FlaskConical, Check, X, Search,
-  BarChart3, Code2, TestTube, ChevronDown, Settings2, Zap, HelpCircle,
+  BarChart3, Code2, TestTube, ChevronDown, Settings2, Zap, HelpCircle, Radio,
 } from "lucide-react";
+import LiveAnalyticsTab from "@/components/admin/LiveAnalyticsTab";
 import { toast } from "@/hooks/use-toast";
 
 type TrackingPixel = {
@@ -289,7 +290,7 @@ const STANDARD_EVENTS = [
 const TrackingAdmin = () => {
   const [pixels, setPixels] = useState<TrackingPixel[]>([]);
   const [eventLogs, setEventLogs] = useState<EventLog[]>([]);
-  const [activeTab, setActiveTab] = useState<"config" | "logs" | "test">("config");
+  const [activeTab, setActiveTab] = useState<"config" | "logs" | "test" | "live">("config");
   const [logSearch, setLogSearch] = useState("");
   const [logFilter, setLogFilter] = useState<string>("all");
   const [testProvider, setTestProvider] = useState<string>("");
@@ -399,6 +400,7 @@ const TrackingAdmin = () => {
     { id: "config" as const, label: "Konfigurator", icon: Settings2 },
     { id: "logs" as const, label: "Event-Log", icon: BarChart3 },
     { id: "test" as const, label: "Testmodus", icon: TestTube },
+    { id: "live" as const, label: "Liveanalyse", icon: Radio },
   ];
 
   return (
@@ -994,6 +996,9 @@ const TrackingAdmin = () => {
           </div>
         </div>
       )}
+
+      {/* LIVE ANALYTICS TAB */}
+      {activeTab === "live" && <LiveAnalyticsTab />}
     </div>
   );
 };
