@@ -470,6 +470,11 @@ async function generateInvoicePDF(opts: {
   totalAmount: number;
   vatRate: number;
   currency: string;
+  payment_terms?: string;
+  additional_text?: string;
+  footer_note?: string;
+  show_bank_details?: boolean;
+  bank_override?: string;
 }): Promise<Uint8Array> {
   const { invoiceNumber, invoiceDate, company, customerName, customerEmail, items, serviceFee, totalAmount, vatRate } = opts;
   const pdfDoc = await PDFDocument.create();
@@ -607,6 +612,26 @@ async function generateInvoicePDF(opts: {
     page.drawText(t.label, { x: marginR - 8 - valW - 20 - labelW, y, size, font, color: t.bold ? darkColor : grayColor });
     page.drawText(t.value, { x: marginR - 8 - valW, y, size, font, color: darkColor });
     y -= t.bold ? 30 : 18;
+  }
+
+  // ─── Template texts (payment terms, additional text) ───
+  if (opts.payment_terms) {
+    y -= 5;
+    const ptLines = wrapText(opts.payment_terms, fontRegular, 8, contentWidth);
+    for (const line of ptLines) {
+      if (y < 100) break;
+      page.drawText(line, { x: marginL, y, size: 8, font: fontRegular, color: grayColor });
+      y -= 12;
+    }
+  }
+  if (opts.additional_text) {
+    y -= 4;
+    const atLines = wrapText(opts.additional_text, fontRegular, 8, contentWidth);
+    for (const line of atLines) {
+      if (y < 100) break;
+      page.drawText(line, { x: marginL, y, size: 8, font: fontRegular, color: grayColor });
+      y -= 12;
+    }
   }
 
   // ─── Footer ───
@@ -753,7 +778,7 @@ Deno.serve(async (req) => {
         ticket_categories:ticket_category_id (name, category_group)
       `).eq("order_id", order_id),
       supabase.from("orders").select("*").eq("id", order_id).single(),
-      supabase.from("settings").select("key, value").in("key", ["company", "invoice", "email", "ticket_template"]),
+      supabase.from("settings").select("key, value").in("key", ["company", "invoice", "email", "ticket_template", "invoice_template"]),
     ]);
 
     if (ticketsRes.error || !ticketsRes.data?.length) {
@@ -780,6 +805,7 @@ Deno.serve(async (req) => {
     const invoiceSettings = settingsMap.invoice || { prefix: "RE", next_number: 1 };
     const emailSettings = settingsMap.email || {};
     const ticketTemplate: TicketTemplate = { ...defaultTpl, ...(settingsMap.ticket_template || {}) };
+    const invoiceTemplate = settingsMap.invoice_template || {};
 
     // ─── Generate invoice number ───
     const year = new Date().getFullYear();
@@ -829,6 +855,11 @@ Deno.serve(async (req) => {
         totalAmount: order.total_amount,
         vatRate: 19,
         currency: order.currency || "EUR",
+        payment_terms: invoiceTemplate.payment_terms || "",
+        additional_text: invoiceTemplate.additional_text || "",
+        footer_note: invoiceTemplate.footer_note || "",
+        show_bank_details: invoiceTemplate.show_bank_details || false,
+        bank_override: invoiceTemplate.bank_override || "",
       }),
     ]);
 
