@@ -25,67 +25,47 @@ Deno.serve(async (req) => {
 
     console.log('Scraping media from:', formattedUrl, 'type:', type);
 
-    // Try multiple approaches to get the rendered HTML
+    const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
+
     let html = '';
 
-    // Approach 1: Use a prerender-style User-Agent (many SPAs serve pre-rendered HTML to bots)
-    const botUserAgents = [
-      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-      'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/120.0.0.0 Safari/537.36',
-      'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
-    ];
-
-    for (const ua of botUserAgents) {
+    // Primary: Use Firecrawl to render JavaScript SPAs
+    if (apiKey) {
       try {
-        const response = await fetch(formattedUrl, {
+        console.log('Using Firecrawl to render page...');
+        const fcResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
           headers: {
-            'User-Agent': ua,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            url: formattedUrl,
+            formats: ['html'],
+            waitFor: 5000,
+          }),
         });
-        if (response.ok) {
-          const text = await response.text();
-          // Check if this response has actual img tags (not just a JS shell)
-          const imgCount = (text.match(/<img[^>]+src=/gi) || []).length;
-          console.log(`UA "${ua.substring(0, 30)}..." returned ${text.length} bytes, ${imgCount} img tags`);
-          if (imgCount > (html.match(/<img[^>]+src=/gi) || []).length) {
-            html = text;
-          }
-          if (imgCount >= 5) break; // Good enough, stop trying
+
+        if (fcResponse.ok) {
+          const fcData = await fcResponse.json();
+          html = fcData?.data?.html || fcData?.html || '';
+          console.log(`Firecrawl returned ${html.length} bytes, ${(html.match(/<img[^>]+src=/gi) || []).length} img tags`);
+        } else {
+          console.log('Firecrawl error:', fcResponse.status, await fcResponse.text());
         }
       } catch (e) {
-        console.log('UA attempt failed:', e);
+        console.log('Firecrawl failed:', e);
       }
+    } else {
+      console.log('No FIRECRAWL_API_KEY, falling back to direct fetch');
     }
 
-    // Approach 2: If bot UAs didn't work well, try Google's cache / web render
-    if ((html.match(/<img[^>]+src=/gi) || []).length < 3) {
-      try {
-        // Try using a web rendering proxy service
-        const renderUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(formattedUrl)}`;
-        const cacheResp = await fetch(renderUrl, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        });
-        if (cacheResp.ok) {
-          const cacheHtml = await cacheResp.text();
-          const imgCount = (cacheHtml.match(/<img[^>]+src=/gi) || []).length;
-          console.log(`Google cache returned ${cacheHtml.length} bytes, ${imgCount} img tags`);
-          if (imgCount > (html.match(/<img[^>]+src=/gi) || []).length) {
-            html = cacheHtml;
-          }
-        }
-      } catch (e) {
-        console.log('Cache approach failed:', e);
-      }
-    }
-
-    // Approach 3: If still not enough, try regular fetch as fallback
-    if ((html.match(/<img[^>]+src=/gi) || []).length < 2) {
+    // Fallback: direct fetch if Firecrawl unavailable or failed
+    if (!html || (html.match(/<img[^>]+src=/gi) || []).length < 2) {
       try {
         const response = await fetch(formattedUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           },
         });
@@ -96,7 +76,7 @@ Deno.serve(async (req) => {
           }
         }
       } catch (e) {
-        console.log('Regular fetch failed:', e);
+        console.log('Fallback fetch failed:', e);
       }
     }
 
@@ -130,7 +110,6 @@ Deno.serve(async (req) => {
     };
 
     if (type === 'videos') {
-      // Extract video sources
       const videoSrcRegex = /<(?:video|source)[^>]+src=["']([^"']+)["']/gi;
       let match;
       while ((match = videoSrcRegex.exec(html)) !== null) {
@@ -138,7 +117,6 @@ Deno.serve(async (req) => {
         if (resolved) addUrl(resolved);
       }
 
-      // Extract YouTube video IDs
       const seenYtIds = new Set<string>();
       const ytPatterns = [
         /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/gi,
@@ -154,13 +132,11 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Extract Vimeo
       const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)/gi;
       while ((match = vimeoRegex.exec(html)) !== null) {
         addUrl(`https://vimeo.com/${match[1]}`);
       }
     } else {
-      // Extract ALL img src attributes
       const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
       let match;
       while ((match = imgRegex.exec(html)) !== null) {
@@ -168,19 +144,16 @@ Deno.serve(async (req) => {
         if (!resolved) continue;
 
         const lower = resolved.toLowerCase();
-        // Skip tiny icons, tracking pixels, favicons, YouTube thumbs
         if (lower.includes('favicon')) continue;
         if (lower.includes('1x1')) continue;
         if (lower.includes('pixel')) continue;
         if (lower.includes('tracking')) continue;
         if (lower.includes('img.youtube.com')) continue;
-        // Skip very small placeholder images (base64 or tiny SVGs)
         if (lower.endsWith('.svg') && lower.includes('icon')) continue;
 
         addUrl(resolved);
       }
 
-      // Extract from srcset
       const srcsetRegex = /srcset=["']([^"']+)["']/gi;
       while ((match = srcsetRegex.exec(html)) !== null) {
         const entries = match[1].split(',');
@@ -193,14 +166,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Extract from CSS background-image
       const bgRegex = /background(?:-image)?:\s*url\(["']?([^"')]+)["']?\)/gi;
       while ((match = bgRegex.exec(html)) !== null) {
         const resolved = resolveUrl(match[1]);
         if (resolved) addUrl(resolved);
       }
 
-      // Extract from og:image meta tags
       const ogRegex = /<meta[^>]+(?:content=["']([^"']+)["'][^>]+property=["']og:image["']|property=["']og:image["'][^>]+content=["']([^"']+)["'])/gi;
       while ((match = ogRegex.exec(html)) !== null) {
         const src = match[1] || match[2];
