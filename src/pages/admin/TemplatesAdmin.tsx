@@ -1114,14 +1114,24 @@ const InvoiceTab = () => {
                 <div style={{ fontSize: "8px", color: "#333", display: "flex", justifyContent: "space-between", padding: "4px 8px", borderBottom: "1px solid #eee" }}>
                   <span>2x Early Bird</span><span style={{ fontWeight: 700 }}>19,98 €</span>
                 </div>
-                <div style={{ fontSize: "9px", fontWeight: 700, color: "#1a1a1a", display: "flex", justifyContent: "space-between", padding: "8px 8px 0" }}>
-                  <span>Gesamt</span><span>19,98 €</span>
+                {/* Totals */}
+                <div style={{ fontSize: "8px", color: "#999", display: "flex", justifyContent: "flex-end", padding: "6px 8px 0", gap: "16px" }}>
+                  <span>Nettobetrag</span><span>16,79 €</span>
+                </div>
+                <div style={{ fontSize: "8px", color: "#999", display: "flex", justifyContent: "flex-end", padding: "2px 8px 0", gap: "16px" }}>
+                  <span>MwSt. (19%)</span><span>3,19 €</span>
+                </div>
+                <div style={{ fontSize: "9px", fontWeight: 700, color: "#1a1a1a", display: "flex", justifyContent: "flex-end", padding: "6px 8px 0", gap: "16px", background: "#f5f5f5", borderRadius: "4px", marginTop: "4px", paddingBottom: "6px" }}>
+                  <span>Gesamtbetrag</span><span>19,98 €</span>
                 </div>
 
-                {tpl.payment_terms && <div style={{ fontSize: "7px", color: "#666", marginTop: "12px", whiteSpace: "pre-line" }}>{tpl.payment_terms}</div>}
-                {tpl.additional_text && <div style={{ fontSize: "7px", color: "#666", marginTop: "8px", whiteSpace: "pre-line" }}>{tpl.additional_text}</div>}
+                {/* Additional texts - compact with overflow protection */}
+                <div style={{ flex: "1 1 auto", minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", gap: "4px", marginTop: "8px" }}>
+                  {tpl.payment_terms && <div style={{ fontSize: "6px", color: "#666", whiteSpace: "pre-line", lineHeight: "1.3", overflow: "hidden", textOverflow: "ellipsis" }}>{tpl.payment_terms}</div>}
+                  {tpl.additional_text && <div style={{ fontSize: "6px", color: "#666", whiteSpace: "pre-line", lineHeight: "1.3", overflow: "hidden", textOverflow: "ellipsis" }}>{tpl.additional_text}</div>}
+                </div>
 
-                <div style={{ marginTop: "auto", borderTop: "1px solid #eee", paddingTop: "8px" }}>
+                <div style={{ flexShrink: 0, borderTop: "1px solid #eee", paddingTop: "6px", marginTop: "auto" }}>
                   {tpl.footer_note && <div style={{ fontSize: "7px", color: "#666", marginBottom: "4px" }}>{tpl.footer_note}</div>}
                   {tpl.show_bank_details && (
                     <div style={{ fontSize: "6px", color: "#999" }}>
