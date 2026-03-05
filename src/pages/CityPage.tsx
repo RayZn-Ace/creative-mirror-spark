@@ -566,27 +566,27 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
                     className={`${aspectClass} rounded-xl overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
                     onClick={() => lightboxEnabled && setLightboxIdx(activeIdx)}
                   >
-                    {/* Layer A - persistent, no remount */}
+                    {/* Layer A - persistent, never remounted */}
                     <div
-                      className="absolute inset-0 will-change-[opacity,transform]"
+                      className="absolute inset-0"
                       style={{
                         opacity: isAActive ? 1 : 0,
-                        transform: `scale(${isAActive ? 1 : 1.08})`,
-                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1), transform ${zoomDur}s linear`,
-                        animation: isAActive ? `kenburns ${zoomDur}s linear forwards` : "none",
+                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1)`,
+                        animation: `kenburns-a ${zoomDur * 2}s ease-in-out infinite`,
+                        willChange: "opacity",
                       }}
                     >
                       <img src={allFiles[aIdx]} alt="" className="w-full h-full object-cover" />
                     </div>
 
-                    {/* Layer B - persistent, no remount */}
+                    {/* Layer B - persistent, never remounted */}
                     <div
-                      className="absolute inset-0 will-change-[opacity,transform]"
+                      className="absolute inset-0"
                       style={{
                         opacity: isAActive ? 0 : 1,
-                        transform: `scale(${isAActive ? 1.08 : 1})`,
-                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1), transform ${zoomDur}s linear`,
-                        animation: !isAActive ? `kenburns ${zoomDur}s linear forwards` : "none",
+                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1)`,
+                        animation: `kenburns-b ${zoomDur * 2}s ease-in-out infinite`,
+                        willChange: "opacity",
                       }}
                     >
                       <img src={allFiles[bIdx]} alt="" className="w-full h-full object-cover" />
