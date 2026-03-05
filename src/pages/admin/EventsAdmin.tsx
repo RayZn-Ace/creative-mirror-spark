@@ -406,6 +406,82 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
   );
 };
 
+/* ─── Gallery Editor (inline) ─── */
+const GalleryEditor = ({ eventId }: { eventId: string }) => {
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const prefix = `gallery/${eventId}/`;
+
+  const loadImages = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.storage.from("event-images").list(`gallery/${eventId}`, { sortBy: { column: "created_at", order: "asc" } });
+    if (!error && data) {
+      setImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/${prefix}${f.name}`));
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadImages(); }, [eventId]);
+
+  const uploadFiles = async (files: FileList) => {
+    setUploading(true);
+    for (const file of Array.from(files)) {
+      const ext = file.name.split(".").pop();
+      const path = `${prefix}${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("event-images").upload(path, file);
+      if (error) toast.error("Upload fehlgeschlagen: " + error.message);
+    }
+    await loadImages();
+    setUploading(false);
+    toast.success("Bilder hochgeladen");
+  };
+
+  const deleteImage = async (url: string) => {
+    const path = url.split("/event-images/")[1];
+    if (!path) return;
+    await supabase.storage.from("event-images").remove([path]);
+    setImages(prev => prev.filter(i => i !== url));
+    toast.success("Bild gelöscht");
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
+        <span>🖼️ Mediengalerie Widget</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{images.length} Bilder</span>
+          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && uploadFiles(e.target.files)} />
+          <button onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 70%)" }}>
+            {uploading ? "Lädt..." : "+ Bilder"}
+          </button>
+        </div>
+      </div>
+      {loading ? (
+        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</p>
+      ) : images.length > 0 ? (
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {images.map((url, i) => (
+            <div key={i} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+              <img src={url} className="w-full h-full object-cover" />
+              <button
+                onClick={() => deleteImage(url)}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: "hsl(0 70% 50% / 0.9)", color: "white" }}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Bilder. Klicke "+ Bilder" um welche hochzuladen.</p>
+      )}
+    </div>
+  );
+};
+
 /* ─── Image Upload ─── */
 const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange: (url: string) => void }) => {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -711,9 +787,13 @@ const EventEditView = ({
                     </div>
                   </div>
                   {isWidget ? (
+                    block.content === "gallery" && editing.id ? (
+                      <GalleryEditor eventId={editing.id} />
+                    ) : (
                     <div className="px-3 py-3 rounded-lg text-sm font-medium flex items-center gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
                       {widgetLabel}
                     </div>
+                    )
                   ) : (
                     <textarea
                       value={block.content}

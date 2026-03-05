@@ -252,6 +252,19 @@ const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: st
   const isGallery = content === "gallery";
   const isCountdown = content === "countdown";
   const isSpotify = content === "spotify";
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isGallery && event?.id) {
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      supabase.storage.from("event-images").list(`gallery/${event.id}`, { sortBy: { column: "created_at", order: "asc" } })
+        .then(({ data }) => {
+          if (data) {
+            setGalleryImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery/${event.id}/${f.name}`));
+          }
+        });
+    }
+  }, [isGallery, event?.id]);
 
   // Auto-generate eventinfo content from event data
   const displayContent = isAutoEventInfo && event
@@ -280,9 +293,19 @@ const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: st
                   </a>
                 </>
               ) : isGallery ? (
-                <div className="text-center py-6">
-                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>📸 Impressionen folgen in Kürze!</p>
-                </div>
+                galleryImages.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {galleryImages.map((url, i) => (
+                      <div key={i} className="aspect-square rounded-lg overflow-hidden">
+                        <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>📸 Impressionen folgen in Kürze!</p>
+                  </div>
+                )
               ) : isCountdown ? (
                 <div className="text-center py-4">
                   <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>⏱️ Countdown läuft...</p>
