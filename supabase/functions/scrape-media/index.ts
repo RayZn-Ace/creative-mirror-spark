@@ -163,41 +163,79 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
   return html;
 };
 
-/** Detect internal links on the page that look like album/gallery subpages */
-const detectAlbumLinks = (html: string, baseUrl: URL): string[] => {
+/** Detect internal links from HTML <a> tags */
+const detectAlbumLinksFromHtml = (html: string, baseUrl: URL): string[] => {
   const links: string[] = [];
-  // Match <a> tags with href
   const linkRegex = /<a[^>]+href=["']([^"'#]+)["'][^>]*>/gi;
   let match;
   while ((match = linkRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
     if (!resolved) continue;
-
     try {
       const linkUrl = new URL(resolved);
-      // Only follow links on the same domain
       if (linkUrl.hostname !== baseUrl.hostname) continue;
-      // Must be a subpath of the current page or a related gallery/album/fotos path
       const currentPath = baseUrl.pathname.replace(/\/$/, '');
       const linkPath = linkUrl.pathname.replace(/\/$/, '');
-      // Skip if it's the same page
       if (linkPath === currentPath) continue;
-      // Follow if it's a subpath of current page (e.g. /fotos/album-123)
-      // or contains common gallery indicators
       const isSubpage = linkPath.startsWith(currentPath + '/');
       const isGalleryPath = /\/(fotos?|photos?|gallery|galler[yi]e|album|media|bilder|impressions?)/i.test(linkPath);
-
       if (isSubpage || isGalleryPath) {
-        if (!links.includes(resolved)) {
-          links.push(resolved);
-        }
+        if (!links.includes(resolved)) links.push(resolved);
       }
-    } catch {
-      // invalid URL, skip
-    }
+    } catch { /* skip */ }
   }
-
   return links;
+};
+
+/** Use Firecrawl Map to discover all URLs on the site, then filter for album/gallery pages */
+const discoverAlbumUrlsViaMap = async (baseUrl: URL, apiKey: string): Promise<string[]> => {
+  try {
+    console.log('Using Firecrawl Map to discover URLs on:', baseUrl.origin);
+    const response = await fetch('https://api.firecrawl.dev/v1/map', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: baseUrl.href,
+        limit: 200,
+        includeSubdomains: false,
+      }),
+    });
+
+    if (!response.ok) {
+      console.log('Firecrawl Map error:', response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const allLinks: string[] = data?.links || data?.data?.links || [];
+    console.log(`Firecrawl Map found ${allLinks.length} total URLs`);
+
+    const currentPath = baseUrl.pathname.replace(/\/$/, '');
+
+    // Filter for album/gallery subpages
+    const albumLinks = allLinks.filter((link: string) => {
+      try {
+        const linkUrl = new URL(link);
+        if (linkUrl.hostname !== baseUrl.hostname) return false;
+        const linkPath = linkUrl.pathname.replace(/\/$/, '');
+        if (linkPath === currentPath) return false;
+        // Subpages of the current gallery path (e.g. /fotos/album-123)
+        if (linkPath.startsWith(currentPath + '/')) return true;
+        // Or pages with gallery-like paths
+        if (/\/(fotos?|photos?|gallery|galler[yi]e|album|media|bilder|impressions?)\//i.test(linkPath)) return true;
+        return false;
+      } catch { return false; }
+    });
+
+    console.log(`Filtered to ${albumLinks.length} album/gallery URLs:`, albumLinks.slice(0, 5));
+    return albumLinks;
+  } catch (e) {
+    console.log('Firecrawl Map failed:', e);
+    return [];
+  }
 };
 
 Deno.serve(async (req) => {
@@ -247,16 +285,21 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${mediaUrls.length} ${type} URLs on main page`);
 
-    // Step 2: If we found very few images (likely an album listing), detect and follow album links
+    // Step 2: If few images found, try to discover album subpages
     if (mediaUrls.length <= 5 && type !== 'videos') {
-      const albumLinks = detectAlbumLinks(html, baseUrl);
-      console.log(`Detected ${albumLinks.length} potential album links:`, albumLinks.slice(0, 10));
+      // First try HTML <a> links
+      let albumLinks = detectAlbumLinksFromHtml(html, baseUrl);
+      console.log(`HTML link detection found ${albumLinks.length} album links`);
+
+      // If no links found in HTML (SPA), use Firecrawl Map to discover URLs
+      if (albumLinks.length === 0 && apiKey) {
+        albumLinks = await discoverAlbumUrlsViaMap(baseUrl, apiKey);
+      }
 
       if (albumLinks.length > 0) {
-        // Limit to max 10 album pages to avoid excessive scraping
         const linksToScrape = albumLinks.slice(0, 10);
+        console.log(`Scraping ${linksToScrape.length} album pages...`);
 
-        // Scrape album pages in parallel (max 3 concurrent)
         const batchSize = 3;
         for (let i = 0; i < linksToScrape.length; i += batchSize) {
           const batch = linksToScrape.slice(i, i + batchSize);
@@ -281,7 +324,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        console.log(`After scraping ${linksToScrape.length} album pages: ${mediaUrls.length} total images`);
+        console.log(`After album scraping: ${mediaUrls.length} total images`);
       }
     }
 
