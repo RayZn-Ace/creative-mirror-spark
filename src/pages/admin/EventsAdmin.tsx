@@ -44,6 +44,7 @@ interface GalleryConfig {
   view_mode?: "grid" | "masonry" | "slideshow";
   slideshow_speed?: number;
   slideshow_transition?: "simultaneous" | "staggered";
+  slideshow_order?: "sequential" | "random";
   aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
   hover_effect?: boolean;
   show_captions?: boolean;
@@ -682,6 +683,34 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
                 </div>
               </div>
             </>
+          )}
+
+          {/* Slideshow Order (only for slideshow) */}
+          {(galleryConfig?.view_mode === "slideshow") && (
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                Reihenfolge
+              </label>
+              <div className="flex gap-2">
+                {([
+                  { value: "sequential", label: "📋 Reihenfolge" },
+                  { value: "random", label: "🎲 Zufällig" },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onUpdateGalleryConfig({ ...galleryConfig, slideshow_order: opt.value })}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                    style={{
+                      background: (galleryConfig?.slideshow_order || "sequential") === opt.value ? "hsl(217 91% 60% / 0.25)" : "hsl(0 0% 100% / 0.05)",
+                      color: (galleryConfig?.slideshow_order || "sequential") === opt.value ? "hsl(217 91% 70%)" : "hsl(0 0% 100% / 0.4)",
+                      border: `1px solid ${(galleryConfig?.slideshow_order || "sequential") === opt.value ? "hsl(217 91% 60% / 0.3)" : "transparent"}`,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Toggles */}
