@@ -363,7 +363,7 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galleryConfig }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos"; externalUrls?: string[]; galleryConfig?: GalleryConfig }) => {
   const [storageFiles, setStorageFiles] = useState<string[]>([]);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
-  const [slideIdx, setSlideIdx] = useState(0);
+  const [slideOffset, setSlideOffset] = useState(0);
   const [slidePlaying, setSlidePlaying] = useState(true);
   const isVideo = type === "videos";
 
@@ -394,15 +394,27 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
       });
   }, [eventId, type]);
 
-  // Slideshow auto-advance
-  useEffect(() => {
-    if (viewMode !== "slideshow" || !slidePlaying) return;
-    const timer = setInterval(() => setSlideIdx(p => (p + 1) % allFiles.length), slideSpeed);
-    return () => clearInterval(timer);
-  }, [viewMode, slidePlaying, slideSpeed]);
-
   const allFiles = [...storageFiles, ...externalUrls];
+
+  // Slideshow auto-advance: advances by `cols` images each tick
+  const totalPages = Math.max(1, Math.ceil(allFiles.length / cols));
+  useEffect(() => {
+    if (viewMode !== "slideshow" || !slidePlaying || allFiles.length === 0) return;
+    const timer = setInterval(() => setSlideOffset(p => (p + 1) % totalPages), slideSpeed);
+    return () => clearInterval(timer);
+  }, [viewMode, slidePlaying, slideSpeed, totalPages, allFiles.length]);
+
   if (allFiles.length === 0) return null;
+
+  // Get visible images for current slideshow page
+  const getVisibleSlides = () => {
+    const start = slideOffset * cols;
+    const visible: string[] = [];
+    for (let i = 0; i < cols; i++) {
+      visible.push(allFiles[(start + i) % allFiles.length]);
+    }
+    return visible;
+  };
 
   return (
     <div className="pt-6">
@@ -431,40 +443,71 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
         </div>
       )}
 
-      {/* Slideshow */}
+      {/* Slideshow – multi-tile grid that rotates */}
       {viewMode === "slideshow" && !isVideo ? (
         <div>
-          <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-black mb-3">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={slideIdx}
-                src={allFiles[slideIdx]}
-                alt=""
-                className="w-full h-full object-cover absolute inset-0"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none">
-              <button className="pointer-events-auto w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center" onClick={() => setSlideIdx((slideIdx - 1 + allFiles.length) % allFiles.length)}>
-                <ArrowLeft className="w-5 h-5 text-white" />
-              </button>
-              <button className="pointer-events-auto w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center" onClick={() => setSlideIdx((slideIdx + 1) % allFiles.length)}>
-                <ArrowRight className="w-5 h-5 text-white" />
-              </button>
+          <div className="relative">
+            <div className={`grid ${gridColsClass} gap-2`}>
+              <AnimatePresence mode="wait">
+                {getVisibleSlides().map((url, i) => {
+                  const realIdx = (slideOffset * cols + i) % allFiles.length;
+                  return (
+                    <motion.div
+                      key={`${slideOffset}-${i}`}
+                      className={`${aspectClass} rounded-lg overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.4, delay: i * 0.08 }}
+                      onClick={() => lightboxEnabled && setLightboxIdx(realIdx)}
+                    >
+                      <img
+                        src={url}
+                        alt={`Impression ${realIdx + 1}`}
+                        className={`w-full h-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-110" : ""}`}
+                        loading="lazy"
+                      />
+                      {hoverEffect && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                      )}
+                      {showCaptions && (
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs">Impression {realIdx + 1}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {allFiles.map((_, i) => (
-                <button key={i} onClick={() => { setSlideIdx(i); setSlidePlaying(false); }} className={`w-2 h-2 rounded-full transition-all ${i === slideIdx ? "bg-white scale-125" : "bg-white/40"}`} />
-              ))}
-            </div>
+
+            {/* Nav arrows */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-3">
+                <button
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  onClick={() => { setSlideOffset((slideOffset - 1 + totalPages) % totalPages); setSlidePlaying(false); }}
+                >
+                  <ArrowLeft className="w-4 h-4 text-white" />
+                </button>
+                <div className="flex gap-1.5">
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button key={i} onClick={() => { setSlideOffset(i); setSlidePlaying(false); }} className={`w-2 h-2 rounded-full transition-all ${i === slideOffset ? "bg-white scale-125" : "bg-white/30"}`} />
+                  ))}
+                </div>
+                <button
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  onClick={() => { setSlideOffset((slideOffset + 1) % totalPages); setSlidePlaying(false); }}
+                >
+                  <ArrowRight className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            )}
+
             {/* Progress bar */}
-            {slidePlaying && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20">
-                <motion.div className="h-full bg-white/60" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: slideSpeed / 1000, ease: "linear" }} key={slideIdx} />
+            {slidePlaying && totalPages > 1 && (
+              <div className="mt-2 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                <motion.div className="h-full bg-white/40 rounded-full" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: slideSpeed / 1000, ease: "linear" }} key={slideOffset} />
               </div>
             )}
           </div>
