@@ -899,6 +899,144 @@ const EventEditView = ({
   );
 };
 
+/* ─── Bulk Add Dialog ─── */
+const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; onClose: () => void; onComplete: () => void }) => {
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+  const [selectedTemplate, setSelectedTemplate] = useState<BlockTemplate | null>(null);
+  const [position, setPosition] = useState<"end" | "start">("end");
+  const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+
+  const allSelected = selectedEvents.size === events.length;
+  const toggleAll = () => {
+    if (allSelected) setSelectedEvents(new Set());
+    else setSelectedEvents(new Set(events.map((e) => e.id)));
+  };
+
+  const apply = async () => {
+    if (!selectedTemplate || selectedEvents.size === 0) return;
+    setSaving(true);
+    const targetEvents = events.filter((e) => selectedEvents.has(e.id));
+    let successCount = 0;
+    for (const ev of targetEvents) {
+      const existing = Array.isArray(ev.info_sections) ? ev.info_sections : [];
+      const newBlock: InfoBlock = { id: `block-${Date.now()}-${Math.random().toString(36).slice(2)}`, title: selectedTemplate.block.title, content: selectedTemplate.block.content };
+      const updated = position === "start" ? [newBlock, ...existing] : [...existing, newBlock];
+      const { error } = await supabase.from("events").update({ info_sections: updated as any }).eq("id", ev.id);
+      if (!error) successCount++;
+    }
+    toast.success(`Block bei ${successCount} Events hinzugefügt`);
+    setSaving(false);
+    onComplete();
+    onClose();
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "hsl(0 0% 0% / 0.7)" }}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="w-full max-w-2xl rounded-2xl overflow-hidden" style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)", boxShadow: "0 20px 60px hsl(0 0% 0% / 0.6)" }}>
+        <div className="p-5 flex items-center justify-between" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+          <h2 className="text-base font-black uppercase tracking-wider" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
+            Bulk Add – Block hinzufügen
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5"><X className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} /></button>
+        </div>
+
+        <div className="p-5 max-h-[70vh] overflow-y-auto space-y-5">
+          {step === 1 ? (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>Schritt 1: Block-Vorlage wählen</p>
+              <div className="space-y-3">
+                {TEMPLATE_CATEGORIES.map((cat) => (
+                  <div key={cat}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{cat}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {BLOCK_TEMPLATES.filter((t) => t.category === cat).map((tmpl) => {
+                        const Icon = tmpl.icon;
+                        const isSelected = selectedTemplate?.id === tmpl.id;
+                        return (
+                          <button
+                            key={tmpl.id}
+                            onClick={() => setSelectedTemplate(tmpl)}
+                            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
+                            style={{
+                              background: isSelected ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                              color: isSelected ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.7)",
+                              border: `1px solid ${isSelected ? "hsl(330 80% 55% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
+                            }}
+                          >
+                            <Icon className="w-3.5 h-3.5 shrink-0" />
+                            {tmpl.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Position */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Position</p>
+                <div className="flex gap-2">
+                  {(["end", "start"] as const).map((p) => (
+                    <button key={p} onClick={() => setPosition(p)} className="px-3 py-2 rounded-lg text-xs font-bold" style={{
+                      background: position === p ? "hsl(270 60% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                      color: position === p ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.5)",
+                      border: `1px solid ${position === p ? "hsl(270 60% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    }}>
+                      {p === "end" ? "Am Ende anfügen" : "Am Anfang einfügen"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end pt-2">
+                <button onClick={() => { if (selectedTemplate) setStep(2); else toast.error("Bitte wähle zuerst eine Vorlage"); }} className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                  Weiter → Events wählen
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>
+                Schritt 2: Events auswählen ({selectedEvents.size} / {events.length})
+              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <button onClick={toggleAll} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.6)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                  {allSelected ? "Keine auswählen" : "Alle auswählen"}
+                </button>
+                <button onClick={() => setStep(1)} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)" }}>
+                  ← Zurück
+                </button>
+              </div>
+              <div className="space-y-1 max-h-[40vh] overflow-y-auto rounded-xl p-2" style={{ background: "hsl(0 0% 100% / 0.02)" }}>
+                {events.map((ev) => (
+                  <label key={ev.id} className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-white/5 text-sm" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+                    <input type="checkbox" checked={selectedEvents.has(ev.id)} onChange={() => {
+                      const next = new Set(selectedEvents);
+                      next.has(ev.id) ? next.delete(ev.id) : next.add(ev.id);
+                      setSelectedEvents(next);
+                    }} className="rounded w-4 h-4" />
+                    <span className="font-bold">{ev.title}</span>
+                    {ev.city && <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>({ev.city})</span>}
+                    {ev.date && <span className="text-xs ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{ev.date}</span>}
+                  </label>
+                ))}
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  Block: <strong style={{ color: "hsl(270 60% 70%)" }}>{selectedTemplate?.label}</strong> → {position === "end" ? "am Ende" : "am Anfang"}
+                </span>
+                <button onClick={apply} disabled={saving || selectedEvents.size === 0} className="px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                  {saving ? "Wird angewendet..." : `Bei ${selectedEvents.size} Events hinzufügen`}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 /* ─── Main Component ─── */
 const COLLAPSE_STORAGE_KEY = "admin_events_collapsed";
 
@@ -928,6 +1066,7 @@ const EventsAdmin = () => {
   const [filterOpenAir, setFilterOpenAir] = useState(false);
   const [filterSoldOut, setFilterSoldOut] = useState<"all" | "hide" | "only">("all");
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -1162,9 +1301,14 @@ const EventsAdmin = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events</h1>
-        <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
-          <Plus className="w-4 h-4" /> Neues Event
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowBulkAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.3)" }}>
+            <LayoutGrid className="w-4 h-4" /> Bulk Add
+          </button>
+          <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+            <Plus className="w-4 h-4" /> Neues Event
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -1364,6 +1508,13 @@ const EventsAdmin = () => {
             onClose={() => setBulkEditSource(null)}
             onComplete={load}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Add Dialog */}
+      <AnimatePresence>
+        {showBulkAdd && (
+          <BulkAddDialog events={events} onClose={() => setShowBulkAdd(false)} onComplete={load} />
         )}
       </AnimatePresence>
     </div>
