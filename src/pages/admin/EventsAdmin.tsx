@@ -39,12 +39,23 @@ const getCountry = (city: string | null) => {
   return CITY_COUNTRY[city] || "Deutschland";
 };
 
+interface GalleryConfig {
+  grid_cols?: number;
+  view_mode?: "grid" | "masonry" | "slideshow";
+  slideshow_speed?: number;
+  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
+  hover_effect?: boolean;
+  show_captions?: boolean;
+  lightbox_enabled?: boolean;
+}
+
 interface InfoBlock {
   id: string;
   title: string;
   content: string;
   show_title?: boolean;
   external_urls?: string[];
+  gallery_config?: GalleryConfig;
 }
 
 interface EventRow {
@@ -411,13 +422,14 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
 };
 
 /* ─── Media Editor (inline, for photos & videos) ─── */
-const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, onUpdateExternalUrls }: { eventId: string; type: "photos" | "videos"; showTitle: boolean; onToggleTitle: (val: boolean) => void; externalUrls: string[]; onUpdateExternalUrls: (urls: string[]) => void }) => {
+const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, onUpdateExternalUrls, galleryConfig, onUpdateGalleryConfig }: { eventId: string; type: "photos" | "videos"; showTitle: boolean; onToggleTitle: (val: boolean) => void; externalUrls: string[]; onUpdateExternalUrls: (urls: string[]) => void; galleryConfig?: GalleryConfig; onUpdateGalleryConfig?: (config: GalleryConfig) => void }) => {
   const [storageFiles, setStorageFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [linkInput, setLinkInput] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showScrapeInput, setShowScrapeInput] = useState(false);
+  const [showGallerySettings, setShowGallerySettings] = useState(false);
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [scraping, setScraping] = useState(false);
   const [scrapeResults, setScrapeResults] = useState<string[]>([]);
@@ -539,11 +551,134 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           <button onClick={() => { setShowLinkInput(!showLinkInput); setShowScrapeInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.2)", color: "hsl(200 60% 70%)" }}>
             🔗 Link
           </button>
-          <button onClick={() => { setShowScrapeInput(!showScrapeInput); setShowLinkInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(150 60% 40% / 0.2)", color: "hsl(150 60% 65%)" }}>
+          <button onClick={() => { setShowScrapeInput(!showScrapeInput); setShowLinkInput(false); setShowGallerySettings(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(150 60% 40% / 0.2)", color: "hsl(150 60% 65%)" }}>
             🌐 Seite scannen
           </button>
+          {!isVideo && onUpdateGalleryConfig && (
+            <button onClick={() => { setShowGallerySettings(!showGallerySettings); setShowLinkInput(false); setShowScrapeInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: showGallerySettings ? "hsl(45 80% 50% / 0.3)" : "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 60%)" }}>
+              ⚙️ Darstellung
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Gallery Display Settings */}
+      {showGallerySettings && onUpdateGalleryConfig && !isVideo && (
+        <div className="rounded-lg p-3 space-y-3" style={{ background: "hsl(45 60% 50% / 0.06)", border: "1px solid hsl(45 60% 50% / 0.15)" }}>
+          <div className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(45 60% 60%)" }}>⚙️ Galerie-Darstellung</div>
+          
+          {/* View Mode */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Ansicht</label>
+            <div className="flex gap-1.5">
+              {([
+                { value: "grid", label: "Grid", icon: "▦" },
+                { value: "masonry", label: "Masonry", icon: "▥" },
+                { value: "slideshow", label: "Diashow", icon: "▶" },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => onUpdateGalleryConfig({ ...galleryConfig, view_mode: opt.value })}
+                  className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                  style={{
+                    background: (galleryConfig?.view_mode || "grid") === opt.value ? "hsl(217 91% 60% / 0.25)" : "hsl(0 0% 100% / 0.05)",
+                    color: (galleryConfig?.view_mode || "grid") === opt.value ? "hsl(217 91% 70%)" : "hsl(0 0% 100% / 0.4)",
+                    border: `1px solid ${(galleryConfig?.view_mode || "grid") === opt.value ? "hsl(217 91% 60% / 0.3)" : "transparent"}`,
+                  }}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid Columns */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Spalten</label>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4].map(n => (
+                <button
+                  key={n}
+                  onClick={() => onUpdateGalleryConfig({ ...galleryConfig, grid_cols: n })}
+                  className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                  style={{
+                    background: (galleryConfig?.grid_cols || 3) === n ? "hsl(217 91% 60% / 0.25)" : "hsl(0 0% 100% / 0.05)",
+                    color: (galleryConfig?.grid_cols || 3) === n ? "hsl(217 91% 70%)" : "hsl(0 0% 100% / 0.4)",
+                    border: `1px solid ${(galleryConfig?.grid_cols || 3) === n ? "hsl(217 91% 60% / 0.3)" : "transparent"}`,
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Aspect Ratio */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Seitenverhältnis</label>
+            <div className="flex gap-1.5">
+              {([
+                { value: "square", label: "1:1" },
+                { value: "4:3", label: "4:3" },
+                { value: "16:9", label: "16:9" },
+                { value: "3:4", label: "3:4" },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => onUpdateGalleryConfig({ ...galleryConfig, aspect_ratio: opt.value })}
+                  className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all"
+                  style={{
+                    background: (galleryConfig?.aspect_ratio || "square") === opt.value ? "hsl(217 91% 60% / 0.25)" : "hsl(0 0% 100% / 0.05)",
+                    color: (galleryConfig?.aspect_ratio || "square") === opt.value ? "hsl(217 91% 70%)" : "hsl(0 0% 100% / 0.4)",
+                    border: `1px solid ${(galleryConfig?.aspect_ratio || "square") === opt.value ? "hsl(217 91% 60% / 0.3)" : "transparent"}`,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Slideshow Speed (only for slideshow) */}
+          {(galleryConfig?.view_mode === "slideshow") && (
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                Geschwindigkeit: {((galleryConfig?.slideshow_speed || 3000) / 1000).toFixed(1)}s
+              </label>
+              <input
+                type="range"
+                min={1000}
+                max={8000}
+                step={500}
+                value={galleryConfig?.slideshow_speed || 3000}
+                onChange={e => onUpdateGalleryConfig({ ...galleryConfig, slideshow_speed: Number(e.target.value) })}
+                className="w-full accent-primary"
+              />
+            </div>
+          )}
+
+          {/* Toggles */}
+          <div className="flex gap-2 flex-wrap">
+            {([
+              { key: "hover_effect", label: "Hover-Effekt", default: true },
+              { key: "lightbox_enabled", label: "Lightbox", default: true },
+              { key: "show_captions", label: "Bildtitel", default: false },
+            ] as const).map(toggle => (
+              <button
+                key={toggle.key}
+                onClick={() => onUpdateGalleryConfig({ ...galleryConfig, [toggle.key]: !(galleryConfig?.[toggle.key] ?? toggle.default) })}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                style={{
+                  background: (galleryConfig?.[toggle.key] ?? toggle.default) ? "hsl(142 60% 40% / 0.2)" : "hsl(0 0% 100% / 0.05)",
+                  color: (galleryConfig?.[toggle.key] ?? toggle.default) ? "hsl(142 60% 60%)" : "hsl(0 0% 100% / 0.4)",
+                }}
+              >
+                {(galleryConfig?.[toggle.key] ?? toggle.default) ? "✓" : "✗"} {toggle.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showLinkInput && (
         <div className="flex gap-2">
@@ -970,6 +1105,10 @@ const EventEditView = ({
                       }} externalUrls={block.external_urls || []} onUpdateExternalUrls={(urls) => {
                         const updated = [...(editing.info_sections || [])];
                         updated[idx] = { ...updated[idx], external_urls: urls };
+                        setEditing({ ...editing, info_sections: updated });
+                      }} galleryConfig={block.gallery_config} onUpdateGalleryConfig={(config) => {
+                        const updated = [...(editing.info_sections || [])];
+                        updated[idx] = { ...updated[idx], gallery_config: config };
                         setEditing({ ...editing, info_sections: updated });
                       }} />
                     ) : (

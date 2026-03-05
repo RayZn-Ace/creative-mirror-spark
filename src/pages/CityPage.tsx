@@ -9,6 +9,15 @@ import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
+interface GalleryConfig {
+  grid_cols?: number;
+  view_mode?: "grid" | "masonry" | "slideshow";
+  slideshow_speed?: number;
+  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
+  hover_effect?: boolean;
+  show_captions?: boolean;
+  lightbox_enabled?: boolean;
+}
 interface CityEvent {
   id: string;
   date: string;
@@ -21,7 +30,7 @@ interface CityEvent {
   openAir: boolean;
   soldOut: boolean;
   ticketLink: string | null;
-  infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[] }[];
+  infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[];
 }
 
 interface TicketItem {
@@ -351,9 +360,29 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 /* ─── Media Widget (standalone, photos or videos) ─── */
-const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [] }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos"; externalUrls?: string[] }) => {
+const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galleryConfig }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos"; externalUrls?: string[]; galleryConfig?: GalleryConfig }) => {
   const [storageFiles, setStorageFiles] = useState<string[]>([]);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [slidePlaying, setSlidePlaying] = useState(true);
   const isVideo = type === "videos";
+
+  const viewMode = galleryConfig?.view_mode || "grid";
+  const cols = galleryConfig?.grid_cols || (isVideo ? 2 : 3);
+  const aspect = galleryConfig?.aspect_ratio || "square";
+  const hoverEffect = galleryConfig?.hover_effect !== false;
+  const lightboxEnabled = galleryConfig?.lightbox_enabled !== false;
+  const showCaptions = galleryConfig?.show_captions === true;
+  const slideSpeed = galleryConfig?.slideshow_speed || 3000;
+
+  const aspectClass = aspect === "square" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : aspect === "16:9" ? "aspect-video" : "aspect-[3/4]";
+
+  const gridColsClass = {
+    1: "grid-cols-1",
+    2: "grid-cols-1 sm:grid-cols-2",
+    3: "grid-cols-2 sm:grid-cols-3",
+    4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
+  }[cols] || "grid-cols-2 sm:grid-cols-3";
 
   useEffect(() => {
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -364,6 +393,13 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [] }: { e
         }
       });
   }, [eventId, type]);
+
+  // Slideshow auto-advance
+  useEffect(() => {
+    if (viewMode !== "slideshow" || !slidePlaying) return;
+    const timer = setInterval(() => setSlideIdx(p => (p + 1) % allFiles.length), slideSpeed);
+    return () => clearInterval(timer);
+  }, [viewMode, slidePlaying, slideSpeed]);
 
   const allFiles = [...storageFiles, ...externalUrls];
   if (allFiles.length === 0) return null;
@@ -377,17 +413,116 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [] }: { e
           </h3>
         </div>
       )}
-      <div className={`grid ${isVideo ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3"} gap-2`}>
-        {allFiles.map((url, i) => (
-          <div key={i} className={`${isVideo ? "aspect-video" : "aspect-square"} rounded-lg overflow-hidden`}>
-            {isVideo ? (
-              <video src={url} className="w-full h-full object-cover" controls preload="metadata" />
-            ) : (
-              <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && lightboxEnabled && !isVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setLightboxIdx(null)}>
+          <button className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center" onClick={() => setLightboxIdx(null)}>
+            <X className="w-5 h-5 text-white" />
+          </button>
+          <button className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur flex items-center justify-center" onClick={e => { e.stopPropagation(); setLightboxIdx((lightboxIdx - 1 + allFiles.length) % allFiles.length); }}>
+            <ArrowLeft className="w-6 h-6 text-white" />
+          </button>
+          <img src={allFiles[lightboxIdx]} alt="" className="max-w-full max-h-[90vh] rounded-xl object-contain" onClick={e => e.stopPropagation()} />
+          <button className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur flex items-center justify-center" onClick={e => { e.stopPropagation(); setLightboxIdx((lightboxIdx + 1) % allFiles.length); }}>
+            <ArrowRight className="w-6 h-6 text-white" />
+          </button>
+          <div className="absolute bottom-6 text-white/50 text-sm">{lightboxIdx + 1} / {allFiles.length}</div>
+        </div>
+      )}
+
+      {/* Slideshow */}
+      {viewMode === "slideshow" && !isVideo ? (
+        <div>
+          <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-black mb-3">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={slideIdx}
+                src={allFiles[slideIdx]}
+                alt=""
+                className="w-full h-full object-cover absolute inset-0"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              />
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none">
+              <button className="pointer-events-auto w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center" onClick={() => setSlideIdx((slideIdx - 1 + allFiles.length) % allFiles.length)}>
+                <ArrowLeft className="w-5 h-5 text-white" />
+              </button>
+              <button className="pointer-events-auto w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center" onClick={() => setSlideIdx((slideIdx + 1) % allFiles.length)}>
+                <ArrowRight className="w-5 h-5 text-white" />
+              </button>
+            </div>
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {allFiles.map((_, i) => (
+                <button key={i} onClick={() => { setSlideIdx(i); setSlidePlaying(false); }} className={`w-2 h-2 rounded-full transition-all ${i === slideIdx ? "bg-white scale-125" : "bg-white/40"}`} />
+              ))}
+            </div>
+            {/* Progress bar */}
+            {slidePlaying && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20">
+                <motion.div className="h-full bg-white/60" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: slideSpeed / 1000, ease: "linear" }} key={slideIdx} />
+              </div>
             )}
           </div>
-        ))}
-      </div>
+        </div>
+      ) : viewMode === "masonry" && !isVideo ? (
+        /* Masonry */
+        <div className={`columns-1 ${cols >= 2 ? "sm:columns-2" : ""} ${cols >= 3 ? "lg:columns-3" : ""} ${cols >= 4 ? "xl:columns-4" : ""} gap-2`}>
+          {allFiles.map((url, i) => (
+            <div
+              key={i}
+              className={`break-inside-avoid mb-2 rounded-lg overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
+              onClick={() => lightboxEnabled && setLightboxIdx(i)}
+            >
+              <img
+                src={url}
+                className={`w-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-105" : ""} ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
+                loading="lazy"
+                alt={`Impression ${i + 1}`}
+              />
+              {showCaptions && (
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                  <span className="text-white text-xs">Impression {i + 1}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Grid (default) */
+        <div className={`grid ${isVideo ? "grid-cols-1 sm:grid-cols-2" : gridColsClass} gap-2`}>
+          {allFiles.map((url, i) => (
+            <div
+              key={i}
+              className={`${isVideo ? "aspect-video" : aspectClass} rounded-lg overflow-hidden ${!isVideo && hoverEffect ? "group cursor-pointer" : ""} relative`}
+              onClick={() => !isVideo && lightboxEnabled && setLightboxIdx(i)}
+            >
+              {isVideo ? (
+                <video src={url} className="w-full h-full object-cover" controls preload="metadata" />
+              ) : (
+                <img
+                  src={url}
+                  className={`w-full h-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-110" : ""}`}
+                  loading="lazy"
+                  alt={`Impression ${i + 1}`}
+                />
+              )}
+              {!isVideo && hoverEffect && (
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              )}
+              {showCaptions && !isVideo && (
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-xs">Impression {i + 1}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -755,7 +890,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           s.content === "weitere-staedte" ? (
             <NearbyEvents key={s.id} currentSlug={citySlug} currentCity={event.city} t={t} />
           ) : (s.content === "gallery" || s.content === "gallery-photos" || s.content === "gallery-videos") ? (
-            <MediaWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} type={s.content === "gallery-videos" ? "videos" : "photos"} externalUrls={s.external_urls} />
+            <MediaWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} type={s.content === "gallery-videos" ? "videos" : "photos"} externalUrls={s.external_urls} galleryConfig={s.gallery_config} />
           ) : (
             <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
           )
@@ -875,7 +1010,7 @@ const CityPage = () => {
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
-          ? (e.info_sections as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[] }[])
+          ? (e.info_sections as unknown as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[])
           : [],
       }));
 
