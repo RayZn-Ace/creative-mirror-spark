@@ -273,7 +273,7 @@ const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: st
               {isWhatsapp ? (
                 <>
                   <p className="text-sm sm:text-base leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)" }}>{t.whatsappDesc}</p>
-                  <a href="http://bit.ly/mammamiacommunity" target="_blank" rel="noopener noreferrer"
+                  <a href="https://chat.whatsapp.com/LG26Vpcf7vfBU1AZKNuJS0" target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide mt-2 hover:scale-[1.02]"
                     style={{ background: "hsl(142, 70%, 45%)", color: "white" }}>
                     <MessageCircle className="w-4 h-4" /> {t.whatsappJoin}
