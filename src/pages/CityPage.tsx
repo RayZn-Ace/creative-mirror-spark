@@ -21,7 +21,7 @@ interface CityEvent {
   openAir: boolean;
   soldOut: boolean;
   ticketLink: string | null;
-  infoSections: { id: string; title: string; content: string }[];
+  infoSections: { id: string; title: string; content: string; show_title?: boolean }[];
 }
 
 interface TicketItem {
@@ -376,6 +376,42 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   const dLon = toRad(lon2 - lon1);
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+/* ─── Gallery Widget (standalone) ─── */
+const GalleryWidget = ({ eventId, title, showTitle }: { eventId: string; title: string; showTitle: boolean }) => {
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    supabase.storage.from("event-images").list(`gallery/${eventId}`, { sortBy: { column: "created_at", order: "asc" } })
+      .then(({ data }) => {
+        if (data) {
+          setImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery/${eventId}/${f.name}`));
+        }
+      });
+  }, [eventId]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="pt-6">
+      {showTitle && (
+        <div className="text-center mb-4">
+          <h3 className="text-base sm:text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.8)" }}>
+            {title}
+          </h3>
+        </div>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {images.map((url, i) => (
+          <div key={i} className="aspect-square rounded-lg overflow-hidden">
+            <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 /* ─── Nearby Events (from DB) ─── */
@@ -740,6 +776,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         {event.infoSections.filter(s => s.content !== "spacer" && s.content !== "divider").map((s) => (
           s.content === "weitere-staedte" ? (
             <NearbyEvents key={s.id} currentSlug={citySlug} currentCity={event.city} t={t} />
+          ) : s.content === "gallery" ? (
+            <GalleryWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} />
           ) : (
             <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
           )
@@ -859,7 +897,7 @@ const CityPage = () => {
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
-          ? (e.info_sections as { id: string; title: string; content: string }[])
+          ? (e.info_sections as { id: string; title: string; content: string; show_title?: boolean }[])
           : [],
       }));
 

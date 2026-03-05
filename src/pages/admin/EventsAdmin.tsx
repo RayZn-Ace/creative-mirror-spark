@@ -42,6 +42,7 @@ interface InfoBlock {
   id: string;
   title: string;
   content: string;
+  show_title?: boolean;
 }
 
 interface EventRow {
@@ -407,7 +408,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
 };
 
 /* ─── Gallery Editor (inline) ─── */
-const GalleryEditor = ({ eventId }: { eventId: string }) => {
+const GalleryEditor = ({ eventId, showTitle, onToggleTitle }: { eventId: string; showTitle: boolean; onToggleTitle: (val: boolean) => void }) => {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -451,6 +452,9 @@ const GalleryEditor = ({ eventId }: { eventId: string }) => {
       <div className="px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
         <span>🖼️ Mediengalerie Widget</span>
         <div className="flex items-center gap-2">
+          <button onClick={() => onToggleTitle(!showTitle)} className="px-2 py-1 rounded-lg text-[10px] font-bold" style={{ background: showTitle ? "hsl(142 60% 40% / 0.2)" : "hsl(0 0% 100% / 0.06)", color: showTitle ? "hsl(142 60% 60%)" : "hsl(0 0% 100% / 0.4)" }}>
+            {showTitle ? "Titel ✓" : "Titel ✗"}
+          </button>
           <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{images.length} Bilder</span>
           <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && uploadFiles(e.target.files)} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 70%)" }}>
@@ -788,7 +792,11 @@ const EventEditView = ({
                   </div>
                   {isWidget ? (
                     block.content === "gallery" && editing.id ? (
-                      <GalleryEditor eventId={editing.id} />
+                      <GalleryEditor eventId={editing.id} showTitle={block.show_title !== false} onToggleTitle={(val) => {
+                        const updated = [...(editing.info_sections || [])];
+                        updated[idx] = { ...updated[idx], show_title: val };
+                        setEditing({ ...editing, info_sections: updated });
+                      }} />
                     ) : (
                     <div className="px-3 py-3 rounded-lg text-sm font-medium flex items-center gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
                       {widgetLabel}
