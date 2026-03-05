@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.issue-free-tickets]
 verify_jwt = false
+
+[functions.create-stripe-payment]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
