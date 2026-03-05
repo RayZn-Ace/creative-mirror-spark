@@ -13,6 +13,7 @@ interface GalleryConfig {
   grid_cols?: number;
   view_mode?: "grid" | "masonry" | "slideshow";
   slideshow_speed?: number;
+  slideshow_transition?: "simultaneous" | "staggered";
   aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
   hover_effect?: boolean;
   show_captions?: boolean;
@@ -374,6 +375,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
   const lightboxEnabled = galleryConfig?.lightbox_enabled !== false;
   const showCaptions = galleryConfig?.show_captions === true;
   const slideSpeed = galleryConfig?.slideshow_speed || 3000;
+  const slideTransition = galleryConfig?.slideshow_transition || "simultaneous";
 
   const aspectClass = aspect === "square" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : aspect === "16:9" ? "aspect-video" : "aspect-[3/4]";
 
@@ -396,24 +398,52 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
 
   const allFiles = [...storageFiles, ...externalUrls];
 
-  // Slideshow auto-advance: advances by `cols` images each tick
+  // Slideshow: staggered mode uses per-tile offsets, simultaneous uses page-based
   const totalPages = Math.max(1, Math.ceil(allFiles.length / cols));
+  const [staggeredIndices, setStaggeredIndices] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
+
   useEffect(() => {
     if (viewMode !== "slideshow" || !slidePlaying || allFiles.length === 0) return;
-    const timer = setInterval(() => setSlideOffset(p => (p + 1) % totalPages), slideSpeed);
-    return () => clearInterval(timer);
-  }, [viewMode, slidePlaying, slideSpeed, totalPages, allFiles.length]);
+
+    if (slideTransition === "staggered") {
+      // Each tile advances independently with a delay offset
+      const timers = Array.from({ length: cols }, (_, tileIdx) =>
+        setInterval(() => {
+          setStaggeredIndices(prev => {
+            const next = [...prev];
+            next[tileIdx] = (next[tileIdx] + cols) % allFiles.length;
+            return next;
+          });
+        }, slideSpeed + tileIdx * (slideSpeed / (cols + 1)))
+      );
+      return () => timers.forEach(t => clearInterval(t));
+    } else {
+      const timer = setInterval(() => setSlideOffset(p => (p + 1) % totalPages), slideSpeed);
+      return () => clearInterval(timer);
+    }
+  }, [viewMode, slidePlaying, slideSpeed, totalPages, allFiles.length, slideTransition, cols]);
+
+  // Reset staggered indices when config changes
+  useEffect(() => {
+    setStaggeredIndices(Array.from({ length: cols }, (_, i) => i));
+    setSlideOffset(0);
+  }, [cols, slideTransition]);
 
   if (allFiles.length === 0) return null;
 
   // Get visible images for current slideshow page
-  const getVisibleSlides = () => {
-    const start = slideOffset * cols;
-    const visible: string[] = [];
-    for (let i = 0; i < cols; i++) {
-      visible.push(allFiles[(start + i) % allFiles.length]);
+  const getVisibleSlides = (): { url: string; realIdx: number }[] => {
+    if (slideTransition === "staggered") {
+      return staggeredIndices.map((idx, i) => ({
+        url: allFiles[idx % allFiles.length],
+        realIdx: idx % allFiles.length,
+      }));
     }
-    return visible;
+    const start = slideOffset * cols;
+    return Array.from({ length: cols }, (_, i) => ({
+      url: allFiles[(start + i) % allFiles.length],
+      realIdx: (start + i) % allFiles.length,
+    }));
   };
 
   return (
@@ -448,36 +478,33 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
         <div>
           <div className="relative">
             <div className={`grid ${gridColsClass} gap-2`}>
-              <AnimatePresence mode="wait">
-                {getVisibleSlides().map((url, i) => {
-                  const realIdx = (slideOffset * cols + i) % allFiles.length;
-                  return (
-                    <motion.div
-                      key={`${slideOffset}-${i}`}
-                      className={`${aspectClass} rounded-lg overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: i * 0.08 }}
-                      onClick={() => lightboxEnabled && setLightboxIdx(realIdx)}
-                    >
-                      <img
-                        src={url}
-                        alt={`Impression ${realIdx + 1}`}
-                        className={`w-full h-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-110" : ""}`}
-                        loading="lazy"
-                      />
-                      {hoverEffect && (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                      )}
-                      {showCaptions && (
-                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-white text-xs">Impression {realIdx + 1}</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  );
-                })}
+              <AnimatePresence mode={slideTransition === "staggered" ? "popLayout" : "wait"}>
+                {getVisibleSlides().map((slide, i) => (
+                  <motion.div
+                    key={slideTransition === "staggered" ? `stag-${i}-${slide.realIdx}` : `${slideOffset}-${i}`}
+                    className={`${aspectClass} rounded-lg overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.5, delay: slideTransition === "staggered" ? 0 : i * 0.08 }}
+                    onClick={() => lightboxEnabled && setLightboxIdx(slide.realIdx)}
+                  >
+                    <img
+                      src={slide.url}
+                      alt={`Impression ${slide.realIdx + 1}`}
+                      className={`w-full h-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-110" : ""}`}
+                      loading="lazy"
+                    />
+                    {hoverEffect && (
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    )}
+                    {showCaptions && (
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-white text-xs">Impression {slide.realIdx + 1}</span>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
               </AnimatePresence>
             </div>
 
