@@ -367,6 +367,11 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [slideOffset, setSlideOffset] = useState(0);
   const [slidePlaying, setSlidePlaying] = useState(true);
+  // Flip-flop: two persistent layers per tile, alternating which is on top
+  const [flipState, setFlipState] = useState<{ layerA: number[]; layerB: number[]; activeLayer: "A" | "B" }>({
+    layerA: [], layerB: [], activeLayer: "A",
+  });
+  const flipInitialized = useRef(false);
   const isVideo = type === "videos";
 
   const viewMode = galleryConfig?.view_mode || "grid";
@@ -400,12 +405,8 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
 
   const allFiles = [...storageFiles, ...externalUrls];
 
-  // Track previous slide per tile for smooth crossfade
-  const [prevTileImages, setPrevTileImages] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
-  const [currentTileImages, setCurrentTileImages] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
-
-  // Helper: pick a random index that's not in the excluded set
-  const pickUniqueRandom = (exclude: Set<number>, total: number): number => {
+  // Helper: pick a random index not in excluded set
+  const pickUniqueRandom = useCallback((exclude: Set<number>, total: number): number => {
     if (total <= exclude.size) return 0;
     let pick: number;
     let attempts = 0;
@@ -414,89 +415,108 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
       attempts++;
     } while (exclude.has(pick) && attempts < total * 3);
     return pick;
-  };
+  }, []);
 
-  // Slideshow: staggered mode uses per-tile timers, simultaneous uses single timer
+  // Compute next set of indices
+  const getNextIndices = useCallback((current: number[]): number[] => {
+    const next = [...current];
+    if (slideOrder === "random") {
+      const newSet = new Set<number>();
+      for (let i = 0; i < cols; i++) {
+        const exclude = new Set([...newSet, ...current]);
+        next[i] = pickUniqueRandom(exclude, allFiles.length);
+        newSet.add(next[i]);
+      }
+    } else {
+      for (let i = 0; i < cols; i++) {
+        next[i] = (current[i] + cols) % allFiles.length;
+      }
+    }
+    return next;
+  }, [cols, slideOrder, allFiles.length, pickUniqueRandom]);
+
   const totalPages = Math.max(1, Math.ceil(allFiles.length / cols));
 
+  // Initialize flip state when files load
+  useEffect(() => {
+    if (allFiles.length > 0 && !flipInitialized.current) {
+      const initial = Array.from({ length: cols }, (_, i) => i % allFiles.length);
+      const second = getNextIndices(initial);
+      setFlipState({ layerA: initial, layerB: second, activeLayer: "A" });
+      flipInitialized.current = true;
+    }
+  }, [allFiles.length, cols, getNextIndices]);
+
+  // Reset on config change
+  useEffect(() => {
+    if (allFiles.length > 0) {
+      const initial = Array.from({ length: cols }, (_, i) => i % allFiles.length);
+      const second = getNextIndices(initial);
+      setFlipState({ layerA: initial, layerB: second, activeLayer: "A" });
+      flipInitialized.current = true;
+    }
+  }, [cols, slideTransition, slideOrder]);
+
+  // Slideshow timer: flip between layers
   useEffect(() => {
     if (viewMode !== "slideshow" || !slidePlaying || allFiles.length <= cols) return;
 
     if (slideTransition === "staggered") {
+      // Staggered: each tile flips independently
       const timers = Array.from({ length: cols }, (_, tileIdx) =>
         setInterval(() => {
-          setCurrentTileImages(prev => {
-            const next = [...prev];
-            const currentlyVisible = new Set(next);
+          setFlipState(prev => {
+            const isA = prev.activeLayer === "A";
+            // The inactive layer for this tile gets a new image
+            const inactive = isA ? [...prev.layerB] : [...prev.layerA];
+            const active = isA ? prev.layerA : prev.layerB;
+            const currentlyVisible = new Set(active);
             if (slideOrder === "random") {
-              // Also exclude the previous image for this tile to avoid back-and-forth
-              currentlyVisible.add(prev[tileIdx]);
-              next[tileIdx] = pickUniqueRandom(currentlyVisible, allFiles.length);
+              currentlyVisible.add(inactive[tileIdx]);
+              inactive[tileIdx] = pickUniqueRandom(currentlyVisible, allFiles.length);
             } else {
-              // Sequential: advance by cols to avoid showing same image in another tile
-              let candidate = (prev[tileIdx] + cols) % allFiles.length;
-              while (currentlyVisible.has(candidate) && candidate !== prev[tileIdx]) {
+              let candidate = (active[tileIdx] + cols) % allFiles.length;
+              while (currentlyVisible.has(candidate) && candidate !== active[tileIdx]) {
                 candidate = (candidate + 1) % allFiles.length;
               }
-              next[tileIdx] = candidate;
+              inactive[tileIdx] = candidate;
             }
-            return next;
-          });
-          setPrevTileImages(prev => {
-            // Will be updated after currentTileImages changes
-            return prev;
+            // Only flip this tile - we toggle per-tile via a different mechanism
+            // For staggered we use per-tile flip tracking
+            return isA
+              ? { ...prev, layerB: inactive }
+              : { ...prev, layerA: inactive };
           });
         }, slideSpeed + tileIdx * (slideSpeed / (cols + 1)))
       );
-      return () => timers.forEach(t => clearInterval(t));
+
+      // Also need a master flip timer for staggered
+      const masterTimer = setInterval(() => {
+        setFlipState(prev => ({
+          ...prev,
+          activeLayer: prev.activeLayer === "A" ? "B" : "A",
+        }));
+      }, slideSpeed);
+
+      return () => { timers.forEach(t => clearInterval(t)); clearInterval(masterTimer); };
     } else {
-      // Simultaneous
+      // Simultaneous: all tiles flip at once
       const timer = setInterval(() => {
-        setCurrentTileImages(prev => {
-          const next = [...prev];
-          if (slideOrder === "random") {
-            const newSet = new Set<number>();
-            for (let i = 0; i < cols; i++) {
-              const exclude = new Set([...newSet, ...prev]); // exclude current + already picked
-              next[i] = pickUniqueRandom(exclude, allFiles.length);
-              newSet.add(next[i]);
-            }
-          } else {
-            for (let i = 0; i < cols; i++) {
-              next[i] = (prev[i] + cols) % allFiles.length;
-            }
-          }
-          return next;
+        setFlipState(prev => {
+          const isA = prev.activeLayer === "A";
+          const currentVisible = isA ? prev.layerA : prev.layerB;
+          const nextImages = getNextIndices(currentVisible);
+          // Load next images into the hidden layer, then flip
+          return {
+            layerA: isA ? prev.layerA : nextImages,
+            layerB: isA ? nextImages : prev.layerB,
+            activeLayer: isA ? "B" : "A",
+          };
         });
       }, slideSpeed);
       return () => clearInterval(timer);
     }
-  }, [viewMode, slidePlaying, slideSpeed, allFiles.length, slideTransition, slideOrder, cols]);
-
-  // Track previous images for crossfade
-  useEffect(() => {
-    setPrevTileImages(prev => {
-      // Only update if currentTileImages actually changed
-      const changed = currentTileImages.some((v, i) => v !== prev[i]);
-      return changed ? [...currentTileImages] : prev;
-    });
-  }, [currentTileImages]);
-
-  // Keep a separate ref for the *actual* previous for crossfade
-  const prevImagesRef = useRef<number[]>(currentTileImages);
-  useEffect(() => {
-    // Store old values before they update
-    return () => { prevImagesRef.current = currentTileImages; };
-  }, [currentTileImages]);
-
-  // Reset when config changes
-  useEffect(() => {
-    const initial = Array.from({ length: cols }, (_, i) => i % Math.max(allFiles.length, 1));
-    setCurrentTileImages(initial);
-    setPrevTileImages(initial);
-    prevImagesRef.current = initial;
-    setSlideOffset(0);
-  }, [cols, slideTransition, slideOrder, allFiles.length]);
+  }, [viewMode, slidePlaying, slideSpeed, allFiles.length, slideTransition, slideOrder, cols, getNextIndices, pickUniqueRandom]);
 
   if (allFiles.length === 0) return null;
 
@@ -533,57 +553,44 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
           <div className="relative">
             <div className={`grid ${gridColsClass} gap-2`}>
               {Array.from({ length: cols }).map((_, tileIdx) => {
-                const currentSlide = currentTileImages[tileIdx] % allFiles.length;
-                const prevSlide = prevImagesRef.current[tileIdx] % allFiles.length;
-                const fadeDuration = 1.8;
-                const staggerDelay = slideTransition === "staggered" ? 0 : tileIdx * 0.2;
+                const isAActive = flipState.activeLayer === "A";
+                const aIdx = (flipState.layerA[tileIdx] ?? 0) % Math.max(allFiles.length, 1);
+                const bIdx = (flipState.layerB[tileIdx] ?? 0) % Math.max(allFiles.length, 1);
+                const activeIdx = isAActive ? aIdx : bIdx;
+                const fadeDur = 1.8;
+                const zoomDur = slideSpeed / 1000 + 2;
 
                 return (
                   <div
                     key={tileIdx}
                     className={`${aspectClass} rounded-xl overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
-                    onClick={() => lightboxEnabled && setLightboxIdx(currentSlide)}
+                    onClick={() => lightboxEnabled && setLightboxIdx(activeIdx)}
                   >
-                    {/* Previous image with Ken Burns (stays visible underneath during crossfade) */}
-                    <motion.div
-                      key={`prev-${tileIdx}-${prevSlide}`}
-                      className="absolute inset-0"
-                      initial={{ scale: 1.06 }}
-                      animate={{ scale: 1.12 }}
-                      transition={{ duration: slideSpeed / 1000 + 2, ease: "linear" }}
-                    >
-                      <img
-                        src={allFiles[prevSlide]}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
-
-                    {/* Current image: crossfade in + Ken Burns zoom */}
-                    <motion.div
-                      key={`cur-${tileIdx}-${currentSlide}`}
-                      className="absolute inset-0"
-                      initial={{ opacity: 0, scale: 1 }}
-                      animate={{ opacity: 1, scale: 1.08 }}
-                      transition={{
-                        opacity: {
-                          duration: fadeDuration,
-                          ease: [0.4, 0, 0.2, 1],
-                          delay: staggerDelay,
-                        },
-                        scale: {
-                          duration: slideSpeed / 1000 + 2,
-                          ease: "linear",
-                          delay: 0,
-                        },
+                    {/* Layer A - persistent, no remount */}
+                    <div
+                      className="absolute inset-0 will-change-[opacity,transform]"
+                      style={{
+                        opacity: isAActive ? 1 : 0,
+                        transform: `scale(${isAActive ? 1 : 1.08})`,
+                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1), transform ${zoomDur}s linear`,
+                        animation: isAActive ? `kenburns ${zoomDur}s linear forwards` : "none",
                       }}
                     >
-                      <img
-                        src={allFiles[currentSlide]}
-                        alt={`Impression ${currentSlide + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </motion.div>
+                      <img src={allFiles[aIdx]} alt="" className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* Layer B - persistent, no remount */}
+                    <div
+                      className="absolute inset-0 will-change-[opacity,transform]"
+                      style={{
+                        opacity: isAActive ? 0 : 1,
+                        transform: `scale(${isAActive ? 1.08 : 1})`,
+                        transition: `opacity ${fadeDur}s cubic-bezier(0.4, 0, 0.2, 1), transform ${zoomDur}s linear`,
+                        animation: !isAActive ? `kenburns ${zoomDur}s linear forwards` : "none",
+                      }}
+                    >
+                      <img src={allFiles[bIdx]} alt="" className="w-full h-full object-cover" />
+                    </div>
 
                     {/* Hover overlay */}
                     {hoverEffect && (
@@ -591,7 +598,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
                     )}
                     {showCaptions && (
                       <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <span className="text-white text-xs">Impression {currentSlide + 1}</span>
+                        <span className="text-white text-xs">Impression {activeIdx + 1}</span>
                       </div>
                     )}
                   </div>
