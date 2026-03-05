@@ -43,6 +43,7 @@ interface InfoBlock {
   title: string;
   content: string;
   show_title?: boolean;
+  external_urls?: string[];
 }
 
 interface EventRow {
@@ -409,10 +410,12 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
 };
 
 /* ─── Media Editor (inline, for photos & videos) ─── */
-const MediaEditor = ({ eventId, type, showTitle, onToggleTitle }: { eventId: string; type: "photos" | "videos"; showTitle: boolean; onToggleTitle: (val: boolean) => void }) => {
-  const [files, setFiles] = useState<string[]>([]);
+const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, onUpdateExternalUrls }: { eventId: string; type: "photos" | "videos"; showTitle: boolean; onToggleTitle: (val: boolean) => void; externalUrls: string[]; onUpdateExternalUrls: (urls: string[]) => void }) => {
+  const [storageFiles, setStorageFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const prefix = `gallery-${type}/${eventId}/`;
   const isVideo = type === "videos";
@@ -420,12 +423,13 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle }: { eventId: str
   const emoji = isVideo ? "🎬" : "🖼️";
   const label = isVideo ? "Mediengalerie – Videos" : "Mediengalerie – Fotos";
   const itemLabel = isVideo ? "Videos" : "Bilder";
+  const totalCount = storageFiles.length + externalUrls.length;
 
   const loadFiles = async () => {
     setLoading(true);
     const { data, error } = await supabase.storage.from("event-images").list(`gallery-${type}/${eventId}`, { sortBy: { column: "created_at", order: "asc" } });
     if (!error && data) {
-      setFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/${prefix}${f.name}`));
+      setStorageFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/${prefix}${f.name}`));
     }
     setLoading(false);
   };
@@ -445,42 +449,94 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle }: { eventId: str
     toast.success(`${itemLabel} hochgeladen`);
   };
 
-  const deleteFile = async (url: string) => {
+  const deleteStorageFile = async (url: string) => {
     const path = url.split("/event-images/")[1];
     if (!path) return;
     await supabase.storage.from("event-images").remove([path]);
-    setFiles(prev => prev.filter(i => i !== url));
+    setStorageFiles(prev => prev.filter(i => i !== url));
     toast.success(`${isVideo ? "Video" : "Bild"} gelöscht`);
+  };
+
+  const addLink = () => {
+    const url = linkInput.trim();
+    if (!url) return;
+    if (!externalUrls.includes(url)) {
+      onUpdateExternalUrls([...externalUrls, url]);
+    }
+    setLinkInput("");
+    setShowLinkInput(false);
+    toast.success("Link hinzugefügt");
+  };
+
+  const removeLink = (url: string) => {
+    onUpdateExternalUrls(externalUrls.filter(u => u !== url));
   };
 
   return (
     <div className="space-y-3">
-      <div className="px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
+      <div className="px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between gap-2 flex-wrap" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
         <span>{emoji} {label}</span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => onToggleTitle(!showTitle)} className="px-2 py-1 rounded-lg text-[10px] font-bold" style={{ background: showTitle ? "hsl(142 60% 40% / 0.2)" : "hsl(0 0% 100% / 0.06)", color: showTitle ? "hsl(142 60% 60%)" : "hsl(0 0% 100% / 0.4)" }}>
             {showTitle ? "Titel ✓" : "Titel ✗"}
           </button>
-          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{files.length} {itemLabel}</span>
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{totalCount} {itemLabel}</span>
           <input ref={fileRef} type="file" accept={acceptTypes} multiple className="hidden" onChange={e => e.target.files && uploadFiles(e.target.files)} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 70%)" }}>
             {uploading ? "Lädt..." : `+ ${itemLabel}`}
           </button>
+          <button onClick={() => setShowLinkInput(!showLinkInput)} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.2)", color: "hsl(200 60% 70%)" }}>
+            🔗 Link
+          </button>
         </div>
       </div>
+
+      {showLinkInput && (
+        <div className="flex gap-2">
+          <input
+            value={linkInput}
+            onChange={e => setLinkInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && addLink()}
+            placeholder="https://example.com/bild.jpg"
+            className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+            style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+          />
+          <button onClick={addLink} className="px-4 py-2 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.3)", color: "hsl(200 60% 70%)" }}>
+            Hinzufügen
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</p>
-      ) : files.length > 0 ? (
+      ) : totalCount > 0 ? (
         <div className={`grid ${isVideo ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-3 sm:grid-cols-4"} gap-2`}>
-          {files.map((url, i) => (
-            <div key={i} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+          {storageFiles.map((url, i) => (
+            <div key={`s-${i}`} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
               {isVideo ? (
                 <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
               ) : (
                 <img src={url} className="w-full h-full object-cover" />
               )}
               <button
-                onClick={() => deleteFile(url)}
+                onClick={() => deleteStorageFile(url)}
+                className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: "hsl(0 70% 50% / 0.9)", color: "white" }}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+          {externalUrls.map((url, i) => (
+            <div key={`e-${i}`} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(200 60% 50% / 0.2)" }}>
+              {isVideo ? (
+                <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+              ) : (
+                <img src={url} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              )}
+              <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: "hsl(200 60% 50% / 0.8)", color: "white" }}>🔗</div>
+              <button
+                onClick={() => removeLink(url)}
                 className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: "hsl(0 70% 50% / 0.9)", color: "white" }}
               >
@@ -490,7 +546,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle }: { eventId: str
           ))}
         </div>
       ) : (
-        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine {itemLabel}. Klicke "+ {itemLabel}" um welche hochzuladen.</p>
+        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine {itemLabel}. Lade welche hoch oder füge Links hinzu.</p>
       )}
     </div>
   );
@@ -807,6 +863,10 @@ const EventEditView = ({
                       <MediaEditor eventId={editing.id} type={block.content === "gallery-videos" ? "videos" : "photos"} showTitle={block.show_title !== false} onToggleTitle={(val) => {
                         const updated = [...(editing.info_sections || [])];
                         updated[idx] = { ...updated[idx], show_title: val };
+                        setEditing({ ...editing, info_sections: updated });
+                      }} externalUrls={block.external_urls || []} onUpdateExternalUrls={(urls) => {
+                        const updated = [...(editing.info_sections || [])];
+                        updated[idx] = { ...updated[idx], external_urls: urls };
                         setEditing({ ...editing, info_sections: updated });
                       }} />
                     ) : (

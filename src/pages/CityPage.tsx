@@ -21,7 +21,7 @@ interface CityEvent {
   openAir: boolean;
   soldOut: boolean;
   ticketLink: string | null;
-  infoSections: { id: string; title: string; content: string; show_title?: boolean }[];
+  infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[] }[];
 }
 
 interface TicketItem {
@@ -351,8 +351,8 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 /* ─── Media Widget (standalone, photos or videos) ─── */
-const MediaWidget = ({ eventId, title, showTitle, type }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos" }) => {
-  const [files, setFiles] = useState<string[]>([]);
+const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [] }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos"; externalUrls?: string[] }) => {
+  const [storageFiles, setStorageFiles] = useState<string[]>([]);
   const isVideo = type === "videos";
 
   useEffect(() => {
@@ -360,12 +360,13 @@ const MediaWidget = ({ eventId, title, showTitle, type }: { eventId: string; tit
     supabase.storage.from("event-images").list(`gallery-${type}/${eventId}`, { sortBy: { column: "created_at", order: "asc" } })
       .then(({ data }) => {
         if (data) {
-          setFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery-${type}/${eventId}/${f.name}`));
+          setStorageFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery-${type}/${eventId}/${f.name}`));
         }
       });
   }, [eventId, type]);
 
-  if (files.length === 0) return null;
+  const allFiles = [...storageFiles, ...externalUrls];
+  if (allFiles.length === 0) return null;
 
   return (
     <div className="pt-6">
@@ -377,7 +378,7 @@ const MediaWidget = ({ eventId, title, showTitle, type }: { eventId: string; tit
         </div>
       )}
       <div className={`grid ${isVideo ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3"} gap-2`}>
-        {files.map((url, i) => (
+        {allFiles.map((url, i) => (
           <div key={i} className={`${isVideo ? "aspect-video" : "aspect-square"} rounded-lg overflow-hidden`}>
             {isVideo ? (
               <video src={url} className="w-full h-full object-cover" controls preload="metadata" />
@@ -754,7 +755,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           s.content === "weitere-staedte" ? (
             <NearbyEvents key={s.id} currentSlug={citySlug} currentCity={event.city} t={t} />
           ) : (s.content === "gallery" || s.content === "gallery-photos" || s.content === "gallery-videos") ? (
-            <MediaWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} type={s.content === "gallery-videos" ? "videos" : "photos"} />
+            <MediaWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} type={s.content === "gallery-videos" ? "videos" : "photos"} externalUrls={s.external_urls} />
           ) : (
             <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
           )
@@ -874,7 +875,7 @@ const CityPage = () => {
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
-          ? (e.info_sections as { id: string; title: string; content: string; show_title?: boolean }[])
+          ? (e.info_sections as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[] }[])
           : [],
       }));
 
