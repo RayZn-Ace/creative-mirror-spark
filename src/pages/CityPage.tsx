@@ -361,104 +361,94 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-/* ─── Video Slideshow: plays one video at a time, crossfades to next on end ─── */
-const VideoSlideshow = ({ files }: { files: string[] }) => {
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [nextIdx, setNextIdx] = useState(1);
-  const [fading, setFading] = useState(false);
-  const videoARef = useRef<HTMLVideoElement>(null);
-  const videoBRef = useRef<HTMLVideoElement>(null);
-  const [activeLayer, setActiveLayer] = useState<"A" | "B">("A");
+/* ─── Video Slideshow: multi-tile grid, each tile crossfades to next video on end ─── */
+const VideoSlideshow = ({ files, cols = 3, aspectClass = "aspect-video", gridColsClass = "grid-cols-3" }: { files: string[]; cols?: number; aspectClass?: string; gridColsClass?: string }) => {
+  // Each tile tracks which video index it's showing, plus A/B layer state
+  const [tileState, setTileState] = useState(() => {
+    return Array.from({ length: cols }, (_, i) => ({
+      currentIdx: i % files.length,
+      nextIdx: (i + cols) % files.length,
+      activeLayer: "A" as "A" | "B",
+      fading: false,
+    }));
+  });
 
-  const advance = useCallback(() => {
-    if (files.length <= 1) return;
-    const upcoming = (activeLayer === "A" ? currentIdx : nextIdx);
-    const next = (upcoming + 1) % files.length;
+  // Track how many videos have been assigned across all tiles to avoid duplicates
+  const assignedCountRef = useRef(cols);
 
-    // Preload next video on hidden layer
-    if (activeLayer === "A") {
-      setNextIdx(next);
-      if (videoBRef.current) {
-        videoBRef.current.src = files[next];
-        videoBRef.current.load();
+  const advanceTile = useCallback((tileIdx: number) => {
+    if (files.length <= cols) return; // not enough to rotate
+    setTileState(prev => {
+      const updated = [...prev];
+      const tile = { ...updated[tileIdx] };
+      const nextAssigned = assignedCountRef.current;
+      const nextVideoIdx = nextAssigned % files.length;
+      assignedCountRef.current = nextAssigned + 1;
+
+      if (tile.activeLayer === "A") {
+        tile.nextIdx = nextVideoIdx;
+        tile.activeLayer = "B";
+      } else {
+        tile.currentIdx = nextVideoIdx;
+        tile.activeLayer = "A";
       }
-    } else {
-      setCurrentIdx(next);
-      if (videoARef.current) {
-        videoARef.current.src = files[next];
-        videoARef.current.load();
-      }
-    }
-
-    // Start crossfade
-    setFading(true);
+      tile.fading = true;
+      updated[tileIdx] = tile;
+      return updated;
+    });
+    // Reset fading flag after transition
     setTimeout(() => {
-      setActiveLayer(prev => prev === "A" ? "B" : "A");
-      setFading(false);
-      // Play the newly visible video
-      setTimeout(() => {
-        const newActive = activeLayer === "A" ? videoBRef.current : videoARef.current;
-        if (newActive) newActive.play().catch(() => {});
-      }, 100);
-    }, 1200); // crossfade duration
-  }, [files, currentIdx, nextIdx, activeLayer]);
-
-  const handleEnded = useCallback(() => {
-    advance();
-  }, [advance]);
-
-  // Auto-play first video
-  useEffect(() => {
-    if (videoARef.current && files.length > 0) {
-      videoARef.current.src = files[0];
-      videoARef.current.load();
-    }
-    if (videoBRef.current && files.length > 1) {
-      videoBRef.current.src = files[1];
-      videoBRef.current.load();
-    }
-  }, [files]);
+      setTileState(prev => {
+        const updated = [...prev];
+        updated[tileIdx] = { ...updated[tileIdx], fading: false };
+        return updated;
+      });
+    }, 1300);
+  }, [files.length, cols]);
 
   if (files.length === 0) return null;
 
-  const isAActive = activeLayer === "A";
-
   return (
-    <div className="relative aspect-video rounded-xl overflow-hidden bg-black">
-      {/* Layer A */}
-      <video
-        ref={videoARef}
-        className="absolute inset-0 w-full h-full object-contain"
-        style={{
-          opacity: isAActive ? 1 : 0,
-          transition: "opacity 1.2s ease-in-out",
-          zIndex: isAActive ? 2 : 1,
-        }}
-        controls={isAActive}
-        playsInline
-        muted={false}
-        preload="auto"
-        onEnded={isAActive ? handleEnded : undefined}
-      />
-      {/* Layer B */}
-      <video
-        ref={videoBRef}
-        className="absolute inset-0 w-full h-full object-contain"
-        style={{
-          opacity: isAActive ? 0 : 1,
-          transition: "opacity 1.2s ease-in-out",
-          zIndex: isAActive ? 1 : 2,
-        }}
-        controls={!isAActive}
-        playsInline
-        muted={false}
-        preload="auto"
-        onEnded={!isAActive ? handleEnded : undefined}
-      />
-      {/* Video counter */}
-      <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white/80 text-xs font-medium">
-        {(isAActive ? currentIdx : nextIdx) + 1} / {files.length}
-      </div>
+    <div className={`grid ${gridColsClass} gap-2`}>
+      {tileState.map((tile, tileIdx) => {
+        const isAActive = tile.activeLayer === "A";
+        return (
+          <div key={tileIdx} className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
+            {/* Layer A */}
+            <video
+              key={`a-${tile.currentIdx}`}
+              src={files[tile.currentIdx]}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: isAActive ? 1 : 0,
+                transition: "opacity 1.2s ease-in-out",
+                zIndex: isAActive ? 2 : 1,
+              }}
+              autoPlay={isAActive}
+              playsInline
+              muted
+              preload="auto"
+              onEnded={isAActive ? () => advanceTile(tileIdx) : undefined}
+            />
+            {/* Layer B */}
+            <video
+              key={`b-${tile.nextIdx}`}
+              src={files[tile.nextIdx]}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: isAActive ? 0 : 1,
+                transition: "opacity 1.2s ease-in-out",
+                zIndex: isAActive ? 1 : 2,
+              }}
+              autoPlay={!isAActive}
+              playsInline
+              muted
+              preload="auto"
+              onEnded={!isAActive ? () => advanceTile(tileIdx) : undefined}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -685,9 +675,9 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
         </div>
       )}
 
-      {/* Video Slideshow – one video at a time, fades to next when current ends */}
+      {/* Video Slideshow – multi-tile grid, fades to next when current ends */}
       {viewMode === "slideshow" && isVideo ? (
-        <VideoSlideshow files={allFiles} />
+        <VideoSlideshow files={allFiles} cols={cols} aspectClass={aspectClass} gridColsClass={gridColsClass} />
       ) : viewMode === "slideshow" && !isVideo ? (
         <div>
           <div className="relative">
