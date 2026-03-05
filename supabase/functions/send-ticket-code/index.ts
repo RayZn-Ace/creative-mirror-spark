@@ -49,7 +49,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "GIMME <noreply@gimme-tickets.de>",
+        from: "GIMME <verification@gimmegimmeparty.com>",
         to: [email],
         subject: "Dein Verifizierungscode – GIMME Tickets",
         html: `
