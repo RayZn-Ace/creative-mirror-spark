@@ -129,7 +129,8 @@ const BLOCK_TEMPLATES: BlockTemplate[] = [
   // Widgets
   { id: "whatsapp", label: "WhatsApp Community", icon: MessageCircle, category: "Widgets", block: { id: "", title: "Freikarten & mehr", content: "whatsapp" } },
   { id: "weitere-staedte", label: "Weitere Städte", icon: Map, category: "Widgets", block: { id: "", title: "Weitere Städte", content: "weitere-staedte" } },
-  { id: "gallery", label: "Mediengalerie", icon: Image, category: "Widgets", block: { id: "", title: "Impressionen", content: "gallery" } },
+  { id: "gallery-photos", label: "Mediengalerie – Fotos", icon: Image, category: "Widgets", block: { id: "", title: "Impressionen", content: "gallery-photos" } },
+  { id: "gallery-videos", label: "Mediengalerie – Videos", icon: Video, category: "Widgets", block: { id: "", title: "Videos", content: "gallery-videos" } },
   { id: "spotify", label: "Spotify Playlist", icon: Music, category: "Widgets", block: { id: "", title: "Unsere Playlist", content: "spotify" } },
   { id: "countdown", label: "Event Countdown", icon: Clock, category: "Widgets", block: { id: "", title: "Countdown", content: "countdown" } },
 ];
@@ -407,70 +408,79 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
   );
 };
 
-/* ─── Gallery Editor (inline) ─── */
-const GalleryEditor = ({ eventId, showTitle, onToggleTitle }: { eventId: string; showTitle: boolean; onToggleTitle: (val: boolean) => void }) => {
-  const [images, setImages] = useState<string[]>([]);
+/* ─── Media Editor (inline, for photos & videos) ─── */
+const MediaEditor = ({ eventId, type, showTitle, onToggleTitle }: { eventId: string; type: "photos" | "videos"; showTitle: boolean; onToggleTitle: (val: boolean) => void }) => {
+  const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const prefix = `gallery/${eventId}/`;
+  const prefix = `gallery-${type}/${eventId}/`;
+  const isVideo = type === "videos";
+  const acceptTypes = isVideo ? "video/mp4,video/webm,video/quicktime" : "image/*";
+  const emoji = isVideo ? "🎬" : "🖼️";
+  const label = isVideo ? "Mediengalerie – Videos" : "Mediengalerie – Fotos";
+  const itemLabel = isVideo ? "Videos" : "Bilder";
 
-  const loadImages = async () => {
+  const loadFiles = async () => {
     setLoading(true);
-    const { data, error } = await supabase.storage.from("event-images").list(`gallery/${eventId}`, { sortBy: { column: "created_at", order: "asc" } });
+    const { data, error } = await supabase.storage.from("event-images").list(`gallery-${type}/${eventId}`, { sortBy: { column: "created_at", order: "asc" } });
     if (!error && data) {
-      setImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/${prefix}${f.name}`));
+      setFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/${prefix}${f.name}`));
     }
     setLoading(false);
   };
 
-  useEffect(() => { loadImages(); }, [eventId]);
+  useEffect(() => { loadFiles(); }, [eventId, type]);
 
-  const uploadFiles = async (files: FileList) => {
+  const uploadFiles = async (fileList: FileList) => {
     setUploading(true);
-    for (const file of Array.from(files)) {
+    for (const file of Array.from(fileList)) {
       const ext = file.name.split(".").pop();
       const path = `${prefix}${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("event-images").upload(path, file);
       if (error) toast.error("Upload fehlgeschlagen: " + error.message);
     }
-    await loadImages();
+    await loadFiles();
     setUploading(false);
-    toast.success("Bilder hochgeladen");
+    toast.success(`${itemLabel} hochgeladen`);
   };
 
-  const deleteImage = async (url: string) => {
+  const deleteFile = async (url: string) => {
     const path = url.split("/event-images/")[1];
     if (!path) return;
     await supabase.storage.from("event-images").remove([path]);
-    setImages(prev => prev.filter(i => i !== url));
-    toast.success("Bild gelöscht");
+    setFiles(prev => prev.filter(i => i !== url));
+    toast.success(`${isVideo ? "Video" : "Bild"} gelöscht`);
   };
 
   return (
     <div className="space-y-3">
       <div className="px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
-        <span>🖼️ Mediengalerie Widget</span>
+        <span>{emoji} {label}</span>
         <div className="flex items-center gap-2">
           <button onClick={() => onToggleTitle(!showTitle)} className="px-2 py-1 rounded-lg text-[10px] font-bold" style={{ background: showTitle ? "hsl(142 60% 40% / 0.2)" : "hsl(0 0% 100% / 0.06)", color: showTitle ? "hsl(142 60% 60%)" : "hsl(0 0% 100% / 0.4)" }}>
             {showTitle ? "Titel ✓" : "Titel ✗"}
           </button>
-          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{images.length} Bilder</span>
-          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && uploadFiles(e.target.files)} />
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{files.length} {itemLabel}</span>
+          <input ref={fileRef} type="file" accept={acceptTypes} multiple className="hidden" onChange={e => e.target.files && uploadFiles(e.target.files)} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 70%)" }}>
-            {uploading ? "Lädt..." : "+ Bilder"}
+            {uploading ? "Lädt..." : `+ ${itemLabel}`}
           </button>
         </div>
       </div>
       {loading ? (
         <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</p>
-      ) : images.length > 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {images.map((url, i) => (
+      ) : files.length > 0 ? (
+        <div className={`grid ${isVideo ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-3 sm:grid-cols-4"} gap-2`}>
+          {files.map((url, i) => (
             <div key={i} className="relative group aspect-square rounded-lg overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-              <img src={url} className="w-full h-full object-cover" />
+              {isVideo ? (
+                <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+              ) : (
+                <img src={url} className="w-full h-full object-cover" />
+              )}
               <button
-                onClick={() => deleteImage(url)}
+                onClick={() => deleteFile(url)}
                 className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: "hsl(0 70% 50% / 0.9)", color: "white" }}
               >
@@ -480,7 +490,7 @@ const GalleryEditor = ({ eventId, showTitle, onToggleTitle }: { eventId: string;
           ))}
         </div>
       ) : (
-        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Bilder. Klicke "+ Bilder" um welche hochzuladen.</p>
+        <p className="text-xs text-center py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine {itemLabel}. Klicke "+ {itemLabel}" um welche hochzuladen.</p>
       )}
     </div>
   );
@@ -725,10 +735,12 @@ const EventEditView = ({
             </p>
             <div className="space-y-3">
               {(editing.info_sections || []).map((block, idx) => {
-                const isWidget = ["whatsapp", "weitere-staedte", "gallery", "spotify", "countdown", "divider", "spacer", "auto-eventinfo"].includes(block.content);
+                const isWidget = ["whatsapp", "weitere-staedte", "gallery", "gallery-photos", "gallery-videos", "spotify", "countdown", "divider", "spacer", "auto-eventinfo"].includes(block.content);
                 const widgetLabel = block.content === "whatsapp" ? "🟢 WhatsApp Community Widget" 
                   : block.content === "weitere-staedte" ? "🗺️ Weitere Städte Widget"
                   : block.content === "gallery" ? "🖼️ Mediengalerie Widget"
+                  : block.content === "gallery-photos" ? "🖼️ Mediengalerie – Fotos"
+                  : block.content === "gallery-videos" ? "🎬 Mediengalerie – Videos"
                   : block.content === "spotify" ? "🎵 Spotify Playlist Widget"
                   : block.content === "countdown" ? "⏱️ Countdown Widget"
                   : block.content === "divider" ? "── Visueller Trenner ──"
@@ -791,8 +803,8 @@ const EventEditView = ({
                     </div>
                   </div>
                   {isWidget ? (
-                    block.content === "gallery" && editing.id ? (
-                      <GalleryEditor eventId={editing.id} showTitle={block.show_title !== false} onToggleTitle={(val) => {
+                    (block.content === "gallery-photos" || block.content === "gallery-videos" || block.content === "gallery") && editing.id ? (
+                      <MediaEditor eventId={editing.id} type={block.content === "gallery-videos" ? "videos" : "photos"} showTitle={block.show_title !== false} onToggleTitle={(val) => {
                         const updated = [...(editing.info_sections || [])];
                         updated[idx] = { ...updated[idx], show_title: val };
                         setEditing({ ...editing, info_sections: updated });
