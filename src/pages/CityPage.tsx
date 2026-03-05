@@ -473,39 +473,71 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
         </div>
       )}
 
-      {/* Slideshow – multi-tile grid that rotates */}
+      {/* Slideshow – multi-tile grid that rotates with smooth crossfade */}
       {viewMode === "slideshow" && !isVideo ? (
         <div>
           <div className="relative">
             <div className={`grid ${gridColsClass} gap-2`}>
-              <AnimatePresence mode={slideTransition === "staggered" ? "popLayout" : "wait"}>
-                {getVisibleSlides().map((slide, i) => (
-                  <motion.div
-                    key={slideTransition === "staggered" ? `stag-${i}-${slide.realIdx}` : `${slideOffset}-${i}`}
-                    className={`${aspectClass} rounded-lg overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.5, delay: slideTransition === "staggered" ? 0 : i * 0.08 }}
-                    onClick={() => lightboxEnabled && setLightboxIdx(slide.realIdx)}
+              {Array.from({ length: cols }).map((_, tileIdx) => {
+                const currentSlide = slideTransition === "staggered"
+                  ? staggeredIndices[tileIdx] % allFiles.length
+                  : (slideOffset * cols + tileIdx) % allFiles.length;
+                const prevSlide = slideTransition === "staggered"
+                  ? ((staggeredIndices[tileIdx] - cols + allFiles.length) % allFiles.length)
+                  : (((slideOffset - 1 + totalPages) % totalPages) * cols + tileIdx) % allFiles.length;
+
+                return (
+                  <div
+                    key={tileIdx}
+                    className={`${aspectClass} rounded-xl overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
+                    onClick={() => lightboxEnabled && setLightboxIdx(currentSlide)}
                   >
+                    {/* Previous image (fades out underneath) */}
                     <img
-                      src={slide.url}
-                      alt={`Impression ${slide.realIdx + 1}`}
-                      className={`w-full h-full object-cover ${hoverEffect ? "transition-transform duration-500 group-hover:scale-110" : ""}`}
-                      loading="lazy"
+                      src={allFiles[prevSlide]}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
+                    {/* Current image (crossfades in on top) */}
+                    <motion.img
+                      key={`tile-${tileIdx}-${currentSlide}`}
+                      src={allFiles[currentSlide]}
+                      alt={`Impression ${currentSlide + 1}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{
+                        duration: 1.2,
+                        ease: [0.25, 0.1, 0.25, 1],
+                        delay: slideTransition === "staggered" ? 0 : tileIdx * 0.15,
+                      }}
+                    />
+                    {/* Ken Burns subtle zoom on current image */}
+                    <motion.div
+                      key={`zoom-${tileIdx}-${currentSlide}`}
+                      className="absolute inset-0"
+                      initial={{ scale: 1 }}
+                      animate={{ scale: 1.08 }}
+                      transition={{ duration: slideSpeed / 1000 + 1, ease: "linear" }}
+                    >
+                      <img
+                        src={allFiles[currentSlide]}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+                    {/* Overlay */}
                     {hoverEffect && (
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10" />
                     )}
                     {showCaptions && (
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white text-xs">Impression {slide.realIdx + 1}</span>
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <span className="text-white text-xs">Impression {currentSlide + 1}</span>
                       </div>
                     )}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Nav arrows */}
