@@ -436,6 +436,8 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
   const [scraping, setScraping] = useState(false);
   const [scrapeResults, setScrapeResults] = useState<string[]>([]);
   const [selectedScrapeResults, setSelectedScrapeResults] = useState<Set<string>>(new Set());
+  const [detectedAlbums, setDetectedAlbums] = useState<{ index: number; title: string; coverImage: string | null; date: string | null }[]>([]);
+  const [selectedAlbums, setSelectedAlbums] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
   const prefix = `gallery-${type}/${eventId}/`;
   const isVideo = type === "videos";
@@ -494,13 +496,24 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
     setScraping(true);
     setScrapeResults([]);
     setSelectedScrapeResults(new Set());
+    setDetectedAlbums([]);
+    setSelectedAlbums(new Set());
     try {
       const { data, error } = await supabase.functions.invoke("scrape-media", {
         body: { url, type },
       });
       if (error) throw error;
+
+      // Check if albums were detected
+      if (data?.hasAlbums && data.albums?.length > 0) {
+        setDetectedAlbums(data.albums);
+        setSelectedAlbums(new Set(data.albums.map((a: any) => a.index)));
+        toast.success(`${data.albums.length} Alben gefunden! Wähle aus, welche du importieren möchtest.`);
+        setScraping(false);
+        return;
+      }
+
       if (data?.success && data.urls?.length > 0) {
-        // Filter out URLs already in external list
         const newUrls = (data.urls as string[]).filter(u => !externalUrls.includes(u));
         setScrapeResults(newUrls);
         setSelectedScrapeResults(new Set(newUrls));
@@ -512,6 +525,39 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
       toast.error("Scan fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
     }
     setScraping(false);
+  };
+
+  const scrapeSelectedAlbums = async () => {
+    if (selectedAlbums.size === 0) return;
+    setScraping(true);
+    setScrapeResults([]);
+    setSelectedScrapeResults(new Set());
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-media", {
+        body: { url: scrapeUrl.trim(), type, mode: "scrape_albums", albumIndices: Array.from(selectedAlbums) },
+      });
+      if (error) throw error;
+      if (data?.success && data.urls?.length > 0) {
+        const newUrls = (data.urls as string[]).filter(u => !externalUrls.includes(u));
+        setScrapeResults(newUrls);
+        setSelectedScrapeResults(new Set(newUrls));
+        setDetectedAlbums([]);
+        toast.success(`${newUrls.length} ${itemLabel} aus ${selectedAlbums.size} Alben gefunden`);
+      } else {
+        toast.error(`Keine ${itemLabel} in den ausgewählten Alben gefunden`);
+      }
+    } catch (err: any) {
+      toast.error("Scan fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+    }
+    setScraping(false);
+  };
+
+  const toggleAlbumSelection = (index: number) => {
+    setSelectedAlbums(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index); else next.add(index);
+      return next;
+    });
   };
 
   const toggleScrapeResult = (url: string) => {
@@ -767,6 +813,69 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
               {scraping ? "Scannt..." : "Scannen"}
             </button>
           </div>
+          {/* Album Selection UI */}
+          {detectedAlbums.length > 0 && scrapeResults.length === 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold" style={{ color: "hsl(270 60% 70%)" }}>
+                  📂 {detectedAlbums.length} Alben erkannt
+                </span>
+                <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  – Wähle die Alben aus, die du importieren möchtest
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {detectedAlbums.map(album => (
+                  <div
+                    key={album.index}
+                    onClick={() => toggleAlbumSelection(album.index)}
+                    className="relative cursor-pointer rounded-lg overflow-hidden transition-all"
+                    style={{
+                      border: selectedAlbums.has(album.index) ? "2px solid hsl(270 60% 55%)" : "2px solid hsl(0 0% 100% / 0.1)",
+                      opacity: selectedAlbums.has(album.index) ? 1 : 0.5,
+                    }}
+                  >
+                    <div className="aspect-video bg-muted">
+                      {album.coverImage ? (
+                        <img src={album.coverImage} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">📷</div>
+                      )}
+                    </div>
+                    <div className="p-2" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                      <div className="text-xs font-bold truncate" style={{ color: "hsl(0 0% 100% / 0.9)" }}>{album.title}</div>
+                      {album.date && <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{album.date}</div>}
+                    </div>
+                    {selectedAlbums.has(album.index) && (
+                      <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: "hsl(270 60% 55%)", color: "white" }}>✓</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedAlbums(selectedAlbums.size === detectedAlbums.length ? new Set() : new Set(detectedAlbums.map(a => a.index)))}
+                    className="px-2 py-1 rounded text-[10px] font-bold"
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)" }}
+                  >
+                    {selectedAlbums.size === detectedAlbums.length ? "Keine auswählen" : "Alle auswählen"}
+                  </button>
+                </div>
+                <button
+                  onClick={scrapeSelectedAlbums}
+                  disabled={selectedAlbums.size === 0 || scraping}
+                  className="px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                  style={{
+                    background: selectedAlbums.size > 0 ? "hsl(270 60% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)",
+                    color: selectedAlbums.size > 0 ? "hsl(270 60% 70%)" : "hsl(0 0% 100% / 0.3)",
+                  }}
+                >
+                  {scraping ? "Scannt Alben..." : `📥 ${selectedAlbums.size} Alben scannen`}
+                </button>
+              </div>
+            </div>
+          )}
           {scrapeResults.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
