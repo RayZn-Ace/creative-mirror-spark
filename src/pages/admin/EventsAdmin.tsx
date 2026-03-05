@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
   ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
-  Sun, XCircle, Filter, Send,
+  Sun, XCircle, Filter, Send, Type, Minus, Space, MessageCircle, Map, Image,
+  FileText, HelpCircle, Gift, Music, Video, LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -97,11 +98,42 @@ interface SeriesOption {
 }
 
 const DEFAULT_INFO_SECTIONS: InfoBlock[] = [
-  { id: "eventinfo", title: "Eventinformationen", content: "Hier stehen die Eventinformationen wie Datum, Uhrzeit, Location und Adresse." },
+  { id: "eventinfo", title: "Eventinformationen", content: "📅 Datum: [wird automatisch angezeigt]\n🕐 Uhrzeit: [wird automatisch angezeigt]\n📍 Location: [wird automatisch angezeigt]\n📌 Adresse: [wird automatisch angezeigt]\n\nWeitere Details zum Event findest du auf unseren Social-Media-Kanälen." },
   { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
   { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
   { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
 ];
+
+/* ─── Block Templates ─── */
+interface BlockTemplate {
+  id: string;
+  label: string;
+  icon: any;
+  category: string;
+  block: InfoBlock;
+}
+
+const BLOCK_TEMPLATES: BlockTemplate[] = [
+  // Content
+  { id: "text", label: "Textblock", icon: Type, category: "Inhalt", block: { id: "", title: "Neuer Textblock", content: "Hier Text eingeben..." } },
+  { id: "eventinfo", label: "Eventinformationen", icon: FileText, category: "Inhalt", block: { id: "", title: "Eventinformationen", content: "📅 Datum: [wird automatisch angezeigt]\n🕐 Uhrzeit: [wird automatisch angezeigt]\n📍 Location: [wird automatisch angezeigt]\n📌 Adresse: [wird automatisch angezeigt]\n\nWeitere Details zum Event findest du auf unseren Social-Media-Kanälen." } },
+  { id: "einlass", label: "Einlassinformationen", icon: Clock, category: "Inhalt", block: { id: "", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." } },
+  { id: "dresscode", label: "Dresscode", icon: Star, category: "Inhalt", block: { id: "", title: "Dresscode", content: "Komm so, wie du dich wohlfühlst! 🎉\nWir empfehlen bequeme Schuhe und partygerechte Kleidung." } },
+  { id: "anfahrt", label: "Anfahrt & Parken", icon: MapPin, category: "Inhalt", block: { id: "", title: "Anfahrt & Parken", content: "🚗 Parkplätze stehen in begrenzter Anzahl vor der Location zur Verfügung.\n🚌 Mit den öffentlichen Verkehrsmitteln erreichst du uns über die Haltestelle [Name].\n\n🔗 Google Maps-Link folgt in Kürze." } },
+  { id: "faq", label: "Häufige Fragen", icon: HelpCircle, category: "Inhalt", block: { id: "", title: "Häufige Fragen", content: "❓ Kann ich mein Ticket umbuchen?\nJa, eine Umbuchung ist bis 48h vor dem Event möglich. Weitere Infos unter gimme-gimme.de/ticket-umbuchung\n\n❓ Gibt es eine Garderobe?\nJa, eine Garderobe ist vor Ort verfügbar.\n\n❓ Ab welchem Alter darf ich rein?\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." } },
+  { id: "hinweise", label: "Wichtige Hinweise", icon: FileText, category: "Inhalt", block: { id: "", title: "Wichtige Hinweise", content: "⚠️ Bitte beachtet folgende Hinweise:\n\n• Kein Einlass mit Glasflaschen oder gefährlichen Gegenständen.\n• Es wird Einlasskontrollen geben.\n• Tickets sind personengebunden und nicht übertragbar.\n• Bei Missachtung der Hausordnung behalten wir uns das Recht vor, den Zutritt zu verweigern." } },
+  // Layout
+  { id: "divider", label: "Visueller Trenner", icon: Minus, category: "Layout", block: { id: "", title: "───", content: "divider" } },
+  { id: "spacer", label: "Abstand", icon: Space, category: "Layout", block: { id: "", title: "", content: "spacer" } },
+  // Widgets
+  { id: "whatsapp", label: "WhatsApp Community", icon: MessageCircle, category: "Widgets", block: { id: "", title: "Freikarten & mehr", content: "whatsapp" } },
+  { id: "weitere-staedte", label: "Weitere Städte", icon: Map, category: "Widgets", block: { id: "", title: "Weitere Städte", content: "weitere-staedte" } },
+  { id: "gallery", label: "Mediengalerie", icon: Image, category: "Widgets", block: { id: "", title: "Impressionen", content: "gallery" } },
+  { id: "spotify", label: "Spotify Playlist", icon: Music, category: "Widgets", block: { id: "", title: "Unsere Playlist", content: "spotify" } },
+  { id: "countdown", label: "Event Countdown", icon: Clock, category: "Widgets", block: { id: "", title: "Countdown", content: "countdown" } },
+];
+
+const TEMPLATE_CATEGORIES = ["Inhalt", "Layout", "Widgets"];
 
 const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
@@ -427,6 +459,64 @@ const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange
   );
 };
 
+/* ─── Block Template Picker ─── */
+const BlockTemplatePicker = ({ onSelect }: { onSelect: (template: BlockTemplate) => void }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full py-2.5 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
+        style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)", border: "1px dashed hsl(0 0% 100% / 0.15)" }}
+      >
+        <Plus className="w-3.5 h-3.5" /> Neuen Block hinzufügen
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="mt-2 rounded-xl overflow-hidden"
+            style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.12)", boxShadow: "0 12px 40px hsl(0 0% 0% / 0.5)" }}
+          >
+            <div className="p-3 flex items-center justify-between" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Block-Vorlage wählen</span>
+              <button onClick={() => setOpen(false)} className="p-1 rounded-lg hover:bg-white/5">
+                <X className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
+              </button>
+            </div>
+            <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <div key={cat}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(330 80% 55% / 0.8)" }}>{cat}</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {BLOCK_TEMPLATES.filter((t) => t.category === cat).map((tmpl) => {
+                      const Icon = tmpl.icon;
+                      return (
+                        <button
+                          key={tmpl.id}
+                          onClick={() => { onSelect(tmpl); setOpen(false); }}
+                          className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
+                          style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.75)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
+                        >
+                          <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                          {tmpl.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 /* ─── Event Edit View ─── */
 const EventEditView = ({
   editing, setEditing, seriesOptions, tickets, onSave, onDelete, onBack, onReloadTickets, onSeriesCreated, onBulkEdit,
@@ -554,7 +644,17 @@ const EventEditView = ({
               Diese Blöcke erscheinen als aufklappbare Akkordeons auf der Eventseite.
             </p>
             <div className="space-y-3">
-              {(editing.info_sections || []).map((block, idx) => (
+              {(editing.info_sections || []).map((block, idx) => {
+                const isWidget = ["whatsapp", "weitere-staedte", "gallery", "spotify", "countdown", "divider", "spacer"].includes(block.content);
+                const widgetLabel = block.content === "whatsapp" ? "🟢 WhatsApp Community Widget" 
+                  : block.content === "weitere-staedte" ? "🗺️ Weitere Städte Widget"
+                  : block.content === "gallery" ? "🖼️ Mediengalerie Widget"
+                  : block.content === "spotify" ? "🎵 Spotify Playlist Widget"
+                  : block.content === "countdown" ? "⏱️ Countdown Widget"
+                  : block.content === "divider" ? "── Visueller Trenner ──"
+                  : block.content === "spacer" ? "↕️ Abstand"
+                  : null;
+                return (
                 <div key={block.id} className="rounded-xl p-4 space-y-2" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
                   <div className="flex items-center justify-between gap-2">
                     <input
@@ -609,34 +709,33 @@ const EventEditView = ({
                       </button>
                     </div>
                   </div>
-                  <textarea
-                    value={block.content}
-                    onChange={(e) => {
-                      const updated = [...(editing.info_sections || [])];
-                      updated[idx] = { ...updated[idx], content: e.target.value };
-                      setEditing({ ...editing, info_sections: updated });
-                    }}
-                    rows={5}
-                    placeholder="Inhalt des Blocks..."
-                    className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
-                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "80px" }}
-                  />
-                  <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                    Tipp: „whatsapp" als Inhalt zeigt den WhatsApp-Block an. „weitere-staedte" zeigt die Nearby-Events-Sektion.
-                  </p>
+                  {isWidget ? (
+                    <div className="px-3 py-3 rounded-lg text-sm font-medium flex items-center gap-2" style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 70%)", border: "1px dashed hsl(270 60% 55% / 0.2)" }}>
+                      {widgetLabel}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={block.content}
+                      onChange={(e) => {
+                        const updated = [...(editing.info_sections || [])];
+                        updated[idx] = { ...updated[idx], content: e.target.value };
+                        setEditing({ ...editing, info_sections: updated });
+                      }}
+                      rows={5}
+                      placeholder="Inhalt des Blocks..."
+                      className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+                      style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "80px" }}
+                    />
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
-            <button
-              onClick={() => {
-                const newBlock: InfoBlock = { id: `block-${Date.now()}`, title: "", content: "" };
-                setEditing({ ...editing, info_sections: [...(editing.info_sections || []), newBlock] });
-              }}
-              className="w-full py-2.5 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
-              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)", border: "1px dashed hsl(0 0% 100% / 0.15)" }}
-            >
-              <Plus className="w-3.5 h-3.5" /> Neuen Block hinzufügen
-            </button>
+            {/* Block Template Picker */}
+            <BlockTemplatePicker onSelect={(template) => {
+              const newBlock: InfoBlock = { id: `block-${Date.now()}`, title: template.block.title, content: template.block.content };
+              setEditing({ ...editing, info_sections: [...(editing.info_sections || []), newBlock] });
+            }} />
           </Section>
         </div>
 
