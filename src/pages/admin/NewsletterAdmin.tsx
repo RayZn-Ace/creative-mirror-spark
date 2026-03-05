@@ -825,8 +825,9 @@ const NewsletterAdmin = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [nlLists, setNlLists] = useState<NLList[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState<{ sent: number; failed: number } | null>(null);
+   const [sending, setSending] = useState(false);
+   const [sent, setSent] = useState<{ sent: number; failed: number } | null>(null);
+   const [sendProgress, setSendProgress] = useState<{ current: number; total: number; sent: number; failed: number } | null>(null);
 
   const [subject, setSubject] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([
@@ -1112,29 +1113,46 @@ ${bodyContent}
 
     setSending(true);
     setSent(null);
+    setSendProgress({ current: 0, total: recipients.length, sent: 0, failed: 0 });
 
     const hasMagic = blocks.some((b) => (b.type === "event-highlight" || b.type === "event-list") && (b as any).magicMode);
+    const htmlContent = buildHtml();
+    const allEmails = recipients.map((r) => r.email);
+
+    // Send in batches of 50 to avoid edge function timeouts
+    const BATCH_SIZE = 50;
+    let totalSent = 0;
+    let totalFailed = 0;
 
     try {
-      const { data, error } = await supabase.functions.invoke("send-newsletter", {
-        body: {
-          subject: subject.trim(),
-          html: buildHtml(),
-          recipients: recipients.map((r) => r.email),
-          fromName: fromName.trim(),
-          fromEmail: fromEmail.trim(),
-          magicMode: hasMagic,
-        },
-      });
-      if (error) throw error;
-      setSent({ sent: data.sent, failed: data.failed });
-      if (data.sent > 0) toast.success(`${data.sent} E-Mails erfolgreich versendet!`);
-      if (data.failed > 0) toast.error(`${data.failed} E-Mails fehlgeschlagen`);
+      for (let i = 0; i < allEmails.length; i += BATCH_SIZE) {
+        const batch = allEmails.slice(i, i + BATCH_SIZE);
+        const { data, error } = await supabase.functions.invoke("send-newsletter", {
+          body: {
+            subject: subject.trim(),
+            html: htmlContent,
+            recipients: batch,
+            fromName: fromName.trim(),
+            fromEmail: fromEmail.trim(),
+            magicMode: hasMagic,
+          },
+        });
+        if (error) throw error;
+        totalSent += data.sent || 0;
+        totalFailed += data.failed || 0;
+        setSendProgress({ current: Math.min(i + BATCH_SIZE, allEmails.length), total: allEmails.length, sent: totalSent, failed: totalFailed });
+      }
+
+      setSent({ sent: totalSent, failed: totalFailed });
+      if (totalSent > 0) toast.success(`${totalSent} E-Mails erfolgreich versendet!`);
+      if (totalFailed > 0) toast.error(`${totalFailed} E-Mails fehlgeschlagen`);
     } catch (err: any) {
       console.error("Newsletter send error:", err);
       toast.error("Fehler beim Versenden: " + (err.message || "Unbekannter Fehler"));
+      if (totalSent > 0) setSent({ sent: totalSent, failed: totalFailed });
     } finally {
       setSending(false);
+      setSendProgress(null);
     }
   };
 
@@ -1398,9 +1416,39 @@ ${bodyContent}
             {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gesendet...</> : <><Send className="w-4 h-4" /> Newsletter versenden ({recipients.length})</>}
           </motion.button>
 
+          {/* Progress bar */}
+          <AnimatePresence>
+            {sendProgress && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl p-4 space-y-2" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                    <Loader2 className="w-3 h-3 animate-spin inline mr-1.5" />
+                    Versende E-Mails...
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "hsl(330 80% 55%)" }}>
+                    {sendProgress.current} / {sendProgress.total}
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: "linear-gradient(90deg, hsl(330 80% 55%), hsl(20 90% 55%))" }}
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${Math.round((sendProgress.current / sendProgress.total) * 100)}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex items-center gap-3 text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  <span>✅ {sendProgress.sent} gesendet</span>
+                  {sendProgress.failed > 0 && <span>❌ {sendProgress.failed} fehlgeschlagen</span>}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Result */}
           <AnimatePresence>
-            {sent && (
+            {sent && !sendProgress && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-xl p-4 flex items-center gap-3" style={{ background: sent.failed === 0 ? "hsl(150 60% 40% / 0.12)" : "hsl(45 80% 55% / 0.12)", border: `1px solid ${sent.failed === 0 ? "hsl(150 60% 40% / 0.3)" : "hsl(45 80% 55% / 0.3)"}` }}>
                 {sent.failed === 0 ? <CheckCircle className="w-5 h-5 shrink-0" style={{ color: "hsl(150 60% 40%)" }} /> : <AlertCircle className="w-5 h-5 shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
                 <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{sent.sent} gesendet{sent.failed > 0 ? `, ${sent.failed} fehlgeschlagen` : ""}</span>

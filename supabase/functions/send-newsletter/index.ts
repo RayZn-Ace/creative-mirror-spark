@@ -672,64 +672,66 @@ Deno.serve(async (req) => {
 
     const results: { email: string; success: boolean; error?: string }[] = [];
 
-    const batchSize = 10;
-    for (let i = 0; i < recipients.length; i += batchSize) {
-      const batch = recipients.slice(i, i + batchSize);
-      const promises = batch.map(async (email: string) => {
-        try {
-          const recipientInfo: RecipientInfo = recipientInfoMap.get(email.toLowerCase()) || { name: null, city: null, email };
-          let personalizedHtml = html;
-          let personalizedSubject = subject;
-          let recipientLang = "de"; // Default to German
+    // Rate limit: Resend allows max 2 emails/second
+    // Send sequentially with 500ms delay between each email
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-          // Replace placeholders in HTML and subject
-          personalizedHtml = replacePlaceholders(personalizedHtml, recipientInfo);
-          personalizedSubject = replacePlaceholders(personalizedSubject, recipientInfo);
+    for (let i = 0; i < recipients.length; i++) {
+      const email = recipients[i] as string;
+      try {
+        const recipientInfo: RecipientInfo = recipientInfoMap.get(email.toLowerCase()) || { name: null, city: null, email };
+        let personalizedHtml = html;
+        let personalizedSubject = subject;
+        let recipientLang = "de";
 
-          if (magicMode) {
-            const recipientCity = recipientCityMap.get(email.toLowerCase()) || recipientInfo.city || null;
-            personalizedHtml = personalizeHtml(personalizedHtml, recipientCity, upcomingEvents, siteUrl);
+        personalizedHtml = replacePlaceholders(personalizedHtml, recipientInfo);
+        personalizedSubject = replacePlaceholders(personalizedSubject, recipientInfo);
 
-            // Determine recipient language from city
-            if (recipientCity) {
-              const info = getCityInfo(recipientCity);
-              if (info) recipientLang = info.lang;
-            }
+        if (magicMode) {
+          const recipientCity = recipientCityMap.get(email.toLowerCase()) || recipientInfo.city || null;
+          personalizedHtml = personalizeHtml(personalizedHtml, recipientCity, upcomingEvents, siteUrl);
+
+          if (recipientCity) {
+            const info = getCityInfo(recipientCity);
+            if (info) recipientLang = info.lang;
           }
-
-          // Translate if not German
-          if (recipientLang !== "de") {
-            const cacheKey = `${recipientLang}:${personalizedHtml.length}:${personalizedHtml.slice(0, 100)}`;
-            if (translationCache.has(cacheKey)) {
-              personalizedHtml = translationCache.get(cacheKey)!;
-            } else {
-              const translated = await translateHtml(personalizedHtml, recipientLang);
-              translationCache.set(cacheKey, translated);
-              personalizedHtml = translated;
-            }
-          }
-
-          const res = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ from, to: [email], subject: personalizedSubject, html: personalizedHtml }),
-          });
-
-          if (!res.ok) {
-            const errBody = await res.text();
-            results.push({ email, success: false, error: `${res.status}: ${errBody}` });
-          } else {
-            await res.json();
-            results.push({ email, success: true });
-          }
-        } catch (err) {
-          results.push({ email, success: false, error: String(err) });
         }
-      });
-      await Promise.all(promises);
+
+        if (recipientLang !== "de") {
+          const cacheKey = `${recipientLang}:${personalizedHtml.length}:${personalizedHtml.slice(0, 100)}`;
+          if (translationCache.has(cacheKey)) {
+            personalizedHtml = translationCache.get(cacheKey)!;
+          } else {
+            const translated = await translateHtml(personalizedHtml, recipientLang);
+            translationCache.set(cacheKey, translated);
+            personalizedHtml = translated;
+          }
+        }
+
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ from, to: [email], subject: personalizedSubject, html: personalizedHtml }),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          results.push({ email, success: false, error: `${res.status}: ${errBody}` });
+        } else {
+          await res.json();
+          results.push({ email, success: true });
+        }
+      } catch (err) {
+        results.push({ email, success: false, error: String(err) });
+      }
+
+      // Wait 500ms between sends to respect 2/sec rate limit
+      if (i < recipients.length - 1) {
+        await delay(500);
+      }
     }
 
     const sent = results.filter((r) => r.success).length;
