@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun, ArrowLeft } from "lucide-react";
@@ -14,6 +14,7 @@ interface GalleryConfig {
   view_mode?: "grid" | "masonry" | "slideshow";
   slideshow_speed?: number;
   slideshow_transition?: "simultaneous" | "staggered";
+  slideshow_order?: "sequential" | "random";
   aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
   hover_effect?: boolean;
   show_captions?: boolean;
@@ -376,6 +377,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
   const showCaptions = galleryConfig?.show_captions === true;
   const slideSpeed = galleryConfig?.slideshow_speed || 3000;
   const slideTransition = galleryConfig?.slideshow_transition || "simultaneous";
+  const slideOrder = galleryConfig?.slideshow_order || "sequential";
 
   const aspectClass = aspect === "square" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : aspect === "16:9" ? "aspect-video" : "aspect-[3/4]";
 
@@ -398,53 +400,105 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
 
   const allFiles = [...storageFiles, ...externalUrls];
 
-  // Slideshow: staggered mode uses per-tile offsets, simultaneous uses page-based
+  // Track previous slide per tile for smooth crossfade
+  const [prevTileImages, setPrevTileImages] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
+  const [currentTileImages, setCurrentTileImages] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
+
+  // Helper: pick a random index that's not in the excluded set
+  const pickUniqueRandom = (exclude: Set<number>, total: number): number => {
+    if (total <= exclude.size) return 0;
+    let pick: number;
+    let attempts = 0;
+    do {
+      pick = Math.floor(Math.random() * total);
+      attempts++;
+    } while (exclude.has(pick) && attempts < total * 3);
+    return pick;
+  };
+
+  // Slideshow: staggered mode uses per-tile timers, simultaneous uses single timer
   const totalPages = Math.max(1, Math.ceil(allFiles.length / cols));
-  const [staggeredIndices, setStaggeredIndices] = useState<number[]>(() => Array.from({ length: cols }, (_, i) => i));
 
   useEffect(() => {
-    if (viewMode !== "slideshow" || !slidePlaying || allFiles.length === 0) return;
+    if (viewMode !== "slideshow" || !slidePlaying || allFiles.length <= cols) return;
 
     if (slideTransition === "staggered") {
-      // Each tile advances independently with a delay offset
       const timers = Array.from({ length: cols }, (_, tileIdx) =>
         setInterval(() => {
-          setStaggeredIndices(prev => {
+          setCurrentTileImages(prev => {
             const next = [...prev];
-            next[tileIdx] = (next[tileIdx] + cols) % allFiles.length;
+            const currentlyVisible = new Set(next);
+            if (slideOrder === "random") {
+              // Also exclude the previous image for this tile to avoid back-and-forth
+              currentlyVisible.add(prev[tileIdx]);
+              next[tileIdx] = pickUniqueRandom(currentlyVisible, allFiles.length);
+            } else {
+              // Sequential: advance by cols to avoid showing same image in another tile
+              let candidate = (prev[tileIdx] + cols) % allFiles.length;
+              while (currentlyVisible.has(candidate) && candidate !== prev[tileIdx]) {
+                candidate = (candidate + 1) % allFiles.length;
+              }
+              next[tileIdx] = candidate;
+            }
             return next;
+          });
+          setPrevTileImages(prev => {
+            // Will be updated after currentTileImages changes
+            return prev;
           });
         }, slideSpeed + tileIdx * (slideSpeed / (cols + 1)))
       );
       return () => timers.forEach(t => clearInterval(t));
     } else {
-      const timer = setInterval(() => setSlideOffset(p => (p + 1) % totalPages), slideSpeed);
+      // Simultaneous
+      const timer = setInterval(() => {
+        setCurrentTileImages(prev => {
+          const next = [...prev];
+          if (slideOrder === "random") {
+            const newSet = new Set<number>();
+            for (let i = 0; i < cols; i++) {
+              const exclude = new Set([...newSet, ...prev]); // exclude current + already picked
+              next[i] = pickUniqueRandom(exclude, allFiles.length);
+              newSet.add(next[i]);
+            }
+          } else {
+            for (let i = 0; i < cols; i++) {
+              next[i] = (prev[i] + cols) % allFiles.length;
+            }
+          }
+          return next;
+        });
+      }, slideSpeed);
       return () => clearInterval(timer);
     }
-  }, [viewMode, slidePlaying, slideSpeed, totalPages, allFiles.length, slideTransition, cols]);
+  }, [viewMode, slidePlaying, slideSpeed, allFiles.length, slideTransition, slideOrder, cols]);
 
-  // Reset staggered indices when config changes
+  // Track previous images for crossfade
   useEffect(() => {
-    setStaggeredIndices(Array.from({ length: cols }, (_, i) => i));
+    setPrevTileImages(prev => {
+      // Only update if currentTileImages actually changed
+      const changed = currentTileImages.some((v, i) => v !== prev[i]);
+      return changed ? [...currentTileImages] : prev;
+    });
+  }, [currentTileImages]);
+
+  // Keep a separate ref for the *actual* previous for crossfade
+  const prevImagesRef = useRef<number[]>(currentTileImages);
+  useEffect(() => {
+    // Store old values before they update
+    return () => { prevImagesRef.current = currentTileImages; };
+  }, [currentTileImages]);
+
+  // Reset when config changes
+  useEffect(() => {
+    const initial = Array.from({ length: cols }, (_, i) => i % Math.max(allFiles.length, 1));
+    setCurrentTileImages(initial);
+    setPrevTileImages(initial);
+    prevImagesRef.current = initial;
     setSlideOffset(0);
-  }, [cols, slideTransition]);
+  }, [cols, slideTransition, slideOrder, allFiles.length]);
 
   if (allFiles.length === 0) return null;
-
-  // Get visible images for current slideshow page
-  const getVisibleSlides = (): { url: string; realIdx: number }[] => {
-    if (slideTransition === "staggered") {
-      return staggeredIndices.map((idx, i) => ({
-        url: allFiles[idx % allFiles.length],
-        realIdx: idx % allFiles.length,
-      }));
-    }
-    const start = slideOffset * cols;
-    return Array.from({ length: cols }, (_, i) => ({
-      url: allFiles[(start + i) % allFiles.length],
-      realIdx: (start + i) % allFiles.length,
-    }));
-  };
 
   return (
     <div className="pt-6">
@@ -479,12 +533,8 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
           <div className="relative">
             <div className={`grid ${gridColsClass} gap-2`}>
               {Array.from({ length: cols }).map((_, tileIdx) => {
-                const currentSlide = slideTransition === "staggered"
-                  ? staggeredIndices[tileIdx] % allFiles.length
-                  : (slideOffset * cols + tileIdx) % allFiles.length;
-                const prevSlide = slideTransition === "staggered"
-                  ? ((staggeredIndices[tileIdx] - cols + allFiles.length) % allFiles.length)
-                  : (((slideOffset - 1 + totalPages) % totalPages) * cols + tileIdx) % allFiles.length;
+                const currentSlide = currentTileImages[tileIdx] % allFiles.length;
+                const prevSlide = prevImagesRef.current[tileIdx] % allFiles.length;
 
                 return (
                   <div
