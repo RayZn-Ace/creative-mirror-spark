@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
-import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, Download } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OrderData {
   id: string;
@@ -33,6 +33,8 @@ const OrderConfirmation = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTicketIndex, setActiveTicketIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     if (!orderId) return;
@@ -177,47 +179,110 @@ const OrderConfirmation = () => {
             </div>
           </div>
 
-          {/* Tickets with QR codes */}
           {isPaid && tickets.length > 0 && (
-            <div className="space-y-4 mb-6">
-              <div className="h-px" style={{ background: "hsl(0 0% 100% / 0.15)" }} />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-center" style={{ color: "hsl(0 0% 100%)" }}>
+            <div className="mb-6">
+              <div className="h-px mb-4" style={{ background: "hsl(0 0% 100% / 0.15)" }} />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-center mb-1" style={{ color: "hsl(0 0% 100%)" }}>
                 Deine Tickets
               </h2>
-              {tickets.map((ticket) => (
-                <motion.div
-                  key={ticket.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center gap-3 p-4 rounded-2xl"
-                  style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)" }}
-                >
-                  <div className="bg-white p-3 rounded-xl">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ticket.qr_code)}`}
-                      alt="QR Code"
-                      className="w-40 h-40 sm:w-48 sm:h-48"
-                    />
-                  </div>
-                  <div className="text-center">
-                    {ticket.holder_name && (
-                      <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{ticket.holder_name}</p>
+              {tickets.length > 1 && (
+                <p className="text-[11px] text-center mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                  Ticket {activeTicketIndex + 1} von {tickets.length} – wischen zum Blättern
+                </p>
+              )}
+
+              {/* Swipeable Ticket Carousel */}
+              <div
+                className="relative overflow-hidden"
+                onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+                onTouchEnd={(e) => {
+                  if (touchStartX.current === null) return;
+                  const diff = touchStartX.current - e.changedTouches[0].clientX;
+                  if (Math.abs(diff) > 50) {
+                    if (diff > 0 && activeTicketIndex < tickets.length - 1) setActiveTicketIndex(i => i + 1);
+                    if (diff < 0 && activeTicketIndex > 0) setActiveTicketIndex(i => i - 1);
+                  }
+                  touchStartX.current = null;
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTicketIndex}
+                    initial={{ opacity: 0, x: 60 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -60 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex flex-col items-center gap-3 p-5 rounded-2xl"
+                    style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)" }}
+                  >
+                    <div className="bg-white p-3 rounded-xl">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tickets[activeTicketIndex].qr_code)}`}
+                        alt={`QR Code Ticket ${activeTicketIndex + 1}`}
+                        className="w-44 h-44 sm:w-52 sm:h-52"
+                      />
+                    </div>
+                    <div className="text-center">
+                      {tickets[activeTicketIndex].holder_name && (
+                        <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{tickets[activeTicketIndex].holder_name}</p>
+                      )}
+                      <p className="text-xs font-mono mt-1" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                        {tickets[activeTicketIndex].qr_code}
+                      </p>
+                      <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                        style={{
+                          background: tickets[activeTicketIndex].status === "valid" ? "hsl(140 70% 45% / 0.3)" : "hsl(0 70% 50% / 0.3)",
+                          color: tickets[activeTicketIndex].status === "valid" ? "hsl(140 70% 65%)" : "hsl(0 70% 65%)",
+                          border: `1px solid ${tickets[activeTicketIndex].status === "valid" ? "hsl(140 70% 45% / 0.5)" : "hsl(0 70% 50% / 0.5)"}`,
+                        }}
+                      >
+                        {tickets[activeTicketIndex].status === "valid" ? "Gültig" : tickets[activeTicketIndex].status === "checked_in" ? "Eingecheckt" : tickets[activeTicketIndex].status}
+                      </span>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Arrow Buttons (Desktop) */}
+                {tickets.length > 1 && (
+                  <>
+                    {activeTicketIndex > 0 && (
+                      <button
+                        onClick={() => setActiveTicketIndex(i => i - 1)}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                        style={{ background: "hsl(0 0% 0% / 0.4)", color: "hsl(0 0% 100%)" }}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
                     )}
-                    <p className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-                      {ticket.qr_code.slice(0, 12).toUpperCase()}
-                    </p>
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                    {activeTicketIndex < tickets.length - 1 && (
+                      <button
+                        onClick={() => setActiveTicketIndex(i => i + 1)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                        style={{ background: "hsl(0 0% 0% / 0.4)", color: "hsl(0 0% 100%)" }}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Dots */}
+              {tickets.length > 1 && (
+                <div className="flex justify-center gap-2 mt-3">
+                  {tickets.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveTicketIndex(i)}
+                      className="w-2.5 h-2.5 rounded-full transition-all"
                       style={{
-                        background: ticket.status === "valid" ? "hsl(140 70% 45% / 0.3)" : "hsl(0 70% 50% / 0.3)",
-                        color: ticket.status === "valid" ? "hsl(140 70% 65%)" : "hsl(0 70% 65%)",
-                        border: `1px solid ${ticket.status === "valid" ? "hsl(140 70% 45% / 0.5)" : "hsl(0 70% 50% / 0.5)"}`,
+                        background: i === activeTicketIndex ? "hsl(0 0% 100%)" : "hsl(0 0% 100% / 0.3)",
+                        transform: i === activeTicketIndex ? "scale(1.3)" : "scale(1)",
                       }}
-                    >
-                      {ticket.status === "valid" ? "Gültig" : ticket.status === "checked_in" ? "Eingecheckt" : ticket.status}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
