@@ -248,6 +248,11 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
 const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; content: string; t: Translations }) => {
   const [open, setOpen] = useState(false);
   const isWhatsapp = content === "whatsapp";
+  const isGallery = content === "gallery";
+  const isCountdown = content === "countdown";
+  const isSpotify = content === "spotify";
+  const isWidget = isWhatsapp || isGallery || isCountdown || isSpotify;
+
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
@@ -269,6 +274,18 @@ const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; c
                     <MessageCircle className="w-4 h-4" /> {t.whatsappJoin}
                   </a>
                 </>
+              ) : isGallery ? (
+                <div className="text-center py-6">
+                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>📸 Impressionen folgen in Kürze!</p>
+                </div>
+              ) : isCountdown ? (
+                <div className="text-center py-4">
+                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>⏱️ Countdown läuft...</p>
+                </div>
+              ) : isSpotify ? (
+                <div className="text-center py-4">
+                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>🎵 Spotify Playlist folgt...</p>
+                </div>
               ) : (
                 <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7)" }}>{content}</p>
               )}
@@ -692,10 +709,15 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       </a>
 
       <div className="space-y-2 pt-2">
-        {event.infoSections.filter(s => s.content !== "weitere-staedte").map((s) => (
+        {event.infoSections.filter(s => s.content !== "weitere-staedte" && s.content !== "spacer" && s.content !== "divider").map((s) => (
           <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} />
         ))}
       </div>
+
+      {/* Dividers / Spacers rendered inline */}
+      {event.infoSections.some(s => s.content === "divider") && (
+        <div className="py-3"><div style={{ height: "1px", background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} /></div>
+      )}
 
       <NearbyEvents currentSlug={citySlug} currentCity={event.city} t={t} />
     </div>
