@@ -96,12 +96,19 @@ interface SeriesOption {
   city: string | null;
 }
 
+const DEFAULT_INFO_SECTIONS: InfoBlock[] = [
+  { id: "eventinfo", title: "Eventinformationen", content: "Hier stehen die Eventinformationen wie Datum, Uhrzeit, Location und Adresse." },
+  { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
+  { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
+  { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
+];
+
 const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
   status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
-  info_sections: [],
+  info_sections: [...DEFAULT_INFO_SECTIONS],
 };
 
 const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1 };
@@ -615,7 +622,7 @@ const EventEditView = ({
                     style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", minHeight: "80px" }}
                   />
                   <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-                    Tipp: „whatsapp" als Inhalt zeigt den WhatsApp-Block an.
+                    Tipp: „whatsapp" als Inhalt zeigt den WhatsApp-Block an. „weitere-staedte" zeigt die Nearby-Events-Sektion.
                   </p>
                 </div>
               ))}

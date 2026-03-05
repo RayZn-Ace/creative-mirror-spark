@@ -692,7 +692,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       </a>
 
       <div className="space-y-2 pt-2">
-        {event.infoSections.map((s) => (
+        {event.infoSections.filter(s => s.content !== "weitere-staedte").map((s) => (
           <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} />
         ))}
       </div>
@@ -807,10 +807,17 @@ const CityPage = () => {
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
-        infoSections: [],
+        infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
+          ? (e.info_sections as { id: string; title: string; content: string }[])
+          : [],
       }));
 
-      mapped.forEach((m) => { m.infoSections = makeInfoSections(m, translations); });
+      // Only generate default sections for events that have no stored info_sections
+      mapped.forEach((m, i) => {
+        if (m.infoSections.length === 0) {
+          m.infoSections = makeInfoSections(m, translations);
+        }
+      });
 
       setEvents(mapped);
       setSelectedEventId(mapped[0].id);
