@@ -1032,6 +1032,14 @@ export const getCurrencySymbol = (currency: string): string => {
   return symbols[currency] || currency;
 };
 
+// Mollie-supported countries – everything else goes to Stripe
+const MOLLIE_CURRENCIES = new Set(["EUR", "CHF", "GBP", "PLN", "CZK", "HUF", "RON", "BGN", "DKK", "NOK", "SEK"]);
+
+/** Returns "mollie" for European core markets, "stripe" for the rest */
+export const getPaymentProvider = (currency: string): "mollie" | "stripe" => {
+  return MOLLIE_CURRENCIES.has(currency) ? "mollie" : "stripe";
+};
+
 // Approximate exchange rates from EUR (updated periodically)
 const EUR_RATES: Record<string, number> = {
   EUR: 1, USD: 1.08, GBP: 0.86, CHF: 0.94, PLN: 4.32, CZK: 25.2, HUF: 395,

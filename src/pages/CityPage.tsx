@@ -6,7 +6,7 @@ import { AdDisplay } from "@/components/AdDisplay";
 import headerImg from "@/assets/mamma-mia-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
-import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, type Translations } from "@/lib/i18n";
+import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 
 /* ─── Types ─── */
 interface CityEvent {
@@ -528,7 +528,10 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke("create-mollie-payment", {
+      const provider = getPaymentProvider(currency);
+      const functionName = provider === "stripe" ? "create-stripe-payment" : "create-mollie-payment";
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           email: checkoutEmail,
           name: checkoutName || null,

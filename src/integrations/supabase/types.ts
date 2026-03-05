@@ -495,6 +495,7 @@ export type Database = {
           redirect_url: string | null
           service_fee: number
           status: string
+          stripe_payment_id: string | null
           total_amount: number
           updated_at: string
         }
@@ -513,6 +514,7 @@ export type Database = {
           redirect_url?: string | null
           service_fee?: number
           status?: string
+          stripe_payment_id?: string | null
           total_amount?: number
           updated_at?: string
         }
@@ -531,6 +533,7 @@ export type Database = {
           redirect_url?: string | null
           service_fee?: number
           status?: string
+          stripe_payment_id?: string | null
           total_amount?: number
           updated_at?: string
         }
