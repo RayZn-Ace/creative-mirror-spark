@@ -193,17 +193,15 @@ const scrapeAlbumByIndex = async (url: string, apiKey: string, albumIndex: numbe
       body: JSON.stringify({
         url,
         formats: ['rawHtml'],
-        waitFor: 5000,
+        waitFor: 3000,
         actions: [
-          { type: 'wait', milliseconds: 3000 },
+          { type: 'wait', milliseconds: 1500 },
           { type: 'click', selector: `article:nth-child(${albumIndex + 1})` },
-          { type: 'wait', milliseconds: 4000 },
-          { type: 'scroll', direction: 'down', amount: 3 },
-          { type: 'wait', milliseconds: 2000 },
+          { type: 'wait', milliseconds: 2500 },
           { type: 'scroll', direction: 'down', amount: 5 },
-          { type: 'wait', milliseconds: 2000 },
-          { type: 'scroll', direction: 'down', amount: 8 },
-          { type: 'wait', milliseconds: 2000 },
+          { type: 'wait', milliseconds: 1500 },
+          { type: 'scroll', direction: 'down', amount: 10 },
+          { type: 'wait', milliseconds: 1000 },
         ],
       }),
     });
@@ -247,12 +245,10 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
         body: JSON.stringify({
           url,
           formats: ['rawHtml'],
-          waitFor: 8000,
+          waitFor: 4000,
           actions: [
-            { type: 'scroll', direction: 'down', amount: 3 },
-            { type: 'wait', milliseconds: 2000 },
             { type: 'scroll', direction: 'down', amount: 5 },
-            { type: 'wait', milliseconds: 2000 },
+            { type: 'wait', milliseconds: 1500 },
           ],
         }),
       });
@@ -315,15 +311,23 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     const baseUrl = new URL(formattedUrl);
 
-    // ── MODE: scrape specific albums by index ──
+    // ── MODE: scrape specific albums by index (PARALLEL) ──
     if (mode === 'scrape_albums' && Array.isArray(albumIndices) && apiKey) {
-      console.log(`Scraping ${albumIndices.length} specific albums:`, albumIndices);
+      console.log(`Scraping ${albumIndices.length} albums in parallel:`, albumIndices);
+      
+      // Scrape up to 3 albums concurrently to avoid rate limits
+      const CONCURRENCY = 3;
       const allImages: string[] = [];
-
-      for (const idx of albumIndices) {
-        const images = await scrapeAlbumByIndex(formattedUrl, apiKey, idx);
-        for (const img of images) {
-          if (!allImages.includes(img)) allImages.push(img);
+      
+      for (let i = 0; i < albumIndices.length; i += CONCURRENCY) {
+        const batch = albumIndices.slice(i, i + CONCURRENCY);
+        const results = await Promise.all(
+          batch.map((idx: number) => scrapeAlbumByIndex(formattedUrl, apiKey, idx))
+        );
+        for (const images of results) {
+          for (const img of images) {
+            if (!allImages.includes(img)) allImages.push(img);
+          }
         }
       }
 
