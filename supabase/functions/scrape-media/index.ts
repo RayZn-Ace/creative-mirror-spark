@@ -97,7 +97,7 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
   // Supabase storage URLs (common pattern for uploaded images)
   const storageRegex = /(https?:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/object\/public\/[^"'\s<>\\]+)/gi;
   while ((match = storageRegex.exec(html)) !== null) {
-    if (IMAGE_EXTENSIONS.test(match[1]) && !isJunkImage(match[1])) {
+    if (!isJunkImage(match[1])) {
       addUrl(match[1]);
     }
   }
@@ -141,106 +141,81 @@ const extractVideos = (html: string, baseUrl: URL): string[] => {
   return urls;
 };
 
-/** Use Firecrawl Crawl to recursively discover pages and extract images */
-const crawlAndExtract = async (url: string, apiKey: string): Promise<string[]> => {
-  console.log('Starting Firecrawl Crawl for:', url);
-  
-  // Start crawl
-  const crawlResponse = await fetch('https://api.firecrawl.dev/v1/crawl', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      url,
-      limit: 20,
-      maxDepth: 2,
-      scrapeOptions: {
-        formats: ['rawHtml'],
-        waitFor: 5000,
-      },
-    }),
-  });
-
-  if (!crawlResponse.ok) {
-    const errText = await crawlResponse.text();
-    console.log('Firecrawl Crawl start error:', crawlResponse.status, errText.substring(0, 300));
-    return [];
-  }
-
-  const crawlData = await crawlResponse.json();
-  console.log('Crawl response:', JSON.stringify(crawlData).substring(0, 500));
-
-  // If crawl returns data directly (synchronous)
-  if (crawlData.data && Array.isArray(crawlData.data)) {
-    console.log(`Crawl returned ${crawlData.data.length} pages directly`);
-    const allImages: string[] = [];
-    for (const page of crawlData.data) {
-      const pageHtml = page.rawHtml || page.html || '';
-      const pageUrl = page.metadata?.sourceURL || page.url || url;
-      if (pageHtml) {
-        const images = extractImages(pageHtml, new URL(pageUrl));
-        console.log(`Page ${pageUrl}: found ${images.length} images`);
-        for (const img of images) {
-          if (!allImages.includes(img)) allImages.push(img);
-        }
-      }
-    }
-    return allImages;
-  }
-
-  // If crawl is async, we get an id to poll
-  const crawlId = crawlData.id;
-  if (!crawlId) {
-    console.log('No crawl ID returned:', JSON.stringify(crawlData).substring(0, 300));
-    return [];
-  }
-
-  console.log('Crawl started with ID:', crawlId, '- polling for results...');
-
-  // Poll for results (max 60 seconds)
+/** Count album cards on the page and click into each one to extract photos */
+const scrapeAlbumCards = async (url: string, apiKey: string, mainHtml: string): Promise<string[]> => {
   const allImages: string[] = [];
-  let attempts = 0;
-  const maxAttempts = 12;
+  
+  // Count how many album cards there are (look for article.glass-card or similar patterns)
+  const cardMatches = mainHtml.match(/<article[^>]*class="[^"]*glass-card[^"]*"[^>]*>/gi) || [];
+  const cardCount = cardMatches.length;
+  
+  // Also count generic clickable cards
+  const clickableCards = mainHtml.match(/cursor-pointer[^<]*<div[^>]*class="[^"]*h-\d+/gi) || [];
+  const totalCards = Math.max(cardCount, clickableCards.length, 1);
+  
+  console.log(`Found ${cardCount} glass-card articles, ${clickableCards.length} clickable cards, using ${totalCards}`);
+  
+  // Click on each album card using Firecrawl actions
+  for (let i = 0; i < Math.min(totalCards, 10); i++) {
+    try {
+      console.log(`Clicking album card ${i + 1}/${totalCards}...`);
+      
+      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url,
+          formats: ['rawHtml'],
+          waitFor: 5000,
+          actions: [
+            // Wait for page to load
+            { type: 'wait', milliseconds: 3000 },
+            // Click on the nth album card (using CSS nth-child selector)
+            { type: 'click', selector: `article:nth-child(${i + 1})` },
+            // Wait for album content to load
+            { type: 'wait', milliseconds: 4000 },
+            // Scroll down to load lazy images
+            { type: 'scroll', direction: 'down', amount: 3 },
+            { type: 'wait', milliseconds: 2000 },
+            { type: 'scroll', direction: 'down', amount: 5 },
+            { type: 'wait', milliseconds: 2000 },
+            { type: 'scroll', direction: 'down', amount: 8 },
+            { type: 'wait', milliseconds: 2000 },
+          ],
+        }),
+      });
 
-  while (attempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    attempts++;
+      if (!response.ok) {
+        const errText = await response.text();
+        console.log(`Click scrape error for card ${i + 1}:`, response.status, errText.substring(0, 200));
+        continue;
+      }
 
-    const statusResponse = await fetch(`https://api.firecrawl.dev/v1/crawl/${crawlId}`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-      },
-    });
-
-    if (!statusResponse.ok) {
-      console.log('Crawl status error:', statusResponse.status);
-      break;
-    }
-
-    const statusData = await statusResponse.json();
-    console.log(`Crawl poll ${attempts}: status=${statusData.status}, completed=${statusData.completed}/${statusData.total}`);
-
-    if (statusData.data && Array.isArray(statusData.data)) {
-      for (const page of statusData.data) {
-        const pageHtml = page.rawHtml || page.html || '';
-        const pageUrl = page.metadata?.sourceURL || page.url || url;
-        if (pageHtml) {
-          const images = extractImages(pageHtml, new URL(pageUrl));
-          console.log(`Page ${pageUrl}: found ${images.length} images`);
-          for (const img of images) {
-            if (!allImages.includes(img)) allImages.push(img);
+      const data = await response.json();
+      const albumHtml = data?.data?.rawHtml || data?.data?.html || '';
+      const finalUrl = data?.data?.metadata?.sourceURL || data?.data?.metadata?.url || url;
+      
+      console.log(`Album card ${i + 1}: got ${albumHtml.length} chars HTML, final URL: ${finalUrl}`);
+      
+      if (albumHtml && albumHtml.length > 1000) {
+        const baseUrl = new URL(finalUrl);
+        const images = extractImages(albumHtml, baseUrl);
+        console.log(`Album card ${i + 1}: extracted ${images.length} images`);
+        
+        for (const img of images) {
+          if (!allImages.includes(img)) {
+            allImages.push(img);
           }
         }
       }
-    }
-
-    if (statusData.status === 'completed' || statusData.status === 'failed') {
-      break;
+    } catch (e) {
+      console.log(`Error clicking album card ${i + 1}:`, e);
     }
   }
-
+  
   return allImages;
 };
 
@@ -354,21 +329,21 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${mediaUrls.length} ${type} URLs on main page`);
 
-    // Step 2: If few images found and this is a photo gallery page, use Firecrawl Crawl
-    // to recursively discover album subpages (handles SPAs with JS navigation)
-    if (mediaUrls.length <= 5 && type !== 'videos' && apiKey) {
-      console.log('Few images found, using Firecrawl Crawl to discover album pages...');
+    // Step 2: If few images found, this is likely a gallery overview page with album cards.
+    // Use Firecrawl click actions to navigate INTO each album and extract the actual photos.
+    if (mediaUrls.length <= 10 && type !== 'videos' && apiKey) {
+      console.log('Few images found - detected album overview page. Clicking into album cards...');
       
-      const crawlImages = await crawlAndExtract(formattedUrl, apiKey);
-      console.log(`Crawl discovered ${crawlImages.length} total images`);
+      const albumImages = await scrapeAlbumCards(formattedUrl, apiKey, html);
+      console.log(`Album click-through discovered ${albumImages.length} total images`);
       
-      for (const img of crawlImages) {
+      for (const img of albumImages) {
         if (!mediaUrls.includes(img)) {
           mediaUrls.push(img);
         }
       }
       
-      console.log(`After crawl merge: ${mediaUrls.length} total images`);
+      console.log(`After album merge: ${mediaUrls.length} total images`);
     }
 
     console.log(`Final result: ${mediaUrls.length} ${type} URLs`);
