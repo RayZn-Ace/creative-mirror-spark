@@ -39,7 +39,7 @@ const Abiklasse = () => (
 
       <div className="flex flex-wrap gap-3 pt-2">
         <a
-          href="https://wa.me/49123456789?text=Hi%2C%20wir%20planen%20unseren%20Abiball!"
+          href="https://wa.me/491622537300?text=Hi%2C%20wir%20planen%20unseren%20Abiball!"
           target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.03]"
           style={{ background: "hsl(142 70% 45%)", color: "white" }}
@@ -47,7 +47,7 @@ const Abiklasse = () => (
           <MessageCircle className="w-4 h-4" /> WhatsApp Anfrage
         </a>
         <a
-          href="https://instagram.com/nachtaktiv.events"
+          href="https://instagram.com/gimmegimmeparty"
           target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.03]"
           style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)", color: "white" }}

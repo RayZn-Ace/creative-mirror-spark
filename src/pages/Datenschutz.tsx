@@ -17,7 +17,7 @@ const Datenschutz = () => (
         </h2>
         <p>
           <strong style={{ color: "hsl(0 0% 100%)" }}>Wer ist verantwortlich für die Datenerfassung?</strong><br />
-          Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber Nachtaktiv Events.
+          Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber Gimme Gimme Party.
         </p>
         <p className="mt-3">
           <strong style={{ color: "hsl(0 0% 100%)" }}>Wie erfassen wir Ihre Daten?</strong><br />
@@ -46,7 +46,7 @@ const Datenschutz = () => (
         </h2>
         <p>
           Bei Fragen zum Datenschutz kontaktieren Sie uns unter:<br />
-          E-Mail: datenschutz@nachtaktiv-events.de
+          E-Mail: mail@gimmegimmeparty.com
         </p>
       </div>
     </div>

@@ -8,7 +8,7 @@ const AGB = () => (
           § 1 Geltungsbereich
         </h2>
         <p>
-          Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge, die über die Website nachtaktivevents.app zwischen dem Veranstalter (Nachtaktiv Events) und dem Kunden geschlossen werden. Abweichende AGB des Kunden werden nicht anerkannt.
+          Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge, die über die Website gimmegimmeparty.de zwischen dem Veranstalter (Gimme Gimme Party) und dem Kunden geschlossen werden. Abweichende AGB des Kunden werden nicht anerkannt.
         </p>
       </div>
       <div>
