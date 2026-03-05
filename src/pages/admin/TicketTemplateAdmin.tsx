@@ -28,6 +28,13 @@ interface GradientConfig {
   color_to: string;
 }
 
+interface CategoryOverride {
+  accent_color: string;
+  gradient: GradientConfig;
+  background_color?: string;
+  text_color?: string;
+}
+
 interface TicketTemplate {
   format: "din_lang" | "a4";
   background_color: string;
@@ -45,6 +52,7 @@ interface TicketTemplate {
   logo_url: string;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks: ContentBlock[];
+  category_overrides?: Record<string, CategoryOverride>;
 }
 
 const defaultGradient: GradientConfig = { enabled: false, type: "linear", angle: 135, color_from: "#14141e", color_to: "#2a1a3e" };
@@ -66,6 +74,7 @@ const defaultTemplate: TicketTemplate = {
   logo_url: "",
   sponsors: [],
   content_blocks: [],
+  category_overrides: {},
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -81,6 +90,50 @@ const PRESETS: Array<{ name: string; template: Partial<TicketTemplate> }> = [
   { name: "Neon Grün", template: { background_color: "#020d02", accent_color: "#22c55e", text_color: "#dcfce7", gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" } } },
   { name: "Purple Haze", template: { background_color: "#0f0020", accent_color: "#a855f7", text_color: "#f3e8ff", gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" } } },
 ];
+
+/* ─── Category Design Presets ─── */
+const CATEGORY_PRESETS: Record<string, { label: string; emoji: string; override: CategoryOverride }> = {
+  REGULAR: {
+    label: "Regular",
+    emoji: "🟢",
+    override: {
+      accent_color: "#22c55e",
+      gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" },
+      background_color: "#020d02",
+      text_color: "#dcfce7",
+    },
+  },
+  DELUXE: {
+    label: "Deluxe",
+    emoji: "🔵",
+    override: {
+      accent_color: "#38bdf8",
+      gradient: { enabled: true, type: "linear", angle: 160, color_from: "#0a1628", color_to: "#164e63" },
+      background_color: "#0a1628",
+      text_color: "#e0f2fe",
+    },
+  },
+  PREMIUM: {
+    label: "Premium",
+    emoji: "👑",
+    override: {
+      accent_color: "#d4a030",
+      gradient: { enabled: true, type: "radial", angle: 0, color_from: "#1a1610", color_to: "#2a2010" },
+      background_color: "#1a1610",
+      text_color: "#f5f0e0",
+    },
+  },
+  FAN: {
+    label: "Fan",
+    emoji: "💖",
+    override: {
+      accent_color: "#d9338a",
+      gradient: { enabled: true, type: "linear", angle: 135, color_from: "#14041a", color_to: "#2a0a20" },
+      background_color: "#14041a",
+      text_color: "#fce7f3",
+    },
+  },
+};
 
 const FORMATS = [
   { id: "din_lang" as const, label: "DIN Lang (Hartticket)", desc: "210 × 99 mm" },
@@ -569,6 +622,153 @@ const TicketTemplateAdmin = () => {
               </label>
             </div>
           </div>
+
+          {/* Category Overrides */}
+          <div style={sectionStyle}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>Kategorie-Designs</h3>
+            <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Jede Ticket-Kategorie bekommt ihr eigenes Farbdesign. Deaktiviert = globales Design wird verwendet.</p>
+            
+            <div className="space-y-3">
+              {Object.entries(CATEGORY_PRESETS).map(([key, preset]) => {
+                const override = tpl.category_overrides?.[key];
+                const isEnabled = !!override;
+                const currentOverride = override || preset.override;
+                
+                return (
+                  <div key={key} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isEnabled ? currentOverride.accent_color + "44" : "hsl(0 0% 100% / 0.06)"}` }}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-3 py-2.5" style={{ background: isEnabled ? `${currentOverride.accent_color}11` : "hsl(0 0% 100% / 0.02)" }}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{preset.emoji}</span>
+                        <span className="text-xs font-bold" style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}>{preset.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isEnabled && (
+                          <button
+                            onClick={() => {
+                              const overrides = { ...(tpl.category_overrides || {}) };
+                              overrides[key] = preset.override;
+                              update("category_overrides" as any, overrides);
+                            }}
+                            className="px-2 py-0.5 rounded text-[9px] font-bold"
+                            style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.4)" }}
+                          >
+                            Reset
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            const overrides = { ...(tpl.category_overrides || {}) };
+                            if (isEnabled) {
+                              delete overrides[key];
+                            } else {
+                              overrides[key] = { ...preset.override };
+                            }
+                            update("category_overrides" as any, overrides);
+                          }}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-bold"
+                          style={{
+                            background: isEnabled ? `${currentOverride.accent_color}22` : "hsl(0 0% 100% / 0.06)",
+                            color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.3)",
+                          }}
+                        >
+                          {isEnabled ? "AN" : "AUS"}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Color editors when enabled */}
+                    {isEnabled && (
+                      <div className="px-3 py-3 space-y-3" style={{ background: "hsl(0 0% 0% / 0.15)" }}>
+                        <div className="grid grid-cols-2 gap-3">
+                          {([
+                            { key: "accent_color", label: "Akzent" },
+                            { key: "background_color", label: "Hintergrund" },
+                          ] as const).map(c => (
+                            <div key={c.key}>
+                              <label style={{ ...labelStyle, fontSize: "10px" }}>{c.label}</label>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="color"
+                                  value={(currentOverride as any)[c.key] || tpl[c.key === "accent_color" ? "accent_color" : "background_color"]}
+                                  onChange={e => {
+                                    const overrides = { ...(tpl.category_overrides || {}) };
+                                    overrides[key] = { ...overrides[key], [c.key]: e.target.value };
+                                    update("category_overrides" as any, overrides);
+                                  }}
+                                  className="w-6 h-6 rounded cursor-pointer border-0"
+                                  style={{ background: "transparent" }}
+                                />
+                                <input
+                                  type="text"
+                                  value={(currentOverride as any)[c.key] || ""}
+                                  onChange={e => {
+                                    const overrides = { ...(tpl.category_overrides || {}) };
+                                    overrides[key] = { ...overrides[key], [c.key]: e.target.value };
+                                    update("category_overrides" as any, overrides);
+                                  }}
+                                  className="flex-1 text-[10px] font-mono px-2 py-1 rounded-lg"
+                                  style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100%)", outline: "none" }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Gradient from/to */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label style={{ ...labelStyle, fontSize: "10px" }}>Verlauf Von</label>
+                            <div className="flex items-center gap-1.5">
+                              <input type="color" value={currentOverride.gradient.color_from} onChange={e => {
+                                const overrides = { ...(tpl.category_overrides || {}) };
+                                overrides[key] = { ...overrides[key], gradient: { ...overrides[key].gradient, color_from: e.target.value, enabled: true } };
+                                update("category_overrides" as any, overrides);
+                              }} className="w-6 h-6 rounded cursor-pointer border-0" style={{ background: "transparent" }} />
+                              <input type="text" value={currentOverride.gradient.color_from} onChange={e => {
+                                const overrides = { ...(tpl.category_overrides || {}) };
+                                overrides[key] = { ...overrides[key], gradient: { ...overrides[key].gradient, color_from: e.target.value, enabled: true } };
+                                update("category_overrides" as any, overrides);
+                              }} className="flex-1 text-[10px] font-mono px-2 py-1 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100%)", outline: "none" }} />
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ ...labelStyle, fontSize: "10px" }}>Verlauf Nach</label>
+                            <div className="flex items-center gap-1.5">
+                              <input type="color" value={currentOverride.gradient.color_to} onChange={e => {
+                                const overrides = { ...(tpl.category_overrides || {}) };
+                                overrides[key] = { ...overrides[key], gradient: { ...overrides[key].gradient, color_to: e.target.value, enabled: true } };
+                                update("category_overrides" as any, overrides);
+                              }} className="w-6 h-6 rounded cursor-pointer border-0" style={{ background: "transparent" }} />
+                              <input type="text" value={currentOverride.gradient.color_to} onChange={e => {
+                                const overrides = { ...(tpl.category_overrides || {}) };
+                                overrides[key] = { ...overrides[key], gradient: { ...overrides[key].gradient, color_to: e.target.value, enabled: true } };
+                                update("category_overrides" as any, overrides);
+                              }} className="flex-1 text-[10px] font-mono px-2 py-1 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100%)", outline: "none" }} />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Mini Preview Bar */}
+                        <div className="w-full h-8 rounded-lg overflow-hidden relative" style={{
+                          background: currentOverride.gradient.enabled
+                            ? gradientCSS(currentOverride.gradient, currentOverride.background_color || tpl.background_color)
+                            : currentOverride.background_color || tpl.background_color,
+                        }}>
+                          <div className="absolute top-0 left-0 right-0 h-1" style={{ background: currentOverride.accent_color }} />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: currentOverride.accent_color }}>
+                              {preset.label} TICKET
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Preview */}
@@ -584,6 +784,34 @@ const TicketTemplateAdmin = () => {
             <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
               {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
             </p>
+            
+            {/* Category Preview Cards */}
+            {tpl.category_overrides && Object.keys(tpl.category_overrides).length > 0 && (
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>KATEGORIE-VORSCHAU</h4>
+                {Object.entries(tpl.category_overrides).map(([key, override]) => {
+                  const preset = CATEGORY_PRESETS[key];
+                  if (!preset) return null;
+                  const mergedTpl: TicketTemplate = {
+                    ...tpl,
+                    accent_color: override.accent_color,
+                    background_color: override.background_color || tpl.background_color,
+                    text_color: override.text_color || tpl.text_color,
+                    gradient: override.gradient,
+                  };
+                  return (
+                    <div key={key}>
+                      <p className="text-[10px] font-bold mb-1.5" style={{ color: override.accent_color }}>
+                        {preset.emoji} {preset.label}
+                      </p>
+                      <div className="flex justify-center p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.04)" }}>
+                        <TicketPreview tpl={mergedTpl} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

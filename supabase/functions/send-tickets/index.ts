@@ -83,6 +83,13 @@ interface GradientConfig {
   color_to: string;
 }
 
+interface CategoryOverride {
+  accent_color: string;
+  gradient: GradientConfig;
+  background_color?: string;
+  text_color?: string;
+}
+
 interface TicketTemplate {
   format: "din_lang" | "a4";
   background_color: string;
@@ -100,6 +107,7 @@ interface TicketTemplate {
   logo_url: string;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks?: ContentBlock[];
+  category_overrides?: Record<string, CategoryOverride>;
 }
 
 const defaultTpl: TicketTemplate = {
@@ -125,16 +133,6 @@ async function generateTicketPDF(tickets: Array<{
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const [bgR, bgG, bgB] = hexToRgb(tpl.background_color);
-  const [acR, acG, acB] = hexToRgb(tpl.accent_color);
-  const [txR, txG, txB] = hexToRgb(tpl.text_color);
-  const bgColor = rgb(bgR, bgG, bgB);
-  const acColor = rgb(acR, acG, acB);
-  const txColor = rgb(txR, txG, txB);
-  // pdf-lib rgb() does NOT support alpha – use opacity param on draw calls instead
-  const txFaded = txColor;
-  const txSubtle = txColor;
-
   // DIN Lang: 595 x 281 pts (210x99mm), A4: 420 x 600 pts
   const isDinLang = tpl.format === "din_lang";
   const pageW = isDinLang ? 595 : 420;
@@ -153,16 +151,34 @@ async function generateTicketPDF(tickets: Array<{
   }
 
   for (const ticket of tickets) {
+    // Apply category override if available
+    const catGroup = (ticket.category_group || "").toUpperCase();
+    const override = tpl.category_overrides?.[catGroup];
+    const effectiveTpl = override ? {
+      ...tpl,
+      accent_color: override.accent_color || tpl.accent_color,
+      background_color: override.background_color || tpl.background_color,
+      text_color: override.text_color || tpl.text_color,
+      gradient: override.gradient?.enabled ? override.gradient : tpl.gradient,
+    } : tpl;
+
+    const [bgR, bgG, bgB] = hexToRgb(effectiveTpl.background_color);
+    const [acR, acG, acB] = hexToRgb(effectiveTpl.accent_color);
+    const [txR, txG, txB] = hexToRgb(effectiveTpl.text_color);
+    const bgColor = rgb(bgR, bgG, bgB);
+    const acColor = rgb(acR, acG, acB);
+    const txColor = rgb(txR, txG, txB);
+
     const page = pdfDoc.addPage([pageW, pageH]);
     const { width, height } = page.getSize();
     const m = isDinLang ? 20 : 30; // margin
 
     // Background with gradient simulation using multiple strips
-    if (tpl.gradient?.enabled) {
-      const [fromR, fromG, fromB] = hexToRgb(tpl.gradient.color_from);
-      const [toR, toG, toB] = hexToRgb(tpl.gradient.color_to);
+    if (effectiveTpl.gradient?.enabled) {
+      const [fromR, fromG, fromB] = hexToRgb(effectiveTpl.gradient!.color_from);
+      const [toR, toG, toB] = hexToRgb(effectiveTpl.gradient!.color_to);
       const strips = 40;
-      const isRadial = tpl.gradient.type === "radial";
+      const isRadial = effectiveTpl.gradient!.type === "radial";
       for (let i = 0; i < strips; i++) {
         const t = i / (strips - 1);
         // For radial: center is "from", edges are "to"
