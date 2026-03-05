@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     // Build redirect URL
     const origin = req.headers.get("origin") 
       || req.headers.get("referer")?.replace(/\/[^/]*$/, "")
-      || "https://gimmetestooo.lovable.app";
+      || "https://gimmegimmeparty.de";
     const redirectTo = `${origin}/admin/register`;
 
     // Generate invite link (does NOT send email when using generateLink)
