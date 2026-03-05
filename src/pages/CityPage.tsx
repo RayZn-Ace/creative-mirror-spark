@@ -249,22 +249,8 @@ const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: st
   const [open, setOpen] = useState(false);
   const isWhatsapp = content === "whatsapp";
   const isAutoEventInfo = content === "auto-eventinfo";
-  const isGallery = content === "gallery";
   const isCountdown = content === "countdown";
   const isSpotify = content === "spotify";
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (isGallery && event?.id) {
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      supabase.storage.from("event-images").list(`gallery/${event.id}`, { sortBy: { column: "created_at", order: "asc" } })
-        .then(({ data }) => {
-          if (data) {
-            setGalleryImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery/${event.id}/${f.name}`));
-          }
-        });
-    }
-  }, [isGallery, event?.id]);
 
   // Auto-generate eventinfo content from event data
   const displayContent = isAutoEventInfo && event
@@ -292,20 +278,6 @@ const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: st
                     <MessageCircle className="w-4 h-4" /> {t.whatsappJoin}
                   </a>
                 </>
-              ) : isGallery ? (
-                galleryImages.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {galleryImages.map((url, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden">
-                        <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>📸 Impressionen folgen in Kürze!</p>
-                  </div>
-                )
               ) : isCountdown ? (
                 <div className="text-center py-4">
                   <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>⏱️ Countdown läuft...</p>
@@ -378,21 +350,22 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-/* ─── Gallery Widget (standalone) ─── */
-const GalleryWidget = ({ eventId, title, showTitle }: { eventId: string; title: string; showTitle: boolean }) => {
-  const [images, setImages] = useState<string[]>([]);
+/* ─── Media Widget (standalone, photos or videos) ─── */
+const MediaWidget = ({ eventId, title, showTitle, type }: { eventId: string; title: string; showTitle: boolean; type: "photos" | "videos" }) => {
+  const [files, setFiles] = useState<string[]>([]);
+  const isVideo = type === "videos";
 
   useEffect(() => {
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    supabase.storage.from("event-images").list(`gallery/${eventId}`, { sortBy: { column: "created_at", order: "asc" } })
+    supabase.storage.from("event-images").list(`gallery-${type}/${eventId}`, { sortBy: { column: "created_at", order: "asc" } })
       .then(({ data }) => {
         if (data) {
-          setImages(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery/${eventId}/${f.name}`));
+          setFiles(data.filter(f => f.name !== ".emptyFolderPlaceholder").map(f => `${SUPABASE_URL}/storage/v1/object/public/event-images/gallery-${type}/${eventId}/${f.name}`));
         }
       });
-  }, [eventId]);
+  }, [eventId, type]);
 
-  if (images.length === 0) return null;
+  if (files.length === 0) return null;
 
   return (
     <div className="pt-6">
@@ -403,10 +376,14 @@ const GalleryWidget = ({ eventId, title, showTitle }: { eventId: string; title: 
           </h3>
         </div>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {images.map((url, i) => (
-          <div key={i} className="aspect-square rounded-lg overflow-hidden">
-            <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
+      <div className={`grid ${isVideo ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-3"} gap-2`}>
+        {files.map((url, i) => (
+          <div key={i} className={`${isVideo ? "aspect-video" : "aspect-square"} rounded-lg overflow-hidden`}>
+            {isVideo ? (
+              <video src={url} className="w-full h-full object-cover" controls preload="metadata" />
+            ) : (
+              <img src={url} className="w-full h-full object-cover" loading="lazy" alt={`Impression ${i + 1}`} />
+            )}
           </div>
         ))}
       </div>
@@ -776,8 +753,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         {event.infoSections.filter(s => s.content !== "spacer" && s.content !== "divider").map((s) => (
           s.content === "weitere-staedte" ? (
             <NearbyEvents key={s.id} currentSlug={citySlug} currentCity={event.city} t={t} />
-          ) : s.content === "gallery" ? (
-            <GalleryWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} />
+          ) : (s.content === "gallery" || s.content === "gallery-photos" || s.content === "gallery-videos") ? (
+            <MediaWidget key={s.id} eventId={event.id} title={s.title} showTitle={s.show_title !== false} type={s.content === "gallery-videos" ? "videos" : "photos"} />
           ) : (
             <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
           )
