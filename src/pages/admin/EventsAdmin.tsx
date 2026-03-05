@@ -98,7 +98,7 @@ interface SeriesOption {
 }
 
 const DEFAULT_INFO_SECTIONS: InfoBlock[] = [
-  { id: "eventinfo", title: "Eventinformationen", content: "📅 Datum: [wird automatisch angezeigt]\n🕐 Uhrzeit: [wird automatisch angezeigt]\n📍 Location: [wird automatisch angezeigt]\n📌 Adresse: [wird automatisch angezeigt]\n\nWeitere Details zum Event findest du auf unseren Social-Media-Kanälen." },
+  { id: "eventinfo", title: "Eventinformationen", content: "auto-eventinfo" },
   { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
   { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
   { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
@@ -116,7 +116,7 @@ interface BlockTemplate {
 const BLOCK_TEMPLATES: BlockTemplate[] = [
   // Content
   { id: "text", label: "Textblock", icon: Type, category: "Inhalt", block: { id: "", title: "Neuer Textblock", content: "Hier Text eingeben..." } },
-  { id: "eventinfo", label: "Eventinformationen", icon: FileText, category: "Inhalt", block: { id: "", title: "Eventinformationen", content: "📅 Datum: [wird automatisch angezeigt]\n🕐 Uhrzeit: [wird automatisch angezeigt]\n📍 Location: [wird automatisch angezeigt]\n📌 Adresse: [wird automatisch angezeigt]\n\nWeitere Details zum Event findest du auf unseren Social-Media-Kanälen." } },
+  { id: "eventinfo", label: "Eventinformationen (auto)", icon: FileText, category: "Inhalt", block: { id: "", title: "Eventinformationen", content: "auto-eventinfo" } },
   { id: "einlass", label: "Einlassinformationen", icon: Clock, category: "Inhalt", block: { id: "", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." } },
   { id: "dresscode", label: "Dresscode", icon: Star, category: "Inhalt", block: { id: "", title: "Dresscode", content: "Komm so, wie du dich wohlfühlst! 🎉\nWir empfehlen bequeme Schuhe und partygerechte Kleidung." } },
   { id: "anfahrt", label: "Anfahrt & Parken", icon: MapPin, category: "Inhalt", block: { id: "", title: "Anfahrt & Parken", content: "🚗 Parkplätze stehen in begrenzter Anzahl vor der Location zur Verfügung.\n🚌 Mit den öffentlichen Verkehrsmitteln erreichst du uns über die Haltestelle [Name].\n\n🔗 Google Maps-Link folgt in Kürze." } },
@@ -645,7 +645,7 @@ const EventEditView = ({
             </p>
             <div className="space-y-3">
               {(editing.info_sections || []).map((block, idx) => {
-                const isWidget = ["whatsapp", "weitere-staedte", "gallery", "spotify", "countdown", "divider", "spacer"].includes(block.content);
+                const isWidget = ["whatsapp", "weitere-staedte", "gallery", "spotify", "countdown", "divider", "spacer", "auto-eventinfo"].includes(block.content);
                 const widgetLabel = block.content === "whatsapp" ? "🟢 WhatsApp Community Widget" 
                   : block.content === "weitere-staedte" ? "🗺️ Weitere Städte Widget"
                   : block.content === "gallery" ? "🖼️ Mediengalerie Widget"
@@ -653,6 +653,7 @@ const EventEditView = ({
                   : block.content === "countdown" ? "⏱️ Countdown Widget"
                   : block.content === "divider" ? "── Visueller Trenner ──"
                   : block.content === "spacer" ? "↕️ Abstand"
+                  : block.content === "auto-eventinfo" ? "📅 Automatisch generiert (Datum, Uhrzeit, Location, Adresse)"
                   : null;
                 return (
                 <div key={block.id} className="rounded-xl p-4 space-y-2" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>

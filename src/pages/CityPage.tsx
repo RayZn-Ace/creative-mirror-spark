@@ -245,18 +245,23 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
 };
 
 /* ─── Info Accordion ─── */
-const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; content: string; t: Translations }) => {
+const InfoAccordion = ({ id, title, content, t, event }: { id: string; title: string; content: string; t: Translations; event?: CityEvent }) => {
   const [open, setOpen] = useState(false);
   const isWhatsapp = content === "whatsapp";
+  const isAutoEventInfo = content === "auto-eventinfo";
   const isGallery = content === "gallery";
   const isCountdown = content === "countdown";
   const isSpotify = content === "spotify";
-  const isWidget = isWhatsapp || isGallery || isCountdown || isSpotify;
+
+  // Auto-generate eventinfo content from event data
+  const displayContent = isAutoEventInfo && event
+    ? t.eventInfoContent(event.weekday, event.date, event.venue, event.address, event.time)
+    : content;
 
   return (
     <div className="pp-accordion">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-3.5 px-4 sm:px-5 text-left">
-        <span className="text-sm sm:text-base font-display uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>{title}</span>
+        <span className="text-sm sm:text-base font-display uppercase tracking-wide" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 3px hsl(210 80% 15% / 0.7)" }}>{isAutoEventInfo && event ? t.eventInfoTitle : title}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
           <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(0 0% 100%)" }} />
         </motion.div>
@@ -287,7 +292,7 @@ const InfoAccordion = ({ id, title, content, t }: { id: string; title: string; c
                   <p className="text-sm font-medium" style={{ color: "hsl(0 0% 100% / 0.7)" }}>🎵 Spotify Playlist folgt...</p>
                 </div>
               ) : (
-                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7)" }}>{content}</p>
+                <p className="text-sm sm:text-base whitespace-pre-line leading-relaxed font-body font-medium" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 6px hsl(210 70% 10% / 0.7)" }}>{displayContent}</p>
               )}
             </div>
           </motion.div>
@@ -710,7 +715,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
       <div className="space-y-2 pt-2">
         {event.infoSections.filter(s => s.content !== "weitere-staedte" && s.content !== "spacer" && s.content !== "divider").map((s) => (
-          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} />
+          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
         ))}
       </div>
 
