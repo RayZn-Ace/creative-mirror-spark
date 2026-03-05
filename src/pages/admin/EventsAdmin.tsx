@@ -416,6 +416,11 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
   const [uploading, setUploading] = useState(false);
   const [linkInput, setLinkInput] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
+  const [showScrapeInput, setShowScrapeInput] = useState(false);
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [scraping, setScraping] = useState(false);
+  const [scrapeResults, setScrapeResults] = useState<string[]>([]);
+  const [selectedScrapeResults, setSelectedScrapeResults] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
   const prefix = `gallery-${type}/${eventId}/`;
   const isVideo = type === "videos";
@@ -468,6 +473,51 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
     toast.success("Link hinzugefügt");
   };
 
+  const scrapePage = async () => {
+    const url = scrapeUrl.trim();
+    if (!url) return;
+    setScraping(true);
+    setScrapeResults([]);
+    setSelectedScrapeResults(new Set());
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-media", {
+        body: { url, type },
+      });
+      if (error) throw error;
+      if (data?.success && data.urls?.length > 0) {
+        // Filter out URLs already in external list
+        const newUrls = (data.urls as string[]).filter(u => !externalUrls.includes(u));
+        setScrapeResults(newUrls);
+        setSelectedScrapeResults(new Set(newUrls));
+        toast.success(`${newUrls.length} ${itemLabel} gefunden`);
+      } else {
+        toast.error(`Keine ${itemLabel} auf der Seite gefunden`);
+      }
+    } catch (err: any) {
+      toast.error("Scan fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+    }
+    setScraping(false);
+  };
+
+  const toggleScrapeResult = (url: string) => {
+    setSelectedScrapeResults(prev => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url); else next.add(url);
+      return next;
+    });
+  };
+
+  const importSelectedScrapeResults = () => {
+    const toAdd = Array.from(selectedScrapeResults).filter(u => !externalUrls.includes(u));
+    if (toAdd.length === 0) return;
+    onUpdateExternalUrls([...externalUrls, ...toAdd]);
+    setScrapeResults([]);
+    setSelectedScrapeResults(new Set());
+    setShowScrapeInput(false);
+    setScrapeUrl("");
+    toast.success(`${toAdd.length} ${itemLabel} importiert`);
+  };
+
   const removeLink = (url: string) => {
     onUpdateExternalUrls(externalUrls.filter(u => u !== url));
   };
@@ -485,8 +535,11 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           <button onClick={() => fileRef.current?.click()} disabled={uploading} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(270 60% 55% / 0.2)", color: "hsl(270 60% 70%)" }}>
             {uploading ? "Lädt..." : `+ ${itemLabel}`}
           </button>
-          <button onClick={() => setShowLinkInput(!showLinkInput)} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.2)", color: "hsl(200 60% 70%)" }}>
+          <button onClick={() => { setShowLinkInput(!showLinkInput); setShowScrapeInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.2)", color: "hsl(200 60% 70%)" }}>
             🔗 Link
+          </button>
+          <button onClick={() => { setShowScrapeInput(!showScrapeInput); setShowLinkInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(150 60% 40% / 0.2)", color: "hsl(150 60% 65%)" }}>
+            🌐 Seite scannen
           </button>
         </div>
       </div>
@@ -504,6 +557,55 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           <button onClick={addLink} className="px-4 py-2 rounded-lg text-xs font-bold" style={{ background: "hsl(200 60% 50% / 0.3)", color: "hsl(200 60% 70%)" }}>
             Hinzufügen
           </button>
+        </div>
+      )}
+
+      {showScrapeInput && (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              value={scrapeUrl}
+              onChange={e => setScrapeUrl(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && scrapePage()}
+              placeholder="https://gimmegimmeparty.de/media"
+              className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(150 60% 40% / 0.2)" }}
+            />
+            <button onClick={scrapePage} disabled={scraping} className="px-4 py-2 rounded-lg text-xs font-bold" style={{ background: "hsl(150 60% 40% / 0.3)", color: "hsl(150 60% 65%)" }}>
+              {scraping ? "Scannt..." : "Scannen"}
+            </button>
+          </div>
+          {scrapeResults.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium" style={{ color: "hsl(150 60% 65%)" }}>
+                  {selectedScrapeResults.size} / {scrapeResults.length} ausgewählt
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedScrapeResults(selectedScrapeResults.size === scrapeResults.length ? new Set() : new Set(scrapeResults))} className="px-2 py-1 rounded text-[10px] font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100% / 0.5)" }}>
+                    {selectedScrapeResults.size === scrapeResults.length ? "Keine" : "Alle"}
+                  </button>
+                  <button onClick={importSelectedScrapeResults} disabled={selectedScrapeResults.size === 0} className="px-3 py-1 rounded text-[10px] font-bold" style={{ background: selectedScrapeResults.size > 0 ? "hsl(150 60% 40% / 0.3)" : "hsl(0 0% 100% / 0.06)", color: selectedScrapeResults.size > 0 ? "hsl(150 60% 65%)" : "hsl(0 0% 100% / 0.3)" }}>
+                    ✓ {selectedScrapeResults.size} importieren
+                  </button>
+                </div>
+              </div>
+              <div className={`grid ${isVideo ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"} gap-2 max-h-64 overflow-y-auto rounded-lg p-2`} style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(150 60% 40% / 0.15)" }}>
+                {scrapeResults.map((url, i) => (
+                  <div key={i} onClick={() => toggleScrapeResult(url)} className="relative cursor-pointer aspect-square rounded-lg overflow-hidden transition-all" style={{ border: selectedScrapeResults.has(url) ? "2px solid hsl(150 60% 50%)" : "2px solid transparent", opacity: selectedScrapeResults.has(url) ? 1 : 0.5 }}>
+                    {isVideo ? (
+                      <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+                    ) : (
+                      <img src={url} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    )}
+                    {selectedScrapeResults.has(url) && (
+                      <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style={{ background: "hsl(150 60% 40%)", color: "white" }}>✓</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
