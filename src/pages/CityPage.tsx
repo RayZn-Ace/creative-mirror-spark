@@ -367,9 +367,9 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [slideOffset, setSlideOffset] = useState(0);
   const [slidePlaying, setSlidePlaying] = useState(true);
-  // Flip-flop: two persistent layers per tile, alternating which is on top
-  const [flipState, setFlipState] = useState<{ layerA: number[]; layerB: number[]; activeLayer: "A" | "B" }>({
-    layerA: [], layerB: [], activeLayer: "A",
+  // Flip-flop: two persistent layers per tile, each tile has its own active layer
+  const [flipState, setFlipState] = useState<{ layerA: number[]; layerB: number[]; activeLayers: ("A" | "B")[] }>({
+    layerA: [], layerB: [], activeLayers: [],
   });
   const flipInitialized = useRef(false);
   const isVideo = type === "videos";
@@ -442,7 +442,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
     if (allFiles.length > 0 && !flipInitialized.current) {
       const initial = Array.from({ length: cols }, (_, i) => i % allFiles.length);
       const second = getNextIndices(initial);
-      setFlipState({ layerA: initial, layerB: second, activeLayer: "A" });
+      setFlipState({ layerA: initial, layerB: second, activeLayers: Array(cols).fill("A") });
       flipInitialized.current = true;
     }
   }, [allFiles.length, cols, getNextIndices]);
@@ -452,66 +452,103 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
     if (allFiles.length > 0) {
       const initial = Array.from({ length: cols }, (_, i) => i % allFiles.length);
       const second = getNextIndices(initial);
-      setFlipState({ layerA: initial, layerB: second, activeLayer: "A" });
+      setFlipState({ layerA: initial, layerB: second, activeLayers: Array(cols).fill("A") });
       flipInitialized.current = true;
     }
   }, [cols, slideTransition, slideOrder]);
 
-  // Slideshow timer: flip between layers
+  // Slideshow timer
   useEffect(() => {
     if (viewMode !== "slideshow" || !slidePlaying || allFiles.length <= cols) return;
 
     if (slideTransition === "staggered") {
-      // Staggered: each tile flips independently
-      const timers = Array.from({ length: cols }, (_, tileIdx) =>
-        setInterval(() => {
-          setFlipState(prev => {
-            const isA = prev.activeLayer === "A";
-            // The inactive layer for this tile gets a new image
-            const inactive = isA ? [...prev.layerB] : [...prev.layerA];
-            const active = isA ? prev.layerA : prev.layerB;
-            const currentlyVisible = new Set(active);
-            if (slideOrder === "random") {
-              currentlyVisible.add(inactive[tileIdx]);
-              inactive[tileIdx] = pickUniqueRandom(currentlyVisible, allFiles.length);
-            } else {
-              let candidate = (active[tileIdx] + cols) % allFiles.length;
-              while (currentlyVisible.has(candidate) && candidate !== active[tileIdx]) {
-                candidate = (candidate + 1) % allFiles.length;
+      // Staggered: each tile flips independently with its own timer offset
+      const timers = Array.from({ length: cols }, (_, tileIdx) => {
+        const tileDelay = tileIdx * (slideSpeed / (cols + 1));
+        // Initial delay before first flip for this tile
+        const initialTimeout = setTimeout(() => {
+          // Do the first flip, then start interval
+          const doFlip = () => {
+            setFlipState(prev => {
+              const isA = prev.activeLayers[tileIdx] === "A";
+              const currentVisible = isA ? prev.layerA[tileIdx] : prev.layerB[tileIdx];
+              // Collect all currently visible images across all tiles
+              const allVisible = new Set(prev.activeLayers.map((layer, i) =>
+                layer === "A" ? prev.layerA[i] : prev.layerB[i]
+              ));
+
+              // Pick next image for the hidden layer of this tile
+              let nextImg: number;
+              if (slideOrder === "random") {
+                allVisible.add(currentVisible);
+                nextImg = pickUniqueRandom(allVisible, allFiles.length);
+              } else {
+                nextImg = (currentVisible + cols) % allFiles.length;
+                let attempts = 0;
+                while (allVisible.has(nextImg) && nextImg !== currentVisible && attempts < allFiles.length) {
+                  nextImg = (nextImg + 1) % allFiles.length;
+                  attempts++;
+                }
               }
-              inactive[tileIdx] = candidate;
-            }
-            // Only flip this tile - we toggle per-tile via a different mechanism
-            // For staggered we use per-tile flip tracking
-            return isA
-              ? { ...prev, layerB: inactive }
-              : { ...prev, layerA: inactive };
-          });
-        }, slideSpeed + tileIdx * (slideSpeed / (cols + 1)))
-      );
 
-      // Also need a master flip timer for staggered
-      const masterTimer = setInterval(() => {
-        setFlipState(prev => ({
-          ...prev,
-          activeLayer: prev.activeLayer === "A" ? "B" : "A",
-        }));
-      }, slideSpeed);
+              // Update hidden layer with new image, then flip this tile
+              const newLayerA = [...prev.layerA];
+              const newLayerB = [...prev.layerB];
+              const newActiveLayers = [...prev.activeLayers];
 
-      return () => { timers.forEach(t => clearInterval(t)); clearInterval(masterTimer); };
+              if (isA) {
+                newLayerB[tileIdx] = nextImg;
+                newActiveLayers[tileIdx] = "B";
+              } else {
+                newLayerA[tileIdx] = nextImg;
+                newActiveLayers[tileIdx] = "A";
+              }
+
+              return { layerA: newLayerA, layerB: newLayerB, activeLayers: newActiveLayers };
+            });
+          };
+
+          doFlip();
+          const interval = setInterval(doFlip, slideSpeed);
+          // Store interval for cleanup
+          (timers as any)[`interval_${tileIdx}`] = interval;
+        }, tileDelay);
+
+        return initialTimeout;
+      });
+
+      return () => {
+        timers.forEach(t => clearTimeout(t));
+        // Also clear intervals
+        Array.from({ length: cols }, (_, i) => {
+          const interval = (timers as any)[`interval_${i}`];
+          if (interval) clearInterval(interval);
+        });
+      };
     } else {
       // Simultaneous: all tiles flip at once
       const timer = setInterval(() => {
         setFlipState(prev => {
-          const isA = prev.activeLayer === "A";
-          const currentVisible = isA ? prev.layerA : prev.layerB;
+          const currentVisible = prev.activeLayers.map((layer, i) =>
+            layer === "A" ? prev.layerA[i] : prev.layerB[i]
+          );
           const nextImages = getNextIndices(currentVisible);
-          // Load next images into the hidden layer, then flip
-          return {
-            layerA: isA ? prev.layerA : nextImages,
-            layerB: isA ? nextImages : prev.layerB,
-            activeLayer: isA ? "B" : "A",
-          };
+          const newLayerA = [...prev.layerA];
+          const newLayerB = [...prev.layerB];
+          const newActiveLayers = [...prev.activeLayers];
+
+          for (let i = 0; i < cols; i++) {
+            const isA = prev.activeLayers[i] === "A";
+            if (isA) {
+              newLayerB[i] = nextImages[i];
+              newActiveLayers[i] = "B";
+            } else {
+              newLayerA[i] = nextImages[i];
+              newActiveLayers[i] = "A";
+            }
+          }
+
+          return { layerA: newLayerA, layerB: newLayerB, activeLayers: newActiveLayers };
         });
       }, slideSpeed);
       return () => clearInterval(timer);
@@ -553,7 +590,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
           <div className="relative">
             <div className={`grid ${gridColsClass} gap-2`}>
               {Array.from({ length: cols }).map((_, tileIdx) => {
-                const isAActive = flipState.activeLayer === "A";
+                const isAActive = flipState.activeLayers[tileIdx] === "A";
                 const aIdx = (flipState.layerA[tileIdx] ?? 0) % Math.max(allFiles.length, 1);
                 const bIdx = (flipState.layerB[tileIdx] ?? 0) % Math.max(allFiles.length, 1);
                 const activeIdx = isAActive ? aIdx : bIdx;
