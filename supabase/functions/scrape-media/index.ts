@@ -25,33 +25,99 @@ Deno.serve(async (req) => {
 
     console.log('Scraping media from:', formattedUrl, 'type:', type);
 
-    const response = await fetch(formattedUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      },
-    });
+    // Try multiple approaches to get the rendered HTML
+    let html = '';
 
-    if (!response.ok) {
+    // Approach 1: Use a prerender-style User-Agent (many SPAs serve pre-rendered HTML to bots)
+    const botUserAgents = [
+      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/120.0.0.0 Safari/537.36',
+      'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+    ];
+
+    for (const ua of botUserAgents) {
+      try {
+        const response = await fetch(formattedUrl, {
+          headers: {
+            'User-Agent': ua,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+          },
+        });
+        if (response.ok) {
+          const text = await response.text();
+          // Check if this response has actual img tags (not just a JS shell)
+          const imgCount = (text.match(/<img[^>]+src=/gi) || []).length;
+          console.log(`UA "${ua.substring(0, 30)}..." returned ${text.length} bytes, ${imgCount} img tags`);
+          if (imgCount > (html.match(/<img[^>]+src=/gi) || []).length) {
+            html = text;
+          }
+          if (imgCount >= 5) break; // Good enough, stop trying
+        }
+      } catch (e) {
+        console.log('UA attempt failed:', e);
+      }
+    }
+
+    // Approach 2: If bot UAs didn't work well, try Google's cache / web render
+    if ((html.match(/<img[^>]+src=/gi) || []).length < 3) {
+      try {
+        // Try using a web rendering proxy service
+        const renderUrl = `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(formattedUrl)}`;
+        const cacheResp = await fetch(renderUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        });
+        if (cacheResp.ok) {
+          const cacheHtml = await cacheResp.text();
+          const imgCount = (cacheHtml.match(/<img[^>]+src=/gi) || []).length;
+          console.log(`Google cache returned ${cacheHtml.length} bytes, ${imgCount} img tags`);
+          if (imgCount > (html.match(/<img[^>]+src=/gi) || []).length) {
+            html = cacheHtml;
+          }
+        }
+      } catch (e) {
+        console.log('Cache approach failed:', e);
+      }
+    }
+
+    // Approach 3: If still not enough, try regular fetch as fallback
+    if ((html.match(/<img[^>]+src=/gi) || []).length < 2) {
+      try {
+        const response = await fetch(formattedUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          },
+        });
+        if (response.ok) {
+          const text = await response.text();
+          if ((text.match(/<img[^>]+src=/gi) || []).length > (html.match(/<img[^>]+src=/gi) || []).length) {
+            html = text;
+          }
+        }
+      } catch (e) {
+        console.log('Regular fetch failed:', e);
+      }
+    }
+
+    if (!html) {
       return new Response(
-        JSON.stringify({ success: false, error: `Failed to fetch page: ${response.status}` }),
+        JSON.stringify({ success: false, error: 'Seite konnte nicht geladen werden' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const html = await response.text();
     const baseUrl = new URL(formattedUrl);
     const mediaUrls: string[] = [];
 
-    console.log('HTML length:', html.length);
+    console.log('Final HTML length:', html.length, 'img tags:', (html.match(/<img[^>]+src=/gi) || []).length);
 
     const resolveUrl = (src: string): string | null => {
       if (!src || src.startsWith('data:') || src.length < 5) return null;
       try {
         if (src.startsWith('//')) return `https:${src}`;
         if (src.startsWith('http')) return src;
-        if (src.startsWith('/')) return `${baseUrl.origin}${src}`;
-        return new URL(src, formattedUrl).href;
+        return new URL(src, baseUrl.href).href;
       } catch {
         return null;
       }
@@ -72,47 +138,45 @@ Deno.serve(async (req) => {
         if (resolved) addUrl(resolved);
       }
 
-      // Extract YouTube video IDs and create watch URLs
-      const ytRegex = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/gi;
+      // Extract YouTube video IDs
       const seenYtIds = new Set<string>();
-      while ((match = ytRegex.exec(html)) !== null) {
-        if (!seenYtIds.has(match[1])) {
-          seenYtIds.add(match[1]);
-          addUrl(`https://www.youtube.com/watch?v=${match[1]}`);
+      const ytPatterns = [
+        /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/gi,
+        /img\.youtube\.com\/vi\/([\w-]{11})\//gi,
+      ];
+      for (const pattern of ytPatterns) {
+        let match;
+        while ((match = pattern.exec(html)) !== null) {
+          if (!seenYtIds.has(match[1])) {
+            seenYtIds.add(match[1]);
+            addUrl(`https://www.youtube.com/watch?v=${match[1]}`);
+          }
         }
       }
 
-      // Also check for YouTube thumbnail images (img.youtube.com/vi/ID/...)
-      const ytThumbRegex = /img\.youtube\.com\/vi\/([\w-]{11})\//gi;
-      while ((match = ytThumbRegex.exec(html)) !== null) {
-        if (!seenYtIds.has(match[1])) {
-          seenYtIds.add(match[1]);
-          addUrl(`https://www.youtube.com/watch?v=${match[1]}`);
-        }
-      }
-
-      // Extract Vimeo embeds
+      // Extract Vimeo
       const vimeoRegex = /vimeo\.com\/(?:video\/)?(\d+)/gi;
       while ((match = vimeoRegex.exec(html)) !== null) {
         addUrl(`https://vimeo.com/${match[1]}`);
       }
     } else {
-      // Extract ALL src attributes from img tags
+      // Extract ALL img src attributes
       const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
       let match;
       while ((match = imgRegex.exec(html)) !== null) {
         const resolved = resolveUrl(match[1]);
         if (!resolved) continue;
-        
+
         const lower = resolved.toLowerCase();
-        // Skip tiny icons, tracking pixels, favicons
+        // Skip tiny icons, tracking pixels, favicons, YouTube thumbs
         if (lower.includes('favicon')) continue;
         if (lower.includes('1x1')) continue;
         if (lower.includes('pixel')) continue;
         if (lower.includes('tracking')) continue;
-        // Skip YouTube thumbnails (those are for videos)
         if (lower.includes('img.youtube.com')) continue;
-        
+        // Skip very small placeholder images (base64 or tiny SVGs)
+        if (lower.endsWith('.svg') && lower.includes('icon')) continue;
+
         addUrl(resolved);
       }
 
@@ -145,7 +209,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Found ${mediaUrls.length} ${type} URLs:`, mediaUrls.slice(0, 5));
+    console.log(`Found ${mediaUrls.length} ${type} URLs`);
 
     return new Response(
       JSON.stringify({ success: true, urls: mediaUrls, count: mediaUrls.length }),
