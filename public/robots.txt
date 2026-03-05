@@ -22,4 +22,4 @@ Disallow: /admin/
 Disallow: /scan
 Disallow: /bestellung/
 
-Sitemap: https://gimmegimmeparty.de/sitemap.xml
+Sitemap: https://ilmdapnqqvxpwjsbrdfe.supabase.co/functions/v1/sitemap
