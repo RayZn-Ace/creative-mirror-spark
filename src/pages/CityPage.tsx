@@ -15,7 +15,7 @@ interface GalleryConfig {
   slideshow_speed?: number;
   slideshow_transition?: "simultaneous" | "staggered";
   slideshow_order?: "sequential" | "random";
-  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
+  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4" | "9:16";
   hover_effect?: boolean;
   show_captions?: boolean;
   lightbox_enabled?: boolean;
@@ -475,7 +475,7 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
   const slideTransition = galleryConfig?.slideshow_transition || "simultaneous";
   const slideOrder = galleryConfig?.slideshow_order || "sequential";
 
-  const aspectClass = aspect === "square" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : aspect === "16:9" ? "aspect-video" : "aspect-[3/4]";
+  const aspectClass = aspect === "square" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : aspect === "16:9" ? "aspect-video" : aspect === "9:16" ? "aspect-[9/16]" : "aspect-[3/4]";
 
   const gridColsClass = {
     1: "grid-cols-1",

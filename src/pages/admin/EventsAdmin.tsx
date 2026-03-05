@@ -45,7 +45,7 @@ interface GalleryConfig {
   slideshow_speed?: number;
   slideshow_transition?: "simultaneous" | "staggered";
   slideshow_order?: "sequential" | "random";
-  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4";
+  aspect_ratio?: "square" | "4:3" | "16:9" | "3:4" | "9:16";
   hover_effect?: boolean;
   show_captions?: boolean;
   lightbox_enabled?: boolean;
@@ -670,6 +670,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
                 { value: "4:3", label: "4:3" },
                 { value: "16:9", label: "16:9" },
                 { value: "3:4", label: "3:4" },
+                { value: "9:16", label: "9:16" },
               ] as const).map(opt => (
                 <button
                   key={opt.value}
