@@ -367,69 +367,108 @@ const getYouTubeId = (url: string): string | null => {
 };
 const isYouTubeUrl = (url: string) => getYouTubeId(url) !== null;
 
-/* ─── Video Slideshow Tile: handles both direct video files and YouTube embeds ─── */
+/* ─── Video Slideshow Tile: dual-layer A/B crossfade for smooth transitions ─── */
 const VideoSlideshowTile = ({ files, startIdx, aspectClass, intervalMs }: { files: string[]; startIdx: number; aspectClass: string; intervalMs: number }) => {
-  const [currentIdx, setCurrentIdx] = useState(startIdx % files.length);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const src = files[currentIdx];
-  const ytId = getYouTubeId(src);
+  const total = files.length;
+  const [layerA, setLayerA] = useState(startIdx % total);
+  const [layerB, setLayerB] = useState((startIdx + 1) % total);
+  const [activeLayer, setActiveLayer] = useState<"A" | "B">("A");
+  const [ready, setReady] = useState(false);
+  const videoARef = useRef<HTMLVideoElement>(null);
+  const videoBRef = useRef<HTMLVideoElement>(null);
 
-  // For direct video files: play on mount/change
+  const srcA = files[layerA];
+  const srcB = files[layerB];
+  const ytIdA = getYouTubeId(srcA);
+  const ytIdB = getYouTubeId(srcB);
+  const isAActive = activeLayer === "A";
+
+  // Mark ready after a short delay so the first iframe can load
   useEffect(() => {
-    if (ytId) return;
-    const v = videoRef.current;
+    const t = setTimeout(() => setReady(true), 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Auto-advance timer
+  useEffect(() => {
+    if (!ready) return;
+    const timer = setTimeout(() => {
+      if (isAActive) {
+        // B is already preloaded → fade to B, then queue next into A
+        setActiveLayer("B");
+        setTimeout(() => {
+          setLayerA((layerB + 1) % total);
+        }, 1500); // after fade completes
+      } else {
+        setActiveLayer("A");
+        setTimeout(() => {
+          setLayerB((layerA + 1) % total);
+        }, 1500);
+      }
+    }, intervalMs);
+    return () => clearTimeout(timer);
+  }, [activeLayer, ready, intervalMs, layerA, layerB, total, isAActive]);
+
+  // For direct video files: play active layer
+  useEffect(() => {
+    if (ytIdA || !isAActive) return;
+    const v = videoARef.current;
     if (!v) return;
-    v.muted = true;
-    v.playsInline = true;
-    v.currentTime = 0;
+    v.muted = true; v.playsInline = true; v.currentTime = 0;
     const tryPlay = () => { v.play().catch(() => {}); };
     if (v.readyState >= 2) tryPlay();
     else v.addEventListener("loadeddata", tryPlay, { once: true });
-  }, [currentIdx, ytId]);
+  }, [layerA, isAActive, ytIdA]);
 
-  // For YouTube: auto-advance after intervalMs
   useEffect(() => {
-    if (!ytId) return;
-    const timer = setTimeout(() => {
-      setCurrentIdx(prev => (prev + 1) % files.length);
-    }, intervalMs);
-    return () => clearTimeout(timer);
-  }, [currentIdx, ytId, intervalMs, files.length]);
+    if (ytIdB || isAActive) return;
+    const v = videoBRef.current;
+    if (!v) return;
+    v.muted = true; v.playsInline = true; v.currentTime = 0;
+    const tryPlay = () => { v.play().catch(() => {}); };
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("loadeddata", tryPlay, { once: true });
+  }, [layerB, isAActive, ytIdB]);
 
-  const handleVideoEnded = useCallback(() => {
-    setCurrentIdx(prev => (prev + 1) % files.length);
-  }, [files.length]);
+  const iframeStyle = (active: boolean) => ({
+    opacity: active ? 1 : 0,
+    transition: "opacity 1.4s ease-in-out",
+    zIndex: active ? 2 : 1,
+  });
+
+  const ytIframeSrc = (id: string) =>
+    `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&modestbranding=1&rel=0&playsinline=1&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&origin=${window.location.origin}`;
 
   return (
     <div className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
-      {ytId ? (
-        /* Oversized iframe + overflow:hidden crops YouTube's overlay UI (title, channel, logo) */
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Layer A */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={iframeStyle(isAActive)}>
+        {ytIdA ? (
           <iframe
-            src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&controls=0&modestbranding=1&rel=0&playsinline=1&showinfo=0&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&origin=${window.location.origin}`}
+            src={ytIframeSrc(ytIdA)}
             className="absolute"
-            style={{
-              top: "-60px",
-              left: "-10px",
-              width: "calc(100% + 20px)",
-              height: "calc(100% + 120px)",
-              border: 0,
-            }}
+            style={{ top: "-60px", left: "-10px", width: "calc(100% + 20px)", height: "calc(100% + 120px)", border: 0 }}
             allow="autoplay; encrypted-media"
             tabIndex={-1}
           />
-        </div>
-      ) : (
-        <video
-          ref={videoRef}
-          src={src}
-          className="absolute inset-0 w-full h-full object-cover"
-          muted
-          playsInline
-          preload="auto"
-          onEnded={handleVideoEnded}
-        />
-      )}
+        ) : (
+          <video ref={videoARef} src={srcA} className="absolute inset-0 w-full h-full object-cover" muted playsInline preload="auto" />
+        )}
+      </div>
+      {/* Layer B */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={iframeStyle(!isAActive)}>
+        {ytIdB ? (
+          <iframe
+            src={ytIframeSrc(ytIdB)}
+            className="absolute"
+            style={{ top: "-60px", left: "-10px", width: "calc(100% + 20px)", height: "calc(100% + 120px)", border: 0 }}
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+          />
+        ) : (
+          <video ref={videoBRef} src={srcB} className="absolute inset-0 w-full h-full object-cover" muted playsInline preload="auto" />
+        )}
+      </div>
     </div>
   );
 };
