@@ -11,7 +11,7 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const baseUrl = "https://gimmetestooo.lovable.app";
+  const baseUrl = "https://gimmegimmeparty.de";
 
   // Fetch all published series
   const { data: series } = await supabase

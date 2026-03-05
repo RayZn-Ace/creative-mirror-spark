@@ -1327,12 +1327,12 @@ const CityPage = () => {
       organizer: {
         "@type": "Organization",
         name: "GIMME GIMME Party",
-        url: "https://gimmetestooo.lovable.app",
+        url: "https://gimmegimmeparty.de",
       },
       image: getCityLandmarkUrl(cityName),
       offers: {
         "@type": "AggregateOffer",
-        url: `https://gimmetestooo.lovable.app/${citySlug}`,
+        url: `https://gimmegimmeparty.de/${citySlug}`,
         availability: selectedEvent.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
         priceCurrency: "EUR",
       },
@@ -1344,8 +1344,8 @@ const CityPage = () => {
     description: cityName
       ? `MAMMA MIA Party in ${cityName} 2025 ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY ${cityName} – Tickets ab sofort verfügbar. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
       : "Die weltweit größte ABBA Party!",
-    canonical: citySlug ? `https://gimmetestooo.lovable.app/${citySlug}` : undefined,
-    ogImage: cityName ? `https://gimmetestooo.lovable.app${getCityLandmarkUrl(cityName)}` : undefined,
+    canonical: citySlug ? `https://gimmegimmeparty.de/${citySlug}` : undefined,
+    ogImage: cityName ? `https://gimmegimmeparty.de${getCityLandmarkUrl(cityName)}` : undefined,
     ogType: "event",
     jsonLd: seoJsonLd,
   });
