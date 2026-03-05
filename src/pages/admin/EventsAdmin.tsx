@@ -602,7 +602,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
           <button onClick={() => { setShowScrapeInput(!showScrapeInput); setShowLinkInput(false); setShowGallerySettings(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: "hsl(150 60% 40% / 0.2)", color: "hsl(150 60% 65%)" }}>
             🌐 Seite scannen
           </button>
-          {!isVideo && onUpdateGalleryConfig && (
+          {onUpdateGalleryConfig && (
             <button onClick={() => { setShowGallerySettings(!showGallerySettings); setShowLinkInput(false); setShowScrapeInput(false); }} className="px-3 py-1 rounded-lg text-xs font-bold" style={{ background: showGallerySettings ? "hsl(45 80% 50% / 0.3)" : "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 60%)" }}>
               ⚙️ Darstellung
             </button>
@@ -611,7 +611,7 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
       </div>
 
       {/* Gallery Display Settings */}
-      {showGallerySettings && onUpdateGalleryConfig && !isVideo && (
+      {showGallerySettings && onUpdateGalleryConfig && (
         <div className="rounded-lg p-3 space-y-3" style={{ background: "hsl(45 60% 50% / 0.06)", border: "1px solid hsl(45 60% 50% / 0.15)" }}>
           <div className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(45 60% 60%)" }}>⚙️ Galerie-Darstellung</div>
           
@@ -621,12 +621,12 @@ const MediaEditor = ({ eventId, type, showTitle, onToggleTitle, externalUrls, on
             <div className="flex gap-1.5">
               {([
                 { value: "grid", label: "Grid", icon: "▦" },
-                { value: "masonry", label: "Masonry", icon: "▥" },
+                ...(!isVideo ? [{ value: "masonry" as const, label: "Masonry", icon: "▥" }] : []),
                 { value: "slideshow", label: "Diashow", icon: "▶" },
-              ] as const).map(opt => (
+              ]).map(opt => (
                 <button
                   key={opt.value}
-                  onClick={() => onUpdateGalleryConfig({ ...galleryConfig, view_mode: opt.value })}
+                  onClick={() => onUpdateGalleryConfig({ ...galleryConfig, view_mode: opt.value as "grid" | "masonry" | "slideshow" })}
                   className="flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all"
                   style={{
                     background: (galleryConfig?.view_mode || "grid") === opt.value ? "hsl(217 91% 60% / 0.25)" : "hsl(0 0% 100% / 0.05)",
