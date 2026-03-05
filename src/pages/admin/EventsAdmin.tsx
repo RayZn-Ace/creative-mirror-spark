@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
   ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
-  Sun, XCircle, Filter,
+  Sun, XCircle, Filter, Send,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import BulkEditDialog from "@/components/admin/BulkEditDialog";
 
 /* ─── City → Country mapping ─── */
 const CITY_COUNTRY: Record<string, string> = {
@@ -421,7 +422,7 @@ const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange
 
 /* ─── Event Edit View ─── */
 const EventEditView = ({
-  editing, setEditing, seriesOptions, tickets, onSave, onDelete, onBack, onReloadTickets, onSeriesCreated,
+  editing, setEditing, seriesOptions, tickets, onSave, onDelete, onBack, onReloadTickets, onSeriesCreated, onBulkEdit,
 }: {
   editing: Partial<EventRow>;
   setEditing: (e: Partial<EventRow>) => void;
@@ -432,6 +433,7 @@ const EventEditView = ({
   onBack: () => void;
   onReloadTickets: () => void;
   onSeriesCreated: () => void;
+  onBulkEdit?: () => void;
 }) => {
   const [newSeriesName, setNewSeriesName] = useState("");
   const [creatingSeries, setCreatingSeries] = useState(false);
@@ -473,6 +475,11 @@ const EventEditView = ({
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          {editing.id && onBulkEdit && (
+            <button onClick={onBulkEdit} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.3)" }}>
+              <Send className="w-3.5 h-3.5" /> Bulk Edit
+            </button>
+          )}
           {editing.id && onDelete && (
             <button onClick={onDelete} className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 55%)", border: "1px solid hsl(0 70% 50% / 0.2)" }}>
               Event löschen
@@ -814,6 +821,7 @@ const EventsAdmin = () => {
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
   const [filterOpenAir, setFilterOpenAir] = useState(false);
   const [filterSoldOut, setFilterSoldOut] = useState<"all" | "hide" | "only">("all");
+  const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -934,17 +942,32 @@ const EventsAdmin = () => {
 
   if (editing) {
     return (
-      <EventEditView
-        editing={editing}
-        setEditing={(e) => setEditing(e)}
-        seriesOptions={seriesOptions}
-        tickets={tickets}
-        onSave={save}
-        onDelete={editing.id ? () => remove(editing.id!) : undefined}
-        onBack={() => setEditing(null)}
-        onReloadTickets={loadTickets}
-        onSeriesCreated={load}
-      />
+      <>
+        <EventEditView
+          editing={editing}
+          setEditing={(e) => setEditing(e)}
+          seriesOptions={seriesOptions}
+          tickets={tickets}
+          onSave={save}
+          onDelete={editing.id ? () => remove(editing.id!) : undefined}
+          onBack={() => setEditing(null)}
+          onReloadTickets={loadTickets}
+          onSeriesCreated={load}
+          onBulkEdit={editing.id ? () => setBulkEditSource(editing as EventRow) : undefined}
+        />
+        <AnimatePresence>
+          {bulkEditSource && (
+            <BulkEditDialog
+              sourceEvent={bulkEditSource}
+              allEvents={events}
+              seriesOptions={seriesOptions}
+              seriesMap={seriesMap}
+              onClose={() => setBulkEditSource(null)}
+              onComplete={load}
+            />
+          )}
+        </AnimatePresence>
+      </>
     );
   }
   const today = new Date().toISOString().split("T")[0];
@@ -1197,6 +1220,9 @@ const EventsAdmin = () => {
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
+                                        <Send className="w-4 h-4" />
+                                      </button>
                                       <button onClick={() => duplicateEvent(event)} className="p-2 rounded-lg hover:bg-white/5" title="Event duplizieren" style={{ color: "hsl(200 80% 60%)" }}>
                                         <Copy className="w-4 h-4" />
                                       </button>
@@ -1222,6 +1248,18 @@ const EventsAdmin = () => {
           })}
         </div>
       )}
+      <AnimatePresence>
+        {bulkEditSource && !editing && (
+          <BulkEditDialog
+            sourceEvent={bulkEditSource}
+            allEvents={events}
+            seriesOptions={seriesOptions}
+            seriesMap={seriesMap}
+            onClose={() => setBulkEditSource(null)}
+            onComplete={load}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
