@@ -10,7 +10,7 @@ const Kontakt = () => (
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a
-          href="mailto:info@nachtaktiv-events.de"
+          href="mailto:mail@gimmegimmeparty.com"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(0 0% 100% / 0.05)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
@@ -19,12 +19,12 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>E-Mail</div>
-            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>info@nachtaktiv-events.de</div>
+            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>mail@gimmegimmeparty.com</div>
           </div>
         </a>
 
         <a
-          href="https://wa.me/49123456789"
+          href="https://wa.me/491622537300"
           target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(142 70% 45% / 0.08)", border: "1px solid hsl(142 70% 45% / 0.15)" }}
@@ -39,7 +39,7 @@ const Kontakt = () => (
         </a>
 
         <a
-          href="https://instagram.com/nachtaktiv.events"
+          href="https://instagram.com/gimmegimmeparty"
           target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(0 0% 100% / 0.05)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
@@ -49,22 +49,23 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Instagram</div>
-            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>@nachtaktiv.events</div>
+            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>@gimmegimmeparty</div>
           </div>
         </a>
 
-        <div
-          className="flex items-center gap-4 p-5 rounded-2xl"
+        <a
+          href="tel:+491622537300"
+          className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(0 0% 100% / 0.05)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
         >
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(0 70% 50% / 0.2)" }}>
-            <MapPin className="w-5 h-5" style={{ color: "hsl(0 70% 55%)" }} />
+            <Phone className="w-5 h-5" style={{ color: "hsl(0 70% 55%)" }} />
           </div>
           <div>
-            <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Standort</div>
-            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Paderborn, NRW</div>
+            <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Telefon</div>
+            <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>+49 (0) 1622 537 300</div>
           </div>
-        </div>
+        </a>
       </div>
 
       <div className="p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>

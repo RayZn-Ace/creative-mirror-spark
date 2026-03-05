@@ -5,22 +5,28 @@ const Impressum = () => (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-          Veranstalter
+          Angaben gemäß § 5 TMG
         </h2>
         <p>
-          Nachtaktiv Events<br />
-          Musterstraße 123<br />
-          33098 Paderborn<br />
-          Deutschland
+          Gimme Gimme Party<br />
+          c/o IP-Management #6097<br />
+          Ludwig-Erhard-Straße 18<br />
+          20459 Hamburg
         </p>
+      </div>
+      <div>
+        <h2 className="text-lg font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
+          Vertreten durch
+        </h2>
+        <p>Son Thai</p>
       </div>
       <div>
         <h2 className="text-lg font-bold uppercase mb-2" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
           Kontakt
         </h2>
         <p>
-          E-Mail: info@nachtaktiv-events.de<br />
-          Telefon: +49 (0) 123 456789
+          Telefon: +49 (0) 1622 537 300<br />
+          E-Mail: mail@gimmegimmeparty.com
         </p>
       </div>
       <div>
@@ -28,9 +34,10 @@ const Impressum = () => (
           Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
         </h2>
         <p>
-          Nachtaktiv Events<br />
-          Musterstraße 123<br />
-          33098 Paderborn
+          Gimme Gimme Party<br />
+          c/o IP-Management #6097<br />
+          Ludwig-Erhard-Straße 18<br />
+          20459 Hamburg
         </p>
       </div>
       <div>

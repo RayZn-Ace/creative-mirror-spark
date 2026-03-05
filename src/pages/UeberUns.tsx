@@ -1,5 +1,5 @@
 import { PageLayout } from "@/components/PageLayout";
-import { Users, Zap, Heart, Music } from "lucide-react";
+import { Users, Zap, Heart, Music, Calendar } from "lucide-react";
 
 const stats = [
   { icon: Calendar, label: "Events", value: "50+" },
@@ -8,13 +8,11 @@ const stats = [
   { icon: Heart, label: "Unvergessliche Nächte", value: "∞" },
 ];
 
-import { Calendar } from "lucide-react";
-
 const UeberUns = () => (
-  <PageLayout title="Über uns" subtitle="Wer steckt hinter Nachtaktiv Events?">
+  <PageLayout title="Über uns" subtitle="Wer steckt hinter GIMME GIMME PARTY?">
     <div className="space-y-8">
       <p className="text-base sm:text-lg" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-        <strong style={{ color: "hsl(0 0% 100%)" }}>Nachtaktiv Events</strong> steht für unvergessliche Partynächte in NRW. Seit unserer Gründung haben wir es uns zur Mission gemacht, Events zu veranstalten, über die man noch Jahre später spricht.
+        <strong style={{ color: "hsl(0 0% 100%)" }}>GIMME GIMME PARTY</strong> steht für unvergessliche Partynächte. Seit unserer Gründung haben wir es uns zur Mission gemacht, Events zu veranstalten, über die man noch Jahre später spricht.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -40,7 +38,7 @@ const UeberUns = () => (
           Unsere Mission
         </h2>
         <p>
-          Wir glauben daran, dass jede Party eine Geschichte erzählen sollte. Von der ersten Sekunde, in der du durch die Tür gehst, bis zum letzten Beat – bei uns erlebst du mehr als nur eine Nacht. Konfetti-Explosionen, Flammenwerfer, CO2-Effekte und die beste Musik – das ist NACHTAKTIV.
+          Wir glauben daran, dass jede Party eine Geschichte erzählen sollte. Von der ersten Sekunde, in der du durch die Tür gehst, bis zum letzten Beat – bei uns erlebst du mehr als nur eine Nacht. Konfetti-Explosionen, Flammenwerfer, CO2-Effekte und die beste Musik – das ist GIMME GIMME PARTY.
         </p>
       </div>
 
@@ -49,7 +47,7 @@ const UeberUns = () => (
           Unsere Locations
         </h2>
         <p>
-          Wir veranstalten Events in den besten Clubs und Locations in NRW – von Paderborn über Bielefeld bis Dortmund. Jede Location wird sorgfältig ausgewählt, damit du das bestmögliche Erlebnis hast.
+          Wir veranstalten Events in den besten Clubs und Locations – von Paderborn über Bielefeld bis Dortmund und darüber hinaus. Jede Location wird sorgfältig ausgewählt, damit du das bestmögliche Erlebnis hast.
         </p>
       </div>
 
@@ -58,7 +56,7 @@ const UeberUns = () => (
           Das Team
         </h2>
         <p>
-          Hinter Nachtaktiv Events steht ein junges, leidenschaftliches Team, das selbst für Partys lebt. Wir sind Eventmanager, DJs, Designer und Marketing-Profis – vereint durch die Liebe zur Nacht.
+          Hinter GIMME GIMME PARTY steht ein junges, leidenschaftliches Team, das selbst für Partys lebt. Wir sind Eventmanager, DJs, Designer und Marketing-Profis – vereint durch die Liebe zur Nacht.
         </p>
       </div>
     </div>
