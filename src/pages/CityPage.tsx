@@ -1340,9 +1340,9 @@ const CityPage = () => {
   }, [cityName, selectedEvent, citySlug]);
 
   useSeoMeta({
-    title: cityName ? `MAMMA MIA Party ${cityName} – GIMME GIMME | Tickets & Termine` : "GIMME GIMME PARTY",
+    title: cityName ? `MAMMA MIA Party ${cityName} 2025 – GIMME GIMME | Tickets & Termine` : "GIMME GIMME PARTY",
     description: cityName
-      ? `MAMMA MIA Party in ${cityName} ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY Tickets ab sofort verfügbar. Jetzt Tickets sichern!`
+      ? `MAMMA MIA Party in ${cityName} 2025 ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY ${cityName} – Tickets ab sofort verfügbar. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
       : "Die weltweit größte ABBA Party!",
     canonical: citySlug ? `https://gimmetestooo.lovable.app/${citySlug}` : undefined,
     ogImage: cityName ? `https://gimmetestooo.lovable.app${getCityLandmarkUrl(cityName)}` : undefined,
@@ -1488,6 +1488,26 @@ const CityPage = () => {
         {/* Pop-up ads */}
         <AdDisplay eventId={selectedEvent.id} type="popup" />
         
+        {/* SEO crawlable text – hidden visually but readable by Google */}
+        <section className="mt-8 sm:mt-12 rounded-2xl p-5 sm:p-8" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
+          <h1 className="text-lg sm:text-xl font-black uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+            MAMMA MIA Party {cityName} – GIMME GIMME PARTY
+          </h1>
+          <p className="text-sm sm:text-base leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            Willkommen zur MAMMA MIA Party in {cityName}! Die GIMME GIMME PARTY bringt die größte ABBA Sing-Along Show nach {cityName}. 
+            Erlebe eine unvergessliche Nacht voller Glitzer, Hits und Emotionen – inspiriert von den legendären Songs wie „Dancing Queen", 
+            „Mamma Mia", „Gimme! Gimme! Gimme!" und vielen mehr. Sichere dir jetzt deine Tickets für die MAMMA MIA Party {cityName}!
+          </p>
+          <p className="text-sm leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            Die GIMME GIMME PARTY ist die größte ABBA Party in Deutschland und Europa. Von {cityName} aus touren wir durch 
+            alle großen Städte. Ob Hamburg, Berlin, Köln, München, Frankfurt oder Stuttgart – die MAMMA MIA Party kommt in deine Stadt!
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+            MAMMA MIA Party {cityName} Tickets • GIMME GIMME PARTY {cityName} • ABBA Party {cityName} • 
+            ABBA Konzert {cityName} • Sing-Along Party {cityName} • ABBA Tribute {cityName}
+          </p>
+        </section>
+
         <CityFooter t={t} />
       </div>
       <AnimatePresence>

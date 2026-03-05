@@ -34,6 +34,9 @@ Deno.serve(async () => {
     { loc: "/blog", priority: "0.6", changefreq: "weekly" },
     { loc: "/muttizettel", priority: "0.4", changefreq: "monthly" },
     { loc: "/ticket-umbuchung", priority: "0.4", changefreq: "monthly" },
+    { loc: "/vergangene-events", priority: "0.3", changefreq: "weekly" },
+    { loc: "/abiklasse", priority: "0.4", changefreq: "monthly" },
+    { loc: "/location-anmelden", priority: "0.4", changefreq: "monthly" },
   ];
 
   let urls = staticPages.map(
