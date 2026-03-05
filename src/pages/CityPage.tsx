@@ -535,6 +535,8 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
               {Array.from({ length: cols }).map((_, tileIdx) => {
                 const currentSlide = currentTileImages[tileIdx] % allFiles.length;
                 const prevSlide = prevImagesRef.current[tileIdx] % allFiles.length;
+                const fadeDuration = 1.8;
+                const staggerDelay = slideTransition === "staggered" ? 0 : tileIdx * 0.2;
 
                 return (
                   <div
@@ -542,41 +544,48 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
                     className={`${aspectClass} rounded-xl overflow-hidden ${hoverEffect ? "group cursor-pointer" : ""} relative`}
                     onClick={() => lightboxEnabled && setLightboxIdx(currentSlide)}
                   >
-                    {/* Previous image (fades out underneath) */}
-                    <img
-                      src={allFiles[prevSlide]}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    {/* Current image (crossfades in on top) */}
-                    <motion.img
-                      key={`tile-${tileIdx}-${currentSlide}`}
-                      src={allFiles[currentSlide]}
-                      alt={`Impression ${currentSlide + 1}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{
-                        duration: 1.2,
-                        ease: [0.25, 0.1, 0.25, 1],
-                        delay: slideTransition === "staggered" ? 0 : tileIdx * 0.15,
-                      }}
-                    />
-                    {/* Ken Burns subtle zoom on current image */}
+                    {/* Previous image with Ken Burns (stays visible underneath during crossfade) */}
                     <motion.div
-                      key={`zoom-${tileIdx}-${currentSlide}`}
+                      key={`prev-${tileIdx}-${prevSlide}`}
                       className="absolute inset-0"
-                      initial={{ scale: 1 }}
-                      animate={{ scale: 1.08 }}
-                      transition={{ duration: slideSpeed / 1000 + 1, ease: "linear" }}
+                      initial={{ scale: 1.06 }}
+                      animate={{ scale: 1.12 }}
+                      transition={{ duration: slideSpeed / 1000 + 2, ease: "linear" }}
                     >
                       <img
-                        src={allFiles[currentSlide]}
+                        src={allFiles[prevSlide]}
                         alt=""
                         className="w-full h-full object-cover"
                       />
                     </motion.div>
-                    {/* Overlay */}
+
+                    {/* Current image: crossfade in + Ken Burns zoom */}
+                    <motion.div
+                      key={`cur-${tileIdx}-${currentSlide}`}
+                      className="absolute inset-0"
+                      initial={{ opacity: 0, scale: 1 }}
+                      animate={{ opacity: 1, scale: 1.08 }}
+                      transition={{
+                        opacity: {
+                          duration: fadeDuration,
+                          ease: [0.4, 0, 0.2, 1],
+                          delay: staggerDelay,
+                        },
+                        scale: {
+                          duration: slideSpeed / 1000 + 2,
+                          ease: "linear",
+                          delay: 0,
+                        },
+                      }}
+                    >
+                      <img
+                        src={allFiles[currentSlide]}
+                        alt={`Impression ${currentSlide + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+
+                    {/* Hover overlay */}
                     {hoverEffect && (
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10" />
                     )}
