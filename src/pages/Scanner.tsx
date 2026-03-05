@@ -356,8 +356,8 @@ const Scanner = () => {
                   type="text"
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                  placeholder="XXXX-XXXX-XXXX-XXXX"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-center text-lg font-mono font-bold tracking-[0.2em] placeholder:text-white/20 focus:border-primary/50 focus:outline-none transition-all"
+                   placeholder="XXXX-XXXX"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-center text-2xl font-mono font-bold tracking-[0.25em] placeholder:text-white/20 focus:border-primary/50 focus:outline-none transition-all"
                   autoComplete="off"
                   autoFocus
                 />

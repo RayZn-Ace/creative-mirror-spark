@@ -9,7 +9,7 @@ const corsHeaders = {
 function generateQRCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const segments: string[] = [];
-  for (let s = 0; s < 4; s++) {
+  for (let s = 0; s < 2; s++) {
     let seg = "";
     for (let i = 0; i < 4; i++) {
       seg += chars[Math.floor(Math.random() * chars.length)];
