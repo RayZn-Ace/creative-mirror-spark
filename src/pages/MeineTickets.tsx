@@ -333,7 +333,7 @@ const MeineTickets = () => {
                             <p className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{ticket.holder_name}</p>
                           )}
                           <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                            {ticket.qr_code.slice(0, 12).toUpperCase()}
+                            {ticket.qr_code}
                           </p>
                           <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
                             style={{

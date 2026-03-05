@@ -813,7 +813,7 @@ const ScannerAdmin = () => {
                           type="text"
                           value={manualCode}
                           onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                          placeholder="XXXX-XXXX-XXXX-XXXX"
+                          placeholder="XXXX-XXXX"
                           className="w-full px-4 py-3 rounded-xl text-center text-sm font-mono font-bold tracking-[0.15em] focus:outline-none transition-all"
                           style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
                           autoComplete="off"
