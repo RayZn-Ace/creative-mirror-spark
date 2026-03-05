@@ -39,16 +39,17 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
     }
   };
 
-  // <img src="...">
-  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
   let match;
+
+  // <img src="..."> and <img data-src="..." (lazy loading)>
+  const imgRegex = /<img[^>]+(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/gi;
   while ((match = imgRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
     if (resolved) addUrl(resolved);
   }
 
-  // srcset
-  const srcsetRegex = /srcset=["']([^"']+)["']/gi;
+  // srcset and data-srcset
+  const srcsetRegex = /(?:srcset|data-srcset)=["']([^"']+)["']/gi;
   while ((match = srcsetRegex.exec(html)) !== null) {
     const entries = match[1].split(',');
     for (const entry of entries) {
@@ -71,6 +72,24 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
     const src = match[1] || match[2];
     const resolved = resolveUrl(src, baseUrl);
     if (resolved) addUrl(resolved);
+  }
+
+  // href to image files (common in galleries: <a href="full-size.jpg">)
+  const linkImgRegex = /<a[^>]+href=["']([^"']+\.(?:jpg|jpeg|png|webp|gif|avif))["']/gi;
+  while ((match = linkImgRegex.exec(html)) !== null) {
+    const resolved = resolveUrl(match[1], baseUrl);
+    if (resolved) addUrl(resolved);
+  }
+
+  // JSON data in scripts (SPAs often embed image data in JSON)
+  const jsonImgRegex = /["'](https?:\/\/[^"'\s]+\.(?:jpg|jpeg|png|webp|gif|avif)(?:\?[^"'\s]*)?)["']/gi;
+  while ((match = jsonImgRegex.exec(html)) !== null) {
+    try {
+      const cleaned = match[1].replace(/\\u002F/g, '/').replace(/\\\//g, '/');
+      if (!isJunkImage(cleaned)) {
+        addUrl(cleaned);
+      }
+    } catch { /* skip */ }
   }
 
   return urls;
@@ -112,7 +131,7 @@ const extractVideos = (html: string, baseUrl: URL): string[] => {
   return urls;
 };
 
-/** Scrape a single URL using Firecrawl (with JS rendering) or fallback fetch */
+/** Scrape a single URL using Firecrawl (with JS rendering) then fallback fetch */
 const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<string> => {
   let html = '';
 
@@ -126,14 +145,24 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
         },
         body: JSON.stringify({
           url,
-          formats: ['html'],
-          waitFor: 5000,
+          formats: ['rawHtml'],
+          waitFor: 8000,
+          actions: [
+            { type: 'scroll', direction: 'down', amount: 3 },
+            { type: 'wait', milliseconds: 2000 },
+            { type: 'scroll', direction: 'down', amount: 5 },
+            { type: 'wait', milliseconds: 2000 },
+          ],
         }),
       });
 
       if (fcResponse.ok) {
         const fcData = await fcResponse.json();
-        html = fcData?.data?.html || fcData?.html || '';
+        html = fcData?.data?.rawHtml || fcData?.data?.html || fcData?.rawHtml || fcData?.html || '';
+        console.log(`Firecrawl returned ${html.length} chars for ${url}`);
+      } else {
+        const errText = await fcResponse.text();
+        console.log(`Firecrawl error ${fcResponse.status} for ${url}:`, errText.substring(0, 200));
       }
     } catch (e) {
       console.log('Firecrawl failed for', url, e);
@@ -141,7 +170,7 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
   }
 
   // Fallback: direct fetch
-  if (!html || (html.match(/<img[^>]+src=/gi) || []).length < 2) {
+  if (!html || html.length < 1000) {
     try {
       const response = await fetch(url, {
         headers: {
@@ -151,8 +180,9 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
       });
       if (response.ok) {
         const text = await response.text();
-        if ((text.match(/<img[^>]+src=/gi) || []).length > (html.match(/<img[^>]+src=/gi) || []).length) {
+        if (text.length > html.length) {
           html = text;
+          console.log(`Fallback fetch returned ${html.length} chars for ${url}`);
         }
       }
     } catch (e) {
@@ -163,6 +193,60 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
   return html;
 };
 
+/** Scrape with Firecrawl and also get discovered links */
+const scrapeWithLinks = async (url: string, apiKey: string): Promise<{ html: string; links: string[] }> => {
+  try {
+    const fcResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['rawHtml', 'links'],
+        waitFor: 8000,
+        actions: [
+          { type: 'scroll', direction: 'down', amount: 3 },
+          { type: 'wait', milliseconds: 2000 },
+          { type: 'scroll', direction: 'down', amount: 5 },
+          { type: 'wait', milliseconds: 2000 },
+        ],
+      }),
+    });
+
+    if (fcResponse.ok) {
+      const fcData = await fcResponse.json();
+      const html = fcData?.data?.rawHtml || fcData?.data?.html || '';
+      const links = fcData?.data?.links || [];
+      console.log(`Firecrawl scrape+links: ${html.length} chars, ${links.length} links for ${url}`);
+      return { html, links };
+    } else {
+      const errText = await fcResponse.text();
+      console.log(`Firecrawl scrape+links error: ${fcResponse.status}`, errText.substring(0, 200));
+    }
+  } catch (e) {
+    console.log('Firecrawl scrape+links failed:', e);
+  }
+  return { html: '', links: [] };
+};
+
+/** Detect internal album links from a list of URLs */
+const filterAlbumLinks = (links: string[], baseUrl: URL): string[] => {
+  const currentPath = baseUrl.pathname.replace(/\/$/, '');
+  return links.filter((link: string) => {
+    try {
+      const linkUrl = new URL(link);
+      if (linkUrl.hostname !== baseUrl.hostname) return false;
+      const linkPath = linkUrl.pathname.replace(/\/$/, '');
+      if (linkPath === currentPath) return false;
+      if (linkPath.startsWith(currentPath + '/')) return true;
+      if (/\/(fotos?|photos?|gallery|galler[yi]e|album|media|bilder|impressions?)/i.test(linkPath)) return true;
+      return false;
+    } catch { return false; }
+  });
+};
+
 /** Detect internal links from HTML <a> tags */
 const detectAlbumLinksFromHtml = (html: string, baseUrl: URL): string[] => {
   const links: string[] = [];
@@ -170,24 +254,12 @@ const detectAlbumLinksFromHtml = (html: string, baseUrl: URL): string[] => {
   let match;
   while ((match = linkRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
-    if (!resolved) continue;
-    try {
-      const linkUrl = new URL(resolved);
-      if (linkUrl.hostname !== baseUrl.hostname) continue;
-      const currentPath = baseUrl.pathname.replace(/\/$/, '');
-      const linkPath = linkUrl.pathname.replace(/\/$/, '');
-      if (linkPath === currentPath) continue;
-      const isSubpage = linkPath.startsWith(currentPath + '/');
-      const isGalleryPath = /\/(fotos?|photos?|gallery|galler[yi]e|album|media|bilder|impressions?)/i.test(linkPath);
-      if (isSubpage || isGalleryPath) {
-        if (!links.includes(resolved)) links.push(resolved);
-      }
-    } catch { /* skip */ }
+    if (resolved && !links.includes(resolved)) links.push(resolved);
   }
-  return links;
+  return filterAlbumLinks(links, baseUrl);
 };
 
-/** Use Firecrawl Map to discover all URLs on the site, then filter for album/gallery pages */
+/** Use Firecrawl Map to discover all URLs on the site */
 const discoverAlbumUrlsViaMap = async (baseUrl: URL, apiKey: string): Promise<string[]> => {
   try {
     console.log('Using Firecrawl Map to discover URLs on:', baseUrl.origin);
@@ -199,6 +271,7 @@ const discoverAlbumUrlsViaMap = async (baseUrl: URL, apiKey: string): Promise<st
       },
       body: JSON.stringify({
         url: baseUrl.href,
+        search: 'fotos photos gallery album bilder',
         limit: 200,
         includeSubdomains: false,
       }),
@@ -213,24 +286,8 @@ const discoverAlbumUrlsViaMap = async (baseUrl: URL, apiKey: string): Promise<st
     const allLinks: string[] = data?.links || data?.data?.links || [];
     console.log(`Firecrawl Map found ${allLinks.length} total URLs`);
 
-    const currentPath = baseUrl.pathname.replace(/\/$/, '');
-
-    // Filter for album/gallery subpages
-    const albumLinks = allLinks.filter((link: string) => {
-      try {
-        const linkUrl = new URL(link);
-        if (linkUrl.hostname !== baseUrl.hostname) return false;
-        const linkPath = linkUrl.pathname.replace(/\/$/, '');
-        if (linkPath === currentPath) return false;
-        // Subpages of the current gallery path (e.g. /fotos/album-123)
-        if (linkPath.startsWith(currentPath + '/')) return true;
-        // Or pages with gallery-like paths
-        if (/\/(fotos?|photos?|gallery|galler[yi]e|album|media|bilder|impressions?)\//i.test(linkPath)) return true;
-        return false;
-      } catch { return false; }
-    });
-
-    console.log(`Filtered to ${albumLinks.length} album/gallery URLs:`, albumLinks.slice(0, 5));
+    const albumLinks = filterAlbumLinks(allLinks, baseUrl);
+    console.log(`Filtered to ${albumLinks.length} album/gallery URLs:`, albumLinks.slice(0, 10));
     return albumLinks;
   } catch (e) {
     console.log('Firecrawl Map failed:', e);
@@ -263,8 +320,23 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     const baseUrl = new URL(formattedUrl);
 
-    // Step 1: Scrape the main page
-    const html = await scrapeHtml(formattedUrl, apiKey);
+    let mediaUrls: string[] = [];
+    let albumLinks: string[] = [];
+
+    // Step 1: Scrape main page - use scrapeWithLinks if we have API key to also get discovered links
+    let html = '';
+    if (apiKey) {
+      const result = await scrapeWithLinks(formattedUrl, apiKey);
+      html = result.html;
+      // Get album links from Firecrawl's link discovery (works for SPAs)
+      albumLinks = filterAlbumLinks(result.links, baseUrl);
+      console.log(`Firecrawl discovered ${albumLinks.length} album links from page`);
+    }
+    
+    // Fallback if Firecrawl didn't return enough
+    if (!html || html.length < 1000) {
+      html = await scrapeHtml(formattedUrl, undefined); // direct fetch only
+    }
 
     if (!html) {
       return new Response(
@@ -273,9 +345,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Main page HTML length:', html.length, 'img tags:', (html.match(/<img[^>]+src=/gi) || []).length);
-
-    let mediaUrls: string[] = [];
+    const imgCount = (html.match(/<img[^>]+/gi) || []).length;
+    console.log('Main page HTML length:', html.length, 'img tags:', imgCount);
 
     if (type === 'videos') {
       mediaUrls = extractVideos(html, baseUrl);
@@ -285,20 +356,25 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${mediaUrls.length} ${type} URLs on main page`);
 
-    // Step 2: If few images found, try to discover album subpages
+    // Step 2: If few images found, discover and scrape album subpages
     if (mediaUrls.length <= 5 && type !== 'videos') {
-      // First try HTML <a> links
-      let albumLinks = detectAlbumLinksFromHtml(html, baseUrl);
-      console.log(`HTML link detection found ${albumLinks.length} album links`);
+      // Also try HTML <a> links
+      const htmlAlbumLinks = detectAlbumLinksFromHtml(html, baseUrl);
+      console.log(`HTML link detection found ${htmlAlbumLinks.length} album links`);
+      
+      // Merge with Firecrawl-discovered links
+      for (const link of htmlAlbumLinks) {
+        if (!albumLinks.includes(link)) albumLinks.push(link);
+      }
 
-      // If no links found in HTML (SPA), use Firecrawl Map to discover URLs
+      // If still no links, use Firecrawl Map
       if (albumLinks.length === 0 && apiKey) {
         albumLinks = await discoverAlbumUrlsViaMap(baseUrl, apiKey);
       }
 
       if (albumLinks.length > 0) {
         const linksToScrape = albumLinks.slice(0, 10);
-        console.log(`Scraping ${linksToScrape.length} album pages...`);
+        console.log(`Scraping ${linksToScrape.length} album pages:`, linksToScrape);
 
         const batchSize = 3;
         for (let i = 0; i < linksToScrape.length; i += batchSize) {
