@@ -135,6 +135,21 @@ type Album = {
   date: string | null;
 };
 
+/** Check if a card HTML snippet looks like a video (youtube thumb, play button, aspect-video) */
+const isVideoCard = (cardHtml: string): boolean => {
+  const lower = cardHtml.toLowerCase();
+  return (
+    lower.includes('img.youtube.com') ||
+    lower.includes('youtube.com/embed') ||
+    lower.includes('youtu.be') ||
+    lower.includes('vimeo.com') ||
+    lower.includes('aspect-video') ||
+    lower.includes('lucide-play') ||
+    lower.includes('fa-play') ||
+    (lower.includes('play') && lower.includes('svg'))
+  );
+};
+
 /** Detect album cards on a gallery overview page */
 const detectAlbumCards = (html: string, baseUrl: URL): Album[] => {
   const albums: Album[] = [];
@@ -145,6 +160,12 @@ const detectAlbumCards = (html: string, baseUrl: URL): Album[] => {
   let index = 0;
   while ((match = articleRegex.exec(html)) !== null) {
     const card = match[1];
+
+    // Skip video cards
+    if (isVideoCard(card)) {
+      console.log(`Skipping article ${index + 1}: detected as video`);
+      continue;
+    }
 
     // Extract title from h1-h3
     const titleMatch = card.match(/<h[1-3][^>]*>([^<]+)<\/h[1-3]>/i);
@@ -158,21 +179,25 @@ const detectAlbumCards = (html: string, baseUrl: URL): Album[] => {
     const dateMatch = card.match(/<time[^>]*>([^<]+)<\/time>/i) || card.match(/(\d{1,2}\.\s*\w+\s*\d{4})/);
     const date = dateMatch ? dateMatch[1].trim() : null;
 
-    albums.push({ index, title, coverImage, date });
+    albums.push({ index: albums.length, title, coverImage, date });
     index++;
   }
 
-  // Pattern 2: Generic clickable divs with cursor-pointer
+  // Pattern 2: Generic clickable divs — but ONLY if they have album-like structure
+  // (multiple images per card, a heading, or link). Single-image divs in a grid are NOT albums.
   if (albums.length === 0) {
-    const cardRegex = /<div[^>]*cursor-pointer[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi;
+    // Look for cards that have BOTH a heading AND an image — that's an album card
+    const cardRegex = /<div[^>]*class="[^"]*(?:card|album|gallery-item)[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi;
     while ((match = cardRegex.exec(html)) !== null) {
       const card = match[1];
+      if (isVideoCard(card)) continue;
+
       const titleMatch = card.match(/<h[1-4][^>]*>([^<]+)<\/h[1-4]>/i);
-      const title = titleMatch ? titleMatch[1].trim() : `Album ${index + 1}`;
+      if (!titleMatch) continue; // No heading = not an album card, just an image in a grid
+      const title = titleMatch[1].trim();
       const imgMatch = card.match(/<img[^>]+src=["']([^"']+)["']/i);
       const coverImage = imgMatch ? resolveUrl(imgMatch[1], baseUrl) : null;
-      albums.push({ index, title, coverImage, date: null });
-      index++;
+      albums.push({ index: albums.length, title, coverImage, date: null });
     }
   }
 
