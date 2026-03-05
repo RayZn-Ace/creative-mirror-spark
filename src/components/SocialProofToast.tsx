@@ -58,8 +58,8 @@ export default function SocialProofToast() {
               <p className="text-xs font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
                 {msg.name} hat gerade {msg.count} Tickets gekauft
               </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                GIMME GIMME · {msg.city}
+              <p className="text-[11px] mt-0.5 font-medium" style={{ color: "hsl(330 80% 65%)" }}>
+                📍 {msg.city} · GIMME GIMME
               </p>
             </div>
           </motion.div>
