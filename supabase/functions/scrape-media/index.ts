@@ -30,8 +30,6 @@ const isJunkImage = (url: string): boolean => {
   );
 };
 
-const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|webp|gif|avif|bmp|tiff?)(\?|$)/i;
-
 /** Extract image URLs from HTML */
 const extractImages = (html: string, baseUrl: URL): string[] => {
   const urls: string[] = [];
@@ -43,14 +41,12 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
 
   let match;
 
-  // <img src="..."> and lazy-load variants
   const imgRegex = /<img[^>]+(?:src|data-src|data-lazy-src|data-original)=["']([^"']+)["']/gi;
   while ((match = imgRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
     if (resolved) addUrl(resolved);
   }
 
-  // srcset and data-srcset
   const srcsetRegex = /(?:srcset|data-srcset)=["']([^"']+)["']/gi;
   while ((match = srcsetRegex.exec(html)) !== null) {
     const entries = match[1].split(',');
@@ -61,14 +57,12 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
     }
   }
 
-  // background-image: url(...)
   const bgRegex = /background(?:-image)?:\s*url\(["']?([^"')]+)["']?\)/gi;
   while ((match = bgRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
     if (resolved) addUrl(resolved);
   }
 
-  // og:image
   const ogRegex = /<meta[^>]+(?:content=["']([^"']+)["'][^>]+property=["']og:image["']|property=["']og:image["'][^>]+content=["']([^"']+)["'])/gi;
   while ((match = ogRegex.exec(html)) !== null) {
     const src = match[1] || match[2];
@@ -76,30 +70,23 @@ const extractImages = (html: string, baseUrl: URL): string[] => {
     if (resolved) addUrl(resolved);
   }
 
-  // <a href="image.jpg"> (galleries often link to full-size images)
   const linkImgRegex = /<a[^>]+href=["']([^"']+\.(?:jpg|jpeg|png|webp|gif|avif))["']/gi;
   while ((match = linkImgRegex.exec(html)) !== null) {
     const resolved = resolveUrl(match[1], baseUrl);
     if (resolved) addUrl(resolved);
   }
 
-  // Image URLs in JSON/JS strings (SPAs embed image data in scripts)
   const jsonImgRegex = /["'](https?:\/\/[^"'\s\\]+\.(?:jpg|jpeg|png|webp|gif|avif)(?:\?[^"'\s\\]*)?)["']/gi;
   while ((match = jsonImgRegex.exec(html)) !== null) {
     try {
       const cleaned = match[1].replace(/\\u002F/g, '/').replace(/\\\//g, '/');
-      if (!isJunkImage(cleaned)) {
-        addUrl(cleaned);
-      }
+      if (!isJunkImage(cleaned)) addUrl(cleaned);
     } catch { /* skip */ }
   }
 
-  // Supabase storage URLs (common pattern for uploaded images)
   const storageRegex = /(https?:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/object\/public\/[^"'\s<>\\]+)/gi;
   while ((match = storageRegex.exec(html)) !== null) {
-    if (!isJunkImage(match[1])) {
-      addUrl(match[1]);
-    }
+    if (!isJunkImage(match[1])) addUrl(match[1]);
   }
 
   return urls;
@@ -141,82 +128,108 @@ const extractVideos = (html: string, baseUrl: URL): string[] => {
   return urls;
 };
 
-/** Count album cards on the page and click into each one to extract photos */
-const scrapeAlbumCards = async (url: string, apiKey: string, mainHtml: string): Promise<string[]> => {
-  const allImages: string[] = [];
-  
-  // Count how many album cards there are (look for article.glass-card or similar patterns)
-  const cardMatches = mainHtml.match(/<article[^>]*class="[^"]*glass-card[^"]*"[^>]*>/gi) || [];
-  const cardCount = cardMatches.length;
-  
-  // Also count generic clickable cards
-  const clickableCards = mainHtml.match(/cursor-pointer[^<]*<div[^>]*class="[^"]*h-\d+/gi) || [];
-  const totalCards = Math.max(cardCount, clickableCards.length, 1);
-  
-  console.log(`Found ${cardCount} glass-card articles, ${clickableCards.length} clickable cards, using ${totalCards}`);
-  
-  // Click on each album card using Firecrawl actions
-  for (let i = 0; i < Math.min(totalCards, 10); i++) {
-    try {
-      console.log(`Clicking album card ${i + 1}/${totalCards}...`);
-      
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          formats: ['rawHtml'],
-          waitFor: 5000,
-          actions: [
-            // Wait for page to load
-            { type: 'wait', milliseconds: 3000 },
-            // Click on the nth album card (using CSS nth-child selector)
-            { type: 'click', selector: `article:nth-child(${i + 1})` },
-            // Wait for album content to load
-            { type: 'wait', milliseconds: 4000 },
-            // Scroll down to load lazy images
-            { type: 'scroll', direction: 'down', amount: 3 },
-            { type: 'wait', milliseconds: 2000 },
-            { type: 'scroll', direction: 'down', amount: 5 },
-            { type: 'wait', milliseconds: 2000 },
-            { type: 'scroll', direction: 'down', amount: 8 },
-            { type: 'wait', milliseconds: 2000 },
-          ],
-        }),
-      });
+type Album = {
+  index: number;
+  title: string;
+  coverImage: string | null;
+  date: string | null;
+};
 
-      if (!response.ok) {
-        const errText = await response.text();
-        console.log(`Click scrape error for card ${i + 1}:`, response.status, errText.substring(0, 200));
-        continue;
-      }
+/** Detect album cards on a gallery overview page */
+const detectAlbumCards = (html: string, baseUrl: URL): Album[] => {
+  const albums: Album[] = [];
 
-      const data = await response.json();
-      const albumHtml = data?.data?.rawHtml || data?.data?.html || '';
-      const finalUrl = data?.data?.metadata?.sourceURL || data?.data?.metadata?.url || url;
-      
-      console.log(`Album card ${i + 1}: got ${albumHtml.length} chars HTML, final URL: ${finalUrl}`);
-      
-      if (albumHtml && albumHtml.length > 1000) {
-        const baseUrl = new URL(finalUrl);
-        const images = extractImages(albumHtml, baseUrl);
-        console.log(`Album card ${i + 1}: extracted ${images.length} images`);
-        
-        for (const img of images) {
-          if (!allImages.includes(img)) {
-            allImages.push(img);
-          }
-        }
-      }
-    } catch (e) {
-      console.log(`Error clicking album card ${i + 1}:`, e);
+  // Pattern 1: <article> cards with heading + image (common SPA pattern)
+  const articleRegex = /<article[^>]*>([\s\S]*?)<\/article>/gi;
+  let match;
+  let index = 0;
+  while ((match = articleRegex.exec(html)) !== null) {
+    const card = match[1];
+
+    // Extract title from h1-h3
+    const titleMatch = card.match(/<h[1-3][^>]*>([^<]+)<\/h[1-3]>/i);
+    const title = titleMatch ? titleMatch[1].trim() : `Album ${index + 1}`;
+
+    // Extract cover image
+    const imgMatch = card.match(/<img[^>]+src=["']([^"']+)["']/i);
+    const coverImage = imgMatch ? resolveUrl(imgMatch[1], baseUrl) : null;
+
+    // Extract date
+    const dateMatch = card.match(/<time[^>]*>([^<]+)<\/time>/i) || card.match(/(\d{1,2}\.\s*\w+\s*\d{4})/);
+    const date = dateMatch ? dateMatch[1].trim() : null;
+
+    albums.push({ index, title, coverImage, date });
+    index++;
+  }
+
+  // Pattern 2: Generic clickable divs with cursor-pointer
+  if (albums.length === 0) {
+    const cardRegex = /<div[^>]*cursor-pointer[^>]*>([\s\S]*?)<\/div>\s*<\/div>/gi;
+    while ((match = cardRegex.exec(html)) !== null) {
+      const card = match[1];
+      const titleMatch = card.match(/<h[1-4][^>]*>([^<]+)<\/h[1-4]>/i);
+      const title = titleMatch ? titleMatch[1].trim() : `Album ${index + 1}`;
+      const imgMatch = card.match(/<img[^>]+src=["']([^"']+)["']/i);
+      const coverImage = imgMatch ? resolveUrl(imgMatch[1], baseUrl) : null;
+      albums.push({ index, title, coverImage, date: null });
+      index++;
     }
   }
-  
-  return allImages;
+
+  return albums;
+};
+
+/** Click into a specific album card and extract all its images */
+const scrapeAlbumByIndex = async (url: string, apiKey: string, albumIndex: number): Promise<string[]> => {
+  try {
+    console.log(`Clicking album card ${albumIndex + 1}...`);
+
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['rawHtml'],
+        waitFor: 5000,
+        actions: [
+          { type: 'wait', milliseconds: 3000 },
+          { type: 'click', selector: `article:nth-child(${albumIndex + 1})` },
+          { type: 'wait', milliseconds: 4000 },
+          { type: 'scroll', direction: 'down', amount: 3 },
+          { type: 'wait', milliseconds: 2000 },
+          { type: 'scroll', direction: 'down', amount: 5 },
+          { type: 'wait', milliseconds: 2000 },
+          { type: 'scroll', direction: 'down', amount: 8 },
+          { type: 'wait', milliseconds: 2000 },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.log(`Click error for album ${albumIndex + 1}:`, response.status, errText.substring(0, 200));
+      return [];
+    }
+
+    const data = await response.json();
+    const albumHtml = data?.data?.rawHtml || data?.data?.html || '';
+    const finalUrl = data?.data?.metadata?.sourceURL || url;
+
+    console.log(`Album ${albumIndex + 1}: got ${albumHtml.length} chars, URL: ${finalUrl}`);
+
+    if (albumHtml && albumHtml.length > 1000) {
+      const images = extractImages(albumHtml, new URL(finalUrl));
+      console.log(`Album ${albumIndex + 1}: extracted ${images.length} images`);
+      return images;
+    }
+    return [];
+  } catch (e) {
+    console.log(`Error clicking album ${albumIndex + 1}:`, e);
+    return [];
+  }
 };
 
 /** Scrape a single URL using Firecrawl with JS rendering */
@@ -246,7 +259,7 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
 
       if (fcResponse.ok) {
         const fcData = await fcResponse.json();
-        html = fcData?.data?.rawHtml || fcData?.data?.html || fcData?.rawHtml || fcData?.html || '';
+        html = fcData?.data?.rawHtml || fcData?.data?.html || '';
         console.log(`Firecrawl scrape returned ${html.length} chars for ${url}`);
       } else {
         const errText = await fcResponse.text();
@@ -257,7 +270,6 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
     }
   }
 
-  // Fallback: direct fetch
   if (!html || html.length < 1000) {
     try {
       const response = await fetch(url, {
@@ -268,10 +280,7 @@ const scrapeHtml = async (url: string, apiKey: string | undefined): Promise<stri
       });
       if (response.ok) {
         const text = await response.text();
-        if (text.length > html.length) {
-          html = text;
-          console.log(`Fallback fetch returned ${html.length} chars for ${url}`);
-        }
+        if (text.length > html.length) html = text;
       }
     } catch (e) {
       console.log('Fallback fetch failed for', url, e);
@@ -287,7 +296,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url, type } = await req.json();
+    const { url, type, mode, albumIndices } = await req.json();
 
     if (!url) {
       return new Response(
@@ -301,12 +310,31 @@ Deno.serve(async (req) => {
       formattedUrl = `https://${formattedUrl}`;
     }
 
-    console.log('Scraping media from:', formattedUrl, 'type:', type);
+    console.log('Scraping media from:', formattedUrl, 'type:', type, 'mode:', mode || 'auto');
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     const baseUrl = new URL(formattedUrl);
 
-    // Step 1: Scrape the main page with JS rendering
+    // ── MODE: scrape specific albums by index ──
+    if (mode === 'scrape_albums' && Array.isArray(albumIndices) && apiKey) {
+      console.log(`Scraping ${albumIndices.length} specific albums:`, albumIndices);
+      const allImages: string[] = [];
+
+      for (const idx of albumIndices) {
+        const images = await scrapeAlbumByIndex(formattedUrl, apiKey, idx);
+        for (const img of images) {
+          if (!allImages.includes(img)) allImages.push(img);
+        }
+      }
+
+      console.log(`Total images from selected albums: ${allImages.length}`);
+      return new Response(
+        JSON.stringify({ success: true, urls: allImages, count: allImages.length }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ── Step 1: Scrape main page ──
     const html = await scrapeHtml(formattedUrl, apiKey);
 
     if (!html) {
@@ -319,8 +347,11 @@ Deno.serve(async (req) => {
     const imgCount = (html.match(/<img[^>]+/gi) || []).length;
     console.log('Main page HTML length:', html.length, 'img tags:', imgCount);
 
-    let mediaUrls: string[] = [];
+    // Check for album cards
+    const albums = type !== 'videos' ? detectAlbumCards(html, baseUrl) : [];
+    console.log(`Detected ${albums.length} album cards`);
 
+    let mediaUrls: string[] = [];
     if (type === 'videos') {
       mediaUrls = extractVideos(html, baseUrl);
     } else {
@@ -329,23 +360,24 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${mediaUrls.length} ${type} URLs on main page`);
 
-    // Step 2: If few images found, this is likely a gallery overview page with album cards.
-    // Use Firecrawl click actions to navigate INTO each album and extract the actual photos.
-    if (mediaUrls.length <= 10 && type !== 'videos' && apiKey) {
-      console.log('Few images found - detected album overview page. Clicking into album cards...');
-      
-      const albumImages = await scrapeAlbumCards(formattedUrl, apiKey, html);
-      console.log(`Album click-through discovered ${albumImages.length} total images`);
-      
-      for (const img of albumImages) {
-        if (!mediaUrls.includes(img)) {
-          mediaUrls.push(img);
-        }
-      }
-      
-      console.log(`After album merge: ${mediaUrls.length} total images`);
+    // ── MODE: discover → return album info if albums found ──
+    // Also auto-discover: if albums detected and few direct images, suggest albums
+    if (albums.length > 0 && mediaUrls.length <= 20) {
+      console.log('Album overview detected, returning album list for user selection');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          hasAlbums: true,
+          albums,
+          // Also include any directly found images as fallback
+          urls: mediaUrls,
+          count: mediaUrls.length,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    // ── No albums, return images directly ──
     console.log(`Final result: ${mediaUrls.length} ${type} URLs`);
 
     return new Response(
