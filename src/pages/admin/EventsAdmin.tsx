@@ -4,7 +4,8 @@ import {
   Plus, Pencil, Trash2, Star, Eye, EyeOff, Layers, ChevronDown, ChevronRight,
   ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
   Sun, XCircle, Filter, Send, Type, Minus, Space, MessageCircle, Map, Image,
-  FileText, HelpCircle, Gift, Music, Video, LayoutGrid,
+  FileText, HelpCircle, Gift, Music, Video, LayoutGrid, RefreshCw, AlertTriangle,
+  Check, Calendar, Import, ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -1300,7 +1301,338 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
   );
 };
 
-/* ─── Main Component ─── */
+/* ─── Ticket.io Sync Dialog ─── */
+interface TioEvent {
+  title: string;
+  city: string;
+  date: string;
+  time: string;
+  location: string;
+  ticketLink: string;
+  soldOut: boolean;
+  price: string;
+}
+
+interface TioCompareResult {
+  onlyTio: TioEvent[];
+  notOnTio: EventRow[];
+  dateMismatch: { ours: EventRow; tio: TioEvent }[];
+  matched: number;
+}
+
+const normCity = (c: string) => c.toUpperCase().replace(/[.\s-]/g, "").replace(/Ü/g, "UE").replace(/Ö/g, "OE").replace(/Ä/g, "AE").replace(/ß/g, "SS");
+
+const TioSyncDialog = ({ events, onClose, onReload }: { events: EventRow[]; onClose: () => void; onReload: () => void }) => {
+  const [phase, setPhase] = useState<"scanning" | "results">("scanning");
+  const [tioEvents, setTioEvents] = useState<TioEvent[]>([]);
+  const [result, setResult] = useState<TioCompareResult | null>(null);
+  const [activeTab, setActiveTab] = useState<"missing" | "extra" | "date">("missing");
+  const [importing, setImporting] = useState<Set<number>>(new Set());
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    runSync();
+  }, []);
+
+  const runSync = async () => {
+    setPhase("scanning");
+    setError(null);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("sync-ticketio", {
+        body: { url: "https://mammamia-partymotto.ticket.io/?view=table" },
+      });
+      if (fnErr) throw fnErr;
+      if (!data?.success) throw new Error(data?.error || "Scan fehlgeschlagen");
+
+      const tio = data.events as TioEvent[];
+      setTioEvents(tio);
+
+      // Compare with our events - match by city + date
+      const onlyTio: TioEvent[] = [];
+      const dateMismatch: { ours: EventRow; tio: TioEvent }[] = [];
+      const matchedOurIds = new Set<string>();
+
+      for (const te of tio) {
+        const tioCity = normCity(te.city);
+        // Find our events matching city
+        const cityMatches = events.filter(e => {
+          const ourCity = normCity(e.city || "");
+          return ourCity === tioCity || ourCity.includes(tioCity) || tioCity.includes(ourCity);
+        });
+
+        if (cityMatches.length === 0) {
+          onlyTio.push(te);
+        } else {
+          // Check if any match by date too
+          const dateMatch = cityMatches.find(e => e.date === te.date);
+          if (dateMatch) {
+            matchedOurIds.add(dateMatch.id);
+          } else {
+            // City matches but no date match
+            // Check if there's a city match with a different date
+            const closestCityMatch = cityMatches[0];
+            if (!matchedOurIds.has(closestCityMatch.id)) {
+              dateMismatch.push({ ours: closestCityMatch, tio: te });
+              matchedOurIds.add(closestCityMatch.id);
+            } else {
+              onlyTio.push(te);
+            }
+          }
+        }
+      }
+
+      // Events in our system but not on ticket.io
+      const notOnTio = events.filter(e => {
+        if (e.status !== "published") return false;
+        if (!e.date || e.date < new Date().toISOString().split("T")[0]) return false;
+        return !matchedOurIds.has(e.id);
+      });
+
+      setResult({
+        onlyTio,
+        notOnTio,
+        dateMismatch,
+        matched: matchedOurIds.size,
+      });
+      setPhase("results");
+    } catch (err: any) {
+      setError(err.message || "Unbekannter Fehler");
+      setPhase("results");
+    }
+  };
+
+  const importEvent = async (te: TioEvent, idx: number) => {
+    setImporting(prev => new Set(prev).add(idx));
+    const slug = `mamma-mia-${te.city.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${te.date}`;
+    const { error } = await supabase.from("events").insert({
+      title: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
+      subtitle: te.city,
+      slug,
+      city: te.city,
+      date: te.date,
+      time: te.time,
+      location_name: te.location,
+      ticket_link: te.ticketLink,
+      sold_out: te.soldOut,
+      status: "draft",
+      tag: "Konzert",
+      info_sections: [
+        { id: "eventinfo", title: "Eventinformationen", content: "auto-eventinfo" },
+        { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
+        { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
+        { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
+      ],
+    } as any);
+    if (error) {
+      toast.error("Import fehlgeschlagen: " + error.message);
+    } else {
+      toast.success(`${te.city} importiert (als Entwurf)`);
+      onReload();
+    }
+    setImporting(prev => { const n = new Set(prev); n.delete(idx); return n; });
+  };
+
+  const updateEventDate = async (eventId: string, newDate: string) => {
+    const { error } = await supabase.from("events").update({ date: newDate }).eq("id", eventId);
+    if (error) {
+      toast.error("Datum-Update fehlgeschlagen");
+    } else {
+      toast.success("Datum aktualisiert");
+      onReload();
+    }
+  };
+
+  const tabs = [
+    { key: "missing" as const, label: "Nur bei Ticket.io", count: result?.onlyTio.length || 0, color: "hsl(200 80% 55%)" },
+    { key: "extra" as const, label: "Nicht bei Ticket.io", count: result?.notOnTio.length || 0, color: "hsl(45 90% 55%)" },
+    { key: "date" as const, label: "Falsches Datum", count: result?.dateMismatch.length || 0, color: "hsl(0 70% 55%)" },
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "hsl(0 0% 0% / 0.7)" }}>
+      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="w-full max-w-3xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col" style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)", boxShadow: "0 20px 60px hsl(0 0% 0% / 0.6)" }}>
+        {/* Header */}
+        <div className="p-5 flex items-center justify-between flex-shrink-0" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(200 80% 55% / 0.15)" }}>
+              <RefreshCw className="w-4 h-4" style={{ color: "hsl(200 80% 55%)" }} />
+            </div>
+            <h2 className="text-base font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>Ticket.io Sync</h2>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5"><X className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} /></button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-5">
+          {phase === "scanning" && (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                <RefreshCw className="w-10 h-10" style={{ color: "hsl(200 80% 55%)" }} />
+              </motion.div>
+              <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Scanne Ticket.io...</p>
+              <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Events werden abgeglichen</p>
+            </div>
+          )}
+
+          {phase === "results" && error && (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <AlertTriangle className="w-10 h-10" style={{ color: "hsl(0 70% 55%)" }} />
+              <p className="text-sm font-bold" style={{ color: "hsl(0 70% 55%)" }}>Fehler beim Scan</p>
+              <p className="text-xs text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{error}</p>
+              <button onClick={runSync} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>
+                Erneut versuchen
+              </button>
+            </div>
+          )}
+
+          {phase === "results" && result && !error && (
+            <>
+              {/* Summary */}
+              <div className="rounded-xl p-4 mb-5 flex items-center gap-4 flex-wrap" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4" style={{ color: "hsl(142 70% 55%)" }} />
+                  <span className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                    <strong style={{ color: "hsl(0 0% 100%)" }}>{tioEvents.length}</strong> Events gescannt
+                  </span>
+                </div>
+                <span className="text-xs px-2 py-1 rounded-full" style={{ background: "hsl(142 70% 45% / 0.15)", color: "hsl(142 70% 55%)" }}>
+                  ✅ {result.matched} übereinstimmend
+                </span>
+                <span className="text-xs px-2 py-1 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>
+                  📥 {result.onlyTio.length} nur bei TIO
+                </span>
+                <span className="text-xs px-2 py-1 rounded-full" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
+                  ⚠️ {result.notOnTio.length} nicht bei TIO
+                </span>
+                <span className="text-xs px-2 py-1 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
+                  📅 {result.dateMismatch.length} Datum-Abweichung
+                </span>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex gap-1 mb-4 rounded-xl p-1" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className="flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                    style={{
+                      background: activeTab === tab.key ? `${tab.color.replace(")", " / 0.15)")}` : "transparent",
+                      color: activeTab === tab.key ? tab.color : "hsl(0 0% 100% / 0.4)",
+                      border: activeTab === tab.key ? `1px solid ${tab.color.replace(")", " / 0.3)")}` : "1px solid transparent",
+                    }}
+                  >
+                    {tab.label} ({tab.count})
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab: Only on Ticket.io */}
+              {activeTab === "missing" && (
+                <div className="space-y-2">
+                  {result.onlyTio.length === 0 ? (
+                    <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Alle Ticket.io Events sind bei uns angelegt ✅</p>
+                  ) : result.onlyTio.map((te, i) => (
+                    <div key={i} className="rounded-xl p-4 flex items-center gap-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{te.city}</span>
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{te.date} · {te.time}</span>
+                          {te.soldOut && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Ausverkauft</span>}
+                        </div>
+                        <p className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{te.location}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {te.ticketLink && (
+                          <a href={te.ticketLink} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => importEvent(te, i)}
+                          disabled={importing.has(i)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                          style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)", border: "1px solid hsl(200 80% 55% / 0.3)" }}
+                        >
+                          <Import className="w-3.5 h-3.5" />
+                          {importing.has(i) ? "..." : "Importieren"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab: Not on Ticket.io */}
+              {activeTab === "extra" && (
+                <div className="space-y-2">
+                  {result.notOnTio.length === 0 ? (
+                    <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Alle unsere Events sind bei Ticket.io gelistet ✅</p>
+                  ) : result.notOnTio.map((ev) => (
+                    <div key={ev.id} className="rounded-xl p-4 flex items-center gap-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(45 90% 50% / 0.15)" }}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{ev.city || "?"}</span>
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{ev.date} · {ev.time}</span>
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
+                            Nicht bei TIO
+                          </span>
+                        </div>
+                        <p className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{ev.title} · {ev.location_name}</p>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => { onClose(); setTimeout(() => document.dispatchEvent(new CustomEvent("edit-event", { detail: ev })), 100); }} className="p-2 rounded-lg hover:bg-white/5" title="Event bearbeiten" style={{ color: "hsl(45 90% 55%)" }}>
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab: Date mismatch */}
+              {activeTab === "date" && (
+                <div className="space-y-2">
+                  {result.dateMismatch.length === 0 ? (
+                    <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Datum-Abweichungen gefunden ✅</p>
+                  ) : result.dateMismatch.map(({ ours, tio }, i) => (
+                    <div key={i} className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 70% 50% / 0.15)" }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{tio.city}</span>
+                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{ours.location_name || tio.location}</span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5" style={{ color: "hsl(0 70% 55%)" }} />
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Bei uns:</span>
+                          <span className="text-xs font-bold" style={{ color: "hsl(0 70% 55%)" }}>{ours.date}</span>
+                        </div>
+                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.2)" }}>→</span>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5" style={{ color: "hsl(200 80% 55%)" }} />
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Bei TIO:</span>
+                          <span className="text-xs font-bold" style={{ color: "hsl(200 80% 55%)" }}>{tio.date}</span>
+                        </div>
+                        <button
+                          onClick={() => updateEventDate(ours.id, tio.date)}
+                          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)", border: "1px solid hsl(200 80% 55% / 0.3)" }}
+                        >
+                          <Check className="w-3.5 h-3.5" /> Auf TIO-Datum setzen
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const COLLAPSE_STORAGE_KEY = "admin_events_collapsed";
 
 const loadCollapsedState = (): Record<string, boolean> => {
@@ -1330,6 +1662,7 @@ const EventsAdmin = () => {
   const [filterSoldOut, setFilterSoldOut] = useState<"all" | "hide" | "only">("all");
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
+  const [showTioSync, setShowTioSync] = useState(false);
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -1565,6 +1898,9 @@ const EventsAdmin = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events</h1>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowTioSync(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)", border: "1px solid hsl(200 80% 55% / 0.3)" }}>
+            <RefreshCw className="w-4 h-4" /> Ticket.io Sync
+          </button>
           <button onClick={() => setShowBulkAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.3)" }}>
             <LayoutGrid className="w-4 h-4" /> Bulk Add
           </button>
@@ -1778,6 +2114,13 @@ const EventsAdmin = () => {
       <AnimatePresence>
         {showBulkAdd && (
           <BulkAddDialog events={events} onClose={() => setShowBulkAdd(false)} onComplete={load} />
+        )}
+      </AnimatePresence>
+
+      {/* Ticket.io Sync Dialog */}
+      <AnimatePresence>
+        {showTioSync && (
+          <TioSyncDialog events={events} onClose={() => setShowTioSync(false)} onReload={load} />
         )}
       </AnimatePresence>
     </div>
