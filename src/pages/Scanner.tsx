@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Html5Qrcode } from "html5-qrcode";
-import { Camera, Keyboard, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Loader2, QrCode } from "lucide-react";
+import { Camera, Keyboard, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Loader2, QrCode, Flashlight, FlashlightOff } from "lucide-react";
 
 type ScanResult = {
   valid: boolean;
@@ -34,6 +34,9 @@ const Scanner = () => {
   const [stats, setStats] = useState({ total: 0, checkedIn: 0 });
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+  const [torchOn, setTorchOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
+  const videoTrackRef = useRef<MediaStreamTrack | null>(null);
 
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = "qr-reader";
@@ -107,6 +110,9 @@ const Scanner = () => {
       }
       html5QrCodeRef.current = null;
     }
+    videoTrackRef.current = null;
+    setTorchOn(false);
+    setTorchSupported(false);
   }, []);
 
   const startCamera = useCallback(async () => {
@@ -135,6 +141,23 @@ const Scanner = () => {
           // ignore scan failures
         }
       );
+
+      // Check torch support
+      setTimeout(() => {
+        try {
+          const videoEl = document.querySelector(`#${scannerContainerId} video`) as HTMLVideoElement | null;
+          if (videoEl?.srcObject) {
+            const track = (videoEl.srcObject as MediaStream).getVideoTracks()[0];
+            if (track) {
+              const capabilities = track.getCapabilities?.() as any;
+              if (capabilities?.torch) {
+                videoTrackRef.current = track;
+                setTorchSupported(true);
+              }
+            }
+          }
+        } catch {}
+      }, 500);
     } catch {
       setCameraError("Kamera-Zugriff verweigert. Bitte erlaube den Kamera-Zugriff in den Browser-Einstellungen.");
       setMode("manual");
@@ -188,6 +211,17 @@ const Scanner = () => {
     setResult(null);
     setManualCode("");
     setLastScannedCode(null);
+  };
+
+  const toggleTorch = async () => {
+    if (!videoTrackRef.current) return;
+    try {
+      const newState = !torchOn;
+      await videoTrackRef.current.applyConstraints({ advanced: [{ torch: newState } as any] });
+      setTorchOn(newState);
+    } catch {
+      // Torch toggle failed silently
+    }
   };
 
   const statusConfig = {
@@ -335,7 +369,22 @@ const Scanner = () => {
                   <div className="relative w-full aspect-square max-w-sm rounded-2xl overflow-hidden border-2 border-white/20">
                     <div id={scannerContainerId} className="w-full h-full" />
                   </div>
-                  <p className="text-xs text-white/40 text-center">QR-Code in den Rahmen halten</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-white/40">QR-Code in den Rahmen halten</p>
+                    {torchSupported && (
+                      <button
+                        onClick={toggleTorch}
+                        className={`p-2 rounded-lg transition-all ${
+                          torchOn 
+                            ? "bg-yellow-500/20 border border-yellow-500/40 text-yellow-400" 
+                            : "bg-white/5 border border-white/10 text-white/40"
+                        }`}
+                        title={torchOn ? "Taschenlampe aus" : "Taschenlampe an"}
+                      >
+                        {torchOn ? <FlashlightOff className="w-4 h-4" /> : <Flashlight className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
                 </>
               )}
             </motion.div>
