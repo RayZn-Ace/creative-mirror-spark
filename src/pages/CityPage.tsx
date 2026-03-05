@@ -737,17 +737,18 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       </a>
 
       <div className="space-y-2 pt-2">
-        {event.infoSections.filter(s => s.content !== "weitere-staedte" && s.content !== "spacer" && s.content !== "divider").map((s) => (
-          <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
+        {event.infoSections.filter(s => s.content !== "spacer" && s.content !== "divider").map((s) => (
+          s.content === "weitere-staedte" ? (
+            <NearbyEvents key={s.id} currentSlug={citySlug} currentCity={event.city} t={t} />
+          ) : (
+            <InfoAccordion key={s.id} id={s.id} title={s.title} content={s.content} t={t} event={event} />
+          )
         ))}
+        {/* Fallback: render NearbyEvents if no weitere-staedte block exists */}
+        {!event.infoSections.some(s => s.content === "weitere-staedte") && (
+          <NearbyEvents currentSlug={citySlug} currentCity={event.city} t={t} />
+        )}
       </div>
-
-      {/* Dividers / Spacers rendered inline */}
-      {event.infoSections.some(s => s.content === "divider") && (
-        <div className="py-3"><div style={{ height: "1px", background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)" }} /></div>
-      )}
-
-      <NearbyEvents currentSlug={citySlug} currentCity={event.city} t={t} />
     </div>
   );
 };
