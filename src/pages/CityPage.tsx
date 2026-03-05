@@ -360,100 +360,84 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
+/* ─── Helpers: detect YouTube URLs and extract video ID ─── */
+const getYouTubeId = (url: string): string | null => {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+};
+const isYouTubeUrl = (url: string) => getYouTubeId(url) !== null;
 
-/* ─── Video Slideshow: multi-tile grid, each tile crossfades to next video on end ─── */
-const VideoSlideshowTile = ({ files, startIdx, allCols, aspectClass, onAdvance }: { files: string[]; startIdx: number; allCols: number; aspectClass: string; onAdvance: () => number }) => {
-  const videoARef = useRef<HTMLVideoElement>(null);
-  const videoBRef = useRef<HTMLVideoElement>(null);
-  const [srcA, setSrcA] = useState(files[startIdx % files.length]);
-  const [srcB, setSrcB] = useState("");
-  const [activeLayer, setActiveLayer] = useState<"A" | "B">("A");
+/* ─── Video Slideshow Tile: handles both direct video files and YouTube embeds ─── */
+const VideoSlideshowTile = ({ files, startIdx, aspectClass, intervalMs }: { files: string[]; startIdx: number; aspectClass: string; intervalMs: number }) => {
+  const [currentIdx, setCurrentIdx] = useState(startIdx % files.length);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const src = files[currentIdx];
+  const ytId = getYouTubeId(src);
 
-  // Force play on mount
+  // For direct video files: play on mount/change
   useEffect(() => {
-    const v = videoARef.current;
+    if (ytId) return;
+    const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     v.playsInline = true;
+    v.currentTime = 0;
     const tryPlay = () => { v.play().catch(() => {}); };
     if (v.readyState >= 2) tryPlay();
     else v.addEventListener("loadeddata", tryPlay, { once: true });
-  }, []);
+  }, [currentIdx, ytId]);
 
-  const handleEnded = useCallback((layer: "A" | "B") => {
-    const nextIdx = onAdvance();
-    const nextSrc = files[nextIdx % files.length];
-    if (layer === "A") {
-      // Load into B, fade to B
-      setSrcB(nextSrc);
-      setActiveLayer("B");
-      setTimeout(() => {
-        const v = videoBRef.current;
-        if (v) { v.currentTime = 0; v.play().catch(() => {}); }
-      }, 50);
-    } else {
-      setSrcA(nextSrc);
-      setActiveLayer("A");
-      setTimeout(() => {
-        const v = videoARef.current;
-        if (v) { v.currentTime = 0; v.play().catch(() => {}); }
-      }, 50);
-    }
-  }, [files, onAdvance]);
+  // For YouTube: auto-advance after intervalMs
+  useEffect(() => {
+    if (!ytId) return;
+    const timer = setTimeout(() => {
+      setCurrentIdx(prev => (prev + 1) % files.length);
+    }, intervalMs);
+    return () => clearTimeout(timer);
+  }, [currentIdx, ytId, intervalMs, files.length]);
 
-  const isAActive = activeLayer === "A";
+  const handleVideoEnded = useCallback(() => {
+    setCurrentIdx(prev => (prev + 1) % files.length);
+  }, [files.length]);
 
   return (
     <div className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
-      <video
-        ref={videoARef}
-        src={srcA}
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: isAActive ? 1 : 0, transition: "opacity 1.2s ease-in-out", zIndex: isAActive ? 2 : 1 }}
-        muted
-        playsInline
-        preload="auto"
-        onEnded={() => handleEnded("A")}
-      />
-      <video
-        ref={videoBRef}
-        src={srcB}
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: isAActive ? 0 : 1, transition: "opacity 1.2s ease-in-out", zIndex: isAActive ? 1 : 2 }}
-        muted
-        playsInline
-        preload="auto"
-        onEnded={() => handleEnded("B")}
-      />
+      {ytId ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=0&controls=0&modestbranding=1&rel=0&playsinline=1`}
+          className="absolute inset-0 w-full h-full"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          style={{ border: 0 }}
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={src}
+          className="absolute inset-0 w-full h-full object-cover"
+          muted
+          playsInline
+          preload="auto"
+          onEnded={handleVideoEnded}
+        />
+      )}
     </div>
   );
 };
 
-const VideoSlideshow = ({ files, cols = 3, aspectClass = "aspect-video", gridColsClass = "grid-cols-3" }: { files: string[]; cols?: number; aspectClass?: string; gridColsClass?: string }) => {
-  const counterRef = useRef(cols);
-
-  const makeAdvancer = useCallback(() => {
-    return () => {
-      const idx = counterRef.current;
-      counterRef.current = idx + 1;
-      return idx;
-    };
-  }, []);
-
+const VideoSlideshow = ({ files, cols = 3, aspectClass = "aspect-video", gridColsClass = "grid-cols-3", intervalMs = 15000 }: { files: string[]; cols?: number; aspectClass?: string; gridColsClass?: string; intervalMs?: number }) => {
   if (files.length === 0) return null;
 
-  const actualCols = Math.min(cols, files.length);
-
+  // Always render the configured number of cols; tiles cycle through files
   return (
     <div className={`grid ${gridColsClass} gap-2`}>
-      {Array.from({ length: actualCols }).map((_, tileIdx) => (
+      {Array.from({ length: cols }).map((_, tileIdx) => (
         <VideoSlideshowTile
           key={tileIdx}
           files={files}
-          startIdx={tileIdx}
-          allCols={actualCols}
+          startIdx={tileIdx % files.length}
           aspectClass={aspectClass}
-          onAdvance={makeAdvancer()}
+          intervalMs={intervalMs}
         />
       ))}
     </div>
@@ -486,10 +470,10 @@ const MediaWidget = ({ eventId, title, showTitle, type, externalUrls = [], galle
 
   const gridColsClass = {
     1: "grid-cols-1",
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-2 sm:grid-cols-3",
-    4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
-  }[cols] || "grid-cols-2 sm:grid-cols-3";
+    2: "grid-cols-2",
+    3: "grid-cols-3",
+    4: "grid-cols-2 sm:grid-cols-4",
+  }[cols] || "grid-cols-3";
 
   useEffect(() => {
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
