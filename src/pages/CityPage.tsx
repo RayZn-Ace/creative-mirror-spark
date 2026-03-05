@@ -362,93 +362,100 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 };
 
 /* ─── Video Slideshow: multi-tile grid, each tile crossfades to next video on end ─── */
+const VideoSlideshowTile = ({ files, startIdx, allCols, aspectClass, onAdvance }: { files: string[]; startIdx: number; allCols: number; aspectClass: string; onAdvance: () => number }) => {
+  const videoARef = useRef<HTMLVideoElement>(null);
+  const videoBRef = useRef<HTMLVideoElement>(null);
+  const [srcA, setSrcA] = useState(files[startIdx % files.length]);
+  const [srcB, setSrcB] = useState("");
+  const [activeLayer, setActiveLayer] = useState<"A" | "B">("A");
+
+  // Force play on mount
+  useEffect(() => {
+    const v = videoARef.current;
+    if (!v) return;
+    v.muted = true;
+    v.playsInline = true;
+    const tryPlay = () => { v.play().catch(() => {}); };
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("loadeddata", tryPlay, { once: true });
+  }, []);
+
+  const handleEnded = useCallback((layer: "A" | "B") => {
+    const nextIdx = onAdvance();
+    const nextSrc = files[nextIdx % files.length];
+    if (layer === "A") {
+      // Load into B, fade to B
+      setSrcB(nextSrc);
+      setActiveLayer("B");
+      setTimeout(() => {
+        const v = videoBRef.current;
+        if (v) { v.currentTime = 0; v.play().catch(() => {}); }
+      }, 50);
+    } else {
+      setSrcA(nextSrc);
+      setActiveLayer("A");
+      setTimeout(() => {
+        const v = videoARef.current;
+        if (v) { v.currentTime = 0; v.play().catch(() => {}); }
+      }, 50);
+    }
+  }, [files, onAdvance]);
+
+  const isAActive = activeLayer === "A";
+
+  return (
+    <div className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
+      <video
+        ref={videoARef}
+        src={srcA}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: isAActive ? 1 : 0, transition: "opacity 1.2s ease-in-out", zIndex: isAActive ? 2 : 1 }}
+        muted
+        playsInline
+        preload="auto"
+        onEnded={() => handleEnded("A")}
+      />
+      <video
+        ref={videoBRef}
+        src={srcB}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: isAActive ? 0 : 1, transition: "opacity 1.2s ease-in-out", zIndex: isAActive ? 1 : 2 }}
+        muted
+        playsInline
+        preload="auto"
+        onEnded={() => handleEnded("B")}
+      />
+    </div>
+  );
+};
+
 const VideoSlideshow = ({ files, cols = 3, aspectClass = "aspect-video", gridColsClass = "grid-cols-3" }: { files: string[]; cols?: number; aspectClass?: string; gridColsClass?: string }) => {
-  // Each tile tracks which video index it's showing, plus A/B layer state
-  const [tileState, setTileState] = useState(() => {
-    return Array.from({ length: cols }, (_, i) => ({
-      currentIdx: i % files.length,
-      nextIdx: (i + cols) % files.length,
-      activeLayer: "A" as "A" | "B",
-      fading: false,
-    }));
-  });
+  const counterRef = useRef(cols);
 
-  // Track how many videos have been assigned across all tiles to avoid duplicates
-  const assignedCountRef = useRef(cols);
-
-  const advanceTile = useCallback((tileIdx: number) => {
-    if (files.length <= cols) return; // not enough to rotate
-    setTileState(prev => {
-      const updated = [...prev];
-      const tile = { ...updated[tileIdx] };
-      const nextAssigned = assignedCountRef.current;
-      const nextVideoIdx = nextAssigned % files.length;
-      assignedCountRef.current = nextAssigned + 1;
-
-      if (tile.activeLayer === "A") {
-        tile.nextIdx = nextVideoIdx;
-        tile.activeLayer = "B";
-      } else {
-        tile.currentIdx = nextVideoIdx;
-        tile.activeLayer = "A";
-      }
-      tile.fading = true;
-      updated[tileIdx] = tile;
-      return updated;
-    });
-    // Reset fading flag after transition
-    setTimeout(() => {
-      setTileState(prev => {
-        const updated = [...prev];
-        updated[tileIdx] = { ...updated[tileIdx], fading: false };
-        return updated;
-      });
-    }, 1300);
-  }, [files.length, cols]);
+  const makeAdvancer = useCallback(() => {
+    return () => {
+      const idx = counterRef.current;
+      counterRef.current = idx + 1;
+      return idx;
+    };
+  }, []);
 
   if (files.length === 0) return null;
 
+  const actualCols = Math.min(cols, files.length);
+
   return (
     <div className={`grid ${gridColsClass} gap-2`}>
-      {tileState.map((tile, tileIdx) => {
-        const isAActive = tile.activeLayer === "A";
-        return (
-          <div key={tileIdx} className={`${aspectClass} rounded-xl overflow-hidden relative bg-black`}>
-            {/* Layer A */}
-            <video
-              key={`a-${tile.currentIdx}`}
-              src={files[tile.currentIdx]}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                opacity: isAActive ? 1 : 0,
-                transition: "opacity 1.2s ease-in-out",
-                zIndex: isAActive ? 2 : 1,
-              }}
-              autoPlay={isAActive}
-              playsInline
-              muted
-              preload="auto"
-              onEnded={isAActive ? () => advanceTile(tileIdx) : undefined}
-            />
-            {/* Layer B */}
-            <video
-              key={`b-${tile.nextIdx}`}
-              src={files[tile.nextIdx]}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                opacity: isAActive ? 0 : 1,
-                transition: "opacity 1.2s ease-in-out",
-                zIndex: isAActive ? 1 : 2,
-              }}
-              autoPlay={!isAActive}
-              playsInline
-              muted
-              preload="auto"
-              onEnded={!isAActive ? () => advanceTile(tileIdx) : undefined}
-            />
-          </div>
-        );
-      })}
+      {Array.from({ length: actualCols }).map((_, tileIdx) => (
+        <VideoSlideshowTile
+          key={tileIdx}
+          files={files}
+          startIdx={tileIdx}
+          allCols={actualCols}
+          aspectClass={aspectClass}
+          onAdvance={makeAdvancer()}
+        />
+      ))}
     </div>
   );
 };
