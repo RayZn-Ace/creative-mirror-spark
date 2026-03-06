@@ -36,6 +36,7 @@ interface CityEvent {
   soldOut: boolean;
   ticketLink: string | null;
   infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[];
+  description: string | null;
 }
 
 interface TicketItem {
@@ -1225,6 +1226,16 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         <Instagram className="w-3.5 h-3.5" /> {instagramHandle}
       </a>
 
+      {/* Event description */}
+      {event.description && (
+        <div className="pt-3">
+          <div className="rounded-2xl p-4 sm:p-5 text-sm sm:text-base leading-relaxed whitespace-pre-line"
+            style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.9)" }}>
+            {event.description}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2 pt-2">
         {event.infoSections.filter(s => s.content !== "spacer" && s.content !== "divider").map((s) => (
           s.content === "weitere-staedte" ? (
@@ -1440,6 +1451,7 @@ const CityPage = () => {
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
+        description: e.description || null,
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
           ? (e.info_sections as unknown as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[])
           : [],
