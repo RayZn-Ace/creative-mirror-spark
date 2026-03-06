@@ -177,6 +177,20 @@ const termineI18n: Record<string, Record<string, string>> = {
 
 const getTermineT = (lang: string) => termineI18n[lang] || termineI18n.en || termineI18n.de;
 
+/* ─── Derive category from event title ─── */
+const deriveCategory = (title: string): string => {
+  const t = title.toUpperCase();
+  if (t.includes("MAMMA MIA") || t.includes("ABBA")) return "Mamma Mia";
+  if (t.includes("COLLEGE CLUB")) return "College Club";
+  if (t.includes("PROJECT") || t.includes("PROJEKT")) return "Project Party";
+  if (t.includes("MÄDELSABEND") || t.includes("MAEDELSABEND")) return "Mädelsabend";
+  if (t.includes("90ER") || t.includes("90S") || t.includes("90'S")) return "90er Party";
+  if (t.includes("16+")) return "16+ Events";
+  if (t.includes("OPEN AIR")) return "Open Air";
+  if (t.includes("FESTIVAL")) return "Festival";
+  return "Sonstige";
+};
+
 /* ─── Types ─── */
 interface CityGroup {
   city: string;
@@ -185,6 +199,7 @@ interface CityGroup {
   km: number | null;
   events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean }[];
   imageUrl: string | null;
+  category: string;
 }
 
 const RANGE_OPTIONS = [50, 100, 200, 500, 0]; // 0 = all
@@ -200,8 +215,7 @@ export default function Termine() {
   const [locationStatus, setLocationStatus] = useState<"pending" | "granted" | "denied">("pending");
   const [rangeKm, setRangeKm] = useState(0); // 0 = all
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
-  const [showSoldOut, setShowSoldOut] = useState(true);
-  const [onlyOpenAir, setOnlyOpenAir] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch all published events grouped by series/city
   useEffect(() => {
@@ -241,6 +255,7 @@ export default function Termine() {
 
         if (cityEvents.length > 0) {
           const city = s.city || "Unknown";
+          const firstEvent = events.find((e) => e.series_id === s.id);
           groups.push({
             city,
             slug: s.slug,
@@ -248,6 +263,7 @@ export default function Termine() {
             km: null,
             events: cityEvents,
             imageUrl: s.image_url,
+            category: deriveCategory(firstEvent?.title || s.slug),
           });
         }
       });
@@ -270,6 +286,7 @@ export default function Termine() {
             openAir: e.open_air || false,
           }],
           imageUrl: e.image_url,
+          category: deriveCategory(e.title || ""),
         });
       });
 
@@ -342,17 +359,10 @@ export default function Termine() {
       );
     }
 
-    // Filter events within groups based on sold out / open air
-    groups = groups.map((g) => {
-      let filteredEvents = g.events;
-      if (!showSoldOut) {
-        filteredEvents = filteredEvents.filter((e) => !e.soldOut);
-      }
-      if (onlyOpenAir) {
-        filteredEvents = filteredEvents.filter((e) => e.openAir);
-      }
-      return { ...g, events: filteredEvents };
-    }).filter((g) => g.events.length > 0);
+    // Filter by category
+    if (selectedCategory) {
+      groups = groups.filter((g) => g.category === selectedCategory);
+    }
 
     // Sort by distance (if available), then alphabetically
     groups.sort((a, b) => {
@@ -363,7 +373,14 @@ export default function Termine() {
     });
 
     return groups;
-  }, [cityGroups, userPos, search, rangeKm, showSoldOut, onlyOpenAir]);
+  }, [cityGroups, userPos, search, rangeKm, selectedCategory]);
+
+  // Derive available categories from all groups
+  const availableCategories = useMemo(() => {
+    const cats = new Set<string>();
+    cityGroups.forEach((g) => cats.add(g.category));
+    return Array.from(cats).sort();
+  }, [cityGroups]);
 
   const formatDate = useCallback((iso: string) => {
     if (!iso) return "";
@@ -459,30 +476,21 @@ export default function Termine() {
           </div>
         </div>
 
-        {/* Toggle filters */}
+        {/* Category filters */}
         <div className="flex flex-wrap gap-2 max-w-3xl mx-auto mt-3">
-          <button
-            onClick={() => setOnlyOpenAir(!onlyOpenAir)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-              onlyOpenAir
-                ? "border-amber-500/50 bg-amber-500/15 text-amber-400"
-                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            <Sun className="w-3.5 h-3.5" />
-            Nur Open Air
-          </button>
-          <button
-            onClick={() => setShowSoldOut(!showSoldOut)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-              !showSoldOut
-                ? "border-primary/50 bg-primary/15 text-primary"
-                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            <XCircle className="w-3.5 h-3.5" />
-            Ausverkaufte ausblenden
-          </button>
+          {availableCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+                selectedCategory === cat
+                  ? "border-primary/50 bg-primary/15 text-primary"
+                  : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
         {locationStatus === "denied" && (
