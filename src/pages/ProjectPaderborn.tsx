@@ -49,18 +49,9 @@ const makeInfoSections = (event: EventData) => [
   {
     id: "eventinfo",
     title: "Eventinformationen",
-    content: `🎉 MAMMA MIA PARTY – DAS FANKONZERT! 🎶
-
-Bei der Mamma Mia Party feiern wir die größten Songs von ABBA – und zwar gemeinsam mit EUCH! 🎤 ✨
-
-Von „Dancing Queen" über „Mamma Mia" bis „Waterloo" – wir spielen alle Kult-Hits live vom DJ-Pult zum Mitsingen, Tanzen und Feiern.
-
-📅 ${event.weekday}, ${event.date}
+    content: `📅 ${event.weekday}, ${event.date}
 📍 ${event.venue} – ${event.address}
-🕐 Beginn: ${event.time} Uhr
-
-🪩 DRESSCODE:
-Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
+🕐 Beginn: ${event.time} Uhr`,
   },
   {
     id: "einlass",
