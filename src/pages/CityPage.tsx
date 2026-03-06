@@ -1340,12 +1340,12 @@ const CityPage = () => {
   }, [cityName, selectedEvent, citySlug]);
 
   useSeoMeta({
-    title: cityName ? `MAMMA MIA Party ${cityName} 2025 – GIMME GIMME | Tickets & Termine` : "GIMME GIMME PARTY",
+    title: cityName ? `Event ${cityName} – Tickets & Termine | partyticket.app` : "partyticket.app",
     description: cityName
-      ? `MAMMA MIA Party in ${cityName} 2025 ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY ${cityName} – Tickets ab sofort verfügbar. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
-      : "Die weltweit größte ABBA Party!",
-    canonical: citySlug ? `https://gimmegimmeparty.de/${citySlug}` : undefined,
-    ogImage: cityName ? `https://gimmegimmeparty.de${getCityLandmarkUrl(cityName)}` : undefined,
+      ? `Event in ${cityName} – Tickets ab sofort verfügbar auf partyticket.app. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
+      : "Dein Ticketshop für die besten Events!",
+    canonical: citySlug ? `https://partyticket.app/${citySlug}` : undefined,
+    ogImage: cityName ? `https://partyticket.app${getCityLandmarkUrl(cityName)}` : undefined,
     ogType: "event",
     jsonLd: seoJsonLd,
   });
