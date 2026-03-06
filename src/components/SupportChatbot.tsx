@@ -387,7 +387,7 @@ export default function SupportChatbot() {
           <button
             onClick={() => setChatOpen(true)}
             className="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-            style={{ background: "linear-gradient(135deg, hsl(330 80% 50%), hsl(330 80% 40%))", color: "hsl(0 0% 100%)" }}
+            style={{ background: "linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 40%))", color: "hsl(0 0% 100%)" }}
             aria-label="Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(330 80% 50% / 0.3)" }} />
