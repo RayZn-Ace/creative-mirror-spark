@@ -279,7 +279,7 @@ export default function SupportChatbot() {
           {/* Header */}
           <div
             className="p-4 flex items-center gap-3"
-            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "hsl(330 80% 50%)" }}
+            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "hsl(217 91% 50%)" }}
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
@@ -304,7 +304,7 @@ export default function SupportChatbot() {
                   <div
                     className="max-w-[80%] px-3 py-2 rounded-xl text-sm whitespace-pre-line"
                     style={{
-                      background: m.from === "user" ? "hsl(330 80% 50%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(0 0% 100% / 0.08)",
+                      background: m.from === "user" ? "hsl(217 91% 50%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(0 0% 100% / 0.08)",
                       color: "hsl(0 0% 100%)",
                       border: m.from === "admin" ? "1px solid hsl(142 70% 40% / 0.3)" : "none",
                     }}
@@ -333,9 +333,9 @@ export default function SupportChatbot() {
                     onClick={() => handleQuickReply(qr.query)}
                     className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
                     style={{
-                      background: "hsl(330 80% 50% / 0.15)",
-                      color: "hsl(330 80% 65%)",
-                      border: "1px solid hsl(330 80% 50% / 0.3)",
+                      background: "hsl(217 91% 50% / 0.15)",
+                      color: "hsl(217 91% 65%)",
+                      border: "1px solid hsl(217 91% 50% / 0.3)",
                     }}
                   >
                     {qr.label}
@@ -365,7 +365,7 @@ export default function SupportChatbot() {
               type="submit"
               disabled={isTyping}
               className="px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(217 91% 50%)", color: "hsl(0 0% 100%)" }}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -387,10 +387,10 @@ export default function SupportChatbot() {
           <button
             onClick={() => setChatOpen(true)}
             className="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-            style={{ background: "linear-gradient(135deg, hsl(330 80% 50%), hsl(330 80% 40%))", color: "hsl(0 0% 100%)" }}
+            style={{ background: "linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 40%))", color: "hsl(0 0% 100%)" }}
             aria-label="Support Chat öffnen"
           >
-            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(330 80% 50% / 0.3)" }} />
+            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(217 91% 50% / 0.3)" }} />
             <MessageCircle className="w-7 h-7 relative z-10" />
           </button>
         </div>
