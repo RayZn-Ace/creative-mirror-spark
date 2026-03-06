@@ -1355,7 +1355,7 @@ const CityPage = () => {
     setLoading(true);
 
     const fetchData = async () => {
-      // Get series
+      // 1) Try series
       const { data: series } = await supabase
         .from("event_series")
         .select("*")
@@ -1363,26 +1363,49 @@ const CityPage = () => {
         .eq("status", "published")
         .maybeSingle();
 
-      if (!series) { navigate("/", { replace: true }); return; }
+      let city = "";
+      let eventsData: any[] | null = null;
 
-      const city = series.city || series.title;
+      if (series) {
+        city = series.city || series.title;
+        const today = new Date().toISOString().split("T")[0];
+        const { data } = await supabase
+          .from("events")
+          .select("*")
+          .eq("series_id", series.id)
+          .eq("status", "published")
+          .gte("date", today)
+          .order("date");
+        eventsData = data;
+      } else {
+        // 2) Try standalone events by slug prefix (base slug without date)
+        const today = new Date().toISOString().split("T")[0];
+        const { data } = await supabase
+          .from("events")
+          .select("*")
+          .eq("status", "published")
+          .gte("date", today)
+          .like("slug", `${citySlug}-%`)
+          .order("date");
+        
+        // Filter to only events whose base slug (without date) matches exactly
+        eventsData = data?.filter((e: any) => {
+          const baseSlug = e.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+          return baseSlug === citySlug;
+        }) || null;
+
+        if (eventsData && eventsData.length > 0) {
+          city = eventsData[0].city || eventsData[0].title || "Unknown";
+        }
+      }
+
+      if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
+
       setCityName(city);
       const translations = getTranslations(city);
       setT(translations);
 
-      // Get events
-      const today = new Date().toISOString().split("T")[0];
-      const { data: eventsData } = await supabase
-        .from("events")
-        .select("*")
-        .eq("series_id", series.id)
-        .eq("status", "published")
-        .gte("date", today)
-        .order("date");
-
-      if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
-
-      const mapped: CityEvent[] = eventsData.map((e) => ({
+      const mapped: CityEvent[] = eventsData.map((e: any) => ({
         id: e.id,
         date: e.date ? formatDateDE(e.date) : "TBA",
         dateShort: e.date ? formatDateShort(e.date) : "TBA",
@@ -1390,7 +1413,7 @@ const CityPage = () => {
         time: e.time || "20:00",
         venue: e.location_name || "TBA",
         address: e.location_address || e.city || "",
-        city: e.city || series.city || "",
+        city: e.city || city,
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
@@ -1399,8 +1422,7 @@ const CityPage = () => {
           : [],
       }));
 
-      // Only generate default sections for events that have no stored info_sections
-      mapped.forEach((m, i) => {
+      mapped.forEach((m) => {
         if (m.infoSections.length === 0) {
           m.infoSections = makeInfoSections(m, translations);
         }
