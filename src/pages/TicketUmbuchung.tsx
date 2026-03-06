@@ -162,9 +162,9 @@ const TicketUmbuchung = () => {
             />
             <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
               Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-              <a href="/datenschutz" className="underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</a>{" "}
+              <a href="/datenschutz" className="underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</a>{" "}
               &{" "}
-              <a href="/agb" className="underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</a>{" "}
+              <a href="/agb" className="underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</a>{" "}
               zu.
             </span>
           </label>
