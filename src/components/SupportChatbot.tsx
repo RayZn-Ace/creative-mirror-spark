@@ -333,9 +333,9 @@ export default function SupportChatbot() {
                     onClick={() => handleQuickReply(qr.query)}
                     className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
                     style={{
-                      background: "hsl(330 80% 50% / 0.15)",
-                      color: "hsl(330 80% 65%)",
-                      border: "1px solid hsl(330 80% 50% / 0.3)",
+                      background: "hsl(217 91% 50% / 0.15)",
+                      color: "hsl(217 91% 65%)",
+                      border: "1px solid hsl(217 91% 50% / 0.3)",
                     }}
                   >
                     {qr.label}
