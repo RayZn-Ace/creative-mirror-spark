@@ -116,7 +116,7 @@ const Jobs = () => {
         {/* Alter */}
         <div>
           <label style={labelStyle}>Alter</label>
-          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Instagram */}
