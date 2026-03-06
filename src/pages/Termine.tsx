@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Calendar, ArrowRight, Ticket, Navigation, X, ChevronDown, Sun, XCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import NeonGlowCard from "@/components/NeonGlowCard";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
 import { supabase } from "@/integrations/supabase/client";

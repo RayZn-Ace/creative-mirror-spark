@@ -516,3 +516,100 @@
 .animate-ticker {
   animation: ticker-scroll 12s linear infinite;
 }
+
+/* ─── Neon Glow Card Animations ─── */
+@keyframes neon-beam-sweep {
+  0% { opacity: 0; transform: translateX(-100%) rotate(var(--beam-angle, 135deg)) scaleY(1); }
+  15% { opacity: 0.7; }
+  50% { opacity: 0.3; transform: translateX(50%) rotate(var(--beam-angle, 135deg)) scaleY(1.5); }
+  85% { opacity: 0.1; }
+  100% { opacity: 0; transform: translateX(200%) rotate(var(--beam-angle, 135deg)) scaleY(1); }
+}
+
+@keyframes neon-beam-sweep-2 {
+  0% { opacity: 0; transform: translateX(200%) rotate(var(--beam-angle2, 225deg)) scaleY(0.8); }
+  20% { opacity: 0.5; }
+  55% { opacity: 0.25; transform: translateX(-20%) rotate(var(--beam-angle2, 225deg)) scaleY(1.2); }
+  90% { opacity: 0.05; }
+  100% { opacity: 0; transform: translateX(-120%) rotate(var(--beam-angle2, 225deg)) scaleY(0.8); }
+}
+
+@keyframes neon-border-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.neon-glow-card {
+  --neon-c1: hsl(230, 60%, 50%);
+  --neon-c2: hsl(260, 50%, 55%);
+  isolation: isolate;
+}
+
+.neon-glow-card .neon-beam {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.neon-glow-card .neon-beam::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--neon-c1) 30%,
+    transparent 70%
+  );
+  opacity: 0;
+  filter: blur(20px);
+}
+
+.neon-glow-card .neon-beam-1::after {
+  animation: neon-beam-sweep 6s ease-in-out infinite;
+  animation-delay: var(--neon-delay, 0s);
+}
+
+.neon-glow-card .neon-beam-2::after {
+  width: 30%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--neon-c2) 40%,
+    transparent 80%
+  );
+  animation: neon-beam-sweep-2 8s ease-in-out infinite;
+  animation-delay: calc(var(--neon-delay, 0s) + 2s);
+  filter: blur(25px);
+}
+
+.neon-glow-card .neon-hover-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  box-shadow: var(--neon-glow);
+  border: 1px solid var(--neon-c1);
+}
+
+.neon-glow-card:hover .neon-hover-glow {
+  opacity: 1;
+  animation: neon-border-pulse 2s ease-in-out infinite;
+}
+
+.neon-glow-card:hover .neon-beam-1::after {
+  animation-duration: 3s;
+}
+
+.neon-glow-card:hover .neon-beam-2::after {
+  animation-duration: 4.5s;
+}
