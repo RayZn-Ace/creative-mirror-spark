@@ -177,7 +177,7 @@ const Influencer = () => {
       {/* Benefits */}
       <div className="py-20 px-4" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(330 80% 55%)" }}>Deine Vorteile</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(230 80% 55%)" }}>Deine Vorteile</p>
           <h2 className="text-2xl md:text-3xl font-black uppercase mb-12 text-center" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
             Warum Creator mit uns zusammenarbeiten
           </h2>
