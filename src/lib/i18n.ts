@@ -137,7 +137,7 @@ const de: BaseTranslations = {
 };
 
 const nl: BaseTranslations = {
-  tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "VANAF", clock: "UUR", selectDate: "Kies je datum",
+  tourSubtitle: "", from: "VANAF", clock: "UUR", selectDate: "Kies je datum",
   soldOutLabel: "Uitverkocht", reservedFor: "Gereserveerd voor:", soldOutTitle: "UITVERKOCHT",
   soldOutDesc: "Dit evenement is helaas uitverkocht. Bekijk onze andere data!",
   soldOutBadge: "UITVERKOCHT", comingSoonLabel: "BINNENKORT",
