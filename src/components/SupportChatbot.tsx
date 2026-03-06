@@ -279,7 +279,7 @@ export default function SupportChatbot() {
           {/* Header */}
           <div
             className="p-4 flex items-center gap-3"
-            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "hsl(330 80% 50%)" }}
+            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "hsl(217 91% 50%)" }}
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
