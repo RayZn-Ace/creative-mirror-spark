@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 import { useSeoMeta } from "@/hooks/useSeoMeta";
+import NeonGlowCard from "@/components/NeonGlowCard";
 
 
 /* ─── Types ─── */
