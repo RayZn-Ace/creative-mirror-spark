@@ -455,7 +455,7 @@ const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
             className="aspect-[9/16] rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-colors">
             <iframe
               src={`https://www.youtube.com/embed/${id}`}
-              title={`GIMME GIMME PARTY Video ${i + 1}`}
+              title={`Party Video ${i + 1}`}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
