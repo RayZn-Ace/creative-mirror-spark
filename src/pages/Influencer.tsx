@@ -224,7 +224,7 @@ const Influencer = () => {
                   </div>
                   <div>
                     <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: "hsl(330 80% 55%)" }}>{t.handle}</p>
+                    <p className="text-xs" style={{ color: "hsl(230 80% 55%)" }}>{t.handle}</p>
                   </div>
                 </div>
                 <p className="text-sm italic" style={{ color: "hsl(0 0% 100% / 0.6)", lineHeight: 1.7 }}>"{t.text}"</p>
