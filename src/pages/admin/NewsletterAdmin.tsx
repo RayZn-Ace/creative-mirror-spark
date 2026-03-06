@@ -263,7 +263,7 @@ const TEMPLATES: NewsletterTemplate[] = [
       createBlock("event-list", { title: "Sommer-Termine", events: [], accentColor: "#0ea5e9", textColor: "#333333", bgColor: "#f0f9ff", magicMode: true, magicLimit: 5 }),
       createBlock("spacer", { height: 8 }),
       createBlock("divider", { color: "#0ea5e9", style: "dashed" }),
-      createBlock("text", { text: "Take a chance on me! 🌺", align: "center", italic: true, color: "#0ea5e9" }),
+      createBlock("text", { text: "See you there! 🌺", align: "center", italic: true, color: "#0ea5e9" }),
     ],
   },
   {
