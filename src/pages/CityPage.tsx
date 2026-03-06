@@ -1466,6 +1466,9 @@ const CityPage = () => {
       root.style.setProperty('--pp-hue', `${dominantColor.hue}`);
       root.style.setProperty('--pp-sat', `${dominantColor.sat}%`);
       root.style.setProperty('--pp-light', `${dominantColor.light}%`);
+      root.style.setProperty('--pp-hue2', `${dominantColor.hue2}`);
+      root.style.setProperty('--pp-sat2', `${dominantColor.sat2}%`);
+      root.style.setProperty('--pp-light2', `${dominantColor.light2}%`);
     }
   }, [dominantColor]);
 
