@@ -158,7 +158,7 @@ const TicketUmbuchung = () => {
               type="checkbox"
               checked={agreed}
               onChange={e => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-pink-500"
+              className="mt-1 w-4 h-4 accent-blue-500"
             />
             <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
               Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
