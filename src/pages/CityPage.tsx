@@ -1528,7 +1528,7 @@ const CityPage = () => {
         <AdDisplay eventId={selectedEvent.id} type="banner" position="top" />
         
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
-          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
+          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} headerImage={headerImageUrl} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
