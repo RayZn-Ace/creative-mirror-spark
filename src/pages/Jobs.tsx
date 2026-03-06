@@ -187,9 +187,9 @@ const Jobs = () => {
           />
           <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
             Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-            <Link to="/datenschutz" className="underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</Link>
+            <Link to="/datenschutz" className="underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</Link>
             {" & "}
-            <Link to="/agb" className="underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</Link> zu.
+            <Link to="/agb" className="underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</Link> zu.
           </span>
         </label>
 
