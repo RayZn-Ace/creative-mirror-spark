@@ -269,25 +269,33 @@ export default function Termine() {
         }
       });
 
-      // 2) Standalone events (no series_id) – group by slug
+      // 2) Standalone events (no series_id) – group by base slug (strip date suffix)
       const standaloneEvents = events.filter((e) => !usedEventIds.has(e.id));
+      const standaloneGroups: Record<string, typeof standaloneEvents> = {};
       standaloneEvents.forEach((e) => {
-        const city = e.city || "Unknown";
+        const baseSlug = e.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+        if (!standaloneGroups[baseSlug]) standaloneGroups[baseSlug] = [];
+        standaloneGroups[baseSlug].push(e);
+      });
+
+      Object.entries(standaloneGroups).forEach(([baseSlug, evts]) => {
+        const first = evts[0];
+        const city = first.city || "Unknown";
         groups.push({
-          city: e.title || city,
-          slug: e.slug,
+          city: first.title || city,
+          slug: baseSlug,
           coords: getCityCoords(city),
           km: null,
-          events: [{
+          events: evts.map((e) => ({
             id: e.id,
             date: e.date || "",
             time: e.time,
             locationName: e.location_name,
             soldOut: e.sold_out || false,
             openAir: e.open_air || false,
-          }],
-          imageUrl: e.image_url,
-          category: deriveCategory(e.title || ""),
+          })),
+          imageUrl: first.image_url,
+          category: deriveCategory(first.title || ""),
         });
       });
 
