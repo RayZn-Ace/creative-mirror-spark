@@ -1708,9 +1708,9 @@ const TioSyncDialog = ({ events, onClose, onReload }: { events: EventRow[]; onCl
 
   const importEvent = async (te: TioEvent, idx: number) => {
     setImporting(prev => new Set(prev).add(idx));
-    const slug = `mamma-mia-${te.city.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${te.date}`;
+    const slug = `event-${te.city.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${te.date}`;
     const { error } = await supabase.from("events").insert({
-      title: "MAMMA MIA / ABBA TOUR MITSING KONZERT",
+      title: te.title || "Event",
       subtitle: te.city,
       slug,
       city: te.city,

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun, ArrowLeft } from "lucide-react";
 import { AdDisplay } from "@/components/AdDisplay";
-import headerImg from "@/assets/mamma-mia-logo.png";
+// Logo removed – neutral platform
 import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
@@ -1268,7 +1268,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       <span>{event.city.toUpperCase()}</span>
     </div>
     <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <img src={headerImg} alt="Mamma Mia Party" className="w-[90%] max-w-[360px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+      <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>{cityName}</h1>
     </div>
     {events.length > 1 && (
       <div className="-mt-2 sm:mt-6">
@@ -1310,8 +1310,8 @@ const CityPage = () => {
     return {
       "@context": "https://schema.org",
       "@type": "Event",
-      name: `MAMMA MIA Party ${cityName} – GIMME GIMME`,
-      description: `Die größte ABBA Party in ${cityName}! Sing-Along Erlebnis mit den Songs von ABBA – GIMME GIMME PARTY. Jetzt Tickets sichern!`,
+      name: `Event ${cityName} – partyticket.app`,
+      description: `Event in ${cityName}! Jetzt Tickets sichern auf partyticket.app.`,
       startDate: selectedEvent.date ? `${selectedEvent.date.split('.').reverse().join('-')}T${selectedEvent.time || '20:00'}:00` : undefined,
       eventStatus: selectedEvent.soldOut ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
@@ -1326,13 +1326,13 @@ const CityPage = () => {
       },
       organizer: {
         "@type": "Organization",
-        name: "GIMME GIMME Party",
-        url: "https://gimmegimmeparty.de",
+        name: "partyticket.app",
+        url: "https://partyticket.app",
       },
       image: getCityLandmarkUrl(cityName),
       offers: {
         "@type": "AggregateOffer",
-        url: `https://gimmegimmeparty.de/${citySlug}`,
+        url: `https://partyticket.app/${citySlug}`,
         availability: selectedEvent.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
         priceCurrency: "EUR",
       },
@@ -1340,12 +1340,12 @@ const CityPage = () => {
   }, [cityName, selectedEvent, citySlug]);
 
   useSeoMeta({
-    title: cityName ? `MAMMA MIA Party ${cityName} 2025 – GIMME GIMME | Tickets & Termine` : "GIMME GIMME PARTY",
+    title: cityName ? `Event ${cityName} – Tickets & Termine | partyticket.app` : "partyticket.app",
     description: cityName
-      ? `MAMMA MIA Party in ${cityName} 2025 ✨ Die größte ABBA Sing-Along Party! GIMME GIMME PARTY ${cityName} – Tickets ab sofort verfügbar. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
-      : "Die weltweit größte ABBA Party!",
-    canonical: citySlug ? `https://gimmegimmeparty.de/${citySlug}` : undefined,
-    ogImage: cityName ? `https://gimmegimmeparty.de${getCityLandmarkUrl(cityName)}` : undefined,
+      ? `Event in ${cityName} – Tickets ab sofort verfügbar auf partyticket.app. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
+      : "Dein Ticketshop für die besten Events!",
+    canonical: citySlug ? `https://partyticket.app/${citySlug}` : undefined,
+    ogImage: cityName ? `https://partyticket.app${getCityLandmarkUrl(cityName)}` : undefined,
     ogType: "event",
     jsonLd: seoJsonLd,
   });
@@ -1491,20 +1491,14 @@ const CityPage = () => {
         {/* SEO crawlable text – hidden visually but readable by Google */}
         <section className="mt-8 sm:mt-12 rounded-2xl p-5 sm:p-8" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
           <h1 className="text-lg sm:text-xl font-black uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-            MAMMA MIA Party {cityName} – GIMME GIMME PARTY
+            Events in {cityName} – partyticket.app
           </h1>
           <p className="text-sm sm:text-base leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            Willkommen zur MAMMA MIA Party in {cityName}! Die GIMME GIMME PARTY bringt die größte ABBA Sing-Along Show nach {cityName}. 
-            Erlebe eine unvergessliche Nacht voller Glitzer, Hits und Emotionen – inspiriert von den legendären Songs wie „Dancing Queen", 
-            „Mamma Mia", „Gimme! Gimme! Gimme!" und vielen mehr. Sichere dir jetzt deine Tickets für die MAMMA MIA Party {cityName}!
-          </p>
-          <p className="text-sm leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-            Die GIMME GIMME PARTY ist die größte ABBA Party in Deutschland und Europa. Von {cityName} aus touren wir durch 
-            alle großen Städte. Ob Hamburg, Berlin, Köln, München, Frankfurt oder Stuttgart – die MAMMA MIA Party kommt in deine Stadt!
+            Willkommen zu den besten Events in {cityName}! Auf partyticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
+            Sichere dir jetzt deine Tickets!
           </p>
           <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-            MAMMA MIA Party {cityName} Tickets • GIMME GIMME PARTY {cityName} • ABBA Party {cityName} • 
-            ABBA Konzert {cityName} • Sing-Along Party {cityName} • ABBA Tribute {cityName}
+            Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}
           </p>
         </section>
 

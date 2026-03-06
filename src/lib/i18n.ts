@@ -59,9 +59,9 @@ export interface Translations {
 
 /* ─── Helper: build eventInfoContent for any language ─── */
 const makeEventInfo = (
-  partyLine: string, introLine: string, hitsLine: string, dressIntro: string, dressDesc: string, startLabel: string, timeUnit: string
+  _partyLine: string, _introLine: string, _hitsLine: string, _dressIntro: string, _dressDesc: string, startLabel: string, timeUnit: string
 ) => (weekday: string, date: string, venue: string, address: string, time: string) =>
-  `🎉 ${partyLine} 🎶\n\n${introLine} 🎤 ✨\n\n${hitsLine}\n\n📅 ${weekday}, ${date}\n📍 ${venue} – ${address}\n🕐 ${startLabel}: ${time}${timeUnit}\n\n🪩 ${dressIntro}:\n${dressDesc}`;
+  `📅 ${weekday}, ${date}\n📍 ${venue} – ${address}\n🕐 ${startLabel}: ${time}${timeUnit}`;
 
 /* ─── Checkout translations per language ─── */
 const checkoutI18n: Record<string, Pick<Translations, "checkoutTitle" | "namePlaceholder" | "birthDatePlaceholder" | "emailPlaceholder" | "phonePlaceholder" | "backBtn" | "payNowBtn" | "checkoutLoadingBtn" | "invalidEmail">> = {
@@ -884,11 +884,20 @@ const th: BaseTranslations = {
   ticketDescMap: { "EARLY BIRD TICKET": "ราคาเข้างาน", "LAST CHANCE TICKET": "เข้างานราคาพิเศษ · เข้าได้แม้งานขายหมด", "LAST MINUTE TICKET": "เข้างานปกติ", "DELUXE TICKET": "ตั๋วใช้ได้ + เข้าไม่ต้องต่อคิวผ่าน VIP", "FAN TICKET": "เข้า VIP + สายรัดข้อมือพิเศษ + มงกุฎ LED" },
 };
 
-/* ─── All translations map ─── */
-const baseTranslations: Record<LangCode, BaseTranslations> = {
+/* ─── All translations map (neutralized branding) ─── */
+const rawTranslations: Record<LangCode, BaseTranslations> = {
   de, nl, fr, en, pl, hr, pt, it, es, cs, da, sv, no, fi,
   hu, ro, bg, el, tr, sr, sl, sk, lt, lv, et, ru, uk, sq, bs, ka, ja, ko, zh, ar, th,
 };
+
+// Override branding to be neutral for all languages
+const baseTranslations = Object.fromEntries(
+  Object.entries(rawTranslations).map(([lang, t]) => [lang, {
+    ...t,
+    tourSubtitle: "",
+    footerOrganizer: "partyticket.app",
+  }])
+) as Record<LangCode, BaseTranslations>;
 
 /* ─── City → Language mapping ─── */
 const CITY_LANG: Record<string, LangCode> = {

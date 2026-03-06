@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import headerImg from "@/assets/mamma-mia-logo.png";
+// Logo removed – neutral platform
 import { supabase } from "@/integrations/supabase/client";
 
 /* ─── Event Data ─── */
@@ -49,18 +49,9 @@ const makeInfoSections = (event: EventData) => [
   {
     id: "eventinfo",
     title: "Eventinformationen",
-    content: `🎉 MAMMA MIA PARTY – DAS FANKONZERT! 🎶
-
-Bei der Mamma Mia Party feiern wir die größten Songs von ABBA – und zwar gemeinsam mit EUCH! 🎤 ✨
-
-Von „Dancing Queen" über „Mamma Mia" bis „Waterloo" – wir spielen alle Kult-Hits live vom DJ-Pult zum Mitsingen, Tanzen und Feiern.
-
-📅 ${event.weekday}, ${event.date}
+    content: `📅 ${event.weekday}, ${event.date}
 📍 ${event.venue} – ${event.address}
-🕐 Beginn: ${event.time} Uhr
-
-🪩 DRESSCODE:
-Glitzer, Mamma Mia oder ABBA-Bezug! (Kein Muss, aber gerne gesehen)`,
+🕐 Beginn: ${event.time} Uhr`,
   },
   {
     id: "einlass",
@@ -446,12 +437,12 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
 
 /* ─── Nearby Events ─── */
 const nearbyEventsList = [
-  { id: "pb", name: "MAMMA MIA PARTY", city: "Paderborn", date: "15.05.2025", lat: 51.7189, lng: 8.7544, url: "/paderborn" },
-  { id: "bi", name: "MAMMA MIA PARTY", city: "Bielefeld", date: "22.05.2025", lat: 52.0302, lng: 8.5325, url: "/bielefeld" },
-  { id: "os", name: "MAMMA MIA PARTY", city: "Osnabrück", date: "29.05.2025", lat: 52.2799, lng: 8.0472, url: "/osnabrueck" },
-  { id: "hh", name: "MAMMA MIA PARTY", city: "Hamburg", date: "05.06.2025", lat: 53.5511, lng: 9.9937, url: "/hamburg" },
-  { id: "hb", name: "MAMMA MIA PARTY", city: "Bremen", date: "12.06.2025", lat: 53.0793, lng: 8.8017, url: "/bremen" },
-  { id: "bs", name: "MAMMA MIA PARTY", city: "Braunschweig", date: "26.06.2025", lat: 52.2689, lng: 10.5268, url: "/braunschweig" },
+  { id: "pb", name: "Event", city: "Paderborn", date: "15.05.2025", lat: 51.7189, lng: 8.7544, url: "/paderborn" },
+  { id: "bi", name: "Event", city: "Bielefeld", date: "22.05.2025", lat: 52.0302, lng: 8.5325, url: "/bielefeld" },
+  { id: "os", name: "Event", city: "Osnabrück", date: "29.05.2025", lat: 52.2799, lng: 8.0472, url: "/osnabrueck" },
+  { id: "hh", name: "Event", city: "Hamburg", date: "05.06.2025", lat: 53.5511, lng: 9.9937, url: "/hamburg" },
+  { id: "hb", name: "Event", city: "Bremen", date: "12.06.2025", lat: 53.0793, lng: 8.8017, url: "/bremen" },
+  { id: "bs", name: "Event", city: "Braunschweig", date: "26.06.2025", lat: 52.2689, lng: 10.5268, url: "/braunschweig" },
 ];
 
 const cityCoords: Record<string, { lat: number; lng: number }> = {
@@ -746,7 +737,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </h1>
 
     <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7), 0 3px 10px hsl(210 60% 15% / 0.5)" }}>
-      MAMMA MIA / ABBA TOUR
+      LIVE EVENTS
     </p>
 
     {event.openAir && (
@@ -768,7 +759,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </div>
 
     <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <img src={headerImg} alt="Mamma Mia Party" className="w-[90%] max-w-[360px] sm:max-w-[460px] lg:max-w-[520px] object-contain" />
+      <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>Project Paderborn</h1>
     </div>
 
     {/* Event Date Tiles - below the logo/header image */}
