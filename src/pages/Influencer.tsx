@@ -334,9 +334,9 @@ const Influencer = () => {
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 accent-primary" />
                 <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
                   Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                  <Link to="/datenschutz" className="hover:underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</Link>
+                   <Link to="/datenschutz" className="hover:underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</Link>
                   {" "}&{" "}
-                  <Link to="/agb" className="hover:underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</Link>
+                   <Link to="/agb" className="hover:underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</Link>
                   {" "}zu.
                 </span>
               </div>
