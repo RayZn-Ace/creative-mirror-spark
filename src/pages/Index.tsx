@@ -438,34 +438,6 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
   );
 };
 
-/* ─── Video Section ─── */
-const videoIds = ["53dTybHhlaw", "LrTjwGo_6Z4", "s8-6TQHgslw", "zNJMzCW0qVk", "1GTESLgRtvk"];
-
-const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
-  <section className="py-16 md:py-24 bg-card/50">
-    <div className="container">
-      <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-        {gt.videoTitle1} <span className="text-gradient-gold">{gt.videoTitle2}</span>
-      </h2>
-      <p className="text-center text-muted-foreground mb-12">{gt.videoDesc}</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {videoIds.map((id, i) => (
-          <motion.div key={id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-            className="aspect-[9/16] rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-colors">
-            <iframe
-              src={`https://www.youtube.com/embed/${id}`}
-              title={`Party Video ${i + 1}`}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
 
 /* ─── Reviews ─── */
 const reviews = [
