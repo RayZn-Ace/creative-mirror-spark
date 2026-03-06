@@ -1491,20 +1491,14 @@ const CityPage = () => {
         {/* SEO crawlable text – hidden visually but readable by Google */}
         <section className="mt-8 sm:mt-12 rounded-2xl p-5 sm:p-8" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
           <h1 className="text-lg sm:text-xl font-black uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-            MAMMA MIA Party {cityName} – GIMME GIMME PARTY
+            Events in {cityName} – partyticket.app
           </h1>
           <p className="text-sm sm:text-base leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            Willkommen zur MAMMA MIA Party in {cityName}! Die GIMME GIMME PARTY bringt die größte ABBA Sing-Along Show nach {cityName}. 
-            Erlebe eine unvergessliche Nacht voller Glitzer, Hits und Emotionen – inspiriert von den legendären Songs wie „Dancing Queen", 
-            „Mamma Mia", „Gimme! Gimme! Gimme!" und vielen mehr. Sichere dir jetzt deine Tickets für die MAMMA MIA Party {cityName}!
-          </p>
-          <p className="text-sm leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-            Die GIMME GIMME PARTY ist die größte ABBA Party in Deutschland und Europa. Von {cityName} aus touren wir durch 
-            alle großen Städte. Ob Hamburg, Berlin, Köln, München, Frankfurt oder Stuttgart – die MAMMA MIA Party kommt in deine Stadt!
+            Willkommen zu den besten Events in {cityName}! Auf partyticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
+            Sichere dir jetzt deine Tickets!
           </p>
           <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-            MAMMA MIA Party {cityName} Tickets • GIMME GIMME PARTY {cityName} • ABBA Party {cityName} • 
-            ABBA Konzert {cityName} • Sing-Along Party {cityName} • ABBA Tribute {cityName}
+            Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}
           </p>
         </section>
 
