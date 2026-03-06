@@ -215,8 +215,7 @@ export default function Termine() {
   const [locationStatus, setLocationStatus] = useState<"pending" | "granted" | "denied">("pending");
   const [rangeKm, setRangeKm] = useState(0); // 0 = all
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
-  const [showSoldOut, setShowSoldOut] = useState(true);
-  const [onlyOpenAir, setOnlyOpenAir] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Fetch all published events grouped by series/city
   useEffect(() => {
