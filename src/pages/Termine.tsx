@@ -476,30 +476,21 @@ export default function Termine() {
           </div>
         </div>
 
-        {/* Toggle filters */}
+        {/* Category filters */}
         <div className="flex flex-wrap gap-2 max-w-3xl mx-auto mt-3">
-          <button
-            onClick={() => setOnlyOpenAir(!onlyOpenAir)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-              onlyOpenAir
-                ? "border-amber-500/50 bg-amber-500/15 text-amber-400"
-                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            <Sun className="w-3.5 h-3.5" />
-            Nur Open Air
-          </button>
-          <button
-            onClick={() => setShowSoldOut(!showSoldOut)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
-              !showSoldOut
-                ? "border-primary/50 bg-primary/15 text-primary"
-                : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
-            }`}
-          >
-            <XCircle className="w-3.5 h-3.5" />
-            Ausverkaufte ausblenden
-          </button>
+          {availableCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+                selectedCategory === cat
+                  ? "border-primary/50 bg-primary/15 text-primary"
+                  : "border-border bg-card/80 text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
         {locationStatus === "denied" && (
