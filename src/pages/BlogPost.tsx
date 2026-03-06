@@ -55,7 +55,7 @@ const BlogPost = () => {
       <PageLayout title="Nicht gefunden" subtitle="">
         <div className="text-center py-16">
           <p className="text-sm mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Dieser Beitrag existiert nicht.</p>
-          <Link to="/blog" className="text-sm font-semibold" style={{ color: "hsl(330 80% 55%)" }}>
+          <Link to="/blog" className="text-sm font-semibold" style={{ color: "hsl(230 80% 55%)" }}>
             ← Zurück zum Blog
           </Link>
         </div>
