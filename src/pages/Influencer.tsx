@@ -219,7 +219,7 @@ const Influencer = () => {
             {testimonials.map(t => (
               <div key={t.name} className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "hsl(330 80% 55% / 0.2)", color: "hsl(330 80% 55%)" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "hsl(230 80% 55% / 0.2)", color: "hsl(230 80% 55%)" }}>
                     {t.initial}
                   </div>
                   <div>
