@@ -128,7 +128,7 @@ const Jobs = () => {
         {/* Stadt */}
         <div>
           <label style={labelStyle}>Stadt</label>
-          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* E-Mail */}
