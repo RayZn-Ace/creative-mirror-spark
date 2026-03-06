@@ -1441,6 +1441,7 @@ const CityPage = () => {
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
         ticketLink: e.ticket_link,
+        description: e.description || null,
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
           ? (e.info_sections as unknown as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[])
           : [],
