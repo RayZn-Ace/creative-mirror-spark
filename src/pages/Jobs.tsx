@@ -140,7 +140,7 @@ const Jobs = () => {
         {/* Handynummer */}
         <div>
           <label style={labelStyle}>Handynummer</label>
-          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Bereich */}
