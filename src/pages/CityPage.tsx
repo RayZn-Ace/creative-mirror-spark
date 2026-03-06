@@ -1305,7 +1305,6 @@ const CityPage = () => {
   const [t, setT] = useState<Translations>(getTranslations("Berlin"));
   const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
   const dominantColor = useDominantColor(headerImageUrl);
-  const [t, setT] = useState<Translations>(getTranslations("Berlin"));
 
   // SEO meta tags
   const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
