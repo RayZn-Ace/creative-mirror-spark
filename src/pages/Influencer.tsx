@@ -352,7 +352,7 @@ const Influencer = () => {
 
       {/* Sticky CTA */}
       <div className="py-8 text-center px-4">
-        <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}>
+        <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(230 80% 50% / 0.4)" }}>
           <Send className="w-4 h-4" /> Jetzt bewerben
         </a>
       </div>
