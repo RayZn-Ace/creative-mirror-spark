@@ -565,7 +565,7 @@ export default function Index() {
         <WhatToExpect gt={gt} />
         <TicketCategories gt={gt} />
         <CrowdSlideshow gt={gt} />
-        <VideoSection gt={gt} />
+        {/* VideoSection removed */}
         <Reviews gt={gt} />
         <NewsletterCTA gt={gt} />
       </main>
