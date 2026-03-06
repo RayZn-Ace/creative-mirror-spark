@@ -689,8 +689,8 @@ const EmailTab = () => {
                     „Es sind bisher noch keine weiteren Termine in deiner Stadt bestätigt, aber hier hast du weitere Termine in der Umgebung:"
                   </div>
                   {[
-                    { title: "Mamma Mia Bielefeld", city: "Bielefeld", km: "~45 km", date: "22.03." },
-                    { title: "Mamma Mia Dortmund", city: "Dortmund", km: "~120 km", date: "29.03." },
+                    { title: "Event Bielefeld", city: "Bielefeld", km: "~45 km", date: "22.03." },
+                    { title: "Event Dortmund", city: "Dortmund", km: "~120 km", date: "29.03." },
                   ].map((ev, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
                       <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{ev.title}</span>
