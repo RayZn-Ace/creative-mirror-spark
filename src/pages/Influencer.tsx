@@ -260,7 +260,7 @@ const Influencer = () => {
           {sent ? (
             <div className="text-center py-12">
               <h3 className="text-3xl font-black uppercase mb-4" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-                Danke! <span style={{ color: "hsl(330 80% 55%)" }}>🎉</span>
+                Danke! <span style={{ color: "hsl(230 80% 55%)" }}>🎉</span>
               </h3>
               <p style={{ color: "hsl(0 0% 100% / 0.5)" }}>Wir prüfen deine Bewerbung und melden uns schnellstmöglich.</p>
             </div>
