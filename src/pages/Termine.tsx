@@ -286,6 +286,7 @@ export default function Termine() {
             openAir: e.open_air || false,
           }],
           imageUrl: e.image_url,
+          category: deriveCategory(e.title || ""),
         });
       });
 
