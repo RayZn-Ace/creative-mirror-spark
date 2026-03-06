@@ -33,9 +33,8 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
     <div className="relative z-10 container text-center px-4 py-20">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-none mb-4">
-          {gt.heroTitle}{" "}<span className="text-gradient-primary">PARTY</span>
+          {gt.heroTitle}<span className="text-gradient-primary">{gt.heroSubtitle}</span>
         </h1>
-        <p className="font-display text-2xl sm:text-3xl md:text-4xl text-gold mb-2">{gt.heroSubtitle}</p>
         <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">{gt.heroDesc}</p>
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -109,7 +108,7 @@ const WhatIsIt = ({ gt }: { gt: GlobalTranslations }) => {
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-border">
-            <img src={crowdParty} alt="GIMME GIMME PARTY Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
+            <img src={crowdParty} alt="Party Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
           </motion.div>
         </div>
       </div>
@@ -375,10 +374,10 @@ const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
-  { src: crowdWide, alt: "GIMME GIMME PARTY – Full Venue" },
+  { src: crowdWide, alt: "Full Venue Panorama" },
   { src: crowdAerial, alt: "Aerial crowd shot" },
   { src: crowdGlowsticks, alt: "Glowsticks in the crowd" },
-  { src: crowdHands, alt: "Hands up at ABBA show" },
+  { src: crowdHands, alt: "Hands up at the show" },
   { src: dancerHappy, alt: "Happy fans dancing" },
   { src: crowdParty, alt: "Party atmosphere" },
   { src: crowdGlowsticks2, alt: "Sea of glowsticks" },
@@ -455,7 +454,7 @@ const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
             className="aspect-[9/16] rounded-xl overflow-hidden border border-border hover:border-primary/30 transition-colors">
             <iframe
               src={`https://www.youtube.com/embed/${id}`}
-              title={`GIMME GIMME PARTY Video ${i + 1}`}
+              title={`Party Video ${i + 1}`}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -470,12 +469,12 @@ const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
 
 /* ─── Reviews ─── */
 const reviews = [
-  { name: "Camila R.", text: "Beste Nacht meines Lebens! Wir haben jeden Song zusammen gesungen, ich habe bei Dancing Queen geweint. Hab schon Tickets für's nächste Mal!", rating: 5 },
-  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Der Glitter, die Energie, einfach alles war unglaublich!", rating: 5 },
-  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, wir fühlten uns wie in den 70ern!", rating: 5 },
-  { name: "Ana Clara S.", text: "Ich habe meine Mutter mitgebracht und es war so emotional. ABBA verbindet Generationen! Die Produktion ist makellos.", rating: 5 },
+  { name: "Camila R.", text: "Beste Nacht meines Lebens! Die Stimmung war unglaublich, ich habe jeden Moment genossen. Hab schon Tickets für's nächste Mal!", rating: 5 },
+  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Die Energie, einfach alles war unglaublich!", rating: 5 },
+  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, die Atmosphäre war magisch!", rating: 5 },
+  { name: "Ana Clara S.", text: "Die Organisation war perfekt, die Tickets super einfach zu kaufen und der Einlass lief reibungslos. Top Erlebnis!", rating: 5 },
   { name: "Juliana K.", text: "Wir waren mit 15 Freunden da. Die Organisation war top, der Gruppenrabatt hat sich absolut gelohnt. Wir kommen wieder!", rating: 5 },
-  { name: "Marcos T.", text: "Ich dachte, es wäre nur für Frauen, aber ich hatte SO VIEL SPASS. Die Party ist für alle, die gute Laune lieben!", rating: 5 },
+  { name: "Marcos T.", text: "Richtig gute Party! Die Buchung war einfach und der Abend war unvergesslich. Absolute Empfehlung!", rating: 5 },
 ];
 
 const Reviews = ({ gt }: { gt: GlobalTranslations }) => (

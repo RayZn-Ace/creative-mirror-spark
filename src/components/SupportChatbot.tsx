@@ -21,7 +21,7 @@ export default function SupportChatbot() {
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
-    { from: "bot", text: "Hey! 👋 Ich bin James, dein Ansprechpartner für alles rund um die GIMME GIMME PARTY. Was kann ich für dich tun?" },
+    { from: "bot", text: "Hey! 👋 Ich bin James, dein Ansprechpartner für alles rund um partyticket. Was kann ich für dich tun?" },
   ]);
   const [aiHistory, setAiHistory] = useState<AIMessage[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
@@ -285,7 +285,7 @@ export default function SupportChatbot() {
             <div>
               <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "James"}</p>
               <p className="text-xs text-white/70">
-                {mode === "live" ? "Verbunden mit Mitarbeiter" : "GIMME GIMME Support"}
+                {mode === "live" ? "Verbunden mit Mitarbeiter" : "partyticket Support"}
               </p>
             </div>
             {mode === "live" && <span className="ml-1 w-2 h-2 rounded-full bg-white animate-pulse" />}

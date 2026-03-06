@@ -3,9 +3,9 @@ import { Instagram, Youtube, MessageCircle, Facebook } from "lucide-react";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 
 const socialLinks = [
-  { icon: Instagram, href: "https://www.instagram.com/mammamia.partymotto", label: "Instagram" },
-  { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61577320797241", label: "Facebook" },
-  { icon: Youtube, href: "https://www.youtube.com/shorts/s8-6TQHgslw", label: "YouTube" },
+  { icon: Instagram, href: "https://www.instagram.com/partyticket.app", label: "Instagram" },
+  { icon: Facebook, href: "https://www.facebook.com/partyticket", label: "Facebook" },
+  { icon: Youtube, href: "https://www.youtube.com/@partyticket", label: "YouTube" },
 ];
 
 export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
@@ -18,8 +18,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           <div>
             <div className="mb-4">
               <span className="font-display leading-none tracking-wide">
-                <span className="block text-base text-foreground">GIMME GIMME</span>
-                <span className="block text-xl text-gradient-primary">PARTY</span>
+                <span className="block text-xl text-gradient-primary">partyticket</span>
               </span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">{gt.footerAboutDesc}</p>
@@ -31,13 +30,6 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
                   <s.icon className="w-5 h-5" />
                 </a>
               ))}
-              <a href="https://www.tiktok.com/@mammamia.partymotto" target="_blank" rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                aria-label="TikTok">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.7a8.18 8.18 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.13z"/>
-                </svg>
-              </a>
             </div>
           </div>
 
@@ -59,8 +51,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           <div>
             <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="mailto:mail@gimmegimmeparty.com" className="hover:text-primary transition-colors">mail@gimmegimmeparty.com</a>
-              <a href="https://partner.partyshows.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Partner Portal</a>
+              <a href="mailto:info@partyticket.app" className="hover:text-primary transition-colors">info@partyticket.app</a>
               <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 hover:text-primary transition-colors">
                 <MessageCircle className="w-4 h-4" />
@@ -75,13 +66,12 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
               <Link to="/impressum" className="text-sm text-muted-foreground hover:text-primary transition-colors">Impressum</Link>
               <Link to="/datenschutz" className="text-sm text-muted-foreground hover:text-primary transition-colors">Datenschutz</Link>
               <Link to="/agb" className="text-sm text-muted-foreground hover:text-primary transition-colors">AGB</Link>
-              <Link to="/presse" className="text-sm text-muted-foreground hover:text-primary transition-colors">Presse</Link>
             </div>
           </div>
         </div>
 
         <div className="mt-12 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          <p className="font-body">Veranstalter: Gimme Gimme Party.</p>
+          <p className="font-body">© {new Date().getFullYear()} partyticket.app</p>
         </div>
       </div>
     </footer>
