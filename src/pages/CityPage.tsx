@@ -1404,6 +1404,10 @@ const CityPage = () => {
 
       if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
 
+      // Set header image from series or first event
+      const imgUrl = series?.image_url || eventsData[0]?.image_url || null;
+      setHeaderImageUrl(imgUrl);
+
       setCityName(city);
       const translations = getTranslations(city);
       setT(translations);
