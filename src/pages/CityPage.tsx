@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 import { useSeoMeta } from "@/hooks/useSeoMeta";
+import NeonGlowCard from "@/components/NeonGlowCard";
 
 
 /* ─── Types ─── */
@@ -1491,7 +1492,7 @@ const CityPage = () => {
   // selectedEvent already declared above for SEO
 
   return (
-    <div className="min-h-screen pp-bg">
+    <NeonGlowCard imageUrl={headerImageUrl} className="min-h-screen pp-bg">
       {/* Ticker ads at very top */}
       <AdDisplay eventId={selectedEvent.id} type="ticker" />
       
@@ -1556,7 +1557,7 @@ const CityPage = () => {
           </motion.a>
         )}
       </AnimatePresence>
-    </div>
+    </NeonGlowCard>
   );
 };
 
