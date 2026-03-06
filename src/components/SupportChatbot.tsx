@@ -390,7 +390,7 @@ export default function SupportChatbot() {
             style={{ background: "linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 40%))", color: "hsl(0 0% 100%)" }}
             aria-label="Support Chat öffnen"
           >
-            <span className="absolute inset-0 rounded-full animate-ping" <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(217 91% 50% / 0.3)" }} /> />
+            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(217 91% 50% / 0.3)" }} />
             <MessageCircle className="w-7 h-7 relative z-10" />
           </button>
         </div>
