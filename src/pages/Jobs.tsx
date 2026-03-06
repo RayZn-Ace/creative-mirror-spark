@@ -110,7 +110,7 @@ const Jobs = () => {
         {/* Name */}
         <div>
           <label style={labelStyle}>Name</label>
-          <input value={form.name} onChange={set("name")} required style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.name} onChange={set("name")} required style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Alter */}
