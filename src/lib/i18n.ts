@@ -166,7 +166,7 @@ const fr: BaseTranslations = {
   ticketsLoading: "Chargement des billets...", discountPlaceholder: "Entrer un code promo", discountApply: "Appliquer",
   discountApplied: "✓ Le code sera vérifié au moment du paiement", continueBtn: "CONTINUER", inclVat: "TTC",
   eventInfoTitle: "Informations sur l'événement",
-  eventInfoContent: makeEventInfo("MAMMA MIA PARTY - LE CONCERT DES FANS !", "Lors de la Mamma Mia Party, nous celebrons les plus grands tubes d'ABBA - tous ensemble !", "De 'Dancing Queen' a 'Mamma Mia' en passant par 'Waterloo' - tous les tubes cultes en live.", "DRESS CODE", "Paillettes, Mamma Mia ou theme ABBA ! (Pas obligatoire, mais apprecie)", "Debut", "h"),
+  eventInfoContent: makeEventInfo("", "", "", "", "", "Debut", "h"),
   admissionTitle: "Informations d'entrée",
   admissionContent: "✅ Entrée à partir de 18 ans – exceptions uniquement en accord avec le lieu.\n\n✅ Le spectacle commence dès que la majorité du public est entrée.\n\n✅ L'entrée ne dure généralement pas plus de 30 minutes.\n\n✅ Pas besoin d'imprimer ton billet – le format numérique suffit.",
   freeTicketsTitle: "Places gratuites & plus ?", whatsappJoin: "Rejoins-nous", whatsappDesc: "Fais partie de notre communauté WhatsApp.",
