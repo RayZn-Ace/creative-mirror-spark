@@ -737,7 +737,7 @@ const PPHeroSection = ({ event, selectedEventId, onSelectEvent }: { event: Event
     </h1>
 
     <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-1 sm:mt-3" style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7), 0 3px 10px hsl(210 60% 15% / 0.5)" }}>
-      MAMMA MIA / ABBA TOUR
+      LIVE EVENTS
     </p>
 
     {event.openAir && (
