@@ -1326,8 +1326,8 @@ const CityPage = () => {
       },
       organizer: {
         "@type": "Organization",
-        name: "GIMME GIMME Party",
-        url: "https://gimmegimmeparty.de",
+        name: "partyticket.app",
+        url: "https://partyticket.app",
       },
       image: getCityLandmarkUrl(cityName),
       offers: {
