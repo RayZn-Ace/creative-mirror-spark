@@ -122,7 +122,7 @@ const TicketUmbuchung = () => {
 
           <div>
             <label style={labelStyle}>Anzahl Tickets</label>
-            <input value={form.anzahl} onChange={set("anzahl")} type="number" min="1" required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.anzahl} onChange={set("anzahl")} type="number" min="1" required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
