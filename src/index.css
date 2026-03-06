@@ -520,35 +520,35 @@
 /* ─── Neon Glow Card Animations ─── */
 @keyframes neon-beam-sweep {
   0%   { opacity: 0;   transform: translateX(-120%) rotate(var(--beam-angle, 135deg)); }
-  10%  { opacity: 1;   }
-  40%  { opacity: 0.8; transform: translateX(20%) rotate(var(--beam-angle, 135deg)); }
-  70%  { opacity: 0.5; transform: translateX(100%) rotate(var(--beam-angle, 135deg)); }
+  10%  { opacity: 0.35; }
+  40%  { opacity: 0.25; transform: translateX(20%) rotate(var(--beam-angle, 135deg)); }
+  70%  { opacity: 0.15; transform: translateX(100%) rotate(var(--beam-angle, 135deg)); }
   100% { opacity: 0;   transform: translateX(180%) rotate(var(--beam-angle, 135deg)); }
 }
 
 @keyframes neon-beam-sweep-2 {
   0%   { opacity: 0;   transform: translateX(180%) rotate(var(--beam-angle2, 225deg)); }
-  15%  { opacity: 0.9; }
-  45%  { opacity: 0.6; transform: translateX(10%) rotate(var(--beam-angle2, 225deg)); }
-  80%  { opacity: 0.3; transform: translateX(-80%) rotate(var(--beam-angle2, 225deg)); }
+  15%  { opacity: 0.3; }
+  45%  { opacity: 0.2; transform: translateX(10%) rotate(var(--beam-angle2, 225deg)); }
+  80%  { opacity: 0.1; transform: translateX(-80%) rotate(var(--beam-angle2, 225deg)); }
   100% { opacity: 0;   transform: translateX(-140%) rotate(var(--beam-angle2, 225deg)); }
 }
 
 @keyframes neon-border-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
 }
 
 @keyframes neon-ambient-glow {
-  0%, 100% { box-shadow: 0 0 15px var(--neon-c1), 0 0 40px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.12); }
-  50%      { box-shadow: 0 0 25px var(--neon-c1), 0 0 60px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.2); }
+  0%, 100% { box-shadow: 0 0 8px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.08); }
+  50%      { box-shadow: 0 0 15px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.12); }
 }
 
 .neon-glow-card {
   --neon-c1: hsl(230, 60%, 50%);
   --neon-c2: hsl(260, 50%, 55%);
   isolation: isolate;
-  animation: neon-ambient-glow 4s ease-in-out infinite;
+  animation: neon-ambient-glow 5s ease-in-out infinite;
   animation-delay: var(--neon-delay, 0s);
   border-radius: inherit;
 }
@@ -572,17 +572,17 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--neon-c1) 25%,
-    hsla(var(--neon-h1, 230), var(--neon-s1, 60%), 70%, 0.9) 50%,
-    var(--neon-c1) 75%,
+    hsla(var(--neon-h1, 230), var(--neon-s1, 60%), 70%, 0.3) 25%,
+    hsla(var(--neon-h1, 230), var(--neon-s1, 60%), 70%, 0.45) 50%,
+    hsla(var(--neon-h1, 230), var(--neon-s1, 60%), 70%, 0.3) 75%,
     transparent 100%
   );
   opacity: 0;
-  filter: blur(12px);
+  filter: blur(20px);
 }
 
 .neon-glow-card .neon-beam-1::after {
-  animation: neon-beam-sweep 4s ease-in-out infinite;
+  animation: neon-beam-sweep 6s ease-in-out infinite;
   animation-delay: var(--neon-delay, 0s);
 }
 
@@ -591,14 +591,14 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--neon-c2) 30%,
-    hsla(var(--neon-h2, 260), var(--neon-s2, 50%), 65%, 0.85) 50%,
-    var(--neon-c2) 70%,
+    hsla(var(--neon-h2, 260), var(--neon-s2, 50%), 65%, 0.25) 30%,
+    hsla(var(--neon-h2, 260), var(--neon-s2, 50%), 65%, 0.4) 50%,
+    hsla(var(--neon-h2, 260), var(--neon-s2, 50%), 65%, 0.25) 70%,
     transparent 100%
   );
-  animation: neon-beam-sweep-2 5.5s ease-in-out infinite;
-  animation-delay: calc(var(--neon-delay, 0s) + 1.5s);
-  filter: blur(14px);
+  animation: neon-beam-sweep-2 7s ease-in-out infinite;
+  animation-delay: calc(var(--neon-delay, 0s) + 2s);
+  filter: blur(22px);
 }
 
 .neon-glow-card .neon-hover-glow {
@@ -608,22 +608,22 @@
   pointer-events: none;
   z-index: 0;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  box-shadow: 0 0 30px var(--neon-c1), 0 0 60px var(--neon-c2), inset 0 0 30px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.08);
-  border: 1.5px solid var(--neon-c1);
+  transition: opacity 0.4s ease;
+  box-shadow: 0 0 15px hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.15), 0 0 35px hsla(var(--neon-h2, 260), var(--neon-s2, 50%), var(--neon-l2, 55%), 0.08);
+  border: 1px solid hsla(var(--neon-h1, 230), var(--neon-s1, 60%), var(--neon-l1, 50%), 0.2);
 }
 
 .neon-glow-card:hover .neon-hover-glow {
-  opacity: 1;
-  animation: neon-border-pulse 1.5s ease-in-out infinite;
+  opacity: 0.7;
+  animation: neon-border-pulse 2s ease-in-out infinite;
 }
 
 .neon-glow-card:hover .neon-beam-1::after {
-  animation-duration: 2.5s;
-  filter: blur(8px);
+  animation-duration: 4s;
+  filter: blur(16px);
 }
 
 .neon-glow-card:hover .neon-beam-2::after {
-  animation-duration: 3s;
-  filter: blur(10px);
+  animation-duration: 5s;
+  filter: blur(18px);
 }
