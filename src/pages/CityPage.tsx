@@ -1476,6 +1476,9 @@ const CityPage = () => {
     const baseHue = dominantColor?.hue ?? 210;
     const baseSat = dominantColor?.sat ?? 55;
     const baseLight = dominantColor?.light ?? 52;
+    const baseHue2 = dominantColor?.hue2 ?? 230;
+    const baseSat2 = dominantColor?.sat2 ?? 50;
+    const baseLight2 = dominantColor?.light2 ?? 45;
 
     const onScroll = () => {
       const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
@@ -1484,11 +1487,17 @@ const CityPage = () => {
       const root = document.querySelector('.pp-bg') as HTMLElement | null;
       if (root) {
         const hue = baseHue - scrollPercent * 15;
-        const light = baseLight + scrollPercent * 14;
-        const sat = baseSat - scrollPercent * 10;
+        const light = baseLight + scrollPercent * 12;
+        const sat = baseSat - scrollPercent * 8;
+        const hue2 = baseHue2 + scrollPercent * 10;
+        const light2 = baseLight2 + scrollPercent * 10;
+        const sat2 = baseSat2 - scrollPercent * 6;
         root.style.setProperty('--pp-hue', `${hue}`);
         root.style.setProperty('--pp-light', `${light}%`);
         root.style.setProperty('--pp-sat', `${sat}%`);
+        root.style.setProperty('--pp-hue2', `${hue2}`);
+        root.style.setProperty('--pp-light2', `${light2}%`);
+        root.style.setProperty('--pp-sat2', `${sat2}%`);
       }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
