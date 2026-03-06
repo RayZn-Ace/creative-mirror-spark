@@ -660,7 +660,7 @@ const EmailTab = () => {
             )}
             {block.image_url && !block.image_url.startsWith("{{") && <img src={block.image_url} alt="" style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", objectFit: "cover" }} />}
             {block.image_url && block.image_url.startsWith("{{") && <div style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", background: tpl.accent_color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color }}>📷 Event-Bild</div>}
-            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title.startsWith("{{") ? "Mamma Mia Party (Beispiel)" : block.title}</div>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title.startsWith("{{") ? "Beispiel Event" : block.title}</div>
             <div style={{ fontSize: "11px", color: tpl.text_color + "99", marginTop: "4px" }}>{block.date.startsWith("{{") ? "15.03.2026" : block.date} · {block.time.startsWith("{{") ? "22:00" : block.time} · {block.location.startsWith("{{") ? "Paderborn" : block.location}</div>
           </div>
         );
