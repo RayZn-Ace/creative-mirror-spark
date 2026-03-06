@@ -159,7 +159,7 @@ const Influencer = () => {
             <ul className="space-y-2">
               {perks.map(p => (
                 <li key={p} className="flex items-center gap-3 text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(330 80% 55%)" }} />
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(230 80% 55%)" }} />
                   {p}
                 </li>
               ))}
