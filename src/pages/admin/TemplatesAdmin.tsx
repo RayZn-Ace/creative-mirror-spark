@@ -906,8 +906,8 @@ const EmailTab = () => {
                 {tpl.show_event_details && (
                   <div style={{ background: tpl.card_bg, borderRadius: "8px", padding: "16px", marginBottom: "16px" }}>
                     <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: tpl.text_color + "88", fontWeight: 600, marginBottom: "4px" }}>Event</div>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>Mamma Mia Party</div>
-                    <div style={{ fontSize: "12px", color: tpl.text_color + "99" }}>15.03.2026 · 22:00 Uhr · Baggi / Osho</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>Beispiel Event</div>
+                    <div style={{ fontSize: "12px", color: tpl.text_color + "99" }}>15.03.2026 · 22:00 Uhr · Club XY</div>
                   </div>
                 )}
                 {tpl.show_order_summary && (
