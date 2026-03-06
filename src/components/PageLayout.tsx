@@ -16,7 +16,7 @@ export const PageLayout = ({ children, title, subtitle }: { children: React.Reac
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm sm:text-base font-semibold uppercase tracking-wider mb-10" style={{ color: "hsl(330 80% 55%)" }}>
+            <p className="text-sm sm:text-base font-semibold uppercase tracking-wider mb-10" style={{ color: "hsl(230 80% 55%)" }}>
               {subtitle}
             </p>
           )}
