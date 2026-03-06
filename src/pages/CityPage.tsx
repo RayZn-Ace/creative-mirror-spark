@@ -1244,13 +1244,26 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 };
 
 /* ─── Hero ─── */
-const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations }) => (
+const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImage }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations; headerImage?: string | null }) => (
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
-      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7)" }}>
-      {cityName}
-    </h1>
+    {headerImage && (
+      <motion.img
+        src={headerImage}
+        alt={cityName}
+        className="w-[85%] sm:w-[75%] max-w-md mx-auto rounded-2xl mb-4 sm:mb-6"
+        style={{ boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)" }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      />
+    )}
+    {!headerImage && (
+      <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
+        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7)" }}>
+        {cityName}
+      </h1>
+    )}
     <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-0.5 sm:mt-3"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7)" }}>
       {t.tourSubtitle}
@@ -1268,9 +1281,11 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       <span>{t.from} {event.time} {t.clock}</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
-    <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>{cityName}</h1>
-    </div>
+    {!headerImage && (
+      <div className="w-full flex justify-center -mt-1 sm:mt-4">
+        <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>{cityName}</h1>
+      </div>
+    )}
     {events.length > 1 && (
       <div className="-mt-2 sm:mt-6">
         <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
