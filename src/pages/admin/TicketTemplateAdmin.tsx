@@ -188,7 +188,7 @@ const TicketPreview = ({ tpl }: { tpl: TicketTemplate }) => {
             </div>
           )}
           <div style={{ fontSize: isDinLang ? "7px" : "9px", fontWeight: 800, letterSpacing: "2px", color: tpl.accent_color, textTransform: "uppercase", marginBottom: "2px" }}>TICKET</div>
-          {tpl.show_event_title && <div style={{ fontSize: isDinLang ? "10px" : "14px", fontWeight: 800, color: tpl.accent_color, textTransform: "uppercase", lineHeight: 1.1, marginBottom: "6px" }}>MAMMA MIA PARTY</div>}
+          {tpl.show_event_title && <div style={{ fontSize: isDinLang ? "10px" : "14px", fontWeight: 800, color: tpl.accent_color, textTransform: "uppercase", lineHeight: 1.1, marginBottom: "6px" }}>EXAMPLE EVENT</div>}
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {tpl.show_date && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>DATUM</span> 15.03.2026</div>}
             {tpl.show_time && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>UHRZEIT</span> 22:00 Uhr</div>}

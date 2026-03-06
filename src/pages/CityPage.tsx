@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MessageCircle, Instagram, Timer, MapPin, X, ArrowRight, Sun, ArrowLeft } from "lucide-react";
 import { AdDisplay } from "@/components/AdDisplay";
-import headerImg from "@/assets/mamma-mia-logo.png";
+// Logo removed – neutral platform
 import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";

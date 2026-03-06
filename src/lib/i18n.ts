@@ -59,9 +59,9 @@ export interface Translations {
 
 /* ─── Helper: build eventInfoContent for any language ─── */
 const makeEventInfo = (
-  partyLine: string, introLine: string, hitsLine: string, dressIntro: string, dressDesc: string, startLabel: string, timeUnit: string
+  _partyLine: string, _introLine: string, _hitsLine: string, _dressIntro: string, _dressDesc: string, startLabel: string, timeUnit: string
 ) => (weekday: string, date: string, venue: string, address: string, time: string) =>
-  `🎉 ${partyLine} 🎶\n\n${introLine} 🎤 ✨\n\n${hitsLine}\n\n📅 ${weekday}, ${date}\n📍 ${venue} – ${address}\n🕐 ${startLabel}: ${time}${timeUnit}\n\n🪩 ${dressIntro}:\n${dressDesc}`;
+  `📅 ${weekday}, ${date}\n📍 ${venue} – ${address}\n🕐 ${startLabel}: ${time}${timeUnit}`;
 
 /* ─── Checkout translations per language ─── */
 const checkoutI18n: Record<string, Pick<Translations, "checkoutTitle" | "namePlaceholder" | "birthDatePlaceholder" | "emailPlaceholder" | "phonePlaceholder" | "backBtn" | "payNowBtn" | "checkoutLoadingBtn" | "invalidEmail">> = {
