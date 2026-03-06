@@ -90,7 +90,7 @@ const TicketUmbuchung = () => {
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-4xl">🔁</span>
             <h1 className="text-3xl md:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-              TICKET <span style={{ color: "hsl(330 80% 55%)" }}>UMBUCHUNG</span>
+              TICKET <span style={{ color: "hsl(230 80% 55%)" }}>UMBUCHUNG</span>
             </h1>
           </div>
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
