@@ -33,9 +33,8 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
     <div className="relative z-10 container text-center px-4 py-20">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl leading-none mb-4">
-          {gt.heroTitle}{" "}<span className="text-gradient-primary">PARTY</span>
+          {gt.heroTitle}<span className="text-gradient-primary">{gt.heroSubtitle}</span>
         </h1>
-        <p className="font-display text-2xl sm:text-3xl md:text-4xl text-gold mb-2">{gt.heroSubtitle}</p>
         <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-10">{gt.heroDesc}</p>
       </motion.div>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="flex flex-col sm:flex-row gap-4 justify-center">
