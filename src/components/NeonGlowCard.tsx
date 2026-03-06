@@ -20,18 +20,19 @@ const NeonGlowCard = ({ imageUrl, children, className = "", index = 0 }: NeonGlo
   const styles = useMemo(() => {
     if (!color) return null;
     const { hue, sat, light, hue2, sat2, light2 } = color;
-    const c1 = `${hue}, ${sat}%, ${light}%`;
-    const c2 = `${hue2}, ${sat2}%, ${light2}%`;
-    // Offset animation delays per card for visual variety
-    const delay = (index % 5) * 0.8;
+    const delay = (index % 5) * 0.6;
 
     return {
-      // Outer glow border
-      "--neon-c1": `hsl(${c1})`,
-      "--neon-c2": `hsl(${c2})`,
-      "--neon-glow": `0 0 20px hsla(${c1}, 0.15), 0 0 60px hsla(${c2}, 0.08)`,
+      "--neon-c1": `hsl(${hue}, ${sat}%, ${Math.min(light + 15, 65)}%)`,
+      "--neon-c2": `hsl(${hue2}, ${sat2}%, ${Math.min(light2 + 15, 65)}%)`,
+      "--neon-h1": `${hue}`,
+      "--neon-s1": `${sat}%`,
+      "--neon-l1": `${Math.min(light + 15, 65)}%`,
+      "--neon-h2": `${hue2}`,
+      "--neon-s2": `${sat2}%`,
+      "--neon-l2": `${Math.min(light2 + 15, 65)}%`,
+      "--neon-glow": `0 0 25px hsla(${hue}, ${sat}%, ${light + 10}%, 0.25), 0 0 60px hsla(${hue2}, ${sat2}%, ${light2 + 10}%, 0.12)`,
       "--neon-delay": `${delay}s`,
-      // Beam angles based on hue for uniqueness
       "--beam-angle": `${(hue % 60) + 120}deg`,
       "--beam-angle2": `${(hue2 % 90) + 200}deg`,
     } as React.CSSProperties;
