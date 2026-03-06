@@ -40,7 +40,7 @@ const PopupAd = ({ ad, onClose }: { ad: Ad; onClose: () => void }) => (
           {ad.click_url && (
             <a href={ad.click_url} target="_blank" rel="noopener noreferrer"
               className="inline-block mt-2 px-5 py-2 rounded-xl text-sm font-bold"
-              style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+              style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)" }}>
               Mehr erfahren
             </a>
           )}
@@ -57,7 +57,7 @@ const PopupAd = ({ ad, onClose }: { ad: Ad; onClose: () => void }) => (
 
 /* ─── Ticker ─── */
 const TickerAd = ({ ad }: { ad: Ad }) => (
-  <div className="w-full overflow-hidden py-2" style={{ background: "hsl(330 80% 50% / 0.9)", color: "hsl(0 0% 100%)" }}>
+  <div className="w-full overflow-hidden py-2" style={{ background: "hsl(230 80% 50% / 0.9)", color: "hsl(0 0% 100%)" }}>
     <div className="flex animate-ticker whitespace-nowrap">
       {[0, 1, 2].map(i => (
         <span key={i} className="text-xs sm:text-sm font-bold uppercase tracking-wider mx-8">
@@ -68,6 +68,17 @@ const TickerAd = ({ ad }: { ad: Ad }) => (
   </div>
 );
 
+/* ─── Ticket Ad ─── */
+const TicketAd = ({ ad }: { ad: Ad }) => (
+  <AdLink url={ad.click_url}>
+    <div className="flex items-center justify-between px-4 py-2 rounded-xl" style={{ background: "hsl(230 80% 50% / 0.2)" }}>
+      <div className="text-sm font-medium" style={{ color: "hsl(0 0% 100%)" }}>{ad.title}</div>
+      {ad.image_url && (
+        <img src={ad.image_url} alt={ad.title} className="h-8 w-auto" />
+      )}
+    </div>
+  </AdLink>
+);
 /* ─── Banner ─── */
 const BannerAd = ({ ad }: { ad: Ad }) => (
   <AdLink url={ad.click_url}>
@@ -129,15 +140,11 @@ export const AdDisplay = ({ eventId, position, type }: AdDisplayProps) => {
 
       const now = new Date();
       const filtered = data.filter((ad: any) => {
-        // Check impression limit
         if (ad.max_impressions && ad.impression_count >= ad.max_impressions) return false;
-        // Check date range
         if (ad.start_date && new Date(ad.start_date) > now) return false;
         if (ad.end_date && new Date(ad.end_date) < now) return false;
-        // Check event targeting
         if (!ad.is_global && ad.event_id && eventId && ad.event_id !== eventId) return false;
         if (!ad.is_global && ad.event_id && !eventId) return false;
-        // Filter by position/type if specified
         if (position && ad.position !== position) return false;
         if (type && ad.type !== type) return false;
         return true;
@@ -146,7 +153,6 @@ export const AdDisplay = ({ eventId, position, type }: AdDisplayProps) => {
       setAds(filtered);
       setLoaded(true);
 
-      // Track impressions
       for (const ad of filtered) {
         supabase.from("ad_placements")
           .update({ impression_count: (ad.impression_count || 0) + 1 })
@@ -163,19 +169,14 @@ export const AdDisplay = ({ eventId, position, type }: AdDisplayProps) => {
   const tickers = ads.filter(a => a.type === "ticker");
   const banners = ads.filter(a => a.type === "banner");
   const interstitials = ads.filter(a => a.type === "interstitial");
+  const ticket_ads = ads.filter(a => a.type === "ticket_ad");
 
   return (
     <>
-      {/* Tickers */}
       {tickers.map(ad => <TickerAd key={ad.id} ad={ad} />)}
-
-      {/* Banners */}
       {banners.map(ad => <BannerAd key={ad.id} ad={ad} />)}
-
-      {/* Interstitials */}
       {interstitials.map(ad => <InterstitialAd key={ad.id} ad={ad} />)}
-
-      {/* Popups */}
+      {ticket_ads.map(ad => <TicketAd key={ad.id} ad={ad} />)}
       <AnimatePresence>
         {popups.map(ad => (
           <PopupAd key={ad.id} ad={ad} onClose={() => setDismissedPopups(prev => new Set([...prev, ad.id]))} />

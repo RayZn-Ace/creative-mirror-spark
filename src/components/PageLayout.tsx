@@ -16,7 +16,7 @@ export const PageLayout = ({ children, title, subtitle }: { children: React.Reac
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm sm:text-base font-semibold uppercase tracking-wider mb-10" style={{ color: "hsl(330 80% 55%)" }}>
+            <p className="text-sm sm:text-base font-semibold uppercase tracking-wider mb-10" style={{ color: "hsl(230 80% 55%)" }}>
               {subtitle}
             </p>
           )}
@@ -29,7 +29,7 @@ export const PageLayout = ({ children, title, subtitle }: { children: React.Reac
     {/* Footer */}
     <footer className="pb-8 pt-8 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>© 2025 Gimme Gimme Party</span>
+        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>© 2025 partyticket.app</span>
         <div className="flex gap-4">
           <Link to="/impressum" className="text-xs hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Impressum</Link>
           <Link to="/datenschutz" className="text-xs hover:opacity-100" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Datenschutz</Link>

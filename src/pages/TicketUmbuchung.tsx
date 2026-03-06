@@ -90,7 +90,7 @@ const TicketUmbuchung = () => {
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-4xl">🔁</span>
             <h1 className="text-3xl md:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", fontFamily: "'Orbitron', sans-serif" }}>
-              TICKET <span style={{ color: "hsl(330 80% 55%)" }}>UMBUCHUNG</span>
+              TICKET <span style={{ color: "hsl(230 80% 55%)" }}>UMBUCHUNG</span>
             </h1>
           </div>
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
@@ -102,42 +102,42 @@ const TicketUmbuchung = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label style={labelStyle}>Vorname</label>
-            <input value={form.vorname} onChange={set("vorname")} required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.vorname} onChange={set("vorname")} required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Nachname</label>
-            <input value={form.nachname} onChange={set("nachname")} required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.nachname} onChange={set("nachname")} required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Handynummer</label>
-            <input value={form.handynummer} onChange={set("handynummer")} type="tel" required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.handynummer} onChange={set("handynummer")} type="tel" required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>E-Mail</label>
-            <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Anzahl Tickets</label>
-            <input value={form.anzahl} onChange={set("anzahl")} type="number" min="1" required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.anzahl} onChange={set("anzahl")} type="number" min="1" required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Ticketshop</label>
-            <input value={form.ticketshop} onChange={set("ticketshop")} placeholder="z.B. Eventim, Ticket.io, gimmegimmeparty.com" style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.ticketshop} onChange={set("ticketshop")} placeholder="z.B. Eventim, Ticket.io, partyticket.app" style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Neues Datum</label>
-            <input value={form.neues_datum} onChange={set("neues_datum")} type="date" required style={{ ...inputStyle, colorScheme: "dark" }} className="focus:border-pink-500" />
+            <input value={form.neues_datum} onChange={set("neues_datum")} type="date" required style={{ ...inputStyle, colorScheme: "dark" }} className="focus:border-blue-500" />
           </div>
 
           <div>
             <label style={labelStyle}>Neue Location</label>
-            <input value={form.neue_location} onChange={set("neue_location")} required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.neue_location} onChange={set("neue_location")} required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
@@ -158,13 +158,13 @@ const TicketUmbuchung = () => {
               type="checkbox"
               checked={agreed}
               onChange={e => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 accent-pink-500"
+              className="mt-1 w-4 h-4 accent-blue-500"
             />
             <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
               Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-              <a href="/datenschutz" className="underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</a>{" "}
+              <a href="/datenschutz" className="underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</a>{" "}
               &{" "}
-              <a href="/agb" className="underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</a>{" "}
+              <a href="/agb" className="underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</a>{" "}
               zu.
             </span>
           </label>
@@ -173,7 +173,7 @@ const TicketUmbuchung = () => {
             type="submit"
             disabled={sending}
             className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
+            style={{ background: "hsl(230 80% 55%)", color: "hsl(0 0% 100%)" }}
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Absenden

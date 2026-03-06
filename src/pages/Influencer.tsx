@@ -55,7 +55,7 @@ const FAQItem = ({ q, a }: { q: string; a: string }) => {
     <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.08)" }}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-5 py-4 text-left">
         <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{q}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "hsl(330 80% 55%)" }} />
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "hsl(230 80% 55%)" }} />
       </button>
       <AnimatePresence>
         {open && (
@@ -120,14 +120,14 @@ const Influencer = () => {
           <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, hsl(220 50% 6% / 0.6), hsl(220 50% 6% / 0.9))" }} />
         </div>
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-4" style={{ color: "hsl(330 80% 55%)" }}>Creator Programm</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-4" style={{ color: "hsl(230 80% 55%)" }}>Creator Programm</p>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-            Influencer & <span style={{ color: "hsl(330 80% 55%)" }}>Content Creator</span>
+            Influencer & <span style={{ color: "hsl(230 80% 55%)" }}>Content Creator</span>
           </h1>
           <p className="text-sm md:text-base mb-8" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
             Erlebe exklusive Events, Festivals und unvergessliche Live-Momente.
           </p>
-          <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}>
+          <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(230 80% 50% / 0.4)" }}>
             <Send className="w-4 h-4" /> Jetzt bewerben
           </a>
         </div>
@@ -138,7 +138,7 @@ const Influencer = () => {
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map(s => (
             <div key={s.label} className="text-center">
-              <p className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}>{s.value}</p>
+              <p className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 55%)" }}>{s.value}</p>
               <p className="text-xs uppercase tracking-wider mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.label}</p>
             </div>
           ))}
@@ -149,7 +149,7 @@ const Influencer = () => {
       <div className="max-w-5xl mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>Influencer / Content Creator</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(230 80% 55%)" }}>Influencer / Content Creator</p>
             <h2 className="text-2xl md:text-3xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
               Du bist Content Creator und liebst Musik?
             </h2>
@@ -159,7 +159,7 @@ const Influencer = () => {
             <ul className="space-y-2">
               {perks.map(p => (
                 <li key={p} className="flex items-center gap-3 text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(330 80% 55%)" }} />
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(230 80% 55%)" }} />
                   {p}
                 </li>
               ))}
@@ -177,15 +177,15 @@ const Influencer = () => {
       {/* Benefits */}
       <div className="py-20 px-4" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(330 80% 55%)" }}>Deine Vorteile</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(230 80% 55%)" }}>Deine Vorteile</p>
           <h2 className="text-2xl md:text-3xl font-black uppercase mb-12 text-center" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
             Warum Creator mit uns zusammenarbeiten
           </h2>
           <div className="grid sm:grid-cols-2 gap-6">
             {benefits.map(b => (
               <div key={b.title} className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "hsl(330 80% 55% / 0.15)" }}>
-                  <b.icon className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "hsl(230 80% 55% / 0.15)" }}>
+                  <b.icon className="w-5 h-5" style={{ color: "hsl(230 80% 55%)" }} />
                 </div>
                 <h3 className="text-base font-black uppercase mb-2" style={{ color: "hsl(0 0% 100%)" }}>{b.title}</h3>
                 <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)", lineHeight: 1.7 }}>{b.desc}</p>
@@ -198,7 +198,7 @@ const Influencer = () => {
       {/* Content showcase */}
       <div className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(330 80% 55%)" }}>Content</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(230 80% 55%)" }}>Content</p>
           <h2 className="text-2xl md:text-3xl font-black uppercase mb-12 text-center" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
             So sieht das aus
           </h2>
@@ -211,7 +211,7 @@ const Influencer = () => {
       {/* Testimonials */}
       <div className="py-20 px-4" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(330 80% 55%)" }}>Creator Stimmen</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(230 80% 55%)" }}>Creator Stimmen</p>
           <h2 className="text-2xl md:text-3xl font-black uppercase mb-12 text-center" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
             Das sagen unsere Creator
           </h2>
@@ -219,12 +219,12 @@ const Influencer = () => {
             {testimonials.map(t => (
               <div key={t.name} className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "hsl(330 80% 55% / 0.2)", color: "hsl(330 80% 55%)" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "hsl(230 80% 55% / 0.2)", color: "hsl(230 80% 55%)" }}>
                     {t.initial}
                   </div>
                   <div>
                     <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: "hsl(330 80% 55%)" }}>{t.handle}</p>
+                    <p className="text-xs" style={{ color: "hsl(230 80% 55%)" }}>{t.handle}</p>
                   </div>
                 </div>
                 <p className="text-sm italic" style={{ color: "hsl(0 0% 100% / 0.6)", lineHeight: 1.7 }}>"{t.text}"</p>
@@ -249,7 +249,7 @@ const Influencer = () => {
       {/* Application Form */}
       <div id="bewerbung" className="py-20 px-4" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="max-w-xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(330 80% 55%)" }}>Bewerbung</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-center" style={{ color: "hsl(230 80% 55%)" }}>Bewerbung</p>
           <h2 className="text-2xl md:text-3xl font-black uppercase mb-2 text-center" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
             Influencer Bewerbung
           </h2>
@@ -260,7 +260,7 @@ const Influencer = () => {
           {sent ? (
             <div className="text-center py-12">
               <h3 className="text-3xl font-black uppercase mb-4" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-                Danke! <span style={{ color: "hsl(330 80% 55%)" }}>🎉</span>
+                Danke! <span style={{ color: "hsl(230 80% 55%)" }}>🎉</span>
               </h3>
               <p style={{ color: "hsl(0 0% 100% / 0.5)" }}>Wir prüfen deine Bewerbung und melden uns schnellstmöglich.</p>
             </div>
@@ -334,14 +334,14 @@ const Influencer = () => {
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 accent-primary" />
                 <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
                   Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                  <Link to="/datenschutz" className="hover:underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</Link>
+                   <Link to="/datenschutz" className="hover:underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</Link>
                   {" "}&{" "}
-                  <Link to="/agb" className="hover:underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</Link>
+                   <Link to="/agb" className="hover:underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</Link>
                   {" "}zu.
                 </span>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 20px hsl(330 80% 50% / 0.3)" }}>
+              <button type="submit" disabled={loading} className="w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 20px hsl(230 80% 50% / 0.3)" }}>
                 <Send className="w-4 h-4" />
                 {loading ? "Wird gesendet..." : "Bewerbung absenden"}
               </button>
@@ -352,7 +352,7 @@ const Influencer = () => {
 
       {/* Sticky CTA */}
       <div className="py-8 text-center px-4">
-        <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(330 80% 50% / 0.4)" }}>
+        <a href="#bewerbung" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-105" style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 30px hsl(230 80% 50% / 0.4)" }}>
           <Send className="w-4 h-4" /> Jetzt bewerben
         </a>
       </div>

@@ -110,37 +110,37 @@ const Jobs = () => {
         {/* Name */}
         <div>
           <label style={labelStyle}>Name</label>
-          <input value={form.name} onChange={set("name")} required style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.name} onChange={set("name")} required style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Alter */}
         <div>
           <label style={labelStyle}>Alter</label>
-          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Instagram */}
         <div>
           <label style={labelStyle}>Instagram</label>
-          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Stadt */}
         <div>
           <label style={labelStyle}>Stadt</label>
-          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* E-Mail */}
         <div>
           <label style={labelStyle}>E-Mail</label>
-          <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Handynummer */}
         <div>
           <label style={labelStyle}>Handynummer</label>
-          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Bereich */}
@@ -155,7 +155,7 @@ const Jobs = () => {
               colorScheme: "dark",
               appearance: "auto" as any,
             }}
-            className="focus:border-pink-500"
+            className="focus:border-blue-500"
           >
             <option value="">Bitte wählen...</option>
             {bereiche.map((b) => (
@@ -172,7 +172,7 @@ const Jobs = () => {
             onChange={set("kommentar")}
             rows={4}
             style={{ ...inputStyle, resize: "vertical" }}
-            className="focus:border-pink-500"
+            className="focus:border-blue-500"
           />
         </div>
 
@@ -182,14 +182,14 @@ const Jobs = () => {
             type="checkbox"
             checked={agb}
             onChange={(e) => setAgb(e.target.checked)}
-            className="mt-1 accent-pink-500"
+            className="mt-1 accent-blue-500"
             style={{ width: "16px", height: "16px" }}
           />
           <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
             Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-            <Link to="/datenschutz" className="underline" style={{ color: "hsl(330 80% 55%)" }}>Datenschutzerklärung</Link>
+            <Link to="/datenschutz" className="underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</Link>
             {" & "}
-            <Link to="/agb" className="underline" style={{ color: "hsl(330 80% 55%)" }}>AGB</Link> zu.
+            <Link to="/agb" className="underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</Link> zu.
           </span>
         </label>
 
@@ -198,7 +198,7 @@ const Jobs = () => {
           type="submit"
           disabled={submitting || !agb}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(230 80% 55%)", color: "hsl(0 0% 100%)" }}
         >
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Absenden
