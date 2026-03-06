@@ -64,7 +64,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Suspense fallback={<div className="min-h-screen" style={{ background: "hsl(0 5% 5%)" }} />}>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
             <Routes>
