@@ -1535,18 +1535,14 @@ const CityPage = () => {
         {/* Pop-up ads */}
         <AdDisplay eventId={selectedEvent.id} type="popup" />
         
-        {/* SEO crawlable text – hidden visually but readable by Google */}
-        <section className="mt-8 sm:mt-12 rounded-2xl p-5 sm:p-8" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
-          <h1 className="text-lg sm:text-xl font-black uppercase tracking-wide mb-3" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
-            Events in {cityName} – partyticket.app
-          </h1>
-          <p className="text-sm sm:text-base leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+        {/* SEO crawlable text – visually hidden but readable by search engines */}
+        <section className="sr-only" aria-hidden="false">
+          <h1>Events in {cityName} – partyticket.app</h1>
+          <p>
             Willkommen zu den besten Events in {cityName}! Auf partyticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
             Sichere dir jetzt deine Tickets!
           </p>
-          <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-            Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}
-          </p>
+          <p>Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}</p>
         </section>
 
         <CityFooter t={t} />
