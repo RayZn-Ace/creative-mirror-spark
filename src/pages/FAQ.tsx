@@ -73,7 +73,7 @@ const faqData: FAQCategory[] = [
       },
       {
         q: "Wo finde ich den Muttizettel?",
-        a: "Den Muttizettel findest du auf unserer Website unter dem Menüpunkt „Muttizettel". Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.",
+        a: 'Den Muttizettel findest du auf unserer Website unter dem Menüpunkt \u201eMuttizettel\u201c. Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.',
       },
       {
         q: "Gibt es einen Dresscode?",
