@@ -144,7 +144,7 @@ const nl: BaseTranslations = {
   ticketsLoading: "Tickets laden...", discountPlaceholder: "Kortingscode invoeren", discountApply: "Toepassen",
   discountApplied: "✓ Code wordt bij de checkout gecontroleerd", continueBtn: "VERDER", inclVat: "incl. btw",
   eventInfoTitle: "Evenementinformatie",
-  eventInfoContent: makeEventInfo("MAMMA MIA PARTY – HET FANCONCERT!", "Bij het Mamma Mia feest vieren we de grootste hits van ABBA – samen met JULLIE!", "Van \"Dancing Queen\" tot \"Mamma Mia\" en \"Waterloo\" – alle culthits live om mee te zingen, dansen en feesten.", "DRESSCODE", "Glitter, Mamma Mia of ABBA-thema! (Geen verplichting, maar wel leuk)", "Aanvang", " uur"),
+  eventInfoContent: makeEventInfo("", "", "", "", "", "Aanvang", " uur"),
   admissionTitle: "Toegangsinformatie",
   admissionContent: "✅ Toegang vanaf 18 jaar – uitzonderingen alleen in overleg met de locatie.\n\n✅ We beginnen met de show zodra het grootste deel binnen is.\n\n✅ De inlaat duurt doorgaans niet langer dan 30 minuten.\n\n✅ Je hoeft je ticket niet af te drukken – digitaal op je telefoon is voldoende.",
   freeTicketsTitle: "Gratis kaarten & meer?", whatsappJoin: "Nu deelnemen", whatsappDesc: "Word lid van onze WhatsApp-community.",
