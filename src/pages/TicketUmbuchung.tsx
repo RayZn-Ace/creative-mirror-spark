@@ -173,7 +173,7 @@ const TicketUmbuchung = () => {
             type="submit"
             disabled={sending}
             className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
+            style={{ background: "hsl(230 80% 55%)", color: "hsl(0 0% 100%)" }}
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Absenden
