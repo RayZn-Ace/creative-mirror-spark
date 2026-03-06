@@ -1535,7 +1535,7 @@ const CityPage = () => {
         </div>
         <div className="md:hidden space-y-2">
           <motion.div key={`hero-${selectedEvent.id}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
+            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} headerImage={headerImageUrl} />
           </motion.div>
           <motion.div key={`tickets-${selectedEvent.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
