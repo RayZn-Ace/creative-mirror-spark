@@ -1,5 +1,6 @@
 /* Termine page - category filters */
 import { useState, useEffect, useMemo, useCallback } from "react";
+import heroHome from "@/assets/hero-home.jpg";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Calendar, ArrowRight, Ticket, Navigation, X, ChevronDown, Sun, XCircle } from "lucide-react";
