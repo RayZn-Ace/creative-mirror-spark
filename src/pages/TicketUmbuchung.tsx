@@ -112,7 +112,7 @@ const TicketUmbuchung = () => {
 
           <div>
             <label style={labelStyle}>Handynummer</label>
-            <input value={form.handynummer} onChange={set("handynummer")} type="tel" required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.handynummer} onChange={set("handynummer")} type="tel" required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
