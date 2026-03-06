@@ -55,7 +55,7 @@ const faqData: FAQCategory[] = [
       },
       {
         q: "Wo finde ich meine Tickets nach dem Kauf?",
-        a: "Du erhältst deine Tickets per E-Mail an die beim Kauf angegebene Adresse. Alternativ kannst du unter „Meine Tickets" auf unserer Website deine Tickets jederzeit abrufen.",
+        a: 'Du erhältst deine Tickets per E-Mail an die beim Kauf angegebene Adresse. Alternativ kannst du unter \u201eMeine Tickets\u201c auf unserer Website deine Tickets jederzeit abrufen.',
       },
     ],
   },
