@@ -69,7 +69,7 @@ const BlogPost = () => {
         <Link
           to="/blog"
           className="inline-flex items-center gap-2 text-sm font-medium mb-6 hover:opacity-80 transition-opacity"
-          style={{ color: "hsl(330 80% 55%)" }}
+          style={{ color: "hsl(230 80% 55%)" }}
         >
           <ArrowLeft className="w-4 h-4" /> Zurück zum Blog
         </Link>

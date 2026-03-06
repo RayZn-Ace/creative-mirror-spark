@@ -198,7 +198,7 @@ const Jobs = () => {
           type="submit"
           disabled={submitting || !agb}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(230 80% 55%)", color: "hsl(0 0% 100%)" }}
         >
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Absenden

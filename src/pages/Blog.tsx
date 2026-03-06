@@ -93,7 +93,7 @@ const Blog = () => {
               )}
               <span
                 className="inline-flex items-center gap-1 text-sm font-semibold"
-                style={{ color: "hsl(330 80% 55%)" }}
+                style={{ color: "hsl(230 80% 55%)" }}
               >
                 Weiterlesen <ArrowRight className="w-3.5 h-3.5" />
               </span>
