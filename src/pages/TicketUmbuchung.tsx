@@ -127,7 +127,7 @@ const TicketUmbuchung = () => {
 
           <div>
             <label style={labelStyle}>Ticketshop</label>
-            <input value={form.ticketshop} onChange={set("ticketshop")} placeholder="z.B. Eventim, Ticket.io, gimmegimmeparty.com" style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.ticketshop} onChange={set("ticketshop")} placeholder="z.B. Eventim, Ticket.io, partyticket.app" style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
