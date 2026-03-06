@@ -1332,7 +1332,7 @@ const CityPage = () => {
       image: getCityLandmarkUrl(cityName),
       offers: {
         "@type": "AggregateOffer",
-        url: `https://gimmegimmeparty.de/${citySlug}`,
+        url: `https://partyticket.app/${citySlug}`,
         availability: selectedEvent.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
         priceCurrency: "EUR",
       },
