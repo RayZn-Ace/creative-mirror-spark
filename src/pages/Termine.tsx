@@ -535,7 +535,7 @@ export default function Termine() {
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                         loading="lazy"
                       />
-                      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-card via-card/60 to-transparent" />
+                      
                       {group.km !== null && (
                         <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium">
                           <MapPin className="w-3 h-3 text-primary" />
