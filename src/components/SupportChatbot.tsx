@@ -304,7 +304,7 @@ export default function SupportChatbot() {
                   <div
                     className="max-w-[80%] px-3 py-2 rounded-xl text-sm whitespace-pre-line"
                     style={{
-                      background: m.from === "user" ? "hsl(330 80% 50%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(0 0% 100% / 0.08)",
+                      background: m.from === "user" ? "hsl(217 91% 50%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(0 0% 100% / 0.08)",
                       color: "hsl(0 0% 100%)",
                       border: m.from === "admin" ? "1px solid hsl(142 70% 40% / 0.3)" : "none",
                     }}
