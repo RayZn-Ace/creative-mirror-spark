@@ -149,7 +149,7 @@ const Influencer = () => {
       <div className="max-w-5xl mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(330 80% 55%)" }}>Influencer / Content Creator</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: "hsl(230 80% 55%)" }}>Influencer / Content Creator</p>
             <h2 className="text-2xl md:text-3xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
               Du bist Content Creator und liebst Musik?
             </h2>
