@@ -148,8 +148,8 @@ const events: EventData[] = [
 events.forEach((e) => { e.infoSections = makeInfoSections(e); });
 
 /* ─── Instagram handle ─── */
-const instagramHandle = "@gimmegimmeparty";
-const instagramUrl = "https://instagram.com/gimmegimmeparty";
+const instagramHandle = "@partyticket.app";
+const instagramUrl = "https://instagram.com/partyticket.app";
 const whatsappNumber = "49123456789";
 
 /* ─── Cart Timer Hook ─── */

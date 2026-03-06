@@ -470,12 +470,12 @@ const VideoSection = ({ gt }: { gt: GlobalTranslations }) => (
 
 /* ─── Reviews ─── */
 const reviews = [
-  { name: "Camila R.", text: "Beste Nacht meines Lebens! Wir haben jeden Song zusammen gesungen, ich habe bei Dancing Queen geweint. Hab schon Tickets für's nächste Mal!", rating: 5 },
-  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Der Glitter, die Energie, einfach alles war unglaublich!", rating: 5 },
-  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, wir fühlten uns wie in den 70ern!", rating: 5 },
-  { name: "Ana Clara S.", text: "Ich habe meine Mutter mitgebracht und es war so emotional. ABBA verbindet Generationen! Die Produktion ist makellos.", rating: 5 },
+  { name: "Camila R.", text: "Beste Nacht meines Lebens! Die Stimmung war unglaublich, ich habe jeden Moment genossen. Hab schon Tickets für's nächste Mal!", rating: 5 },
+  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Die Energie, einfach alles war unglaublich!", rating: 5 },
+  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, die Atmosphäre war magisch!", rating: 5 },
+  { name: "Ana Clara S.", text: "Die Organisation war perfekt, die Tickets super einfach zu kaufen und der Einlass lief reibungslos. Top Erlebnis!", rating: 5 },
   { name: "Juliana K.", text: "Wir waren mit 15 Freunden da. Die Organisation war top, der Gruppenrabatt hat sich absolut gelohnt. Wir kommen wieder!", rating: 5 },
-  { name: "Marcos T.", text: "Ich dachte, es wäre nur für Frauen, aber ich hatte SO VIEL SPASS. Die Party ist für alle, die gute Laune lieben!", rating: 5 },
+  { name: "Marcos T.", text: "Richtig gute Party! Die Buchung war einfach und der Abend war unvergesslich. Absolute Empfehlung!", rating: 5 },
 ];
 
 const Reviews = ({ gt }: { gt: GlobalTranslations }) => (

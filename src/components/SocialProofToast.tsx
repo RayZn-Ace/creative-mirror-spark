@@ -59,7 +59,7 @@ export default function SocialProofToast() {
                 {msg.name} hat gerade {msg.count} Tickets gekauft
               </p>
               <p className="text-[11px] mt-0.5 font-medium" style={{ color: "hsl(330 80% 65%)" }}>
-                📍 {msg.city} · GIMME GIMME
+                📍 {msg.city} · partyticket
               </p>
             </div>
           </motion.div>

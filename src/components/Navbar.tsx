@@ -113,7 +113,7 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group shrink-0">
           <span className="text-2xl md:text-3xl font-display bg-clip-text text-transparent select-none group-hover:opacity-80 transition-opacity" style={{ backgroundImage: "var(--gradient-primary)" }}>
-            GIMME GIMME PARTY
+            partyticket
           </span>
         </Link>
 
