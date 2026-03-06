@@ -177,6 +177,20 @@ const termineI18n: Record<string, Record<string, string>> = {
 
 const getTermineT = (lang: string) => termineI18n[lang] || termineI18n.en || termineI18n.de;
 
+/* ─── Derive category from event title ─── */
+const deriveCategory = (title: string): string => {
+  const t = title.toUpperCase();
+  if (t.includes("MAMMA MIA") || t.includes("ABBA")) return "Mamma Mia";
+  if (t.includes("COLLEGE CLUB")) return "College Club";
+  if (t.includes("PROJECT") || t.includes("PROJEKT")) return "Project Party";
+  if (t.includes("MÄDELSABEND") || t.includes("MAEDELSABEND")) return "Mädelsabend";
+  if (t.includes("90ER") || t.includes("90S") || t.includes("90'S")) return "90er Party";
+  if (t.includes("16+")) return "16+ Events";
+  if (t.includes("OPEN AIR")) return "Open Air";
+  if (t.includes("FESTIVAL")) return "Festival";
+  return "Sonstige";
+};
+
 /* ─── Types ─── */
 interface CityGroup {
   city: string;
@@ -185,6 +199,7 @@ interface CityGroup {
   km: number | null;
   events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean }[];
   imageUrl: string | null;
+  category: string;
 }
 
 const RANGE_OPTIONS = [50, 100, 200, 500, 0]; // 0 = all
