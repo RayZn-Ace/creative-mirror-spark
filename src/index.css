@@ -82,6 +82,39 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
   }
+
+  /* Admin pages keep a dark theme */
+  .admin-dark {
+    --background: 230 25% 7%;
+    --foreground: 210 40% 96%;
+    --card: 230 20% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 230 20% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 230 80% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 93% 58%;
+    --secondary-foreground: 230 25% 7%;
+    --muted: 230 15% 18%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 280 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 230 15% 20%;
+    --input: 230 15% 20%;
+    --ring: 230 80% 56%;
+    --gold: 45 93% 58%;
+    --gold-foreground: 230 25% 7%;
+    --electric: 230 80% 56%;
+    --electric-glow: 230 100% 70%;
+    --disco: 280 70% 55%;
+    --gradient-hero: linear-gradient(180deg, hsla(230, 25%, 7%, 0) 0%, hsla(230, 25%, 7%, 0.8) 60%, hsl(230, 25%, 7%) 100%);
+    --gradient-primary: linear-gradient(90deg, hsl(330, 80%, 55%), hsl(280, 70%, 55%), hsl(230, 80%, 56%));
+    --gradient-gold: linear-gradient(135deg, hsl(45, 93%, 58%), hsl(35, 90%, 50%));
+    --shadow-glow: 0 0 30px hsla(230, 80%, 56%, 0.3);
+    --shadow-gold: 0 0 20px hsla(45, 93%, 58%, 0.3);
+  }
 }
 
 /* Override legacy Orbitron references globally */
