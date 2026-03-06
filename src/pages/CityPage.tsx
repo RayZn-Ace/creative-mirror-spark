@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 import { useSeoMeta } from "@/hooks/useSeoMeta";
+import { useDominantColor } from "@/hooks/useDominantColor";
 
 /* ─── Types ─── */
 interface GalleryConfig {
@@ -1243,13 +1244,26 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 };
 
 /* ─── Hero ─── */
-const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations }) => (
+const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImage }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations; headerImage?: string | null }) => (
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
-      style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7)" }}>
-      {cityName}
-    </h1>
+    {headerImage && (
+      <motion.img
+        src={headerImage}
+        alt={cityName}
+        className="w-[85%] sm:w-[75%] max-w-md mx-auto rounded-2xl mb-4 sm:mb-6"
+        style={{ boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)" }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      />
+    )}
+    {!headerImage && (
+      <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
+        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)", textShadow: "0 2px 6px hsl(210 80% 15% / 0.7)" }}>
+        {cityName}
+      </h1>
+    )}
     <p className="text-sm sm:text-lg md:text-xl font-extrabold uppercase tracking-[0.15em] mt-0.5 sm:mt-3"
       style={{ color: "hsl(0 0% 100%)", textShadow: "0 1px 4px hsl(210 80% 15% / 0.7)" }}>
       {t.tourSubtitle}
@@ -1267,9 +1281,11 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t }: { cityNa
       <span>{t.from} {event.time} {t.clock}</span>
       <span>{event.city.toUpperCase()}</span>
     </div>
-    <div className="w-full flex justify-center -mt-1 sm:mt-4">
-      <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>{cityName}</h1>
-    </div>
+    {!headerImage && (
+      <div className="w-full flex justify-center -mt-1 sm:mt-4">
+        <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)", textShadow: "0 2px 8px hsl(210 80% 15% / 0.5)" }}>{cityName}</h1>
+      </div>
+    )}
     {events.length > 1 && (
       <div className="-mt-2 sm:mt-6">
         <h2 className="text-center text-[10px] sm:text-sm font-bold uppercase tracking-widest mb-2 sm:mb-4" style={{ color: "hsl(0 0% 100% / 0.95)" }}>
@@ -1302,6 +1318,8 @@ const CityPage = () => {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [showWhatsapp, setShowWhatsapp] = useState(false);
   const [t, setT] = useState<Translations>(getTranslations("Berlin"));
+  const [headerImageUrl, setHeaderImageUrl] = useState<string | null>(null);
+  const dominantColor = useDominantColor(headerImageUrl);
 
   // SEO meta tags
   const selectedEvent = events.find((e) => e.id === selectedEventId) || events[0];
@@ -1401,6 +1419,10 @@ const CityPage = () => {
 
       if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
 
+      // Set header image from series or first event
+      const imgUrl = series?.image_url || eventsData[0]?.image_url || null;
+      setHeaderImageUrl(imgUrl);
+
       setCityName(city);
       const translations = getTranslations(city);
       setT(translations);
@@ -1436,16 +1458,31 @@ const CityPage = () => {
     fetchData();
   }, [citySlug, navigate]);
 
+  // Apply dominant color from event image
   useEffect(() => {
+    if (!dominantColor) return;
+    const root = document.querySelector('.pp-bg') as HTMLElement | null;
+    if (root) {
+      root.style.setProperty('--pp-hue', `${dominantColor.hue}`);
+      root.style.setProperty('--pp-sat', `${dominantColor.sat}%`);
+      root.style.setProperty('--pp-light', `${dominantColor.light}%`);
+    }
+  }, [dominantColor]);
+
+  useEffect(() => {
+    const baseHue = dominantColor?.hue ?? 210;
+    const baseSat = dominantColor?.sat ?? 55;
+    const baseLight = dominantColor?.light ?? 52;
+
     const onScroll = () => {
       const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
       setShowWhatsapp(scrollPercent > 0.5);
 
       const root = document.querySelector('.pp-bg') as HTMLElement | null;
       if (root) {
-        const hue = 210 - scrollPercent * 15;
-        const light = 52 + scrollPercent * 14;
-        const sat = 55 - scrollPercent * 10;
+        const hue = baseHue - scrollPercent * 15;
+        const light = baseLight + scrollPercent * 14;
+        const sat = baseSat - scrollPercent * 10;
         root.style.setProperty('--pp-hue', `${hue}`);
         root.style.setProperty('--pp-light', `${light}%`);
         root.style.setProperty('--pp-sat', `${sat}%`);
@@ -1453,7 +1490,7 @@ const CityPage = () => {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [dominantColor]);
 
   if (loading) {
     return (
@@ -1491,14 +1528,14 @@ const CityPage = () => {
         <AdDisplay eventId={selectedEvent.id} type="banner" position="top" />
         
         <div className="hidden md:grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
-          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
+          <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} headerImage={headerImageUrl} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
           </motion.div>
         </div>
         <div className="md:hidden space-y-2">
           <motion.div key={`hero-${selectedEvent.id}`} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} />
+            <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} headerImage={headerImageUrl} />
           </motion.div>
           <motion.div key={`tickets-${selectedEvent.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
