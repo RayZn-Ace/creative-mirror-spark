@@ -341,7 +341,7 @@ const Influencer = () => {
                 </span>
               </div>
 
-              <button type="submit" disabled={loading} className="w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 20px hsl(330 80% 50% / 0.3)" }}>
+              <button type="submit" disabled={loading} className="w-full py-4 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "hsl(230 80% 50%)", color: "hsl(0 0% 100%)", boxShadow: "0 4px 20px hsl(230 80% 50% / 0.3)" }}>
                 <Send className="w-4 h-4" />
                 {loading ? "Wird gesendet..." : "Bewerbung absenden"}
               </button>
