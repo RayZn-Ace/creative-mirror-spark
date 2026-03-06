@@ -403,9 +403,9 @@ const createBlock = (type: EmailBlock["type"]): EmailBlock => {
     case "text": return { type: "text", id, content: "Hier steht dein Text..." };
     case "heading": return { type: "heading", id, content: "Deine Überschrift" };
     case "divider": return { type: "divider", id };
-    case "event_highlight": return { type: "event_highlight", id, title: "Mamma Mia Party", date: "15.03.2026", time: "22:00", location: "Baggi / Osho", image_url: "" };
-    case "event_list": return { type: "event_list", id, heading: "Unsere nächsten Events", events: [{ title: "Mamma Mia Party", date: "15.03.2026", location: "Baggi / Osho" }, { title: "City Madness", date: "22.03.2026", location: "Residenz" }] };
-    case "cta_button": return { type: "cta_button", id, text: "Jetzt Tickets sichern", url: "https://gimmegimmeparty.com" };
+    case "event_highlight": return { type: "event_highlight", id, title: "Beispiel Event", date: "15.03.2026", time: "22:00", location: "Club XY", image_url: "" };
+    case "event_list": return { type: "event_list", id, heading: "Unsere nächsten Events", events: [{ title: "Beispiel Event", date: "15.03.2026", location: "Club XY" }, { title: "City Party", date: "22.03.2026", location: "Residenz" }] };
+    case "cta_button": return { type: "cta_button", id, text: "Jetzt Tickets sichern", url: "https://partyticket.app" };
     case "image": return { type: "image", id, url: "", alt: "" };
     case "spacer": return { type: "spacer", id, height: 24 };
     default: return { type: "text", id, content: "" };
