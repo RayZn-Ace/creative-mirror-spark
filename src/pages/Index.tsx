@@ -375,10 +375,10 @@ const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
-  { src: crowdWide, alt: "GIMME GIMME PARTY – Full Venue" },
+  { src: crowdWide, alt: "Full Venue Panorama" },
   { src: crowdAerial, alt: "Aerial crowd shot" },
   { src: crowdGlowsticks, alt: "Glowsticks in the crowd" },
-  { src: crowdHands, alt: "Hands up at ABBA show" },
+  { src: crowdHands, alt: "Hands up at the show" },
   { src: dancerHappy, alt: "Happy fans dancing" },
   { src: crowdParty, alt: "Party atmosphere" },
   { src: crowdGlowsticks2, alt: "Sea of glowsticks" },
