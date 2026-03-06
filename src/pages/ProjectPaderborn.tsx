@@ -437,12 +437,12 @@ const InfoAccordion = ({ id, title, content }: { id: string; title: string; cont
 
 /* ─── Nearby Events ─── */
 const nearbyEventsList = [
-  { id: "pb", name: "MAMMA MIA PARTY", city: "Paderborn", date: "15.05.2025", lat: 51.7189, lng: 8.7544, url: "/paderborn" },
-  { id: "bi", name: "MAMMA MIA PARTY", city: "Bielefeld", date: "22.05.2025", lat: 52.0302, lng: 8.5325, url: "/bielefeld" },
-  { id: "os", name: "MAMMA MIA PARTY", city: "Osnabrück", date: "29.05.2025", lat: 52.2799, lng: 8.0472, url: "/osnabrueck" },
-  { id: "hh", name: "MAMMA MIA PARTY", city: "Hamburg", date: "05.06.2025", lat: 53.5511, lng: 9.9937, url: "/hamburg" },
-  { id: "hb", name: "MAMMA MIA PARTY", city: "Bremen", date: "12.06.2025", lat: 53.0793, lng: 8.8017, url: "/bremen" },
-  { id: "bs", name: "MAMMA MIA PARTY", city: "Braunschweig", date: "26.06.2025", lat: 52.2689, lng: 10.5268, url: "/braunschweig" },
+  { id: "pb", name: "Event", city: "Paderborn", date: "15.05.2025", lat: 51.7189, lng: 8.7544, url: "/paderborn" },
+  { id: "bi", name: "Event", city: "Bielefeld", date: "22.05.2025", lat: 52.0302, lng: 8.5325, url: "/bielefeld" },
+  { id: "os", name: "Event", city: "Osnabrück", date: "29.05.2025", lat: 52.2799, lng: 8.0472, url: "/osnabrueck" },
+  { id: "hh", name: "Event", city: "Hamburg", date: "05.06.2025", lat: 53.5511, lng: 9.9937, url: "/hamburg" },
+  { id: "hb", name: "Event", city: "Bremen", date: "12.06.2025", lat: 53.0793, lng: 8.8017, url: "/bremen" },
+  { id: "bs", name: "Event", city: "Braunschweig", date: "26.06.2025", lat: 52.2689, lng: 10.5268, url: "/braunschweig" },
 ];
 
 const cityCoords: Record<string, { lat: number; lng: number }> = {
