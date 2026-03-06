@@ -122,7 +122,7 @@ const Jobs = () => {
         {/* Instagram */}
         <div>
           <label style={labelStyle}>Instagram</label>
-          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} className="focus:border-pink-500" />
+          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} className="focus:border-blue-500" />
         </div>
 
         {/* Stadt */}
