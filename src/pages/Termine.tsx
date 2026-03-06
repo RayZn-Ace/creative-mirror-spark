@@ -359,17 +359,10 @@ export default function Termine() {
       );
     }
 
-    // Filter events within groups based on sold out / open air
-    groups = groups.map((g) => {
-      let filteredEvents = g.events;
-      if (!showSoldOut) {
-        filteredEvents = filteredEvents.filter((e) => !e.soldOut);
-      }
-      if (onlyOpenAir) {
-        filteredEvents = filteredEvents.filter((e) => e.openAir);
-      }
-      return { ...g, events: filteredEvents };
-    }).filter((g) => g.events.length > 0);
+    // Filter by category
+    if (selectedCategory) {
+      groups = groups.filter((g) => g.category === selectedCategory);
+    }
 
     // Sort by distance (if available), then alphabetically
     groups.sort((a, b) => {
@@ -380,7 +373,14 @@ export default function Termine() {
     });
 
     return groups;
-  }, [cityGroups, userPos, search, rangeKm, showSoldOut, onlyOpenAir]);
+  }, [cityGroups, userPos, search, rangeKm, selectedCategory]);
+
+  // Derive available categories from all groups
+  const availableCategories = useMemo(() => {
+    const cats = new Set<string>();
+    cityGroups.forEach((g) => cats.add(g.category));
+    return Array.from(cats).sort();
+  }, [cityGroups]);
 
   const formatDate = useCallback((iso: string) => {
     if (!iso) return "";
