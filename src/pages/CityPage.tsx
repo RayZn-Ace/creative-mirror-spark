@@ -1561,7 +1561,7 @@ const CityPage = () => {
           </motion.a>
         )}
       </AnimatePresence>
-    </NeonGlowCard>
+    </div>
   );
 };
 
