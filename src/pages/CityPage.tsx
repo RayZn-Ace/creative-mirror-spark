@@ -1492,7 +1492,11 @@ const CityPage = () => {
   // selectedEvent already declared above for SEO
 
   return (
-    <NeonGlowCard imageUrl={headerImageUrl} className="min-h-screen pp-bg">
+    <div className="min-h-screen pp-bg">
+      {/* Neon glow beams overlay */}
+      <NeonGlowCard imageUrl={headerImageUrl} className="!absolute inset-0 pointer-events-none z-[1]">
+        <span />
+      </NeonGlowCard>
       {/* Ticker ads at very top */}
       <AdDisplay eventId={selectedEvent.id} type="ticker" />
       
