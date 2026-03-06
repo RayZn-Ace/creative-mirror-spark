@@ -109,7 +109,7 @@ const WhatIsIt = ({ gt }: { gt: GlobalTranslations }) => {
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
             className="rounded-2xl overflow-hidden border border-border">
-            <img src={crowdParty} alt="GIMME GIMME PARTY Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
+            <img src={crowdParty} alt="Party Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
           </motion.div>
         </div>
       </div>
