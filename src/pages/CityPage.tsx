@@ -1443,16 +1443,31 @@ const CityPage = () => {
     fetchData();
   }, [citySlug, navigate]);
 
+  // Apply dominant color from event image
   useEffect(() => {
+    if (!dominantColor) return;
+    const root = document.querySelector('.pp-bg') as HTMLElement | null;
+    if (root) {
+      root.style.setProperty('--pp-hue', `${dominantColor.hue}`);
+      root.style.setProperty('--pp-sat', `${dominantColor.sat}%`);
+      root.style.setProperty('--pp-light', `${dominantColor.light}%`);
+    }
+  }, [dominantColor]);
+
+  useEffect(() => {
+    const baseHue = dominantColor?.hue ?? 210;
+    const baseSat = dominantColor?.sat ?? 55;
+    const baseLight = dominantColor?.light ?? 52;
+
     const onScroll = () => {
       const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
       setShowWhatsapp(scrollPercent > 0.5);
 
       const root = document.querySelector('.pp-bg') as HTMLElement | null;
       if (root) {
-        const hue = 210 - scrollPercent * 15;
-        const light = 52 + scrollPercent * 14;
-        const sat = 55 - scrollPercent * 10;
+        const hue = baseHue - scrollPercent * 15;
+        const light = baseLight + scrollPercent * 14;
+        const sat = baseSat - scrollPercent * 10;
         root.style.setProperty('--pp-hue', `${hue}`);
         root.style.setProperty('--pp-light', `${light}%`);
         root.style.setProperty('--pp-sat', `${sat}%`);
@@ -1460,7 +1475,7 @@ const CityPage = () => {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [dominantColor]);
 
   if (loading) {
     return (
