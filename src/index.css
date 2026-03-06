@@ -239,85 +239,58 @@
   .pp-bg {
     position: relative;
     overflow: hidden;
-    --pp-hue: 210;
-    --pp-sat: 55%;
-    --pp-light: 52%;
-    --pp-hue2: 230;
-    --pp-sat2: 50%;
-    --pp-light2: 45%;
+    --pp-bg-image: none;
   }
 
+  /* Image background layer – blurred, covers full viewport */
   .pp-bg::before {
+    content: '';
+    position: fixed;
+    inset: -20px;
+    background-image: var(--pp-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.55) saturate(1.3);
+    z-index: 0;
+    transform: scale(1.1);
+    animation: pp-bg-breathe 14s ease-in-out infinite;
+  }
+
+  /* Subtle dark overlay for readability */
+  .pp-bg::after {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(
-        ellipse 120% 80% at 20% 10%,
-        hsl(var(--pp-hue2), var(--pp-sat2), calc(var(--pp-light2) + 8%)) 0%,
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 100% 100% at 80% 90%,
-        hsl(var(--pp-hue), var(--pp-sat), calc(var(--pp-light) - 5%)) 0%,
-        transparent 55%
-      ),
-      linear-gradient(
-        160deg,
-        hsl(var(--pp-hue), var(--pp-sat), var(--pp-light)) 0%,
-        hsl(calc(var(--pp-hue) + 10), calc(var(--pp-sat) - 8%), calc(var(--pp-light) + 6%)) 35%,
-        hsl(var(--pp-hue2), calc(var(--pp-sat2) - 5%), calc(var(--pp-light2) + 4%)) 65%,
-        hsl(calc(var(--pp-hue) - 8), calc(var(--pp-sat) - 12%), calc(var(--pp-light) + 14%)) 100%
-      );
+      radial-gradient(ellipse 80% 60% at 50% 30%, transparent 0%, hsl(0 0% 0% / 0.3) 100%),
+      linear-gradient(180deg, hsl(0 0% 0% / 0.15) 0%, hsl(0 0% 0% / 0.35) 100%);
     z-index: 0;
-    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: pp-bg-breathe 12s ease-in-out infinite;
+    pointer-events: none;
+    animation: pp-overlay-pulse 10s ease-in-out infinite;
   }
 
   @keyframes pp-bg-breathe {
     0%, 100% {
-      filter: brightness(1) saturate(1);
-      transform: scale(1);
+      filter: blur(30px) brightness(0.55) saturate(1.3);
+      transform: scale(1.1);
     }
-    33% {
-      filter: brightness(1.04) saturate(1.08);
-      transform: scale(1.01);
-    }
-    66% {
-      filter: brightness(0.97) saturate(1.05);
-      transform: scale(1.005);
+    50% {
+      filter: blur(35px) brightness(0.5) saturate(1.4);
+      transform: scale(1.15);
     }
   }
 
-  /* Animated aurora overlay */
-  .pp-bg::after {
-    content: '';
-    position: fixed;
-    inset: -50%;
-    width: 200%;
-    height: 200%;
-    background:
-      radial-gradient(
-        ellipse 40% 30% at 30% 40%,
-        hsl(var(--pp-hue2), calc(var(--pp-sat2) + 10%), calc(var(--pp-light2) + 15%) / 0.15) 0%,
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 35% 25% at 70% 60%,
-        hsl(var(--pp-hue), calc(var(--pp-sat) + 5%), calc(var(--pp-light) + 10%) / 0.12) 0%,
-        transparent 70%
-      );
-    z-index: 0;
-    animation: pp-aurora-drift 20s ease-in-out infinite;
-    pointer-events: none;
-    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  @keyframes pp-overlay-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
   }
 
-  @keyframes pp-aurora-drift {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(5%, -3%) rotate(2deg); }
-    50% { transform: translate(-3%, 5%) rotate(-1deg); }
-    75% { transform: translate(3%, 2%) rotate(1.5deg); }
+  /* Fallback gradient when no image */
+  .pp-bg--no-image::before {
+    background-image: none;
+    background: linear-gradient(160deg, hsl(210 55% 52%) 0%, hsl(220 45% 62%) 50%, hsl(200 40% 66%) 100%);
+    filter: none;
   }
 
   .pp-bg > * {
