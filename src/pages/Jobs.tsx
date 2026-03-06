@@ -155,7 +155,7 @@ const Jobs = () => {
               colorScheme: "dark",
               appearance: "auto" as any,
             }}
-            className="focus:border-pink-500"
+            className="focus:border-blue-500"
           >
             <option value="">Bitte wählen...</option>
             {bereiche.map((b) => (
