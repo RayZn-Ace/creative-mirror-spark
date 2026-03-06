@@ -255,6 +255,7 @@ export default function Termine() {
 
         if (cityEvents.length > 0) {
           const city = s.city || "Unknown";
+          const firstEvent = events.find((e) => e.series_id === s.id);
           groups.push({
             city,
             slug: s.slug,
@@ -262,6 +263,7 @@ export default function Termine() {
             km: null,
             events: cityEvents,
             imageUrl: s.image_url,
+            category: deriveCategory(firstEvent?.title || s.slug),
           });
         }
       });
