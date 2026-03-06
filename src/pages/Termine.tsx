@@ -211,39 +211,67 @@ export default function Termine() {
         .select("id, slug, city, image_url")
         .eq("status", "published");
 
-      if (!series) { setLoading(false); return; }
-
       const { data: events } = await supabase
         .from("events")
-        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status")
+        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag")
         .eq("status", "published")
-        .gte("date", new Date().toISOString().split("T")[0]);
+        .gte("date", new Date().toISOString().split("T")[0])
+        .order("date", { ascending: true });
 
-      const groups: CityGroup[] = series.map((s) => {
-        const cityEvents = (events || [])
+      if (!events) { setLoading(false); return; }
+
+      const groups: CityGroup[] = [];
+      const usedEventIds = new Set<string>();
+
+      // 1) Series-based groups
+      (series || []).forEach((s) => {
+        const cityEvents = events
           .filter((e) => e.series_id === s.id)
-          .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
-          .map((e) => ({
+          .map((e) => {
+            usedEventIds.add(e.id);
+            return {
+              id: e.id,
+              date: e.date || "",
+              time: e.time,
+              locationName: e.location_name,
+              soldOut: e.sold_out || false,
+              openAir: e.open_air || false,
+            };
+          });
+
+        if (cityEvents.length > 0) {
+          const city = s.city || "Unknown";
+          groups.push({
+            city,
+            slug: s.slug,
+            coords: getCityCoords(city),
+            km: null,
+            events: cityEvents,
+            imageUrl: s.image_url,
+          });
+        }
+      });
+
+      // 2) Standalone events (no series_id) – group by slug
+      const standaloneEvents = events.filter((e) => !usedEventIds.has(e.id));
+      standaloneEvents.forEach((e) => {
+        const city = e.city || "Unknown";
+        groups.push({
+          city: e.title || city,
+          slug: e.slug,
+          coords: getCityCoords(city),
+          km: null,
+          events: [{
             id: e.id,
             date: e.date || "",
             time: e.time,
             locationName: e.location_name,
             soldOut: e.sold_out || false,
             openAir: e.open_air || false,
-          }));
-
-        const city = s.city || "Unknown";
-        const coords = getCityCoords(city);
-
-        return {
-          city,
-          slug: s.slug,
-          coords,
-          km: null,
-          events: cityEvents,
-          imageUrl: s.image_url,
-        };
-      }).filter((g) => g.events.length > 0);
+          }],
+          imageUrl: e.image_url,
+        });
+      });
 
       setCityGroups(groups);
       setLoading(false);
