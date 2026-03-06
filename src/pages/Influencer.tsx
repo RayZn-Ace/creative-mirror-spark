@@ -55,7 +55,7 @@ const FAQItem = ({ q, a }: { q: string; a: string }) => {
     <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.08)" }}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-5 py-4 text-left">
         <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{q}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "hsl(330 80% 55%)" }} />
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} style={{ color: "hsl(230 80% 55%)" }} />
       </button>
       <AnimatePresence>
         {open && (
