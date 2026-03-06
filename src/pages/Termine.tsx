@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Calendar, ArrowRight, Ticket, Navigation, X, ChevronDown, Sun, XCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import NeonGlowCard from "@/components/NeonGlowCard";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
 import { supabase } from "@/integrations/supabase/client";
@@ -530,9 +531,10 @@ export default function Termine() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(idx * 0.04, 0.4) }}
               >
+                <NeonGlowCard imageUrl={group.imageUrl} index={idx} className="rounded-2xl">
                 <Link
                   to={`/${group.slug}`}
-                  className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                  className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all duration-300 relative z-[2]"
                 >
                   {/* Image */}
                   {group.imageUrl && (
@@ -572,7 +574,6 @@ export default function Termine() {
                       )}
                     </div>
 
-                    {/* All dates listed */}
                     {/* All dates as horizontal wrap */}
                     <div className="flex flex-wrap gap-1.5 mb-4">
                       {group.events.map((ev) => (
@@ -603,6 +604,7 @@ export default function Termine() {
                     </div>
                   </div>
                 </Link>
+                </NeonGlowCard>
               </motion.div>
             ))}
           </div>
