@@ -172,7 +172,7 @@ const fr: BaseTranslations = {
   freeTicketsTitle: "Places gratuites & plus ?", whatsappJoin: "Rejoins-nous", whatsappDesc: "Fais partie de notre communauté WhatsApp.",
   moreCities: "Autres villes", moreCitiesDesc: "Réserve maintenant des billets pour d'autres villes", kmAway: "km",
   footerQuestion: "Questions, problèmes ou demandes de réservation ?", footerContact: "Contacte-nous :",
-  footerOrganizer: "Organisateur : Gimme Gimme Party.", imprint: "Mentions légales", privacy: "Confidentialité", terms: "CGV",
+  footerOrganizer: "partyticket.app", imprint: "Mentions légales", privacy: "Confidentialité", terms: "CGV",
   loading: "Chargement...",
   weekdays: ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],
   monthsShort: ["","Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"],
