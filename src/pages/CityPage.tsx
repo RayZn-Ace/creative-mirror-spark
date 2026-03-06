@@ -1310,8 +1310,8 @@ const CityPage = () => {
     return {
       "@context": "https://schema.org",
       "@type": "Event",
-      name: `MAMMA MIA Party ${cityName} – GIMME GIMME`,
-      description: `Die größte ABBA Party in ${cityName}! Sing-Along Erlebnis mit den Songs von ABBA – GIMME GIMME PARTY. Jetzt Tickets sichern!`,
+      name: `Event ${cityName} – partyticket.app`,
+      description: `Event in ${cityName}! Jetzt Tickets sichern auf partyticket.app.`,
       startDate: selectedEvent.date ? `${selectedEvent.date.split('.').reverse().join('-')}T${selectedEvent.time || '20:00'}:00` : undefined,
       eventStatus: selectedEvent.soldOut ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
