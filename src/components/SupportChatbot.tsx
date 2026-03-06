@@ -285,7 +285,7 @@ export default function SupportChatbot() {
             <div>
               <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "James"}</p>
               <p className="text-xs text-white/70">
-                {mode === "live" ? "Verbunden mit Mitarbeiter" : "GIMME GIMME Support"}
+                {mode === "live" ? "Verbunden mit Mitarbeiter" : "partyticket Support"}
               </p>
             </div>
             {mode === "live" && <span className="ml-1 w-2 h-2 rounded-full bg-white animate-pulse" />}
