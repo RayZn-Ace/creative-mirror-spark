@@ -365,7 +365,7 @@ export default function SupportChatbot() {
               type="submit"
               disabled={isTyping}
               className="px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(217 91% 50%)", color: "hsl(0 0% 100%)" }}
             >
               <Send className="w-4 h-4" />
             </button>
