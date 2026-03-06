@@ -132,7 +132,7 @@ const TicketUmbuchung = () => {
 
           <div>
             <label style={labelStyle}>Neues Datum</label>
-            <input value={form.neues_datum} onChange={set("neues_datum")} type="date" required style={{ ...inputStyle, colorScheme: "dark" }} className="focus:border-pink-500" />
+            <input value={form.neues_datum} onChange={set("neues_datum")} type="date" required style={{ ...inputStyle, colorScheme: "dark" }} className="focus:border-blue-500" />
           </div>
 
           <div>
