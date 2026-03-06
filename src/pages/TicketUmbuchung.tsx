@@ -137,7 +137,7 @@ const TicketUmbuchung = () => {
 
           <div>
             <label style={labelStyle}>Neue Location</label>
-            <input value={form.neue_location} onChange={set("neue_location")} required style={inputStyle} className="focus:border-pink-500" />
+            <input value={form.neue_location} onChange={set("neue_location")} required style={inputStyle} className="focus:border-blue-500" />
           </div>
 
           <div>
