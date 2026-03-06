@@ -122,7 +122,7 @@ const Influencer = () => {
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
           <p className="text-xs font-bold uppercase tracking-[0.3em] mb-4" style={{ color: "hsl(230 80% 55%)" }}>Creator Programm</p>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase mb-6" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>
-            Influencer & <span style={{ color: "hsl(330 80% 55%)" }}>Content Creator</span>
+            Influencer & <span style={{ color: "hsl(230 80% 55%)" }}>Content Creator</span>
           </h1>
           <p className="text-sm md:text-base mb-8" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
             Erlebe exklusive Events, Festivals und unvergessliche Live-Momente.
