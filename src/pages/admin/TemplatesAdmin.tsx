@@ -403,9 +403,9 @@ const createBlock = (type: EmailBlock["type"]): EmailBlock => {
     case "text": return { type: "text", id, content: "Hier steht dein Text..." };
     case "heading": return { type: "heading", id, content: "Deine Überschrift" };
     case "divider": return { type: "divider", id };
-    case "event_highlight": return { type: "event_highlight", id, title: "Mamma Mia Party", date: "15.03.2026", time: "22:00", location: "Baggi / Osho", image_url: "" };
-    case "event_list": return { type: "event_list", id, heading: "Unsere nächsten Events", events: [{ title: "Mamma Mia Party", date: "15.03.2026", location: "Baggi / Osho" }, { title: "City Madness", date: "22.03.2026", location: "Residenz" }] };
-    case "cta_button": return { type: "cta_button", id, text: "Jetzt Tickets sichern", url: "https://gimmegimmeparty.com" };
+    case "event_highlight": return { type: "event_highlight", id, title: "Beispiel Event", date: "15.03.2026", time: "22:00", location: "Club XY", image_url: "" };
+    case "event_list": return { type: "event_list", id, heading: "Unsere nächsten Events", events: [{ title: "Beispiel Event", date: "15.03.2026", location: "Club XY" }, { title: "City Party", date: "22.03.2026", location: "Residenz" }] };
+    case "cta_button": return { type: "cta_button", id, text: "Jetzt Tickets sichern", url: "https://partyticket.app" };
     case "image": return { type: "image", id, url: "", alt: "" };
     case "spacer": return { type: "spacer", id, height: 24 };
     default: return { type: "text", id, content: "" };
@@ -660,7 +660,7 @@ const EmailTab = () => {
             )}
             {block.image_url && !block.image_url.startsWith("{{") && <img src={block.image_url} alt="" style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", objectFit: "cover" }} />}
             {block.image_url && block.image_url.startsWith("{{") && <div style={{ width: "100%", borderRadius: "6px", marginBottom: "8px", height: "60px", background: tpl.accent_color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color }}>📷 Event-Bild</div>}
-            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title.startsWith("{{") ? "Mamma Mia Party (Beispiel)" : block.title}</div>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: tpl.text_color }}>{block.title.startsWith("{{") ? "Beispiel Event" : block.title}</div>
             <div style={{ fontSize: "11px", color: tpl.text_color + "99", marginTop: "4px" }}>{block.date.startsWith("{{") ? "15.03.2026" : block.date} · {block.time.startsWith("{{") ? "22:00" : block.time} · {block.location.startsWith("{{") ? "Paderborn" : block.location}</div>
           </div>
         );
@@ -674,7 +674,7 @@ const EmailTab = () => {
             {block.city_based ? (
               <>
                 {/* Beispiel: Events in der Stadt */}
-                {["Mamma Mia Paderborn", "Mamma Mia Bielefeld"].map((t, i) => (
+                {["Event Paderborn", "Event Bielefeld"].map((t, i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
                     <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{t}</span>
                     <span style={{ fontSize: "10px", color: tpl.text_color + "88" }}>15.03. · Paderborn</span>
@@ -689,8 +689,8 @@ const EmailTab = () => {
                     „Es sind bisher noch keine weiteren Termine in deiner Stadt bestätigt, aber hier hast du weitere Termine in der Umgebung:"
                   </div>
                   {[
-                    { title: "Mamma Mia Bielefeld", city: "Bielefeld", km: "~45 km", date: "22.03." },
-                    { title: "Mamma Mia Dortmund", city: "Dortmund", km: "~120 km", date: "29.03." },
+                    { title: "Event Bielefeld", city: "Bielefeld", km: "~45 km", date: "22.03." },
+                    { title: "Event Dortmund", city: "Dortmund", km: "~120 km", date: "29.03." },
                   ].map((ev, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "5px 8px", background: i % 2 === 0 ? tpl.card_bg : "transparent", borderRadius: "6px", marginBottom: "2px" }}>
                       <span style={{ fontSize: "11px", fontWeight: 600, color: tpl.text_color }}>{ev.title}</span>
@@ -906,8 +906,8 @@ const EmailTab = () => {
                 {tpl.show_event_details && (
                   <div style={{ background: tpl.card_bg, borderRadius: "8px", padding: "16px", marginBottom: "16px" }}>
                     <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: tpl.text_color + "88", fontWeight: 600, marginBottom: "4px" }}>Event</div>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>Mamma Mia Party</div>
-                    <div style={{ fontSize: "12px", color: tpl.text_color + "99" }}>15.03.2026 · 22:00 Uhr · Baggi / Osho</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: tpl.text_color, marginBottom: "8px" }}>Beispiel Event</div>
+                    <div style={{ fontSize: "12px", color: tpl.text_color + "99" }}>15.03.2026 · 22:00 Uhr · Club XY</div>
                   </div>
                 )}
                 {tpl.show_order_summary && (
