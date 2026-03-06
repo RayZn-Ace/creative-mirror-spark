@@ -159,7 +159,7 @@ const nl: BaseTranslations = {
 };
 
 const fr: BaseTranslations = {
-  tourSubtitle: "MAMMA MIA / ABBA TOUR", from: "DÈS", clock: "H", selectDate: "Choisis ta date",
+  tourSubtitle: "", from: "DÈS", clock: "H", selectDate: "Choisis ta date",
   soldOutLabel: "Épuisé", reservedFor: "Réservé pour :", soldOutTitle: "ÉPUISÉ",
   soldOutDesc: "Cet événement est malheureusement complet. Découvre nos autres dates !",
   soldOutBadge: "ÉPUISÉ", comingSoonLabel: "BIENTÔT",
