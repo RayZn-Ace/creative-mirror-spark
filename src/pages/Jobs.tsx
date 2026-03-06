@@ -182,7 +182,7 @@ const Jobs = () => {
             type="checkbox"
             checked={agb}
             onChange={(e) => setAgb(e.target.checked)}
-            className="mt-1 accent-pink-500"
+            className="mt-1 accent-blue-500"
             style={{ width: "16px", height: "16px" }}
           />
           <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
