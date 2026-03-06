@@ -138,7 +138,7 @@ const Influencer = () => {
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map(s => (
             <div key={s.label} className="text-center">
-              <p className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}>{s.value}</p>
+              <p className="text-3xl md:text-4xl font-black" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 55%)" }}>{s.value}</p>
               <p className="text-xs uppercase tracking-wider mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{s.label}</p>
             </div>
           ))}
