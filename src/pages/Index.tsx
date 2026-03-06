@@ -26,7 +26,7 @@ import dancerHappy from "@/assets/dancer-happy.jpg";
 const Hero = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0">
-      <img src={heroBg} alt="GIMME GIMME PARTY – Tausende Fans feiern zur ABBA Musik" className="w-full h-full object-cover" loading="eager" />
+      <img src={heroBg} alt="partyticket – Dein Ticketshop für Events und Partys" className="w-full h-full object-cover" loading="eager" />
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute inset-0 bg-background/40" />
     </div>
