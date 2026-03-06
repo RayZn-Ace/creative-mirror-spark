@@ -398,26 +398,36 @@ export default function Termine() {
       <Navbar gt={gt} />
 
       {/* Hero */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
-        <div className="container relative z-10 text-center px-4">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-3"
-          >
-            {t.title.split(" ")[0]}{" "}
-            <span className="text-gradient-primary">{t.title.split(" ").slice(1).join(" ")}</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto"
-          >
-            {t.subtitle}
-          </motion.p>
+      <section className="relative pt-24 md:pt-32 pb-8 md:pb-12">
+        <div className="container px-4">
+          <div className="relative w-full rounded-2xl overflow-hidden" style={{ aspectRatio: "1920 / 1080" }}>
+            <img
+              src={heroHome}
+              alt="Alle Termine"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Bottom fade */}
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background via-background/70 to-transparent" />
+            {/* Text overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center px-4">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-3 text-white drop-shadow-lg"
+              >
+                {t.title.split(" ")[0]}{" "}
+                <span className="text-gradient-primary">{t.title.split(" ").slice(1).join(" ")}</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="text-lg md:text-xl text-white/80 max-w-xl mx-auto drop-shadow-md"
+              >
+                {t.subtitle}
+              </motion.p>
+            </div>
+          </div>
         </div>
       </section>
 
