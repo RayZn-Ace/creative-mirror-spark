@@ -172,7 +172,7 @@ const Jobs = () => {
             onChange={set("kommentar")}
             rows={4}
             style={{ ...inputStyle, resize: "vertical" }}
-            className="focus:border-pink-500"
+            className="focus:border-blue-500"
           />
         </div>
 
