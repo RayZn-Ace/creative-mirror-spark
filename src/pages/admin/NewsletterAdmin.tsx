@@ -139,6 +139,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
     headerGradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    colorSchemeId: "light-blue",
     blocks: () => [
       createBlock("heading", { text: "Neuigkeiten", level: 1, align: "left", color: "#1a1a1a" }),
       createBlock("divider", { color: "#667eea", style: "solid" }),
