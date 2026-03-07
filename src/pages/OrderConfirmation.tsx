@@ -35,6 +35,9 @@ const OrderConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const [eventMuttizettel, setEventMuttizettel] = useState(false);
+  const [eventId, setEventId] = useState<string | null>(null);
+  const [muttizettelDismissed, setMuttizettelDismissed] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -49,11 +52,26 @@ const OrderConfirmation = () => {
       if (data) {
         const orderData = data as unknown as OrderData;
         setOrder(orderData);
+        if ((data as any).event_id) {
+          setEventId((data as any).event_id);
+          checkMuttizettel((data as any).event_id);
+        }
         if (orderData.status === "paid") {
           fetchTickets();
         }
       }
       setLoading(false);
+    };
+
+    const checkMuttizettel = async (evId: string) => {
+      const { data } = await supabase
+        .from("events")
+        .select("is_16plus, muttizettel")
+        .eq("id", evId)
+        .maybeSingle();
+      if (data && (data as any).is_16plus && (data as any).muttizettel) {
+        setEventMuttizettel(true);
+      }
     };
 
     const fetchTickets = async () => {
@@ -77,6 +95,10 @@ const OrderConfirmation = () => {
         setOrder(updated);
         if (updated.status === "paid") {
           fetchTickets();
+          if ((data as any).event_id && !eventId) {
+            setEventId((data as any).event_id);
+            checkMuttizettel((data as any).event_id);
+          }
         }
         if (updated.status === "paid" || updated.status === "cancelled" || updated.status === "failed") {
           clearInterval(interval);
