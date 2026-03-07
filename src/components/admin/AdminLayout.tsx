@@ -21,6 +21,7 @@ const navItems = [
   { label: "Coupons", href: "/admin/coupons", icon: Tag },
   { label: "Werbemanager", href: "/admin/werbemanager", icon: Megaphone },
   { label: "Support", href: "/admin/support", icon: Headphones },
+  { label: "Muttizettel", href: "/admin/muttizettel", icon: ClipboardList },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
