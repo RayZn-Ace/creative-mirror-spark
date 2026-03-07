@@ -241,6 +241,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #c9a84c, #f5e6a3)",
     headerGradient: "linear-gradient(135deg, #0d0d0d, #1a1a1a)",
+    colorSchemeId: "elegant-gold",
     blocks: () => [
       createBlock("heading", { text: "✨ PREMIUM EVENTS ✨", level: 1, align: "center", color: "#c9a84c" }),
       createBlock("heading", { text: "Die besten Partys", level: 2, align: "center", color: "#f5e6a3" }),
