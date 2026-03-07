@@ -179,6 +179,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Megaphone,
     gradient: "linear-gradient(135deg, #f5af19, #f12711)",
     headerGradient: "linear-gradient(135deg, #f5af19, #f12711)",
+    colorSchemeId: "dark-fire",
     blocks: () => [
       createBlock("heading", { text: "🔥 SPECIAL DEAL 🔥", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
