@@ -187,22 +187,25 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
   const bg = tpl.gradient.enabled ? gradientCSS(tpl.gradient, tpl.background_color) : tpl.background_color;
 
   return (
-    <div style={{ ...aspectStyle, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)", display: "flex", flexDirection: isDinLang ? "row" : "column" }}>
-      {/* Left / Info side */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* Blurred background image (Magic Ticket) – only on info side */}
-        {tpl.magic_ticket_enabled && previewImageUrl && (
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 0,
-            backgroundImage: `url(${previewImageUrl})`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
-            opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
-            transform: "scale(1.15)",
-          }} />
-        )}
-        <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
-        <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
+    <div style={{ ...aspectStyle, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)", display: "flex", flexDirection: "column" }}>
+      {/* Accent bar – full width */}
+      <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 2, flexShrink: 0 }} />
+
+      <div style={{ flex: 1, display: "flex", flexDirection: isDinLang ? "row" : "column", minHeight: 0 }}>
+        {/* Left / Info side */}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {/* Blurred background image (Magic Ticket) – only on info side */}
+          {tpl.magic_ticket_enabled && previewImageUrl && (
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 0,
+              backgroundImage: `url(${previewImageUrl})`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
+              opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
+              transform: "scale(1.15)",
+            }} />
+          )}
+          <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
           {tpl.logo_url && (
             <div style={{ marginBottom: "6px" }}>
               <div style={{ width: isDinLang ? "32px" : "48px", height: isDinLang ? "32px" : "48px", borderRadius: "6px", background: `${tpl.accent_color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color, fontWeight: 700 }}>LOGO</div>
