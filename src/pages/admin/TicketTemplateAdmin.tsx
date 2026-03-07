@@ -184,7 +184,18 @@ const TicketPreview = ({ tpl }: { tpl: TicketTemplate }) => {
 
   return (
     <div style={{ ...aspectStyle, background: bg, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)" }}>
-      <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color }} />
+      {/* Blurred background image */}
+      {tpl.background_image_url && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 0,
+          backgroundImage: `url(${tpl.background_image_url})`,
+          backgroundSize: "cover", backgroundPosition: "center",
+          filter: `blur(${tpl.background_image_blur || 20}px)`,
+          opacity: (tpl.background_image_opacity ?? 40) / 100,
+          transform: "scale(1.1)", // prevent blur edge artifacts
+        }} />
+      )}
+      <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
       <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", display: "flex", flexDirection: isDinLang ? "row" : "column", gap: isDinLang ? "12px" : "16px", height: isDinLang ? "calc(100% - 4px)" : "auto" }}>
         {/* Left / Top */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
