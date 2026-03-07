@@ -2330,7 +2330,7 @@ const EventsAdmin = () => {
           <button
             onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); }}
             className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
-            style={{ color: "hsl(330 80% 55%)" }}
+            style={{ color: "hsl(230 80% 56%)" }}
           >
             Filter zurücksetzen
           </button>
