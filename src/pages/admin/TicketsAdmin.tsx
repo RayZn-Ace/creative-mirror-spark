@@ -310,7 +310,7 @@ const TicketsAdmin = () => {
 
                               {/* Meta row */}
                               <div className="flex items-center gap-3 flex-wrap">
-                                <span className="text-sm font-semibold" style={{ color: "hsl(330 80% 55%)" }}>
+                                <span className="text-sm font-semibold" style={{ color: "hsl(230 80% 56%)" }}>
                                   {ticket.price === 0 ? "Kostenlos" : `${ticket.price.toFixed(2)} €`}
                                 </span>
                                 {ticket.category_group && (
