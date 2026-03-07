@@ -392,6 +392,8 @@ const TicketTemplateAdmin = () => {
   const [ticketCategories, setTicketCategories] = useState<Array<{ id: string; name: string; category_group: string | null; event_id: string }>>([]);
   const [eventSeries, setEventSeries] = useState<Array<{ id: string; title: string; image_url: string | null }>>([]);
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
+  const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
+  const [cleaningImage, setCleaningImage] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -422,8 +424,55 @@ const TicketTemplateAdmin = () => {
     load();
   }, []);
 
-  const save = async () => {
-    setSaving(true);
+  // Clean image via AI when series changes
+  useEffect(() => {
+    if (!previewSeriesId) return;
+
+    // Resolve source image URL
+    let srcUrl: string | null = null;
+    const series = eventSeries.find(s => s.id === previewSeriesId);
+    if (series?.image_url) {
+      srcUrl = series.image_url;
+    } else {
+      const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
+      if (ev?.image_url) srcUrl = ev.image_url;
+    }
+    if (!srcUrl) return;
+
+    // Already cleaned?
+    if (cleanedImages[srcUrl]) return;
+
+    let cancelled = false;
+    const clean = async () => {
+      setCleaningImage(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("clean-image", {
+          body: { image_url: srcUrl },
+        });
+        if (cancelled) return;
+        if (error) {
+          console.error("clean-image error:", error);
+          // Fallback: use original
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+        } else if (data?.cleaned_image_url) {
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: data.cleaned_image_url }));
+        } else {
+          // No cleaned image returned, use original
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+        }
+      } catch (e) {
+        console.error("clean-image failed:", e);
+        if (!cancelled) setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+      } finally {
+        if (!cancelled) setCleaningImage(false);
+      }
+    };
+    clean();
+    return () => { cancelled = true; };
+  }, [previewSeriesId, eventSeries, eventsMap]);
+
+
+    const save = async () => {
     const { error } = await supabase.from("settings").update({ value: tpl as any, updated_at: new Date().toISOString() }).eq("key", "ticket_template");
     setSaving(false);
     if (error) { toast.error("Fehler beim Speichern"); console.error(error); }
@@ -985,17 +1034,18 @@ const TicketTemplateAdmin = () => {
             {/* Computed preview */}
             {(() => {
               // Determine preview image from selected series
-              let previewImg = DEMO_EVENT_IMAGE;
+              let rawImg = DEMO_EVENT_IMAGE;
               if (previewSeriesId) {
                 const series = eventSeries.find(s => s.id === previewSeriesId);
                 if (series?.image_url) {
-                  previewImg = series.image_url;
+                  rawImg = series.image_url;
                 } else {
-                  // Find first event of that series with an image
                   const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-                  if (ev?.image_url) previewImg = ev.image_url;
+                  if (ev?.image_url) rawImg = ev.image_url;
                 }
               }
+              // Use AI-cleaned version if available
+              const previewImg = cleanedImages[rawImg] || rawImg;
 
               // Apply category override to tpl
               let displayTpl = tpl;
@@ -1022,8 +1072,13 @@ const TicketTemplateAdmin = () => {
 
               return (
                 <>
-                  <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                  <div className="flex justify-center p-6 rounded-2xl relative" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                     <TicketPreview tpl={previewTpl} previewImageUrl={previewImg} previewCategoryName={categoryName} />
+                    {cleaningImage && (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: "hsl(0 0% 0% / 0.5)", zIndex: 10 }}>
+                        <div className="flex items-center gap-2 text-white text-xs font-medium"><Loader2 className="w-4 h-4 animate-spin" /> Bild wird bereinigt…</div>
+                      </div>
+                    )}
                   </div>
                   <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                     {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
