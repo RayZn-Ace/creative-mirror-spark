@@ -1240,7 +1240,7 @@ const globalEn: GlobalTranslations = {
   navHome: "Home", navDatesTickets: "Dates & Tickets", navExperience: "Experience", navCollaboration: "Collaborate", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Rebooking", navMyTickets: "My Tickets", navTickets: "Tickets",
   navForWho: "For whom?", navMedia: "Media", navBlog: "Blog",
   navBookUs: "Book Us!", navRegisterLocation: "Register Location", navPartner: "Become a Partner", navInfluencer: "Influencer", navJobs: "Jobs",
-  heroTitle: "party", heroSubtitle: "ticket", heroDesc: "Your ticket shop for the best events & parties. Over 150 cities, 13 countries.", heroTicketBtn: "Get Tickets",
+  heroTitle: "nightlife", heroSubtitle: " generation", heroDesc: "Your ticket shop for the best events & parties. Over 150 cities, 13 countries.", heroTicketBtn: "Get Tickets",
   trustCities: "CITIES", trustCountries: "COUNTRIES", trustFollowers: "FOLLOWERS", trustFans: "FANS",
   whatIsTitle1: "What is", whatIsTitle2: "partyticket?", whatIsDesc: "The platform for unforgettable events! Find parties, concerts and shows near you – from various organizers, all in one place.",
   feat3hParty: "Events in 150+ cities", featLiveDj: "Various organizers", featGlitter: "Easy & secure booking", featFans: "250,000+ happy guests",
