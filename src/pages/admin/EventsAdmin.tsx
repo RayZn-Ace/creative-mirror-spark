@@ -1558,7 +1558,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                 </div>
               </div>
               <div className="flex justify-end pt-2">
-                <button onClick={() => { if (selectedTemplate) setStep(2); else toast.error("Bitte wähle zuerst eine Vorlage"); }} className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                <button onClick={() => { if (selectedTemplate) setStep(2); else toast.error("Bitte wähle zuerst eine Vorlage"); }} className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                   Weiter → Events wählen
                 </button>
               </div>
