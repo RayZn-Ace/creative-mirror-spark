@@ -54,6 +54,7 @@ const AnalyticsAdmin = lazy(() => import("./pages/admin/AnalyticsAdmin"));
 const CouponsAdmin = lazy(() => import("./pages/admin/CouponsAdmin"));
 const WerbemanagerAdmin = lazy(() => import("./pages/admin/WerbemanagerAdmin"));
 const SupportAdmin = lazy(() => import("./pages/admin/SupportAdmin"));
+const MuttizettelAdmin = lazy(() => import("./pages/admin/MuttizettelAdmin"));
 
 const queryClient = new QueryClient();
 
