@@ -2138,12 +2138,6 @@ const EventsAdmin = () => {
         )}
       </AnimatePresence>
 
-      {/* Ticket.io Sync Dialog */}
-      <AnimatePresence>
-        {showTioSync && (
-          <TioSyncDialog events={events} onClose={() => setShowTioSync(false)} onReload={load} />
-        )}
-      </AnimatePresence>
     </div>
   );
 };
