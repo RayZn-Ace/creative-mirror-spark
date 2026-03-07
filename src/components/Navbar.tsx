@@ -115,9 +115,7 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
       <div className="container relative flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <span className="text-2xl md:text-3xl font-display bg-clip-text text-transparent select-none group-hover:opacity-80 transition-opacity" style={{ backgroundImage: "var(--gradient-primary)" }}>
-            partyticket
-          </span>
+          <img src={nightlifeLogo} alt="Nightlife Generation" className="h-9 md:h-11 w-auto" />
         </Link>
 
         {/* Desktop nav */}

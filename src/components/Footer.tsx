@@ -70,7 +70,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          <p className="font-body">© {new Date().getFullYear()} partyticket.app</p>
+          <p className="font-body">© {new Date().getFullYear()} Nightlife Generation</p>
         </div>
       </div>
     </footer>
