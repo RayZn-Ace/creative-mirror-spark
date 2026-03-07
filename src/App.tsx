@@ -55,6 +55,7 @@ const CouponsAdmin = lazy(() => import("./pages/admin/CouponsAdmin"));
 const WerbemanagerAdmin = lazy(() => import("./pages/admin/WerbemanagerAdmin"));
 const SupportAdmin = lazy(() => import("./pages/admin/SupportAdmin"));
 const MuttizettelAdmin = lazy(() => import("./pages/admin/MuttizettelAdmin"));
+const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,7 @@ const App = () => (
                 <Route path="werbemanager" element={<WerbemanagerAdmin />} />
                 <Route path="support" element={<SupportAdmin />} />
                 <Route path="muttizettel" element={<MuttizettelAdmin />} />
+                <Route path="medien" element={<MediaAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
