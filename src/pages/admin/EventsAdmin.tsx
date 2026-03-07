@@ -2228,6 +2228,11 @@ const EventsAdmin = () => {
               Ausverkauft
             </span>
           )}
+          {!event.title.toLowerCase().includes("mamma mia") && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 65%)" }}>
+              16+
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap mt-0.5">
           <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
