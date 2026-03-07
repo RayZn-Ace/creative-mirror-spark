@@ -256,6 +256,7 @@ export default function Termine() {
           });
 
         if (cityEvents.length > 0) {
+          const firstEvent = events.find((e) => e.series_id === s.id);
           const cityFromSeries = (s.city || "").trim();
           const cityFromEvent = (firstEvent?.city || "").trim();
           const cityForCoords = cityFromSeries || cityFromEvent;
