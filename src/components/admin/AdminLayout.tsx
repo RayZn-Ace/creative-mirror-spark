@@ -90,8 +90,8 @@ const AdminLayout = () => {
               onClick={() => setSidebarOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{
-                background: active ? "hsl(330 80% 55% / 0.15)" : "transparent",
-                color: active ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.6)",
+                background: active ? "hsl(230 80% 56% / 0.15)" : "transparent",
+                color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.6)",
               }}
             >
               <item.icon className="w-4 h-4" />
