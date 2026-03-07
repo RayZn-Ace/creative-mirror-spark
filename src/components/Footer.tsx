@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, MessageCircle, Facebook } from "lucide-react";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
+import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
 
 const socialLinks = [
-  { icon: Instagram, href: "https://www.instagram.com/partyticket.app", label: "Instagram" },
-  { icon: Facebook, href: "https://www.facebook.com/partyticket", label: "Facebook" },
-  { icon: Youtube, href: "https://www.youtube.com/@partyticket", label: "YouTube" },
+  { icon: Instagram, href: "https://www.instagram.com/nightlife.generation", label: "Instagram" },
+  { icon: Facebook, href: "https://www.facebook.com/nightlifegeneration", label: "Facebook" },
+  { icon: Youtube, href: "https://www.youtube.com/@nightlifegeneration", label: "YouTube" },
 ];
 
 export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
