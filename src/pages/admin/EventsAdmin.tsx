@@ -1381,18 +1381,30 @@ const EventEditView = ({
               </select>
             </div>
             <Field label="Sortierung" value={editing.sort_order} onChange={(v: string) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
-            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-              <input type="checkbox" checked={editing.highlight || false} onChange={(e) => setEditing({ ...editing, highlight: e.target.checked })} className="rounded w-4 h-4" />
-              Highlight-Event
-            </label>
-            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-              <input type="checkbox" checked={editing.open_air || false} onChange={(e) => setEditing({ ...editing, open_air: e.target.checked })} className="rounded w-4 h-4" />
-              🌞 Open Air
-            </label>
-            <label className="flex items-center gap-3 text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-              <input type="checkbox" checked={editing.sold_out || false} onChange={(e) => setEditing({ ...editing, sold_out: e.target.checked })} className="rounded w-4 h-4" />
-              🚫 Ausverkauft
-            </label>
+            {[
+              { label: "Highlight-Event", checked: editing.highlight || false, onChange: (v: boolean) => setEditing({ ...editing, highlight: v }) },
+              { label: "🌞 Open Air", checked: editing.open_air || false, onChange: (v: boolean) => setEditing({ ...editing, open_air: v }) },
+              { label: "🚫 Ausverkauft", checked: editing.sold_out || false, onChange: (v: boolean) => setEditing({ ...editing, sold_out: v }) },
+              { label: "🔞 16+ Event", checked: editing.is_16plus !== false, onChange: (v: boolean) => setEditing({ ...editing, is_16plus: v }) },
+              { label: "📋 Mit Muttizettel", checked: editing.muttizettel !== false, onChange: (v: boolean) => setEditing({ ...editing, muttizettel: v }) },
+            ].map((item) => (
+              <label key={item.label} className="flex items-center justify-between text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                <span>{item.label}</span>
+                <div
+                  className="relative w-10 h-5 rounded-full cursor-pointer transition-colors"
+                  style={{ background: item.checked ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.15)" }}
+                  onClick={() => item.onChange(!item.checked)}
+                >
+                  <div
+                    className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                    style={{
+                      background: "hsl(0 0% 100%)",
+                      left: item.checked ? "calc(100% - 18px)" : "2px",
+                    }}
+                  />
+                </div>
+              </label>
+            ))}
           </Section>
 
           <Section title="Servicegebühr" icon={Ticket}>
