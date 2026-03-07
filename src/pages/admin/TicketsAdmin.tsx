@@ -230,8 +230,8 @@ const TicketsAdmin = () => {
                   onClick={() => toggleEvent(eventId)}
                   className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
                 >
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(330 80% 55% / 0.12)" }}>
-                    {isExpanded ? <ChevronDown className="w-3.5 h-3.5" style={{ color: "hsl(330 80% 55%)" }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: "hsl(330 80% 55%)" }} />}
+                   <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(230 80% 56% / 0.12)" }}>
+                    {isExpanded ? <ChevronDown className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>
