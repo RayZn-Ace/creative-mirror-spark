@@ -472,7 +472,7 @@ const TicketTemplateAdmin = () => {
   }, [previewSeriesId, eventSeries, eventsMap]);
 
 
-    setSaving(true);
+    const save = async () => {
     const { error } = await supabase.from("settings").update({ value: tpl as any, updated_at: new Date().toISOString() }).eq("key", "ticket_template");
     setSaving(false);
     if (error) { toast.error("Fehler beim Speichern"); console.error(error); }
