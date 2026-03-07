@@ -2136,7 +2136,7 @@ const EventsAdmin = () => {
 
   // Apply extra filters
   const extraFiltered = tabFiltered.filter((e) => {
-    if (filter16Plus && !e.title.toLowerCase().includes("16+") && !e.title.toLowerCase().includes("ab 16")) return false;
+    if (filter16Plus && (e.title.toLowerCase().includes("mamma mia") || e.title.toLowerCase().includes("mädelsabend") || e.title.toLowerCase().includes("madelsabend"))) return false;
     if (filterMammaMia && !e.title.toLowerCase().includes("mamma mia")) return false;
     if (filterActs) {
       const seriesTitle = e.series_id ? (seriesMap[e.series_id] || "") : "";
@@ -2228,7 +2228,7 @@ const EventsAdmin = () => {
               Ausverkauft
             </span>
           )}
-          {!event.title.toLowerCase().includes("mamma mia") && (
+          {!event.title.toLowerCase().includes("mamma mia") && !event.title.toLowerCase().includes("mädelsabend") && !event.title.toLowerCase().includes("madelsabend") && (
             <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 65%)" }}>
               16+
             </span>
