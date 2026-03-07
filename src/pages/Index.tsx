@@ -128,10 +128,17 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Upcoming Events ─── */
 const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
-  const upcomingEvents = events
-    .filter(e => e.status === "planned" && new Date(e.date) > new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 4);
+  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; city: string | null; date: string | null; location_name: string | null; slug: string }[]>([]);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    supabase.from("events").select("id, title, city, date, location_name, slug")
+      .eq("status", "published").gte("date", today)
+      .order("date", { ascending: true }).limit(4)
+      .then(({ data }) => setUpcomingEvents(data ?? []));
+  }, []);
+
+  if (!upcomingEvents.length) return null;
 
   return (
     <section id="events" className="py-16 md:py-24">
@@ -145,22 +152,15 @@ const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
               className="flex items-center justify-between p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
               <div className="flex gap-4 items-center">
                 <div className="text-center min-w-[50px]">
-                  <span className="font-display text-2xl text-primary">{new Date(ev.date).getDate()}</span>
-                  <p className="text-xs text-muted-foreground uppercase">{new Date(ev.date).toLocaleDateString("de-DE", { month: "short" })}</p>
+                  <span className="font-display text-2xl text-primary">{ev.date ? new Date(ev.date).getDate() : "?"}</span>
+                  <p className="text-xs text-muted-foreground uppercase">{ev.date ? new Date(ev.date).toLocaleDateString("de-DE", { month: "short" }) : ""}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    {ev.city}
-                    {ev.extras?.toLowerCase().includes("open air") && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gold/15 text-gold text-[10px] font-semibold border border-gold/30">
-                        <Sun className="w-2.5 h-2.5" /> Open Air
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.locationName}</p>
+                  <h3 className="font-semibold text-foreground">{ev.title}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.location_name}{ev.city ? `, ${ev.city}` : ""}</p>
                 </div>
               </div>
-              <Link to={`/${ev.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
+              <Link to={`/termine`}
                 className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
                 <Ticket className="w-4 h-4" />{gt.navTickets}
               </Link>
