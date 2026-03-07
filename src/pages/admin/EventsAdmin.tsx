@@ -2137,9 +2137,6 @@ const EventsAdmin = () => {
 
   // Apply extra filters
   const extraFiltered = tabFiltered.filter((e) => {
-    if (filterOpenAir && !e.open_air) return false;
-    if (filterSoldOut === "hide" && e.sold_out) return false;
-    if (filterSoldOut === "only" && !e.sold_out) return false;
     if (filter16Plus && !e.title.toLowerCase().includes("16+") && !e.title.toLowerCase().includes("ab 16")) return false;
     if (filterMammaMia && !e.title.toLowerCase().includes("mamma mia")) return false;
     if (filterActs) {
