@@ -160,6 +160,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
   info_sections: [...DEFAULT_INFO_SECTIONS],
+  is_16plus: true, muttizettel: true,
 };
 
 const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1 };
