@@ -561,7 +561,7 @@ const TicketTemplateAdmin = () => {
                   { type: "image" as const, icon: <Image className="w-3.5 h-3.5" />, label: "Bild" },
                   { type: "info_list" as const, icon: <ListChecks className="w-3.5 h-3.5" />, label: "Info" },
                 ]).map(b => (
-                  <button key={b.type} onClick={() => addBlock(b.type)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105" style={{ background: `${tpl.accent_color}15`, color: tpl.accent_color, border: `1px solid ${tpl.accent_color}33` }}>
+                  <button key={b.type} onClick={() => addBlock(b.type)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.25)" }}>
                     {b.icon} {b.label}
                   </button>
                 ))}
