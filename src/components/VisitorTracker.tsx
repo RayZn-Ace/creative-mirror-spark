@@ -11,9 +11,26 @@ function getSessionId(): string {
   return sid;
 }
 
+function detectSourceFromClickIds(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("fbclid")) return "Facebook";
+  if (params.has("igshid")) return "Instagram";
+  if (params.has("gclid")) return "Google";
+  if (params.has("ttclid")) return "TikTok";
+  if (params.has("msclkid")) return "Microsoft";
+  if (params.has("li_fat_id")) return "LinkedIn";
+  if (params.has("twclid")) return "Twitter";
+  if (params.has("sclid")) return "Snapchat";
+  if (params.has("epik")) return "Pinterest";
+  return null;
+}
+
 function detectSource(referrer: string): string {
   if (!referrer) return "Direkt";
   const r = referrer.toLowerCase();
+  // Meta redirect domains
+  if (r.includes("1.facebook.com") || r.includes("1m.facebook.com") || r.includes("lm.facebook.com") || r.includes("l.facebook.com")) return "Facebook";
+  if (r.includes("1.instagram.com") || r.includes("l.instagram.com")) return "Instagram";
   if (r.includes("whatsapp") || r.includes("wa.me")) return "WhatsApp";
   if (r.includes("instagram") || r.includes("ig.me")) return "Instagram";
   if (r.includes("google.")) return "Google";
@@ -29,7 +46,6 @@ function detectSource(referrer: string): string {
   return "Andere";
 }
 
-// Also check UTM params
 function detectSourceFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
   const utm = params.get("utm_source")?.toLowerCase();
@@ -56,7 +72,8 @@ const VisitorTracker = () => {
   useEffect(() => {
     const sessionId = getSessionId();
     const referrer = document.referrer;
-    const source = detectSourceFromUrl() || detectSource(referrer);
+    // Priority: click IDs > UTM params > referrer
+    const source = detectSourceFromClickIds() || detectSourceFromUrl() || detectSource(referrer);
 
     const trackVisit = async () => {
       const { data } = await supabase
@@ -75,15 +92,10 @@ const VisitorTracker = () => {
 
     trackVisit();
 
-    // Update left_at on unload
     const handleUnload = () => {
       if (visitIdRef.current) {
-        // Use sendBeacon for reliability
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/page_visits?id=eq.${visitIdRef.current}`;
-        navigator.sendBeacon(
-          url,
-          // sendBeacon doesn't support PATCH easily, so we just skip left_at for now
-        );
+        navigator.sendBeacon(url);
       }
     };
 

@@ -2,7 +2,18 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Users, TrendingUp, Clock, Globe, RefreshCw } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+
+type EventLog = {
+  id: string;
+  pixel_id: string | null;
+  provider: string;
+  event_name: string;
+  event_data: Record<string, unknown>;
+  page_url: string | null;
+  test_mode: boolean;
+  created_at: string;
+};
 
 type PageVisit = {
   id: string;
@@ -33,47 +44,99 @@ const SOURCE_COLORS: Record<string, string> = {
 
 const ACTIVE_THRESHOLD_MINUTES = 5;
 
+type TimeRange = "today" | "yesterday" | "7days" | "30days" | "all";
+
+const TIME_RANGES: { id: TimeRange; label: string }[] = [
+  { id: "today", label: "Heute" },
+  { id: "yesterday", label: "Gestern" },
+  { id: "7days", label: "7 Tage" },
+  { id: "30days", label: "30 Tage" },
+  { id: "all", label: "Gesamt" },
+];
+
+function getTimeRangeBounds(range: TimeRange): { start: Date; end: Date } {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (range) {
+    case "today":
+      return { start: todayStart, end: now };
+    case "yesterday": {
+      const yday = new Date(todayStart.getTime() - 86400000);
+      return { start: yday, end: todayStart };
+    }
+    case "7days":
+      return { start: new Date(now.getTime() - 7 * 86400000), end: now };
+    case "30days":
+      return { start: new Date(now.getTime() - 30 * 86400000), end: now };
+    case "all":
+      return { start: new Date(0), end: now };
+  }
+}
+
 const LiveAnalyticsTab = () => {
+  const [eventLogs, setEventLogs] = useState<EventLog[]>([]);
   const [visits, setVisits] = useState<PageVisit[]>([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [timeRange, setTimeRange] = useState<TimeRange>("today");
 
-  const loadVisits = async () => {
-    const { data } = await supabase
-      .from("page_visits")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1000);
-    if (data) setVisits(data as unknown as PageVisit[]);
+  const loadData = async () => {
+    const [logsRes, visitsRes] = await Promise.all([
+      supabase
+        .from("tracking_event_logs")
+        .select("*")
+        .eq("event_name", "PageView")
+        .order("created_at", { ascending: false })
+        .limit(1000),
+      supabase
+        .from("page_visits")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1000),
+    ]);
+    if (logsRes.data) setEventLogs(logsRes.data as unknown as EventLog[]);
+    if (visitsRes.data) setVisits(visitsRes.data as unknown as PageVisit[]);
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadVisits();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  // Realtime subscription
   useEffect(() => {
     if (!autoRefresh) return;
     const channel = supabase
-      .channel("page_visits_realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "page_visits" }, () => {
-        loadVisits();
-      })
+      .channel("live_analytics_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "tracking_event_logs" }, () => loadData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "page_visits" }, () => loadData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [autoRefresh]);
 
-  // Auto refresh every 30s
   useEffect(() => {
     if (!autoRefresh) return;
-    const interval = setInterval(loadVisits, 30000);
+    const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
   const now = new Date();
   const activeThreshold = new Date(now.getTime() - ACTIVE_THRESHOLD_MINUTES * 60 * 1000);
+  const { start: rangeStart, end: rangeEnd } = getTimeRangeBounds(timeRange);
 
+  // Combine both data sources - use event logs as primary, page_visits as fallback for source info
+  const filteredLogs = useMemo(() => {
+    return eventLogs.filter((l) => {
+      const d = new Date(l.created_at);
+      return d >= rangeStart && d <= rangeEnd;
+    });
+  }, [eventLogs, rangeStart, rangeEnd]);
+
+  const filteredVisits = useMemo(() => {
+    return visits.filter((v) => {
+      const d = new Date(v.created_at);
+      return d >= rangeStart && d <= rangeEnd;
+    });
+  }, [visits, rangeStart, rangeEnd]);
+
+  // Active visitors from page_visits (real-time presence)
   const activeVisitors = useMemo(() => {
     const sessions = new Set<string>();
     visits.forEach((v) => {
@@ -85,11 +148,21 @@ const LiveAnalyticsTab = () => {
     return sessions.size;
   }, [visits]);
 
-  // Peak concurrent visitors (by 5-min windows)
+  // Total unique page URLs from event logs in range
+  const totalPageViews = useMemo(() => filteredLogs.length, [filteredLogs]);
+
+  // Unique sessions from page_visits in range
+  const uniqueVisitors = useMemo(() => {
+    const sessions = new Set<string>();
+    filteredVisits.forEach((v) => sessions.add(v.session_id));
+    return sessions.size;
+  }, [filteredVisits]);
+
+  // Peak concurrent (from page_visits, 5-min windows)
   const peakData = useMemo(() => {
-    if (visits.length === 0) return { count: 0, when: "" };
+    if (filteredVisits.length === 0) return { count: 0, when: "" };
     const windows: Record<string, Set<string>> = {};
-    visits.forEach((v) => {
+    filteredVisits.forEach((v) => {
       const d = new Date(v.created_at);
       const key = `${d.toISOString().slice(0, 15)}0`;
       if (!windows[key]) windows[key] = new Set();
@@ -102,58 +175,68 @@ const LiveAnalyticsTab = () => {
     });
     const when = maxKey ? new Date(maxKey).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
     return { count: maxCount, when };
-  }, [visits]);
+  }, [filteredVisits]);
 
-  // Visitors over time (hourly, last 24h)
+  // Hourly chart from event logs
   const hourlyData = useMemo(() => {
+    const isToday = timeRange === "today";
+    const isYesterday = timeRange === "yesterday";
     const hours: { label: string; visitors: number }[] = [];
-    for (let i = 23; i >= 0; i--) {
-      const start = new Date(now.getTime() - i * 3600000);
-      const end = new Date(start.getTime() + 3600000);
-      const label = start.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
-      const sessions = new Set<string>();
-      visits.forEach((v) => {
-        const d = new Date(v.created_at);
-        if (d >= start && d < end) sessions.add(v.session_id);
-      });
-      hours.push({ label, visitors: sessions.size });
+
+    if (isToday || isYesterday) {
+      for (let i = 23; i >= 0; i--) {
+        const baseTime = isYesterday ? rangeEnd.getTime() : now.getTime();
+        const start = new Date(baseTime - i * 3600000);
+        const end = new Date(start.getTime() + 3600000);
+        const label = start.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+        const count = filteredLogs.filter((l) => {
+          const d = new Date(l.created_at);
+          return d >= start && d < end;
+        }).length;
+        hours.push({ label, visitors: count });
+      }
+    } else {
+      // Daily buckets
+      const days = timeRange === "7days" ? 7 : timeRange === "30days" ? 30 : Math.min(90, Math.ceil((rangeEnd.getTime() - rangeStart.getTime()) / 86400000));
+      for (let i = days - 1; i >= 0; i--) {
+        const start = new Date(now.getTime() - i * 86400000);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start.getTime() + 86400000);
+        const label = start.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+        const count = filteredLogs.filter((l) => {
+          const d = new Date(l.created_at);
+          return d >= start && d < end;
+        }).length;
+        hours.push({ label, visitors: count });
+      }
     }
     return hours;
-  }, [visits]);
+  }, [filteredLogs, timeRange]);
 
-  // Referrer breakdown
+  // Referrer breakdown from page_visits
   const referrerData = useMemo(() => {
     const counts: Record<string, number> = {};
-    visits.forEach((v) => {
+    filteredVisits.forEach((v) => {
       const src = v.referrer_source || "Direkt";
       counts[src] = (counts[src] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value, color: SOURCE_COLORS[name] || SOURCE_COLORS.Andere }))
       .sort((a, b) => b.value - a.value);
-  }, [visits]);
+  }, [filteredVisits]);
 
-  // Top pages
+  // Top pages from event logs
   const topPages = useMemo(() => {
     const counts: Record<string, number> = {};
-    visits.forEach((v) => {
-      const page = v.page_url ? new URL(v.page_url, "https://x.com").pathname : "/";
+    filteredLogs.forEach((l) => {
+      const page = l.page_url ? new URL(l.page_url, "https://x.com").pathname : "/";
       counts[page] = (counts[page] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([page, count]) => ({ page, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
-  }, [visits]);
-
-  const totalToday = useMemo(() => {
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sessions = new Set<string>();
-    visits.forEach((v) => {
-      if (new Date(v.created_at) >= todayStart) sessions.add(v.session_id);
-    });
-    return sessions.size;
-  }, [visits]);
+  }, [filteredLogs]);
 
   const StatCard = ({ icon: Icon, label, value, sub, color }: { icon: any; label: string; value: string | number; sub?: string; color: string }) => (
     <motion.div
@@ -179,33 +262,51 @@ const LiveAnalyticsTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with refresh toggle */}
-      <div className="flex items-center justify-between">
+      {/* Header with refresh toggle + time range */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(150 60% 45%)" }} />
           <span className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
             Echtzeit · Letztes Update: {now.toLocaleTimeString("de-DE")}
           </span>
         </div>
-        <button
-          onClick={() => { setAutoRefresh(!autoRefresh); if (!autoRefresh) loadVisits(); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-          style={{
-            background: autoRefresh ? "hsl(150 60% 45% / 0.12)" : "hsl(0 0% 100% / 0.06)",
-            color: autoRefresh ? "hsl(150 60% 45%)" : "hsl(0 0% 100% / 0.5)",
-          }}
-        >
-          <RefreshCw className={`w-3 h-3 ${autoRefresh ? "animate-spin" : ""}`} style={{ animationDuration: "3s" }} />
-          {autoRefresh ? "Live" : "Pausiert"}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Time range selector */}
+          <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+            {TIME_RANGES.map((tr) => (
+              <button
+                key={tr.id}
+                onClick={() => setTimeRange(tr.id)}
+                className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all"
+                style={{
+                  background: timeRange === tr.id ? "hsl(230 80% 56% / 0.15)" : "transparent",
+                  color: timeRange === tr.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                }}
+              >
+                {tr.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => { setAutoRefresh(!autoRefresh); if (!autoRefresh) loadData(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: autoRefresh ? "hsl(150 60% 45% / 0.12)" : "hsl(0 0% 100% / 0.06)",
+              color: autoRefresh ? "hsl(150 60% 45%)" : "hsl(0 0% 100% / 0.5)",
+            }}
+          >
+            <RefreshCw className={`w-3 h-3 ${autoRefresh ? "animate-spin" : ""}`} style={{ animationDuration: "3s" }} />
+            {autoRefresh ? "Live" : "Pausiert"}
+          </button>
+        </div>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard icon={Users} label="Jetzt online" value={activeVisitors} sub={`Letzte ${ACTIVE_THRESHOLD_MINUTES} Min.`} color="hsl(150 60% 45%)" />
         <StatCard icon={TrendingUp} label="Peak (gleichzeitig)" value={peakData.count} sub={peakData.when} color="hsl(330 80% 55%)" />
-        <StatCard icon={Clock} label="Besucher heute" value={totalToday} color="hsl(45 80% 55%)" />
-        <StatCard icon={Globe} label="Quellen gesamt" value={referrerData.length} color="hsl(215 80% 55%)" />
+        <StatCard icon={Clock} label="Besucher" value={uniqueVisitors} sub={TIME_RANGES.find(t => t.id === timeRange)?.label} color="hsl(45 80% 55%)" />
+        <StatCard icon={Globe} label="PageViews" value={totalPageViews} sub={TIME_RANGES.find(t => t.id === timeRange)?.label} color="hsl(215 80% 55%)" />
       </div>
 
       {/* Visitors over time chart */}
@@ -215,7 +316,9 @@ const LiveAnalyticsTab = () => {
         className="rounded-2xl p-5"
         style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
       >
-        <h3 className="text-sm font-bold mb-4" style={{ color: "hsl(0 0% 100% / 0.8)" }}>Besucher letzte 24 Stunden</h3>
+        <h3 className="text-sm font-bold mb-4" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+          PageViews {timeRange === "today" ? "heute (stündlich)" : timeRange === "yesterday" ? "gestern (stündlich)" : `letzte ${timeRange === "7days" ? "7" : timeRange === "30days" ? "30" : ""} Tage`}
+        </h3>
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={hourlyData}>
             <defs>
@@ -224,14 +327,14 @@ const LiveAnalyticsTab = () => {
                 <stop offset="100%" stopColor="hsl(330 80% 55%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval={3} />
+            <XAxis dataKey="label" tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
             <YAxis tick={{ fill: "hsl(0 0% 100% / 0.3)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip
               contentStyle={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.1)", borderRadius: 12, fontSize: 12 }}
               labelStyle={{ color: "hsl(0 0% 100% / 0.6)" }}
               itemStyle={{ color: "hsl(330 80% 55%)" }}
             />
-            <Area type="monotone" dataKey="visitors" stroke="hsl(330 80% 55%)" fill="url(#visitGradient)" strokeWidth={2} name="Besucher" />
+            <Area type="monotone" dataKey="visitors" stroke="hsl(330 80% 55%)" fill="url(#visitGradient)" strokeWidth={2} name="PageViews" />
           </AreaChart>
         </ResponsiveContainer>
       </motion.div>
