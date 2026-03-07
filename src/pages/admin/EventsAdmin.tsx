@@ -1040,7 +1040,7 @@ const BlockTemplatePicker = ({ onSelect }: { onSelect: (template: BlockTemplate)
             <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
               {TEMPLATE_CATEGORIES.map((cat) => (
                 <div key={cat}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(330 80% 55% / 0.8)" }}>{cat}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(230 80% 56% / 0.8)" }}>{cat}</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {BLOCK_TEMPLATES.filter((t) => t.category === cat).map((tmpl) => {
                       const Icon = tmpl.icon;
