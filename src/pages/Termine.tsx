@@ -538,7 +538,7 @@ export default function Termine() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sortedGroups.map((group, idx) => (
               <motion.div
-                key={group.slug}
+                key={`${group.slug}-${group.city}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(idx * 0.04, 0.4) }}
