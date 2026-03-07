@@ -17,24 +17,6 @@ interface FAQCategory {
 
 const faqData: FAQCategory[] = [
   {
-    title: "Allgemein",
-    emoji: "📋",
-    items: [
-      {
-        q: "Was ist partyticket.app?",
-        a: "partyticket.app ist deine Plattform für die besten Events und Partys in deiner Stadt. Wir bieten dir eine einfache und sichere Möglichkeit, Tickets für unvergessliche Nächte zu kaufen.",
-      },
-      {
-        q: "Kann ich mit meinen Kindern kommen, die unter 18 Jahre alt sind?",
-        a: "Das hängt vom jeweiligen Event ab. Bei vielen unserer Events ist der Einlass ab 16 Jahren möglich – entweder ohne Muttizettel (bis Mitternacht) oder mit Muttizettel & volljähriger Begleitperson. Die genauen Einlass-Bedingungen findest du auf der jeweiligen Eventseite.",
-      },
-      {
-        q: "Ich würde gerne einen Tisch / eine Lounge mieten?",
-        a: "Tisch- und Lounge-Reservierungen hängen von der jeweiligen Location ab. Bitte wende dich direkt an die Location oder schreib uns eine E-Mail an mail@partyticket.app – wir helfen dir gerne weiter!",
-      },
-    ],
-  },
-  {
     title: "Tickets",
     emoji: "🎟️",
     items: [
@@ -43,92 +25,120 @@ const faqData: FAQCategory[] = [
         a: "Nein! Du kannst dein Ticket bequem digital auf deinem Handy vorzeigen. Bitte zoome beim Vorzeigen den QR-Code etwas größer, damit er schnell gescannt werden kann.",
       },
       {
-        q: "Was passiert wenn die Veranstaltung verschoben wird?",
-        a: "Falls eine Veranstaltung verschoben wird, behält dein Ticket seine Gültigkeit für den neuen Termin. Du wirst per E-Mail über alle Änderungen informiert. Sollte der neue Termin für dich nicht passen, kannst du eine Umbuchung beantragen.",
+        q: "Wo finde ich meine Tickets nach dem Kauf?",
+        a: 'Du erhältst deine Tickets per E-Mail an die beim Kauf angegebene Adresse. Alternativ kannst du unter "Meine Tickets" auf unserer Website deine Tickets jederzeit abrufen.',
       },
       {
         q: "Kann ich mein Ticket stornieren?",
         a: "Eine Stornierung ist leider grundsätzlich nicht möglich, da es sich um ein Event handelt. Du kannst dein Ticket aber problemlos an eine andere Person weitergeben. Bei Veranstaltungsausfall durch den Veranstalter erhältst du selbstverständlich eine Rückerstattung.",
       },
       {
-        q: "Kann ich mein Ticket umbuchen?",
-        a: "Ja! Über unsere Ticket-Umbuchungsseite kannst du dein Ticket auf ein anderes Datum oder eine andere Location umbuchen. Bitte beachte, dass eine Bearbeitungsgebühr anfallen kann.",
-      },
-      {
-        q: "Wo finde ich meine Tickets nach dem Kauf?",
-        a: "Du erhältst deine Tickets per E-Mail an die beim Kauf angegebene Adresse. Alternativ kannst du unter \u201eMeine Tickets\u201c auf unserer Website deine Tickets jederzeit abrufen.",
+        q: "Was passiert wenn die Veranstaltung verschoben wird?",
+        a: "Falls eine Veranstaltung verschoben wird, behält dein Ticket seine Gültigkeit für den neuen Termin. Du wirst per E-Mail über alle Änderungen informiert.",
       },
     ],
   },
   {
-    title: "Einlass",
-    emoji: "🚪",
+    title: "Allgemein",
+    emoji: "ℹ️",
     items: [
       {
-        q: "Was muss ich zum Einlass mitbringen?",
-        a: "Du musst dich ausweisen können (Personalausweis oder Reisepass). Dein Ticket zeigst du digital auf dem Handy vor – bitte den QR-Code größer zoomen.",
+        q: "Wo finden die Events statt?",
+        a: "Unsere Events finden im Finn's Penthouse Eventlocation in Mainz statt (Holzhofstraße 1, 55116 Mainz).",
       },
       {
-        q: "Ab welchem Alter komme ich rein?",
-        a: "Die Altersfreigabe variiert je nach Event. Bei den meisten Events ist der Einlass ab 16 Jahren möglich – mit oder ohne Muttizettel je nach Uhrzeit. Die genauen Regelungen findest du auf der jeweiligen Eventseite.",
-      },
-      {
-        q: "Wo finde ich den Muttizettel?",
-        a: "Den Muttizettel findest du auf unserer Website unter dem Menüpunkt \u201eMuttizettel\u201c. Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.",
-      },
-      {
-        q: "Gibt es einen Dresscode?",
-        a: "Einige Locations haben einen Dresscode & eine Einlasspolitik. Mit einem sauberen & passenden Outfit und normalem Auftreten freuen wir uns, mit dir zu feiern!",
-      },
-    ],
-  },
-  {
-    title: "Vor Ort",
-    emoji: "📍",
-    items: [
-      {
-        q: "Gibt es vor Ort Essen?",
-        a: "Das hängt von der jeweiligen Location ab. In den meisten Locations gibt es Snacks und Getränke. Details findest du auf der Eventseite der jeweiligen Veranstaltung.",
+        q: "Wie erreiche ich euch?",
+        a: "Am besten per E-Mail: mail@nightlifegeneration.de. Alternativ über Instagram oder unseren Support-Chat. Wir antworten in der Regel innerhalb von 24 Stunden.",
       },
       {
         q: "Gibt es eine Garderobe?",
-        a: "Die meisten Locations bieten eine Garderobe an. Die Kosten variieren je nach Location (in der Regel 1–2 €). Bitte beachte, dass wir keine Haftung für abgegebene Gegenstände übernehmen.",
-      },
-      {
-        q: "Kann man vor Ort parken?",
-        a: "Parkmöglichkeiten variieren je nach Location. Wir empfehlen die Anreise mit öffentlichen Verkehrsmitteln. Details findest du auf der jeweiligen Eventseite.",
+        a: "Ja, es gibt eine Garderobe vor Ort. Die Kosten liegen bei ca. 1–2 €. Bitte beachte, dass wir keine Haftung für abgegebene Gegenstände übernehmen.",
       },
       {
         q: "Kann man vor Ort mit Karte zahlen?",
-        a: "In den meisten Locations kannst du mit Karte zahlen. Wir empfehlen dennoch, etwas Bargeld dabei zu haben, da es je nach Location Unterschiede geben kann.",
+        a: "Ja, Kartenzahlung ist möglich. Wir empfehlen dennoch, etwas Bargeld dabei zu haben.",
+      },
+      {
+        q: "Kann man vor Ort parken?",
+        a: "Parkmöglichkeiten sind in der Umgebung vorhanden. Wir empfehlen die Anreise mit öffentlichen Verkehrsmitteln.",
       },
     ],
   },
   {
-    title: "Gruppen & Events",
-    emoji: "👥",
+    title: "U18",
+    emoji: "🔞",
     items: [
       {
-        q: "Wir feiern einen JGA / Geburtstag / Firmenfeier.",
-        a: "Super! Für Gruppenanfragen schreib uns gerne eine Mail an mail@partyticket.app mit Angabe des Events, der Personenanzahl und eures Anlasses. Wir kümmern uns um ein tolles Erlebnis für eure Gruppe!",
+        q: "Ab welchem Alter komme ich rein?",
+        a: "Bei den meisten unserer Events ist der Einlass ab 16 Jahren möglich – ohne Muttizettel bis Mitternacht, oder mit Muttizettel & volljähriger Begleitperson auch länger. Die genauen Einlass-Bedingungen findest du auf der jeweiligen Eventseite.",
+      },
+      {
+        q: "Was ist ein Muttizettel und wo finde ich ihn?",
+        a: 'Der Muttizettel ist eine Einverständniserklärung deiner Eltern, die es dir erlaubt, als Minderjährige/r an unseren Events teilzunehmen. Du findest ihn auf unserer Website unter dem Menüpunkt "Muttizettel". Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.',
+      },
+      {
+        q: "Was muss ich zum Einlass mitbringen?",
+        a: "Du musst dich ausweisen können (Personalausweis oder Reisepass). Unter 18 brauchst du zusätzlich einen ausgefüllten Muttizettel und eine volljährige Begleitperson. Dein Ticket zeigst du digital auf dem Handy vor.",
+      },
+    ],
+  },
+  {
+    title: "Musik",
+    emoji: "🎵",
+    items: [
+      {
+        q: "Welche Musik wird gespielt?",
+        a: "Bei unseren XXL-Schülerpartys erwartet dich ein Mix aus aktuellen Charts, Hip-Hop, R&B, Dance und Party-Hits. Unsere DJs sorgen dafür, dass für jeden Geschmack etwas dabei ist!",
+      },
+      {
+        q: "Kann ich mir Musik wünschen?",
+        a: "Klar! Sprich unsere DJs vor Ort gerne an. Wir versuchen, so viele Wünsche wie möglich zu berücksichtigen.",
+      },
+    ],
+  },
+  {
+    title: "Jobs",
+    emoji: "💪",
+    items: [
+      {
+        q: "Wie kann ich bei euch arbeiten?",
+        a: "Wir suchen regelmäßig Promoter, Fotografen und Helfer für unsere Events. Schau auf unserer Jobs-Seite vorbei oder schreib uns direkt eine Nachricht!",
+      },
+      {
+        q: "Ich möchte Promoter werden.",
+        a: "Super! Als Promoter verdienst du Geld, indem du Tickets für unsere Events verkaufst. Melde dich über unsere Promoter-Seite an oder schreib uns eine E-Mail.",
+      },
+    ],
+  },
+  {
+    title: "Gästeliste",
+    emoji: "📋",
+    items: [
+      {
+        q: "Gibt es eine Gästeliste?",
+        a: "Bei ausgewählten Events bieten wir eine Gästeliste an. Informationen dazu findest du auf der jeweiligen Eventseite oder kontaktiere uns direkt.",
+      },
+      {
+        q: "Wir feiern einen JGA / Geburtstag – gibt es Gruppenangebote?",
+        a: "Ja! Für Gruppenanfragen schreib uns gerne eine Mail mit Angabe des Events, der Personenanzahl und eures Anlasses. Wir kümmern uns um ein tolles Erlebnis für eure Gruppe!",
+      },
+    ],
+  },
+  {
+    title: "Sonstiges",
+    emoji: "❓",
+    items: [
+      {
+        q: "Gibt es einen Dresscode?",
+        a: "Einige Events haben einen Dresscode. Mit einem sauberen & passenden Outfit und normalem Auftreten freuen wir uns, mit dir zu feiern!",
+      },
+      {
+        q: "Ich möchte meine Location als Veranstaltungsort anbieten.",
+        a: "Das freut uns! Schreib uns eine E-Mail mit Infos zu deiner Location (Kapazität, Adresse, technische Ausstattung). Wir melden uns dann bei dir!",
       },
       {
         q: "Ich möchte eine Abiparty veranstalten.",
         a: "Wir bieten Abschlussklassen exklusive Abipartys im Club an – ideal, um die Abikasse kostenlos & risikofrei aufzubessern. Schreib uns für mehr Infos!",
-      },
-    ],
-  },
-  {
-    title: "Kontakt",
-    emoji: "💬",
-    items: [
-      {
-        q: "Wie erreiche ich euch?",
-        a: "Am besten per E-Mail: mail@partyticket.app. Alternativ über Instagram oder unsere WhatsApp-Gruppe. Wir antworten in der Regel innerhalb von 24 Stunden.",
-      },
-      {
-        q: "Ich möchte meine Location als Veranstaltungsort anbieten.",
-        a: "Das freut uns! Schreib uns eine E-Mail an mail@partyticket.app mit Infos zu deiner Location (Kapazität, Adresse, technische Ausstattung). Wir melden uns dann bei dir!",
       },
     ],
   },
