@@ -16,7 +16,7 @@ import { CityHeatmap } from "@/components/admin/CityHeatmap";
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => n.toLocaleString("de-DE");
 const COLORS = [
-  "hsl(330 80% 55%)", "hsl(260 70% 60%)", "hsl(200 80% 55%)", "hsl(140 60% 50%)",
+  "hsl(230 80% 56%)", "hsl(260 70% 60%)", "hsl(200 80% 55%)", "hsl(140 60% 50%)",
   "hsl(40 90% 55%)", "hsl(10 80% 55%)", "hsl(180 60% 50%)", "hsl(290 60% 55%)",
   "hsl(170 70% 50%)", "hsl(350 80% 55%)", "hsl(220 70% 60%)", "hsl(60 80% 50%)",
 ];
