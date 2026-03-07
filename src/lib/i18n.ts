@@ -238,7 +238,7 @@ const hr: BaseTranslations = {
   freeTicketsTitle: "Besplatne ulaznice i više?", whatsappJoin: "Pridruži se sada", whatsappDesc: "Postani dio naše WhatsApp zajednice.",
   moreCities: "Više gradova", moreCitiesDesc: "Osiguraj ulaznice za druge gradove", kmAway: "km daleko",
   footerQuestion: "Pitanja, problemi ili zahtjevi za rezervaciju?", footerContact: "Kontaktiraj nas:",
-  footerOrganizer: "partyticket.app", imprint: "Impressum", privacy: "Pravila privatnosti", terms: "Uvjeti korištenja",
+  footerOrganizer: "Nightlife Generation", imprint: "Impressum", privacy: "Pravila privatnosti", terms: "Uvjeti korištenja",
   loading: "Učitavanje...",
   weekdays: ["Nedjelja","Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota"],
   monthsShort: ["","Sij","Velj","Ožu","Tra","Svi","Lip","Srp","Kol","Ruj","Lis","Stu","Pro"],
