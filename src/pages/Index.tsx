@@ -11,7 +11,7 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import SupportChatbot from "@/components/SupportChatbot";
 
-import { events, getNextEvent } from "@/data/events";
+import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
 import heroBg from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
@@ -55,12 +55,20 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
 function pad(n: number) { return String(n).padStart(2, "0"); }
 
 const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
-  const nextEvent = getNextEvent();
+  const [nextEvent, setNextEvent] = useState<{ title: string; city: string | null; date: string; time: string | null; location_name: string | null; slug: string } | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    supabase.from("events").select("title, city, date, time, location_name, slug")
+      .eq("status", "published").gte("date", today)
+      .order("date", { ascending: true }).limit(1)
+      .then(({ data }) => { if (data?.[0]) setNextEvent(data[0]); });
+  }, []);
+
+  useEffect(() => {
     if (!nextEvent) return;
-    const target = new Date(nextEvent.date).getTime();
+    const target = new Date(nextEvent.date + (nextEvent.time ? `T${nextEvent.time}` : "T20:00")).getTime();
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
       setTimeLeft({
@@ -89,9 +97,9 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
         </h2>
         <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8 flex-wrap">
           <MapPin className="w-4 h-4" />
-          <span>{nextEvent.city}, {nextEvent.country}</span>
+          <span>{nextEvent.city}</span>
           <span>·</span>
-          <span>{nextEvent.locationName}</span>
+          <span>{nextEvent.location_name}</span>
           <span>·</span>
           <span>{dateStr}</span>
         </div>
@@ -108,7 +116,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
             </motion.div>
           ))}
         </div>
-        <Link to={`/${nextEvent.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
+        <Link to={`/termine`}
           className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
           <Ticket className="w-5 h-5" />
           {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
@@ -120,10 +128,17 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Upcoming Events ─── */
 const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
-  const upcomingEvents = events
-    .filter(e => e.status === "planned" && new Date(e.date) > new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 4);
+  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; city: string | null; date: string | null; location_name: string | null; slug: string }[]>([]);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    supabase.from("events").select("id, title, city, date, location_name, slug")
+      .eq("status", "published").gte("date", today)
+      .order("date", { ascending: true }).limit(4)
+      .then(({ data }) => setUpcomingEvents(data ?? []));
+  }, []);
+
+  if (!upcomingEvents.length) return null;
 
   return (
     <section id="events" className="py-16 md:py-24">
@@ -137,22 +152,15 @@ const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
               className="flex items-center justify-between p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
               <div className="flex gap-4 items-center">
                 <div className="text-center min-w-[50px]">
-                  <span className="font-display text-2xl text-primary">{new Date(ev.date).getDate()}</span>
-                  <p className="text-xs text-muted-foreground uppercase">{new Date(ev.date).toLocaleDateString("de-DE", { month: "short" })}</p>
+                  <span className="font-display text-2xl text-primary">{ev.date ? new Date(ev.date).getDate() : "?"}</span>
+                  <p className="text-xs text-muted-foreground uppercase">{ev.date ? new Date(ev.date).toLocaleDateString("de-DE", { month: "short" }) : ""}</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
-                    {ev.city}
-                    {ev.extras?.toLowerCase().includes("open air") && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gold/15 text-gold text-[10px] font-semibold border border-gold/30">
-                        <Sun className="w-2.5 h-2.5" /> Open Air
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.locationName}</p>
+                  <h3 className="font-semibold text-foreground">{ev.title}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{ev.location_name}{ev.city ? `, ${ev.city}` : ""}</p>
                 </div>
               </div>
-              <Link to={`/${ev.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
+              <Link to={`/termine`}
                 className="inline-flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
                 <Ticket className="w-4 h-4" />{gt.navTickets}
               </Link>
