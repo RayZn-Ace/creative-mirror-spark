@@ -177,7 +177,7 @@ const gradientCSS = (g: GradientConfig, fallback: string) => {
 const DEMO_EVENT_IMAGE = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80";
 
 /* ─── Ticket Preview ─── */
-const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewImageUrl?: string }) => {
+const TicketPreview = ({ tpl, previewImageUrl, previewCategoryName }: { tpl: TicketTemplate; previewImageUrl?: string; previewCategoryName?: string }) => {
   const isDinLang = tpl.format === "din_lang";
   const aspectStyle = isDinLang
     ? { width: "100%", maxWidth: "480px", aspectRatio: "210/99" }
@@ -219,7 +219,7 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
               {tpl.show_time && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>UHRZEIT</span> 22:00 Uhr</div>}
               {tpl.show_location && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ORT</span> Baggi / Osho</div>}
               {tpl.show_address && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ADRESSE</span> Musterstr. 1</div>}
-              {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> Early Bird</div>}
+              {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> {previewCategoryName || "Early Bird"}</div>}
               {tpl.show_holder_name && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>NAME</span> Max Mustermann</div>}
             </div>
 
@@ -267,7 +267,7 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
             ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33` } : { borderTop: `1px dashed ${textCol}33` }),
           }}>
             {tpl.show_category && (
-              <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
+              <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>{previewCategoryName || "Last Chance"}<br />Ticket</div>
             )}
             <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
@@ -996,9 +996,13 @@ const TicketTemplateAdmin = () => {
 
               // Apply category override to tpl
               let displayTpl = tpl;
+              let categoryName: string | undefined;
               if (previewCategoryId) {
                 const overrideKey = previewCategoryId.toUpperCase();
                 const override = tpl.category_overrides?.[overrideKey];
+                // Find the category name from ticketCategories
+                const cat = ticketCategories.find(c => c.category_group === previewCategoryId);
+                categoryName = cat?.name;
                 if (override) {
                   displayTpl = {
                     ...tpl,
@@ -1010,10 +1014,13 @@ const TicketTemplateAdmin = () => {
                 }
               }
 
+              // If a series is selected, force magic ticket enabled for preview
+              const previewTpl = previewSeriesId ? { ...displayTpl, magic_ticket_enabled: true } : displayTpl;
+
               return (
                 <>
                   <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                    <TicketPreview tpl={displayTpl} previewImageUrl={previewImg} />
+                    <TicketPreview tpl={previewTpl} previewImageUrl={previewImg} previewCategoryName={categoryName} />
                   </div>
                   <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                     {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
