@@ -176,6 +176,38 @@ const gradientCSS = (g: GradientConfig, fallback: string) => {
 
 const DEMO_EVENT_IMAGE = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80";
 
+const normalizeSeriesText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const resolveSeriesPreviewImage = (
+  seriesId: string,
+  eventSeries: Array<{ id: string; title: string; image_url: string | null }>,
+  eventsMap: Record<string, { image_url: string | null; title: string; series_id: string | null }>
+): string | null => {
+  const series = eventSeries.find((s) => s.id === seriesId);
+
+  if (series?.image_url) return series.image_url;
+
+  const bySeriesLink = Object.values(eventsMap).find(
+    (e) => e.series_id === seriesId && !!e.image_url
+  )?.image_url;
+  if (bySeriesLink) return bySeriesLink;
+
+  if (series?.title) {
+    const normalizedTitle = normalizeSeriesText(series.title);
+    const bySeriesTitle = Object.values(eventsMap).find(
+      (e) => !!e.image_url && normalizeSeriesText(e.title).includes(normalizedTitle)
+    )?.image_url;
+    if (bySeriesTitle) return bySeriesTitle;
+  }
+
+  return null;
+};
+
 /* ─── Ticket Preview ─── */
 const TicketPreview = ({ tpl, previewImageUrl, previewCategoryName }: { tpl: TicketTemplate; previewImageUrl?: string; previewCategoryName?: string }) => {
   const isDinLang = tpl.format === "din_lang";
@@ -429,14 +461,7 @@ const TicketTemplateAdmin = () => {
     if (!previewSeriesId) return;
 
     // Resolve source image URL
-    let srcUrl: string | null = null;
-    const series = eventSeries.find(s => s.id === previewSeriesId);
-    if (series?.image_url) {
-      srcUrl = series.image_url;
-    } else {
-      const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-      if (ev?.image_url) srcUrl = ev.image_url;
-    }
+    const srcUrl = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
     if (!srcUrl) return;
 
     // Already cleaned? (but ignore stale fallback entries that just point to the original URL)
@@ -1043,13 +1068,8 @@ const TicketTemplateAdmin = () => {
               // Determine preview image from selected series
               let rawImg = DEMO_EVENT_IMAGE;
               if (previewSeriesId) {
-                const series = eventSeries.find(s => s.id === previewSeriesId);
-                if (series?.image_url) {
-                  rawImg = series.image_url;
-                } else {
-                  const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-                  if (ev?.image_url) rawImg = ev.image_url;
-                }
+                const resolvedSeriesImage = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
+                if (resolvedSeriesImage) rawImg = resolvedSeriesImage;
               }
               // Use AI-cleaned version if available
               const previewImg = cleanedImages[rawImg] || rawImg;
