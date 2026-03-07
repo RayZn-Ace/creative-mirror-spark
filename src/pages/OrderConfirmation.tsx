@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 interface OrderData {
   id: string;
