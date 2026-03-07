@@ -1622,26 +1622,6 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
   );
 };
 
-/* ─── Ticket.io Sync Dialog ─── */
-interface TioEvent {
-  title: string;
-  city: string;
-  date: string;
-  time: string;
-  location: string;
-  ticketLink: string;
-  soldOut: boolean;
-  price: string;
-}
-
-interface TioCompareResult {
-  onlyTio: TioEvent[];
-  notOnTio: EventRow[];
-  dateMismatch: { ours: EventRow; tio: TioEvent }[];
-  matched: number;
-}
-
-const normCity = (c: string) => c.toUpperCase().replace(/[.\s-]/g, "").replace(/Ü/g, "UE").replace(/Ö/g, "OE").replace(/Ä/g, "AE").replace(/ß/g, "SS");
 
 const TioSyncDialog = ({ events, onClose, onReload }: { events: EventRow[]; onClose: () => void; onReload: () => void }) => {
   const [phase, setPhase] = useState<"scanning" | "results">("scanning");
