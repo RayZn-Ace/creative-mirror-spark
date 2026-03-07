@@ -832,7 +832,7 @@ const EmailTab = () => {
               ].map(t => (
                 <button key={t.key} onClick={() => setTpl(p => ({ ...p, [t.key]: !p[t.key] }))}
                   className="px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={{ background: tpl[t.key] ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${tpl[t.key] ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.08)"}`, color: tpl[t.key] ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+                  style={{ background: tpl[t.key] ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${tpl[t.key] ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}`, color: tpl[t.key] ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)" }}>
                   {t.label}
                 </button>
               ))}
