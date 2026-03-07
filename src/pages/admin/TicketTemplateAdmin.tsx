@@ -447,8 +447,8 @@ const TicketTemplateAdmin = () => {
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Format</h3>
             <div className="grid grid-cols-2 gap-3">
               {FORMATS.map((f) => (
-                <button key={f.id} onClick={() => update("format", f.id)} className="text-left p-3 rounded-xl transition-all" style={{ background: tpl.format === f.id ? `${tpl.accent_color}22` : "hsl(0 0% 100% / 0.04)", border: `2px solid ${tpl.format === f.id ? tpl.accent_color : "hsl(0 0% 100% / 0.08)"}` }}>
-                  <div className="text-sm font-bold" style={{ color: tpl.format === f.id ? tpl.accent_color : "hsl(0 0% 100%)" }}>{f.label}</div>
+                <button key={f.id} onClick={() => update("format", f.id)} className="text-left p-3 rounded-xl transition-all" style={{ background: tpl.format === f.id ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.04)", border: `2px solid ${tpl.format === f.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}` }}>
+                  <div className="text-sm font-bold" style={{ color: tpl.format === f.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100%)" }}>{f.label}</div>
                   <div className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{f.desc}</div>
                 </button>
               ))}
