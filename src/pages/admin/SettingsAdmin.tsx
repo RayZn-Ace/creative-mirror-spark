@@ -641,7 +641,7 @@ const SettingsAdmin = () => {
                     setAddingUser(false);
                   }}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-center disabled:opacity-50"
-                  style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+                  style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
                 >
                   {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   Einladen
