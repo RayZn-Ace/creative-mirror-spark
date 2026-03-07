@@ -1213,7 +1213,7 @@ const globalDe: GlobalTranslations = {
   navHome: "Startseite", navDatesTickets: "Events", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
   navForWho: "Für wen?", navMedia: "Media", navBlog: "Blog",
   navBookUs: "Uns Buchen!", navRegisterLocation: "Location anmelden", navPartner: "Partner werden", navInfluencer: "Influencer", navJobs: "Jobs",
-  heroTitle: "party", heroSubtitle: "ticket", heroDesc: "Dein Ticketshop für die besten Events & Partys. Über 150 Städte, 13 Länder.", heroTicketBtn: "Tickets sichern",
+  heroTitle: "nightlife", heroSubtitle: " generation", heroDesc: "Dein Ticketshop für die besten Events & Partys. Über 150 Städte, 13 Länder.", heroTicketBtn: "Tickets sichern",
   trustCities: "STÄDTE", trustCountries: "LÄNDER", trustFollowers: "FOLLOWER", trustFans: "FANS",
   whatIsTitle1: "Was ist", whatIsTitle2: "partyticket?", whatIsDesc: "Die Plattform für unvergessliche Events! Finde Partys, Konzerte und Shows in deiner Nähe – von verschiedenen Veranstaltern, alles an einem Ort.",
   feat3hParty: "Events in 150+ Städten", featLiveDj: "Verschiedene Veranstalter", featGlitter: "Einfach & sicher buchen", featFans: "250.000+ zufriedene Gäste",
