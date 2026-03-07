@@ -895,7 +895,7 @@ const baseTranslations = Object.fromEntries(
   Object.entries(rawTranslations).map(([lang, t]) => [lang, {
     ...t,
     tourSubtitle: "",
-    footerOrganizer: "partyticket.app",
+    footerOrganizer: "Nightlife Generation",
   }])
 ) as Record<LangCode, BaseTranslations>;
 
