@@ -150,7 +150,7 @@ const nl: BaseTranslations = {
   freeTicketsTitle: "Gratis kaarten & meer?", whatsappJoin: "Nu deelnemen", whatsappDesc: "Word lid van onze WhatsApp-community.",
   moreCities: "Meer steden", moreCitiesDesc: "Bestel nu tickets voor andere steden", kmAway: "km verwijderd",
   footerQuestion: "Vragen, problemen of reserveringsverzoeken?", footerContact: "Neem contact op:",
-  footerOrganizer: "partyticket.app", imprint: "Colofon", privacy: "Privacybeleid", terms: "Algemene voorwaarden",
+  footerOrganizer: "Nightlife Generation", imprint: "Colofon", privacy: "Privacybeleid", terms: "Algemene voorwaarden",
   loading: "Laden...",
   weekdays: ["Zondag","Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag"],
   monthsShort: ["","Jan","Feb","Mrt","Apr","Mei","Jun","Jul","Aug","Sep","Okt","Nov","Dec"],
