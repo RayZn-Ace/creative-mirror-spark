@@ -71,6 +71,7 @@ interface NewsletterTemplate {
   icon: any;
   gradient: string;
   headerGradient: string;
+  colorSchemeId?: string;
   blocks: () => Block[];
 }
 
@@ -82,6 +83,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: PartyPopper,
     gradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
     headerGradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
+    colorSchemeId: "light-pink",
     blocks: () => [
       createBlock("heading", { text: "🎉 Neues Event!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 16 }),
@@ -97,6 +99,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #8b5cf6, #ec4899)",
     headerGradient: "linear-gradient(135deg, #8b5cf6, #a855f7)",
+    colorSchemeId: "dark-purple",
     blocks: () => [
       createBlock("heading", { text: "🪄 Deine nächsten Events", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -116,6 +119,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Calendar,
     gradient: "linear-gradient(135deg, #e91e8c, #7c3aed)",
     headerGradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
+    colorSchemeId: "light-pink",
     blocks: () => [
       createBlock("heading", { text: "🎶 Die Tour kommt!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -135,6 +139,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
     headerGradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    colorSchemeId: "light-blue",
     blocks: () => [
       createBlock("heading", { text: "Neuigkeiten", level: 1, align: "left", color: "#1a1a1a" }),
       createBlock("divider", { color: "#667eea", style: "solid" }),
@@ -153,6 +158,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Zap,
     gradient: "linear-gradient(135deg, #00f5a0, #00d9f5)",
     headerGradient: "linear-gradient(135deg, #0a0a0a, #1a1a2e)",
+    colorSchemeId: "dark-neon",
     blocks: () => [
       createBlock("heading", { text: "⚡ NEON NIGHTS ⚡", level: 1, align: "center", color: "#00f5a0" }),
       createBlock("spacer", { height: 8 }),
@@ -173,6 +179,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Megaphone,
     gradient: "linear-gradient(135deg, #f5af19, #f12711)",
     headerGradient: "linear-gradient(135deg, #f5af19, #f12711)",
+    colorSchemeId: "dark-fire",
     blocks: () => [
       createBlock("heading", { text: "🔥 SPECIAL DEAL 🔥", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -190,6 +197,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Heart,
     gradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
     headerGradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
+    colorSchemeId: "light-pink",
     blocks: () => [
       createBlock("heading", { text: "Was für eine Nacht! 💜", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -211,6 +219,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Heart,
     gradient: "linear-gradient(135deg, #1e3a5f, #c9a84c)",
     headerGradient: "linear-gradient(135deg, #1e3a5f, #2a5298)",
+    colorSchemeId: "elegant-gold",
     blocks: () => [
       createBlock("heading", { text: "🎶 EVENT HIGHLIGHTS", level: 1, align: "center", color: "#c9a84c" }),
       createBlock("text", { text: "Die besten Events in deiner Stadt", align: "center", bold: true, color: "#ffffff" }),
@@ -232,6 +241,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #c9a84c, #f5e6a3)",
     headerGradient: "linear-gradient(135deg, #0d0d0d, #1a1a1a)",
+    colorSchemeId: "elegant-gold",
     blocks: () => [
       createBlock("heading", { text: "✨ PREMIUM EVENTS ✨", level: 1, align: "center", color: "#c9a84c" }),
       createBlock("heading", { text: "Die besten Partys", level: 2, align: "center", color: "#f5e6a3" }),
@@ -254,6 +264,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sun,
     gradient: "linear-gradient(135deg, #0ea5e9, #f97316)",
     headerGradient: "linear-gradient(135deg, #0ea5e9, #06b6d4)",
+    colorSchemeId: "warm-sunset",
     blocks: () => [
       createBlock("heading", { text: "☀️ SOMMER EVENTS", level: 1, align: "center", color: "#ffffff" }),
       createBlock("text", { text: "Die heißesten Partys – Summer Edition", align: "center", bold: true, color: "#ffe4c4" }),
@@ -273,6 +284,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Gift,
     gradient: "linear-gradient(135deg, #ec4899, #8b5cf6)",
     headerGradient: "linear-gradient(135deg, #8b5cf6, #a855f7)",
+    colorSchemeId: "dark-purple",
     blocks: () => [
       createBlock("heading", { text: "🎁 Exklusiv für dich!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -292,6 +304,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Timer,
     gradient: "linear-gradient(135deg, #10b981, #059669)",
     headerGradient: "linear-gradient(135deg, #10b981, #059669)",
+    colorSchemeId: "light-green",
     blocks: () => [
       createBlock("heading", { text: "🐣 Early Bird Tickets!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
@@ -1074,7 +1087,9 @@ const NewsletterAdmin = () => {
     setShowTemplates(false);
     setSelectedBlock(null);
     // Auto-match a color scheme based on template
-    const matchScheme = COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
+    const matchScheme = template.colorSchemeId
+      ? COLOR_SCHEMES.find((cs) => cs.id === template.colorSchemeId)
+      : COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
     if (matchScheme) applyColorScheme(matchScheme);
     toast.success(`Vorlage "${template.name}" geladen`);
   }, []);
