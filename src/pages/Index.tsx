@@ -310,48 +310,6 @@ const Reviews = ({ gt }: { gt: GlobalTranslations }) => (
   </section>
 );
 
-/* ─── Newsletter CTA ─── */
-const NewsletterCTA = ({ gt }: { gt: GlobalTranslations }) => {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) setSubmitted(true);
-  };
-
-  return (
-    <section className="py-16 md:py-24 bg-card/50">
-      <div className="container max-w-2xl text-center">
-        <h2 className="font-display text-4xl md:text-5xl mb-4 text-foreground">
-          {gt.newsletterTitle1} <span className="text-gradient-gold">{gt.newsletterTitle2}</span>
-        </h2>
-        <p className="text-muted-foreground mb-8">{gt.newsletterDesc}</p>
-
-        {submitted ? (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-primary font-semibold text-lg">
-            {gt.newsletterThanks}
-          </motion.p>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-            <input type="email" required placeholder={gt.newsletterPlaceholder} value={email} onChange={e => setEmail(e.target.value)}
-              className="flex-1 px-4 py-3 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-            <button type="submit" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-              <Send className="w-4 h-4" /> {gt.newsletterSubmit}
-            </button>
-          </form>
-        )}
-
-        <div className="mt-8">
-          <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(142,70%,45%)] text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-            <MessageCircle className="w-5 h-5" /> {gt.whatsappJoinGroup}
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ─── Page ─── */
 export default function Index() {
