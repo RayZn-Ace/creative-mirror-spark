@@ -264,6 +264,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sun,
     gradient: "linear-gradient(135deg, #0ea5e9, #f97316)",
     headerGradient: "linear-gradient(135deg, #0ea5e9, #06b6d4)",
+    colorSchemeId: "warm-sunset",
     blocks: () => [
       createBlock("heading", { text: "☀️ SOMMER EVENTS", level: 1, align: "center", color: "#ffffff" }),
       createBlock("text", { text: "Die heißesten Partys – Summer Edition", align: "center", bold: true, color: "#ffe4c4" }),
