@@ -2144,7 +2144,7 @@ const EventsAdmin = () => {
     if (filter16Plus && !e.title.toLowerCase().includes("16+") && !e.title.toLowerCase().includes("ab 16")) return false;
     if (filterMammaMia && !e.title.toLowerCase().includes("mamma mia")) return false;
     if (filterActs) {
-      const seriesTitle = e.series_id ? (series.find(s => s.id === e.series_id)?.title || "") : "";
+      const seriesTitle = e.series_id ? (seriesMap[e.series_id] || "") : "";
       const combined = (e.title + " " + seriesTitle).toLowerCase();
       if (!combined.includes("act") && !combined.includes("acts")) return false;
     }
