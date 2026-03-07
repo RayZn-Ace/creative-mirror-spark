@@ -617,7 +617,75 @@ const TicketTemplateAdmin = () => {
             </div>
           </div>
 
-          {/* Sponsors */}
+          {/* ✨ Magic Ticket – Hintergrundbild */}
+          <div style={{ ...sectionStyle, border: tpl.background_image_url ? "1px solid hsl(270 80% 60% / 0.3)" : sectionStyle.border, background: tpl.background_image_url ? "hsl(270 80% 60% / 0.04)" : sectionStyle.background }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4" style={{ color: "hsl(270 80% 60%)" }} />
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Magic Ticket</h3>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 80% 60% / 0.15)", color: "hsl(270 80% 60%)" }}>NEU</span>
+            </div>
+            <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+              Verwende das Event-Titelbild als unscharfen Hintergrund für ein immersives Ticket-Design.
+            </p>
+
+            {tpl.background_image_url ? (
+              <div className="space-y-4">
+                {/* Preview of selected image */}
+                <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                  <img src={tpl.background_image_url} alt="Hintergrundbild" className="w-full h-24 object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(0 0% 0% / 0.6), transparent)" }} />
+                  <button
+                    onClick={() => update("background_image_url", "")}
+                    className="absolute top-2 right-2 p-1.5 rounded-lg flex items-center gap-1 text-[10px] font-bold"
+                    style={{ background: "hsl(0 70% 50% / 0.9)", color: "#fff" }}
+                  >
+                    <Trash2 className="w-3 h-3" /> Entfernen
+                  </button>
+                </div>
+
+                {/* Blur slider */}
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: "4px" }}>Unschärfe: {tpl.background_image_blur}px</label>
+                  <input
+                    type="range" min="0" max="50" value={tpl.background_image_blur}
+                    onChange={(e) => update("background_image_blur", Number(e.target.value))}
+                    className="w-full h-1 rounded-full appearance-none cursor-pointer"
+                    style={{ background: "hsl(0 0% 100% / 0.1)" }}
+                  />
+                </div>
+
+                {/* Opacity slider */}
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: "4px" }}>Deckkraft: {tpl.background_image_opacity}%</label>
+                  <input
+                    type="range" min="5" max="100" value={tpl.background_image_opacity}
+                    onChange={(e) => update("background_image_opacity", Number(e.target.value))}
+                    className="w-full h-1 rounded-full appearance-none cursor-pointer"
+                    style={{ background: "hsl(0 0% 100% / 0.1)" }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center gap-2 p-6 rounded-xl cursor-pointer transition-all hover:opacity-80" style={{ background: "hsl(270 80% 60% / 0.06)", border: "1.5px dashed hsl(270 80% 60% / 0.3)" }}>
+                <Sparkles className="w-6 h-6" style={{ color: "hsl(270 80% 60% / 0.5)" }} />
+                <span className="text-xs font-bold" style={{ color: "hsl(270 80% 60% / 0.7)" }}>Titelbild hochladen</span>
+                <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Das Bild wird unscharf hinter das Ticket gelegt</span>
+                <input type="file" accept="image/*" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const ext = file.name.split(".").pop();
+                  const path = `ticket-template/magic-bg-${Date.now()}.${ext}`;
+                  const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true });
+                  if (error) { toast.error("Upload fehlgeschlagen"); return; }
+                  const { data: urlData } = supabase.storage.from("event-images").getPublicUrl(path);
+                  update("background_image_url", urlData.publicUrl);
+                  toast.success("Magic Ticket Hintergrund gesetzt ✨");
+                }} className="hidden" />
+              </label>
+            )}
+          </div>
+
+
           <div style={sectionStyle}>
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Sponsoren & Partner</h3>
             {tpl.sponsors.length > 0 && (
