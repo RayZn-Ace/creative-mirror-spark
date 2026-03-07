@@ -855,7 +855,7 @@ const TicketTemplateAdmin = () => {
               <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Vorschau</h3>
             </div>
             <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-              <TicketPreview tpl={tpl} />
+              <TicketPreview tpl={tpl} previewImageUrl={DEMO_EVENT_IMAGE} />
             </div>
             <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
               {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
