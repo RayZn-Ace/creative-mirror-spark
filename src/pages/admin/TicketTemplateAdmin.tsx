@@ -254,8 +254,8 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
               ))}
             </div>
           )}
+          </div>
         </div>
-      </div>
 
       {/* QR section – solid background, no blur */}
       {tpl.show_qr_code && (
