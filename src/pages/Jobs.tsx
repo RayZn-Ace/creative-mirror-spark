@@ -16,9 +16,9 @@ const bereiche = [
 ];
 
 const inputStyle: React.CSSProperties = {
-  background: "hsl(220 40% 13%)",
-  border: "1px solid hsl(0 0% 100% / 0.1)",
-  color: "hsl(0 0% 100%)",
+  background: "hsl(220 15% 93%)",
+  border: "1px solid hsl(220 15% 85%)",
+  color: "hsl(220 20% 15%)",
   borderRadius: "12px",
   padding: "12px 16px",
   fontSize: "14px",
@@ -28,7 +28,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  color: "hsl(0 0% 100% / 0.7)",
+  color: "hsl(220 10% 35%)",
   fontSize: "14px",
   fontWeight: 600,
   marginBottom: "6px",
@@ -37,14 +37,7 @@ const labelStyle: React.CSSProperties = {
 
 const Jobs = () => {
   const [form, setForm] = useState({
-    name: "",
-    alter: "",
-    instagram: "",
-    stadt: "",
-    email: "",
-    telefon: "",
-    bereich: "",
-    kommentar: "",
+    name: "", alter: "", instagram: "", stadt: "", email: "", telefon: "", bereich: "", kommentar: "",
   });
   const [agb, setAgb] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -67,12 +60,8 @@ const Jobs = () => {
       category: "job" as any,
       source: "jobs-form",
       metadata: {
-        alter: form.alter,
-        instagram: form.instagram,
-        stadt: form.stadt,
-        telefon: form.telefon,
-        bereich: form.bereich,
-        kommentar: form.kommentar,
+        alter: form.alter, instagram: form.instagram, stadt: form.stadt,
+        telefon: form.telefon, bereich: form.bereich, kommentar: form.kommentar,
       },
     });
     setSubmitting(false);
@@ -87,18 +76,11 @@ const Jobs = () => {
     return (
       <PageLayout title="Jobs & Karriere" subtitle="Wir suchen europaweit Leute in allen Bereichen. Bewirb dich jetzt!">
         <div className="max-w-lg mx-auto text-center py-16">
-          <div
-            className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
-            style={{ background: "hsl(140 60% 45% / 0.15)" }}
-          >
-            <Send className="w-7 h-7" style={{ color: "hsl(140 60% 45%)" }} />
+          <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: "hsl(140 60% 45% / 0.12)" }}>
+            <Send className="w-7 h-7" style={{ color: "hsl(140 60% 40%)" }} />
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: "hsl(0 0% 100%)" }}>
-            Bewerbung gesendet!
-          </h2>
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-            Vielen Dank für dein Interesse! Wir melden uns so schnell wie möglich bei dir.
-          </p>
+          <h2 className="text-xl font-bold mb-2" style={{ color: "hsl(220 20% 15%)" }}>Bewerbung gesendet!</h2>
+          <p className="text-sm" style={{ color: "hsl(220 10% 45%)" }}>Vielen Dank für dein Interesse! Wir melden uns so schnell wie möglich bei dir.</p>
         </div>
       </PageLayout>
     );
@@ -107,98 +89,53 @@ const Jobs = () => {
   return (
     <PageLayout title="Jobs & Karriere" subtitle="Wir suchen europaweit Leute in allen Bereichen. Bewirb dich jetzt!">
       <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-5">
-        {/* Name */}
         <div>
           <label style={labelStyle}>Name</label>
-          <input value={form.name} onChange={set("name")} required style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.name} onChange={set("name")} required style={inputStyle} />
         </div>
-
-        {/* Alter */}
         <div>
           <label style={labelStyle}>Alter</label>
-          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} />
         </div>
-
-        {/* Instagram */}
         <div>
           <label style={labelStyle}>Instagram</label>
-          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} />
         </div>
-
-        {/* Stadt */}
         <div>
           <label style={labelStyle}>Stadt</label>
-          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} />
         </div>
-
-        {/* E-Mail */}
         <div>
           <label style={labelStyle}>E-Mail</label>
-          <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} />
         </div>
-
-        {/* Handynummer */}
         <div>
           <label style={labelStyle}>Handynummer</label>
-          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} className="focus:border-blue-500" />
+          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} />
         </div>
-
-        {/* Bereich */}
         <div>
           <label style={labelStyle}>Bereich</label>
-          <select
-            value={form.bereich}
-            onChange={set("bereich")}
-            required
-            style={{
-              ...inputStyle,
-              colorScheme: "dark",
-              appearance: "auto" as any,
-            }}
-            className="focus:border-blue-500"
-          >
+          <select value={form.bereich} onChange={set("bereich")} required style={inputStyle}>
             <option value="">Bitte wählen...</option>
-            {bereiche.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
+            {bereiche.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
         </div>
-
-        {/* Kommentar */}
         <div>
           <label style={labelStyle}>Kommentar</label>
-          <textarea
-            value={form.kommentar}
-            onChange={set("kommentar")}
-            rows={4}
-            style={{ ...inputStyle, resize: "vertical" }}
-            className="focus:border-blue-500"
-          />
+          <textarea value={form.kommentar} onChange={set("kommentar")} rows={4} style={{ ...inputStyle, resize: "vertical" as const }} />
         </div>
-
-        {/* AGB Checkbox */}
         <label className="flex items-start gap-3 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={agb}
-            onChange={(e) => setAgb(e.target.checked)}
-            className="mt-1 accent-blue-500"
-            style={{ width: "16px", height: "16px" }}
-          />
-          <span className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+          <input type="checkbox" checked={agb} onChange={(e) => setAgb(e.target.checked)} className="mt-1 accent-blue-500" style={{ width: "16px", height: "16px" }} />
+          <span className="text-xs leading-relaxed" style={{ color: "hsl(220 10% 45%)" }}>
             Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-            <Link to="/datenschutz" className="underline" style={{ color: "hsl(230 80% 55%)" }}>Datenschutzerklärung</Link>
+            <Link to="/datenschutz" className="underline" style={{ color: "hsl(220 60% 50%)" }}>Datenschutzerklärung</Link>
             {" & "}
-            <Link to="/agb" className="underline" style={{ color: "hsl(230 80% 55%)" }}>AGB</Link> zu.
+            <Link to="/agb" className="underline" style={{ color: "hsl(220 60% 50%)" }}>AGB</Link> zu.
           </span>
         </label>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={submitting || !agb}
+        <button type="submit" disabled={submitting || !agb}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: "hsl(230 80% 55%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(220 60% 50%)", color: "hsl(0 0% 100%)" }}
         >
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Absenden
