@@ -1226,7 +1226,7 @@ const AttachmentsTab = () => {
         {attachments.length > 0 && (
           <div className="space-y-2 mb-4">
             {attachments.map((att) => (
-              <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: att.enabled ? "hsl(330 80% 55% / 0.05)" : "hsl(0 0% 100% / 0.02)", border: `1px solid ${att.enabled ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)"}` }}>
+              <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: att.enabled ? "hsl(230 80% 56% / 0.05)" : "hsl(0 0% 100% / 0.02)", border: `1px solid ${att.enabled ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)"}` }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: att.type === "pdf" ? "hsl(0 70% 50% / 0.15)" : "hsl(210 70% 50% / 0.15)", color: att.type === "pdf" ? "hsl(0 70% 50%)" : "hsl(210 70% 50%)" }}>
                   {att.type === "pdf" ? "PDF" : "IMG"}
                 </div>
