@@ -187,22 +187,22 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
   const bg = tpl.gradient.enabled ? gradientCSS(tpl.gradient, tpl.background_color) : tpl.background_color;
 
   return (
-    <div style={{ ...aspectStyle, background: bg, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)" }}>
-      {/* Blurred background image (Magic Ticket) */}
-      {tpl.magic_ticket_enabled && previewImageUrl && (
-        <div style={{
-          position: "absolute", inset: 0, zIndex: 0,
-          backgroundImage: `url(${previewImageUrl})`,
-          backgroundSize: "cover", backgroundPosition: "center",
-          filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
-          opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
-          transform: "scale(1.1)",
-        }} />
-      )}
-      <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
-      <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", display: "flex", flexDirection: isDinLang ? "row" : "column", gap: isDinLang ? "12px" : "16px", height: isDinLang ? "calc(100% - 4px)" : "auto", position: "relative", zIndex: 1 }}>
-        {/* Left / Top */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
+    <div style={{ ...aspectStyle, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)", display: "flex", flexDirection: isDinLang ? "row" : "column" }}>
+      {/* Left / Info side */}
+      <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* Blurred background image (Magic Ticket) – only on info side */}
+        {tpl.magic_ticket_enabled && previewImageUrl && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 0,
+            backgroundImage: `url(${previewImageUrl})`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
+            opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
+            transform: "scale(1.15)",
+          }} />
+        )}
+        <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
+        <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
           {tpl.logo_url && (
             <div style={{ marginBottom: "6px" }}>
               <div style={{ width: isDinLang ? "32px" : "48px", height: isDinLang ? "32px" : "48px", borderRadius: "6px", background: `${tpl.accent_color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color, fontWeight: 700 }}>LOGO</div>
@@ -252,20 +252,25 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
             </div>
           )}
         </div>
-
-        {/* QR section */}
-        {tpl.show_qr_code && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33`, paddingLeft: "12px" } : {}) }}>
-            {tpl.show_category && (
-              <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
-            )}
-            <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
-            </div>
-            <div style={{ fontSize: "6px", color: textCol, opacity: 0.4, marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}>ABCD-EFGH-IJKL</div>
-          </div>
-        )}
       </div>
+
+      {/* QR section – solid background, no blur */}
+      {tpl.show_qr_code && (
+        <div style={{
+          background: bg,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          padding: isDinLang ? "12px 16px" : "20px 24px",
+          ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33` } : { borderTop: `1px dashed ${textCol}33` }),
+        }}>
+          {tpl.show_category && (
+            <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
+          )}
+          <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
+          </div>
+          <div style={{ fontSize: "6px", color: textCol, opacity: 0.4, marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}>ABCD-EFGH-IJKL</div>
+        </div>
+      )}
     </div>
   );
 };
