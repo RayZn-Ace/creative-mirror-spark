@@ -763,7 +763,7 @@ const EmailTab = () => {
             <div className="flex flex-wrap gap-1.5 mt-2">
               {["{{event_title}}", "{{date}}", "{{ticket_count}}"].map(p => (
                 <button key={p} onClick={() => setTpl(prev => ({ ...prev, subject: prev.subject + " " + p }))}
-                  className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "hsl(330 80% 55% / 0.1)", color: "hsl(330 80% 55%)" }}>{p}</button>
+                  className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "hsl(230 80% 56% / 0.1)", color: "hsl(230 80% 56%)" }}>{p}</button>
               ))}
             </div>
           </div>
