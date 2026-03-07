@@ -256,12 +256,14 @@ export default function Termine() {
           });
 
         if (cityEvents.length > 0) {
-          const city = s.city || "Unknown";
-          const firstEvent = events.find((e) => e.series_id === s.id);
+          const cityFromSeries = (s.city || "").trim();
+          const cityFromEvent = (firstEvent?.city || "").trim();
+          const cityForCoords = cityFromSeries || cityFromEvent;
+          const city = cityFromSeries || firstEvent?.title || cityFromEvent || s.slug || "Unbekannt";
           groups.push({
             city,
             slug: s.slug,
-            coords: getCityCoords(city),
+            coords: cityForCoords ? getCityCoords(cityForCoords) : null,
             km: null,
             events: cityEvents,
             imageUrl: s.image_url,
