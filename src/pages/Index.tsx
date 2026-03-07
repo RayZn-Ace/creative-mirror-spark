@@ -545,7 +545,7 @@ export default function Index() {
       <Footer gt={gt} />
       <BottomNav />
       <SupportChatbot />
-      <SocialProofToast />
+      
     </div>
   );
 }
