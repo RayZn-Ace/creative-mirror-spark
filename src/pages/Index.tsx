@@ -11,7 +11,7 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import SupportChatbot from "@/components/SupportChatbot";
 
-import { events, getNextEvent } from "@/data/events";
+import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
 import heroBg from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
