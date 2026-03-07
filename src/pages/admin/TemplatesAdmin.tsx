@@ -1235,7 +1235,7 @@ const AttachmentsTab = () => {
                   <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{att.size_kb} KB</div>
                 </div>
                 <button onClick={() => toggleAttachment(att.id)} className="px-2 py-0.5 rounded text-[10px] font-bold"
-                  style={{ background: att.enabled ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: att.enabled ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}>
+                  style={{ background: att.enabled ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: att.enabled ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
                   {att.enabled ? "AN" : "AUS"}
                 </button>
                 <button onClick={() => removeAttachment(att.id)}><X className="w-4 h-4" style={{ color: "hsl(0 70% 50%)" }} /></button>
