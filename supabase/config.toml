@@ -1,4 +1,1 @@
 project_id = "qsjmnnnhfeupsxptjvsa"
-
-[functions.clean-image]
-verify_jwt = false
