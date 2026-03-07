@@ -326,7 +326,7 @@ const cs: BaseTranslations = {
   freeTicketsTitle: "Vstupenky zdarma a více?", whatsappJoin: "Připoj se", whatsappDesc: "Staň se součástí naší WhatsApp komunity.",
   moreCities: "Další města", moreCitiesDesc: "Zajisti si vstupenky do dalších měst", kmAway: "km daleko",
   footerQuestion: "Dotazy, problémy nebo žádosti o rezervaci?", footerContact: "Kontaktuj nás:",
-  footerOrganizer: "partyticket.app", imprint: "Impressum", privacy: "Ochrana soukromí", terms: "Obchodní podmínky",
+  footerOrganizer: "Nightlife Generation", imprint: "Impressum", privacy: "Ochrana soukromí", terms: "Obchodní podmínky",
   loading: "Načítání...",
   weekdays: ["Neděle","Pondělí","Úterý","Středa","Čtvrtek","Pátek","Sobota"],
   monthsShort: ["","Led","Úno","Bře","Dub","Kvě","Čvn","Čvc","Srp","Zář","Říj","Lis","Pro"],
