@@ -996,9 +996,13 @@ const TicketTemplateAdmin = () => {
 
               // Apply category override to tpl
               let displayTpl = tpl;
+              let categoryName: string | undefined;
               if (previewCategoryId) {
                 const overrideKey = previewCategoryId.toUpperCase();
                 const override = tpl.category_overrides?.[overrideKey];
+                // Find the category name from ticketCategories
+                const cat = uniqueCategories.find(c => c.category_group === previewCategoryId);
+                categoryName = cat?.name;
                 if (override) {
                   displayTpl = {
                     ...tpl,
@@ -1010,10 +1014,13 @@ const TicketTemplateAdmin = () => {
                 }
               }
 
+              // If a series is selected, force magic ticket enabled for preview
+              const previewTpl = previewSeriesId ? { ...displayTpl, magic_ticket_enabled: true } : displayTpl;
+
               return (
                 <>
                   <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                    <TicketPreview tpl={displayTpl} previewImageUrl={previewImg} />
+                    <TicketPreview tpl={previewTpl} previewImageUrl={previewImg} previewCategoryName={categoryName} />
                   </div>
                   <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                     {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
