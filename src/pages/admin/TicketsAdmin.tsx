@@ -457,7 +457,7 @@ const TicketsAdmin = () => {
                     {(editing.features || []).length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {(editing.features || []).map((f, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ background: "hsl(330 80% 55% / 0.12)", color: "hsl(330 80% 65%)" }}>
+                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 65%)" }}>
                             {f}
                             <button onClick={() => removeFeature(i)} className="hover:text-white"><X className="w-3 h-3" /></button>
                           </span>
