@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { Instagram, Youtube, MessageCircle, Facebook } from "lucide-react";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
+import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
 
 const socialLinks = [
-  { icon: Instagram, href: "https://www.instagram.com/partyticket.app", label: "Instagram" },
-  { icon: Facebook, href: "https://www.facebook.com/partyticket", label: "Facebook" },
-  { icon: Youtube, href: "https://www.youtube.com/@partyticket", label: "YouTube" },
+  { icon: Instagram, href: "https://www.instagram.com/nightlife.generation", label: "Instagram" },
+  { icon: Facebook, href: "https://www.facebook.com/nightlifegeneration", label: "Facebook" },
+  { icon: Youtube, href: "https://www.youtube.com/@nightlifegeneration", label: "YouTube" },
 ];
 
 export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
@@ -17,9 +18,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="mb-4">
-              <span className="font-display leading-none tracking-wide">
-                <span className="block text-xl text-gradient-primary">partyticket</span>
-              </span>
+              <img src={nightlifeLogo} alt="Nightlife Generation" className="h-10 w-auto" />
             </div>
             <p className="text-sm text-muted-foreground mb-4">{gt.footerAboutDesc}</p>
             <div className="flex gap-3">
@@ -51,7 +50,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           <div>
             <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="mailto:info@partyticket.app" className="hover:text-primary transition-colors">info@partyticket.app</a>
+              <a href="mailto:info@nightlifegeneration.de" className="hover:text-primary transition-colors">info@nightlifegeneration.de</a>
               <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 hover:text-primary transition-colors">
                 <MessageCircle className="w-4 h-4" />
@@ -71,7 +70,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          <p className="font-body">© {new Date().getFullYear()} partyticket.app</p>
+          <p className="font-body">© {new Date().getFullYear()} Nightlife Generation</p>
         </div>
       </div>
     </footer>
