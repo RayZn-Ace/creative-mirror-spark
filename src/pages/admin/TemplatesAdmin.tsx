@@ -360,8 +360,8 @@ const TemplatesAdmin = () => {
               onClick={() => setActiveTab(tab.id)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex-1 justify-center"
               style={{
-                background: active ? "hsl(330 80% 55% / 0.15)" : "transparent",
-                color: active ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+                background: active ? "hsl(230 80% 56% / 0.15)" : "transparent",
+                color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
               }}
             >
               <tab.icon className="w-4 h-4" />
