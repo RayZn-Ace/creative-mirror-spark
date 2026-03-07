@@ -219,6 +219,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Heart,
     gradient: "linear-gradient(135deg, #1e3a5f, #c9a84c)",
     headerGradient: "linear-gradient(135deg, #1e3a5f, #2a5298)",
+    colorSchemeId: "elegant-gold",
     blocks: () => [
       createBlock("heading", { text: "🎶 EVENT HIGHLIGHTS", level: 1, align: "center", color: "#c9a84c" }),
       createBlock("text", { text: "Die besten Events in deiner Stadt", align: "center", bold: true, color: "#ffffff" }),
