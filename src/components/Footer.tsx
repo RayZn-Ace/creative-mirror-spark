@@ -18,9 +18,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="mb-4">
-              <span className="font-display leading-none tracking-wide">
-                <span className="block text-xl text-gradient-primary">partyticket</span>
-              </span>
+              <img src={nightlifeLogo} alt="Nightlife Generation" className="h-10 w-auto" />
             </div>
             <p className="text-sm text-muted-foreground mb-4">{gt.footerAboutDesc}</p>
             <div className="flex gap-3">
