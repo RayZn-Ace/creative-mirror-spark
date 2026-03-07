@@ -158,6 +158,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Zap,
     gradient: "linear-gradient(135deg, #00f5a0, #00d9f5)",
     headerGradient: "linear-gradient(135deg, #0a0a0a, #1a1a2e)",
+    colorSchemeId: "dark-neon",
     blocks: () => [
       createBlock("heading", { text: "⚡ NEON NIGHTS ⚡", level: 1, align: "center", color: "#00f5a0" }),
       createBlock("spacer", { height: 8 }),
