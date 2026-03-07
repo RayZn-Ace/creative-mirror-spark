@@ -881,7 +881,7 @@ const TicketTemplateAdmin = () => {
                         {preset.emoji} {preset.label}
                       </p>
                       <div className="flex justify-center p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.04)" }}>
-                        <TicketPreview tpl={mergedTpl} />
+                        <TicketPreview tpl={mergedTpl} previewImageUrl={DEMO_EVENT_IMAGE} />
                       </div>
                     </div>
                   );
