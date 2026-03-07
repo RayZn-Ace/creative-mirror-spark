@@ -205,40 +205,6 @@ const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
   );
 };
 
-/* ─── Ticket Categories ─── */
-const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
-  const tickets = [
-    { name: gt.ticketRegular, desc: gt.ticketRegularDesc, price: "Ab 19,99€", popular: false },
-    { name: gt.ticketDeluxe, desc: gt.ticketDeluxeDesc, price: "Ab 29,99€", popular: false },
-    { name: gt.ticketFan, desc: gt.ticketFanDesc, price: "Ab 49,99€", popular: true },
-  ];
-
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container">
-        <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-          {gt.ticketCatTitle1} <span className="text-gradient-primary">{gt.ticketCatTitle2}</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">{gt.ticketCatDesc}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
-          {tickets.map((tk, i) => (
-            <motion.div key={tk.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              className={`relative flex flex-col p-6 rounded-xl border transition-all hover:scale-[1.02] ${tk.popular ? "border-primary bg-primary/5 glow-primary" : "border-border bg-card hover:border-primary/30"}`}>
-              {tk.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">{gt.ticketCatPopular}</span>}
-              <h3 className="font-display text-xl mb-2 text-foreground">{tk.name}</h3>
-              <p className="text-sm text-muted-foreground flex-1 mb-4">{tk.desc}</p>
-              <p className="font-display text-2xl text-gold mb-4">{tk.price}</p>
-              <Link to="/termine"
-                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
-                <Ticket className="w-4 h-4" />{gt.ticketCatSecure}
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
