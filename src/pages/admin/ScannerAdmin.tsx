@@ -423,8 +423,8 @@ const ScannerAdmin = () => {
             onClick={() => setTab(t.key)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all"
             style={{
-              background: tab === t.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
-              color: tab === t.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+               background: tab === t.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: tab === t.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
