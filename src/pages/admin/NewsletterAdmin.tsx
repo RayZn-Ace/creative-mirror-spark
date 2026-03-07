@@ -71,6 +71,7 @@ interface NewsletterTemplate {
   icon: any;
   gradient: string;
   headerGradient: string;
+  colorSchemeId?: string;
   blocks: () => Block[];
 }
 
