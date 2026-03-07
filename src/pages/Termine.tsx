@@ -108,7 +108,7 @@ const termineI18n: Record<string, Record<string, string>> = {
     moreDates: "weitere Termine",
   },
   en: {
-    title: "ALL DATES",
+    title: "ALL EVENTS",
     subtitle: "Find your event nearby",
     searchPlaceholder: "Search city or venue...",
     nearYou: "Near you",
