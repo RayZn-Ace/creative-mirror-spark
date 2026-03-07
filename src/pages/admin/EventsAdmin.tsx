@@ -2228,7 +2228,7 @@ const EventsAdmin = () => {
               Ausverkauft
             </span>
           )}
-          {!event.title.toLowerCase().includes("mamma mia") && (
+          {!event.title.toLowerCase().includes("mamma mia") && !event.title.toLowerCase().includes("mädelsabend") && !event.title.toLowerCase().includes("madelsabend") && (
             <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 65%)" }}>
               16+
             </span>
