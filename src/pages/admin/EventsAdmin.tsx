@@ -999,7 +999,7 @@ const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange
           ) : (
             <>
               <Upload className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-              <span className="text-xs font-bold" style={{ color: "hsl(330 80% 55%)" }}>Eigene Datei hochladen</span>
+              <span className="text-xs font-bold" style={{ color: "hsl(230 80% 56%)" }}>Eigene Datei hochladen</span>
               <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>PNG oder JPEG (1200 x 640px)</span>
             </>
           )}
