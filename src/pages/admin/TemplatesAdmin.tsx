@@ -803,7 +803,7 @@ const EmailTab = () => {
                     <button key={bt.type} onClick={() => addBlock(bt.type)}
                       className="flex items-center gap-2 p-2.5 rounded-lg text-left transition-all hover:scale-[1.02]"
                       style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)" }}>
-                      <bt.icon className="w-4 h-4 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                      <bt.icon className="w-4 h-4 shrink-0" style={{ color: "hsl(230 80% 56%)" }} />
                       <div>
                         <div className="text-[11px] font-bold">{bt.label}</div>
                         <div className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{bt.desc}</div>
