@@ -2300,9 +2300,6 @@ const EventsAdmin = () => {
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
         {[
-          { label: "Nur Open Air", active: filterOpenAir, toggle: () => setFilterOpenAir(!filterOpenAir) },
-          { label: "Ausverkaufte ausblenden", active: filterSoldOut === "hide", toggle: () => setFilterSoldOut(filterSoldOut === "hide" ? "all" : "hide") },
-          { label: "Nur Ausverkaufte", active: filterSoldOut === "only", toggle: () => setFilterSoldOut(filterSoldOut === "only" ? "all" : "only") },
           { label: "16+ Events", active: filter16Plus, toggle: () => setFilter16Plus(!filter16Plus) },
           { label: "Mamma Mia Events", active: filterMammaMia, toggle: () => setFilterMammaMia(!filterMammaMia) },
           { label: "Acts", active: filterActs, toggle: () => setFilterActs(!filterActs) },
@@ -2320,9 +2317,9 @@ const EventsAdmin = () => {
             {f.label}
           </button>
         ))}
-        {(filterOpenAir || filterSoldOut !== "all" || filter16Plus || filterMammaMia || filterActs) && (
+        {(filter16Plus || filterMammaMia || filterActs) && (
           <button
-            onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); setFilter16Plus(false); setFilterMammaMia(false); setFilterActs(false); }}
+            onClick={() => { setFilter16Plus(false); setFilterMammaMia(false); setFilterActs(false); }}
             className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
             style={{ color: "hsl(230 80% 56%)" }}
           >
