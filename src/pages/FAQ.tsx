@@ -74,7 +74,7 @@ const faqData: FAQCategory[] = [
       },
       {
         q: "Was ist ein Muttizettel und wo finde ich ihn?",
-        a: "Der Muttizettel ist eine Einverständniserklärung deiner Eltern, die es dir erlaubt, als Minderjährige/r an unseren Events teilzunehmen. Du findest ihn auf unserer Website unter dem Menüpunkt „Muttizettel". Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.",
+        a: 'Der Muttizettel ist eine Einverständniserklärung deiner Eltern, die es dir erlaubt, als Minderjährige/r an unseren Events teilzunehmen. Du findest ihn auf unserer Website unter dem Menüpunkt "Muttizettel". Bitte fülle ihn vollständig aus und bringe ihn zusammen mit einer volljährigen Begleitperson mit.',
       },
       {
         q: "Was muss ich zum Einlass mitbringen?",
