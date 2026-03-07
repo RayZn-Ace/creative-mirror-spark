@@ -344,7 +344,7 @@ const TemplatesAdmin = () => {
     <div className="max-w-5xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Palette className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+        <Palette className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
         <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>
           Vorlagen
         </h1>
@@ -360,8 +360,8 @@ const TemplatesAdmin = () => {
               onClick={() => setActiveTab(tab.id)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex-1 justify-center"
               style={{
-                background: active ? "hsl(330 80% 55% / 0.15)" : "transparent",
-                color: active ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+                background: active ? "hsl(230 80% 56% / 0.15)" : "transparent",
+                color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
               }}
             >
               <tab.icon className="w-4 h-4" />
@@ -612,7 +612,7 @@ const EmailTab = () => {
               </div>
             ))}
             <button onClick={() => updateBlock(block.id, { events: [...block.events, { title: "", date: "", location: "" }] })}
-              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg" style={{ color: "hsl(330 80% 55%)", background: "hsl(330 80% 55% / 0.1)" }}>
+              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg" style={{ color: "hsl(230 80% 56%)", background: "hsl(230 80% 56% / 0.1)" }}>
               <Plus className="w-3 h-3" /> Event hinzufügen
             </button>
           </div>
@@ -725,7 +725,7 @@ const EmailTab = () => {
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern
         </button>
@@ -763,7 +763,7 @@ const EmailTab = () => {
             <div className="flex flex-wrap gap-1.5 mt-2">
               {["{{event_title}}", "{{date}}", "{{ticket_count}}"].map(p => (
                 <button key={p} onClick={() => setTpl(prev => ({ ...prev, subject: prev.subject + " " + p }))}
-                  className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "hsl(330 80% 55% / 0.1)", color: "hsl(330 80% 55%)" }}>{p}</button>
+                  className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "hsl(230 80% 56% / 0.1)", color: "hsl(230 80% 56%)" }}>{p}</button>
               ))}
             </div>
           </div>
@@ -793,7 +793,7 @@ const EmailTab = () => {
             <div className="mt-3 relative">
               <button onClick={() => setShowBlockMenu(!showBlockMenu)}
                 className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl text-xs font-bold transition-all"
-                style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(330 80% 55%)", border: "1px dashed hsl(330 80% 55% / 0.3)" }}>
+                style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(230 80% 56%)", border: "1px dashed hsl(230 80% 56% / 0.3)" }}>
                 <Plus className="w-4 h-4" /> Block hinzufügen
               </button>
               {showBlockMenu && (
@@ -803,7 +803,7 @@ const EmailTab = () => {
                     <button key={bt.type} onClick={() => addBlock(bt.type)}
                       className="flex items-center gap-2 p-2.5 rounded-lg text-left transition-all hover:scale-[1.02]"
                       style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.7)" }}>
-                      <bt.icon className="w-4 h-4 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                      <bt.icon className="w-4 h-4 shrink-0" style={{ color: "hsl(230 80% 56%)" }} />
                       <div>
                         <div className="text-[11px] font-bold">{bt.label}</div>
                         <div className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{bt.desc}</div>
@@ -832,7 +832,7 @@ const EmailTab = () => {
               ].map(t => (
                 <button key={t.key} onClick={() => setTpl(p => ({ ...p, [t.key]: !p[t.key] }))}
                   className="px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-                  style={{ background: tpl[t.key] ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${tpl[t.key] ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.08)"}`, color: tpl[t.key] ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+                  style={{ background: tpl[t.key] ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${tpl[t.key] ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}`, color: tpl[t.key] ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)" }}>
                   {t.label}
                 </button>
               ))}
@@ -983,7 +983,7 @@ const InvoiceTab = () => {
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern
         </button>
@@ -1075,7 +1075,7 @@ const InvoiceTab = () => {
                 <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Bankdaten im Footer anzeigen</span>
                 <button onClick={() => setTpl(p => ({ ...p, show_bank_details: !p.show_bank_details }))}
                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold"
-                  style={{ background: tpl.show_bank_details ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: tpl.show_bank_details ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}>
+                  style={{ background: tpl.show_bank_details ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: tpl.show_bank_details ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
                   {tpl.show_bank_details ? "AN" : "AUS"}
                 </button>
               </div>
@@ -1211,7 +1211,7 @@ const AttachmentsTab = () => {
   return (
     <div className="space-y-5">
       <div className="flex justify-end">
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern
         </button>
@@ -1226,7 +1226,7 @@ const AttachmentsTab = () => {
         {attachments.length > 0 && (
           <div className="space-y-2 mb-4">
             {attachments.map((att) => (
-              <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: att.enabled ? "hsl(330 80% 55% / 0.05)" : "hsl(0 0% 100% / 0.02)", border: `1px solid ${att.enabled ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)"}` }}>
+              <div key={att.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: att.enabled ? "hsl(230 80% 56% / 0.05)" : "hsl(0 0% 100% / 0.02)", border: `1px solid ${att.enabled ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)"}` }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style={{ background: att.type === "pdf" ? "hsl(0 70% 50% / 0.15)" : "hsl(210 70% 50% / 0.15)", color: att.type === "pdf" ? "hsl(0 70% 50%)" : "hsl(210 70% 50%)" }}>
                   {att.type === "pdf" ? "PDF" : "IMG"}
                 </div>
@@ -1235,7 +1235,7 @@ const AttachmentsTab = () => {
                   <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{att.size_kb} KB</div>
                 </div>
                 <button onClick={() => toggleAttachment(att.id)} className="px-2 py-0.5 rounded text-[10px] font-bold"
-                  style={{ background: att.enabled ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: att.enabled ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}>
+                  style={{ background: att.enabled ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: att.enabled ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
                   {att.enabled ? "AN" : "AUS"}
                 </button>
                 <button onClick={() => removeAttachment(att.id)}><X className="w-4 h-4" style={{ color: "hsl(0 70% 50%)" }} /></button>
