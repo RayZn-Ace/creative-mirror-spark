@@ -383,6 +383,100 @@ export type Database = {
           },
         ]
       }
+      media_albums: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          event_id: string | null
+          id: string
+          location: string | null
+          photo_count: number
+          slug: string
+          sort_order: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          event_id?: string | null
+          id?: string
+          location?: string | null
+          photo_count?: number
+          slug: string
+          sort_order?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          event_id?: string | null
+          id?: string
+          location?: string | null
+          photo_count?: number
+          slug?: string
+          sort_order?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_albums_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_photos: {
+        Row: {
+          album_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number | null
+          thumbnail_url: string | null
+        }
+        Insert: {
+          album_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+        }
+        Update: {
+          album_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number | null
+          thumbnail_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_photos_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "media_albums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muttizettel_submissions: {
         Row: {
           child_address: string | null
