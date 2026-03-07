@@ -2349,9 +2349,9 @@ const EventsAdmin = () => {
             onClick={() => setActiveTab(tab.key)}
             className="flex-1 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
             style={{
-              background: activeTab === tab.key ? "hsl(330 80% 50% / 0.15)" : "transparent",
-              color: activeTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-              border: activeTab === tab.key ? "1px solid hsl(330 80% 50% / 0.3)" : "1px solid transparent",
+              background: activeTab === tab.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: activeTab === tab.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+              border: activeTab === tab.key ? "1px solid hsl(230 80% 56% / 0.3)" : "1px solid transparent",
             }}
           >
             {tab.label} ({tab.count})
