@@ -650,9 +650,9 @@ const ScannerAdmin = () => {
                   onClick={() => { setScanMode("manual"); resetInlineScan(); }}
                   className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
                   style={{
-                    background: scanMode === "manual" ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                    color: scanMode === "manual" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                    border: `1px solid ${scanMode === "manual" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    background: scanMode === "manual" ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                    color: scanMode === "manual" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                    border: `1px solid ${scanMode === "manual" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
                   }}
                 >
                   <Keyboard className="w-3.5 h-3.5" /> Manuell
