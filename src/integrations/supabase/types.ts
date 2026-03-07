@@ -383,6 +383,92 @@ export type Database = {
           },
         ]
       }
+      muttizettel_submissions: {
+        Row: {
+          child_address: string | null
+          child_birthdate: string
+          child_city: string | null
+          child_name: string
+          child_phone: string | null
+          child_zip: string | null
+          companion_birthdate: string | null
+          companion_name: string | null
+          companion_phone: string | null
+          created_at: string
+          event_id: string | null
+          event_name: string | null
+          id: string
+          notes: string | null
+          parent_address: string | null
+          parent_birthdate: string | null
+          parent_city: string | null
+          parent_country: string | null
+          parent_email: string | null
+          parent_name: string
+          parent_phone: string
+          parent_zip: string | null
+          status: string
+        }
+        Insert: {
+          child_address?: string | null
+          child_birthdate: string
+          child_city?: string | null
+          child_name: string
+          child_phone?: string | null
+          child_zip?: string | null
+          companion_birthdate?: string | null
+          companion_name?: string | null
+          companion_phone?: string | null
+          created_at?: string
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          notes?: string | null
+          parent_address?: string | null
+          parent_birthdate?: string | null
+          parent_city?: string | null
+          parent_country?: string | null
+          parent_email?: string | null
+          parent_name: string
+          parent_phone: string
+          parent_zip?: string | null
+          status?: string
+        }
+        Update: {
+          child_address?: string | null
+          child_birthdate?: string
+          child_city?: string | null
+          child_name?: string
+          child_phone?: string | null
+          child_zip?: string | null
+          companion_birthdate?: string | null
+          companion_name?: string | null
+          companion_phone?: string | null
+          created_at?: string
+          event_id?: string | null
+          event_name?: string | null
+          id?: string
+          notes?: string | null
+          parent_address?: string | null
+          parent_birthdate?: string | null
+          parent_city?: string | null
+          parent_country?: string | null
+          parent_email?: string | null
+          parent_name?: string
+          parent_phone?: string
+          parent_zip?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muttizettel_submissions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_list_members: {
         Row: {
           created_at: string
