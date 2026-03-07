@@ -2157,34 +2157,43 @@ const EventsAdmin = () => {
       })
     : extraFiltered;
 
-  const grouped = filteredEvents.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
-    (acc, event) => {
-      const sid = event.series_id || "__none__";
-      let group = acc.find((g) => (g.seriesId || "__none__") === sid);
-      if (!group) {
-        const city = event.series_id ? seriesCityMap[event.series_id] : event.city;
-        group = { seriesId: event.series_id, seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie", country: getCountry(city || null), events: [] };
-        acc.push(group);
-      }
-      group.events.push(event);
-      return acc;
-    },
-    []
-  );
+  // Build hierarchy: Country → City → Series → Events
+  type SeriesGroup = { seriesId: string | null; seriesTitle: string; events: EventRow[] };
+  type CityGroup = { city: string; seriesGroups: SeriesGroup[] };
+  type CountryGroup = { country: string; cityGroups: CityGroup[] };
 
-  // Sort groups alphabetically by series title
-  grouped.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
+  const countryMap = new Map<string, Map<string, Map<string, SeriesGroup>>>();
 
-  // Group by country
-  const countryGroups = grouped.reduce<Record<string, typeof grouped>>((acc, g) => {
-    if (!acc[g.country]) acc[g.country] = [];
-    acc[g.country].push(g);
-    return acc;
-  }, {});
-  const sortedCountries = Object.keys(countryGroups).sort((a, b) => {
-    if (a === "Deutschland") return -1;
-    if (b === "Deutschland") return 1;
-    return a.localeCompare(b, "de");
+  for (const event of filteredEvents) {
+    const city = event.series_id ? (seriesCityMap[event.series_id] || event.city || "Unbekannt") : (event.city || "Unbekannt");
+    const country = getCountry(city);
+    const seriesKey = event.series_id || "__none__";
+    const seriesTitle = event.series_id ? (seriesMap[event.series_id] || "Unbekannte Serie") : "Ohne Serie";
+
+    if (!countryMap.has(country)) countryMap.set(country, new Map());
+    const cityMap = countryMap.get(country)!;
+    if (!cityMap.has(city)) cityMap.set(city, new Map());
+    const seriesGroupMap = cityMap.get(city)!;
+    if (!seriesGroupMap.has(seriesKey)) seriesGroupMap.set(seriesKey, { seriesId: event.series_id, seriesTitle, events: [] });
+    seriesGroupMap.get(seriesKey)!.events.push(event);
+  }
+
+  const hierarchyData: CountryGroup[] = [];
+  for (const [country, cityMap] of countryMap) {
+    const cityGroups: CityGroup[] = [];
+    for (const [city, seriesGroupMap] of cityMap) {
+      const seriesGroups = Array.from(seriesGroupMap.values());
+      seriesGroups.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
+      cityGroups.push({ city, seriesGroups });
+    }
+    cityGroups.sort((a, b) => a.city.localeCompare(b.city, "de"));
+    hierarchyData.push({ country, cityGroups });
+  }
+
+  hierarchyData.sort((a, b) => {
+    if (a.country === "Deutschland") return -1;
+    if (b.country === "Deutschland") return 1;
+    return a.country.localeCompare(b.country, "de");
   });
 
   // When searching, override collapse: everything is expanded
