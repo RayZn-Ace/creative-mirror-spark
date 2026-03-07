@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Save, Loader2, Ticket, Plus, X, Upload, Eye, Type, Image, ListChecks, GripVertical, ChevronUp, ChevronDown, Sparkles, Trash2 } from "lucide-react";
+import { Save, Loader2, Ticket, Plus, X, Upload, Eye, Type, Image, ListChecks, GripVertical, ChevronUp, ChevronDown, Sparkles } from "lucide-react";
 
 /* ─── Types ─── */
 interface ContentBlock {
