@@ -197,14 +197,17 @@ const TicketPreview = ({ tpl, previewImageUrl, previewCategoryName }: { tpl: Tic
         <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
           {/* Blurred background image (Magic Ticket) – only on info side */}
           {tpl.magic_ticket_enabled && previewImageUrl && (
-            <div style={{
-              position: "absolute", inset: 0, zIndex: 0,
-              backgroundImage: `url(${previewImageUrl})`,
-              backgroundSize: "cover", backgroundPosition: "center",
-              filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
-              opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
-              transform: "scale(1.15)",
-            }} />
+            <div
+              key={`magic-bg-${tpl.magic_ticket_blur}-${tpl.magic_ticket_opacity}`}
+              style={{
+                position: "absolute", inset: 0, zIndex: 0,
+                backgroundImage: `url(${previewImageUrl})`,
+                backgroundSize: "cover", backgroundPosition: "center",
+                filter: `blur(${tpl.magic_ticket_blur ?? 20}px)`,
+                opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
+                transform: "scale(1.15)",
+              }}
+            />
           )}
           <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
             {tpl.logo_url && (
