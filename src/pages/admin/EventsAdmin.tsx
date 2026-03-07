@@ -1594,7 +1594,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                 <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                   Block: <strong style={{ color: "hsl(270 60% 70%)" }}>{selectedTemplate?.label}</strong> → {position === "end" ? "am Ende" : "am Anfang"}
                 </span>
-                <button onClick={apply} disabled={saving || selectedEvents.size === 0} className="px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                <button onClick={apply} disabled={saving || selectedEvents.size === 0} className="px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                   {saving ? "Wird angewendet..." : `Bei ${selectedEvents.size} Events hinzufügen`}
                 </button>
               </div>
