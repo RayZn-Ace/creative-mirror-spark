@@ -1087,7 +1087,9 @@ const NewsletterAdmin = () => {
     setShowTemplates(false);
     setSelectedBlock(null);
     // Auto-match a color scheme based on template
-    const matchScheme = COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
+    const matchScheme = template.colorSchemeId
+      ? COLOR_SCHEMES.find((cs) => cs.id === template.colorSchemeId)
+      : COLOR_SCHEMES.find((cs) => cs.headerGradient === template.headerGradient);
     if (matchScheme) applyColorScheme(matchScheme);
     toast.success(`Vorlage "${template.name}" geladen`);
   }, []);
