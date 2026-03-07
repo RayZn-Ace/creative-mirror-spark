@@ -403,7 +403,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             <button onClick={() => setEditingTicket(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
               Abbrechen
             </button>
-            <button onClick={saveTicket} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+            <button onClick={saveTicket} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
               Speichern
             </button>
           </div>
@@ -999,7 +999,7 @@ const ImageUpload = ({ imageUrl, onChange }: { imageUrl: string | null; onChange
           ) : (
             <>
               <Upload className="w-8 h-8" style={{ color: "hsl(0 0% 100% / 0.2)" }} />
-              <span className="text-xs font-bold" style={{ color: "hsl(330 80% 55%)" }}>Eigene Datei hochladen</span>
+              <span className="text-xs font-bold" style={{ color: "hsl(230 80% 56%)" }}>Eigene Datei hochladen</span>
               <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>PNG oder JPEG (1200 x 640px)</span>
             </>
           )}
@@ -1040,7 +1040,7 @@ const BlockTemplatePicker = ({ onSelect }: { onSelect: (template: BlockTemplate)
             <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
               {TEMPLATE_CATEGORIES.map((cat) => (
                 <div key={cat}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(330 80% 55% / 0.8)" }}>{cat}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5 px-1" style={{ color: "hsl(230 80% 56% / 0.8)" }}>{cat}</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {BLOCK_TEMPLATES.filter((t) => t.category === cat).map((tmpl) => {
                       const Icon = tmpl.icon;
@@ -1051,7 +1051,7 @@ const BlockTemplatePicker = ({ onSelect }: { onSelect: (template: BlockTemplate)
                           className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
                           style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.75)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
                         >
-                          <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                          <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(230 80% 56%)" }} />
                           {tmpl.label}
                         </button>
                       );
@@ -1132,7 +1132,7 @@ const EventEditView = ({
               Event löschen
             </button>
           )}
-          <button onClick={onSave} className="px-6 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+          <button onClick={onSave} className="px-6 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
             Speichern
           </button>
         </div>
@@ -1422,9 +1422,9 @@ const EventEditView = ({
                       onClick={() => setEditing({ ...editing, service_fee_type: "absolute" })}
                       className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
                       style={{
-                        background: editing.service_fee_type === "absolute" ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)",
-                        color: editing.service_fee_type === "absolute" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                        border: `1px solid ${editing.service_fee_type === "absolute" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                        background: editing.service_fee_type === "absolute" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_type === "absolute" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_type === "absolute" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
                       }}
                     >
                       Absolut (€)
@@ -1433,9 +1433,9 @@ const EventEditView = ({
                       onClick={() => setEditing({ ...editing, service_fee_type: "percent" })}
                       className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
                       style={{
-                        background: editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)",
-                        color: editing.service_fee_type === "percent" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                        border: `1px solid ${editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                        background: editing.service_fee_type === "percent" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_type === "percent" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_type === "percent" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
                       }}
                     >
                       Prozentual (%)
@@ -1513,7 +1513,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
         <div className="p-5 max-h-[70vh] overflow-y-auto space-y-5">
           {step === 1 ? (
             <>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>Schritt 1: Block-Vorlage wählen</p>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(230 80% 56%)" }}>Schritt 1: Block-Vorlage wählen</p>
               <div className="space-y-3">
                 {TEMPLATE_CATEGORIES.map((cat) => (
                   <div key={cat}>
@@ -1528,9 +1528,9 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                             onClick={() => setSelectedTemplate(tmpl)}
                             className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
                             style={{
-                              background: isSelected ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                              color: isSelected ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.7)",
-                              border: `1px solid ${isSelected ? "hsl(330 80% 55% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
+                              background: isSelected ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                              color: isSelected ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.7)",
+                              border: `1px solid ${isSelected ? "hsl(230 80% 56% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
                             }}
                           >
                             <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -1558,14 +1558,14 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                 </div>
               </div>
               <div className="flex justify-end pt-2">
-                <button onClick={() => { if (selectedTemplate) setStep(2); else toast.error("Bitte wähle zuerst eine Vorlage"); }} className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                <button onClick={() => { if (selectedTemplate) setStep(2); else toast.error("Bitte wähle zuerst eine Vorlage"); }} className="px-5 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                   Weiter → Events wählen
                 </button>
               </div>
             </>
           ) : (
             <>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(230 80% 56%)" }}>
                 Schritt 2: Events auswählen ({selectedEvents.size} / {events.length})
               </p>
               <div className="flex items-center gap-2 mb-2">
@@ -1594,7 +1594,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                 <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                   Block: <strong style={{ color: "hsl(270 60% 70%)" }}>{selectedTemplate?.label}</strong> → {position === "end" ? "am Ende" : "am Anfang"}
                 </span>
-                <button onClick={apply} disabled={saving || selectedEvents.size === 0} className="px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                <button onClick={apply} disabled={saving || selectedEvents.size === 0} className="px-5 py-2 rounded-xl text-sm font-bold disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                   {saving ? "Wird angewendet..." : `Bei ${selectedEvents.size} Events hinzufügen`}
                 </button>
               </div>
@@ -2157,34 +2157,37 @@ const EventsAdmin = () => {
       })
     : extraFiltered;
 
-  const grouped = filteredEvents.reduce<{ seriesId: string | null; seriesTitle: string; country: string; events: EventRow[] }[]>(
-    (acc, event) => {
-      const sid = event.series_id || "__none__";
-      let group = acc.find((g) => (g.seriesId || "__none__") === sid);
-      if (!group) {
-        const city = event.series_id ? seriesCityMap[event.series_id] : event.city;
-        group = { seriesId: event.series_id, seriesTitle: event.series_id ? seriesMap[event.series_id] || "Unbekannte Serie" : "Ohne Serie", country: getCountry(city || null), events: [] };
-        acc.push(group);
-      }
-      group.events.push(event);
-      return acc;
-    },
-    []
-  );
+  // Build hierarchy: Country → City → Series → Events
+  interface HSeriesGroup { seriesId: string | null; seriesTitle: string; events: EventRow[] }
+  interface HCityGroup { city: string; seriesGroups: HSeriesGroup[] }
+  interface HCountryGroup { country: string; cityGroups: HCityGroup[] }
 
-  // Sort groups alphabetically by series title
-  grouped.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
+  const countryAcc: Record<string, Record<string, Record<string, HSeriesGroup>>> = {};
 
-  // Group by country
-  const countryGroups = grouped.reduce<Record<string, typeof grouped>>((acc, g) => {
-    if (!acc[g.country]) acc[g.country] = [];
-    acc[g.country].push(g);
-    return acc;
-  }, {});
-  const sortedCountries = Object.keys(countryGroups).sort((a, b) => {
-    if (a === "Deutschland") return -1;
-    if (b === "Deutschland") return 1;
-    return a.localeCompare(b, "de");
+  for (const event of filteredEvents) {
+    const city = event.series_id ? (seriesCityMap[event.series_id] || event.city || "Unbekannt") : (event.city || "Unbekannt");
+    const country = getCountry(city);
+    const seriesKey = event.series_id || "__none__";
+    const seriesTitle = event.series_id ? (seriesMap[event.series_id] || "Unbekannte Serie") : "Ohne Serie";
+
+    if (!countryAcc[country]) countryAcc[country] = {};
+    if (!countryAcc[country][city]) countryAcc[country][city] = {};
+    if (!countryAcc[country][city][seriesKey]) countryAcc[country][city][seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
+    countryAcc[country][city][seriesKey].events.push(event);
+  }
+
+  const hierarchyData: HCountryGroup[] = Object.entries(countryAcc).map(([country, cities]) => ({
+    country,
+    cityGroups: Object.entries(cities).map(([city, seriesObj]) => ({
+      city,
+      seriesGroups: Object.values(seriesObj).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de")),
+    })).sort((a, b) => a.city.localeCompare(b.city, "de")),
+  }));
+
+  hierarchyData.sort((a, b) => {
+    if (a.country === "Deutschland") return -1;
+    if (b.country === "Deutschland") return 1;
+    return a.country.localeCompare(b.country, "de");
   });
 
   // When searching, override collapse: everything is expanded
@@ -2198,6 +2201,60 @@ const EventsAdmin = () => {
     });
   };
 
+  const renderEventRow = (event: EventRow) => (
+    <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
+      {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
+            {event.date || "Kein Datum"}{event.location_name ? ` · ${event.location_name}` : ""}{event.city ? `, ${event.city}` : ""}
+          </span>
+          {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
+          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+            {event.status}
+          </span>
+          {event.open_air && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
+              ☀️ Open Air
+            </span>
+          )}
+          {event.sold_out && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
+              Ausverkauft
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
+          {eventStats[event.id] && (
+            <>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.12)", color: "hsl(200 80% 60%)" }}>
+                🎟 {eventStats[event.id].ticketsSold}
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 55%)" }}>
+                💰 {eventStats[event.id].revenue.toFixed(2)} €
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
+          <Send className="w-4 h-4" />
+        </button>
+        <button onClick={() => duplicateEvent(event)} className="p-2 rounded-lg hover:bg-white/5" title="Event duplizieren" style={{ color: "hsl(200 80% 60%)" }}>
+          <Copy className="w-4 h-4" />
+        </button>
+        <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+          {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+        <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -2209,7 +2266,7 @@ const EventsAdmin = () => {
           <button onClick={() => setShowBulkAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.3)" }}>
             <LayoutGrid className="w-4 h-4" /> Bulk Add
           </button>
-          <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+          <button onClick={() => setEditing({ ...emptyEvent })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
             <Plus className="w-4 h-4" /> Neues Event
           </button>
         </div>
@@ -2224,7 +2281,7 @@ const EventsAdmin = () => {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Event, Stadt oder Serie suchen..."
           className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all focus:ring-1"
-          style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", caretColor: "hsl(330 80% 55%)" }}
+          style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", caretColor: "hsl(230 80% 56%)" }}
         />
         {search && (
           <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-white/10">
@@ -2273,7 +2330,7 @@ const EventsAdmin = () => {
           <button
             onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); }}
             className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
-            style={{ color: "hsl(330 80% 55%)" }}
+            style={{ color: "hsl(230 80% 56%)" }}
           >
             Filter zurücksetzen
           </button>
@@ -2292,9 +2349,9 @@ const EventsAdmin = () => {
             onClick={() => setActiveTab(tab.key)}
             className="flex-1 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
             style={{
-              background: activeTab === tab.key ? "hsl(330 80% 50% / 0.15)" : "transparent",
-              color: activeTab === tab.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-              border: activeTab === tab.key ? "1px solid hsl(330 80% 50% / 0.3)" : "1px solid transparent",
+              background: activeTab === tab.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: activeTab === tab.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+              border: activeTab === tab.key ? "1px solid hsl(230 80% 56% / 0.3)" : "1px solid transparent",
             }}
           >
             {tab.label} ({tab.count})
@@ -2313,87 +2370,69 @@ const EventsAdmin = () => {
         <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Events gefunden</p>
       ) : (
         <div className="space-y-8">
-          {sortedCountries.map((country) => {
-            const countryKey = `country__${country}`;
-            const countryEventCount = countryGroups[country].reduce((sum, g) => sum + g.events.length, 0);
+          {hierarchyData.map((countryGroup) => {
+            const countryKey = `country__${countryGroup.country}`;
+            const countryEventCount = countryGroup.cityGroups.reduce((sum, cg) => sum + cg.seriesGroups.reduce((s, sg) => s + sg.events.length, 0), 0);
             return (
-              <div key={country}>
+              <div key={countryGroup.country}>
                 <button onClick={() => toggleCollapse(countryKey)} className="flex items-center gap-2 mb-4 w-full text-left">
                   <Globe className="w-4 h-4" style={{ color: "hsl(200 70% 55%)" }} />
-                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{country} ({countryEventCount})</span>
+                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{countryGroup.country} ({countryEventCount})</span>
                   {isCollapsed(countryKey) ? <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
                 </button>
                 <AnimatePresence initial={false}>
                   {!isCollapsed(countryKey) && (
-                    <motion.div className="space-y-4 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(200 70% 55% / 0.2)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                      {countryGroups[country].map((group) => (
-                        <div key={group.seriesId || "none"}>
-                          <button onClick={() => toggleCollapse(group.seriesId || "__none__")} className="flex items-center gap-2 mb-3 w-full text-left group">
-                            {group.seriesId && <Layers className="w-4 h-4" style={{ color: "hsl(270 60% 55%)" }} />}
-                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{group.seriesTitle} ({group.events.length})</span>
-                            {isCollapsed(group.seriesId || "__none__") ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-                          </button>
-                          <AnimatePresence initial={false}>
-                            {!isCollapsed(group.seriesId || "__none__") && (
-                              <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                {group.events.map((event) => (
-                                  <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
-                                    {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
-                                          {event.date || "Kein Datum"}{event.location_name ? ` · ${event.location_name}` : ""}{event.city ? `, ${event.city}` : ""}
-                                        </span>
-                                        {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
-                                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
-                                          {event.status}
-                                        </span>
-                                        {event.open_air && (
-                                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
-                                            ☀️ Open Air
-                                          </span>
-                                        )}
-                                        {event.sold_out && (
-                                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
-                                            Ausverkauft
-                                          </span>
-                                        )}
+                    <motion.div className="space-y-5 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(200 70% 55% / 0.2)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      {countryGroup.cityGroups.map((cityGroup) => {
+                        const cityKey = `city__${countryGroup.country}__${cityGroup.city}`;
+                        const cityEventCount = cityGroup.seriesGroups.reduce((s, sg) => s + sg.events.length, 0);
+                        return (
+                          <div key={cityGroup.city}>
+                            <button onClick={() => toggleCollapse(cityKey)} className="flex items-center gap-2 mb-3 w-full text-left">
+                              <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} />
+                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{cityGroup.city} ({cityEventCount})</span>
+                              {isCollapsed(cityKey) ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {!isCollapsed(cityKey) && (
+                                <motion.div className="space-y-3 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(230 80% 56% / 0.15)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                  {cityGroup.seriesGroups.map((group) => {
+                                    const hasSeries = !!group.seriesId;
+                                    // If only one series group in city and it's "Ohne Serie", skip series level
+                                    const skipSeriesLevel = cityGroup.seriesGroups.length === 1 && !group.seriesId;
+
+                                    if (skipSeriesLevel) {
+                                      return (
+                                        <div key="__none__" className="space-y-2">
+                                          {group.events.map((event) => renderEventRow(event))}
+                                        </div>
+                                      );
+                                    }
+
+                                    const seriesCollapseKey = `series__${cityGroup.city}__${group.seriesId || "__none__"}`;
+                                    return (
+                                      <div key={group.seriesId || "none"}>
+                                        <button onClick={() => toggleCollapse(seriesCollapseKey)} className="flex items-center gap-2 mb-2 w-full text-left group">
+                                          {hasSeries && <Layers className="w-3.5 h-3.5" style={{ color: "hsl(270 60% 55%)" }} />}
+                                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{group.seriesTitle} ({group.events.length})</span>
+                                          {isCollapsed(seriesCollapseKey) ? <ChevronRight className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+                                        </button>
+                                        <AnimatePresence initial={false}>
+                                          {!isCollapsed(seriesCollapseKey) && (
+                                            <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                              {group.events.map((event) => renderEventRow(event))}
+                                            </motion.div>
+                                          )}
+                                        </AnimatePresence>
                                       </div>
-                                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                                        <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
-                                        {eventStats[event.id] && (
-                                          <>
-                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.12)", color: "hsl(200 80% 60%)" }}>
-                                              🎟 {eventStats[event.id].ticketsSold}
-                                            </span>
-                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 55%)" }}>
-                                              💰 {eventStats[event.id].revenue.toFixed(2)} €
-                                            </span>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                      <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
-                                        <Send className="w-4 h-4" />
-                                      </button>
-                                      <button onClick={() => duplicateEvent(event)} className="p-2 rounded-lg hover:bg-white/5" title="Event duplizieren" style={{ color: "hsl(200 80% 60%)" }}>
-                                        <Copy className="w-4 h-4" />
-                                      </button>
-                                      <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                                        {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                      </button>
-                                      <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
-                                        <Trash2 className="w-4 h-4" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      ))}
+                                    );
+                                  })}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
                     </motion.div>
                   )}
                 </AnimatePresence>
