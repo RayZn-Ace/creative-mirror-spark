@@ -224,7 +224,7 @@ export default function Termine() {
     const load = async () => {
       const { data: series } = await supabase
         .from("event_series")
-        .select("id, slug, city, image_url")
+        .select("id, slug, city, image_url, title")
         .eq("status", "published");
 
       const { data: events } = await supabase
@@ -239,38 +239,47 @@ export default function Termine() {
       const groups: CityGroup[] = [];
       const usedEventIds = new Set<string>();
 
-      // 1) Series-based groups
+      // 1) Series-based groups – group by series + city
       (series || []).forEach((s) => {
-        const cityEvents = events
-          .filter((e) => e.series_id === s.id)
-          .map((e) => {
-            usedEventIds.add(e.id);
-            return {
+        const seriesEvents = events.filter((e) => e.series_id === s.id);
+        // Group events by city within this series
+        const byCityMap: Record<string, typeof seriesEvents> = {};
+        seriesEvents.forEach((e) => {
+          const cityKey = (e.city || "").trim() || "unknown";
+          if (!byCityMap[cityKey]) byCityMap[cityKey] = [];
+          byCityMap[cityKey].push(e);
+        });
+
+        Object.entries(byCityMap).forEach(([cityKey, evts]) => {
+          evts.forEach((e) => usedEventIds.add(e.id));
+          const firstEvent = evts[0];
+          const eventCity = cityKey !== "unknown" ? cityKey : "";
+          const seriesCity = (s.city || "").trim();
+          const displayCity = eventCity || seriesCity || s.slug || "Unbekannt";
+          // Build display name: "City - Series Title" if series has multiple cities
+          const hasMultipleCities = Object.keys(byCityMap).length > 1;
+          const displayName = hasMultipleCities && eventCity
+            ? `${eventCity} – ${s.title || s.slug}`
+            : seriesCity || firstEvent?.title || eventCity || s.slug || "Unbekannt";
+          const cityForCoords = eventCity || seriesCity;
+
+          groups.push({
+            city: displayName,
+            slug: s.slug,
+            coords: cityForCoords ? getCityCoords(cityForCoords) : null,
+            km: null,
+            events: evts.map((e) => ({
               id: e.id,
               date: e.date || "",
               time: e.time,
               locationName: e.location_name,
               soldOut: e.sold_out || false,
               openAir: e.open_air || false,
-            };
-          });
-
-        if (cityEvents.length > 0) {
-          const firstEvent = events.find((e) => e.series_id === s.id);
-          const cityFromSeries = (s.city || "").trim();
-          const cityFromEvent = (firstEvent?.city || "").trim();
-          const cityForCoords = cityFromSeries || cityFromEvent;
-          const city = cityFromSeries || firstEvent?.title || cityFromEvent || s.slug || "Unbekannt";
-          groups.push({
-            city,
-            slug: s.slug,
-            coords: cityForCoords ? getCityCoords(cityForCoords) : null,
-            km: null,
-            events: cityEvents,
-            imageUrl: s.image_url,
+            })),
+            imageUrl: s.image_url || firstEvent?.image_url || null,
             category: deriveCategory(firstEvent?.title || s.slug),
           });
-        }
+        });
       });
 
       // 2) Standalone events (no series_id) – group by base slug (strip date suffix)
