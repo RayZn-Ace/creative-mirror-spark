@@ -15,55 +15,78 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Remove ALL text, logos, watermarks, overlays, badges, and graphic elements from this image. Keep only the photographic background scene (people, lights, venue, crowd, atmosphere). The result should be a clean photo suitable as a blurred ticket background. Do not add any new text or elements.",
-              },
-              {
-                type: "image_url",
-                image_url: { url: image_url },
-              },
-            ],
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+    const callAiGateway = async (instruction: string) => {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-pro-image-preview",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: instruction,
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: image_url },
+                },
+              ],
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error("AI gateway error: " + response.status);
-    }
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("AI gateway error:", response.status, errText);
 
-    const data = await response.json();
-    const cleanedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required" }), {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        throw new Error("AI gateway error: " + response.status);
+      }
+
+      return await response.json();
+    };
+
+    const extractImageUrl = (data: any): string | undefined => {
+      const msg = data?.choices?.[0]?.message;
+      return (
+        msg?.images?.[0]?.image_url?.url ||
+        msg?.image_url?.url ||
+        msg?.content?.find?.((item: any) => item?.type === "image_url")?.image_url?.url
+      );
+    };
+
+    const primaryPrompt = "Create a NEW clean background image inspired by this event photo. Keep a similar crowd, lighting, venue mood, and color atmosphere, but generate an original image with no readable text, logos, badges, labels, or branding. Return image output only.";
+    const fallbackPrompt = "Generate an original nightclub/event background image based on this reference photo's vibe (crowd, lights, colors). The result must contain no readable text or logos and should work as a blurred ticket backdrop. Return image output only.";
+
+    const primaryData = await callAiGateway(primaryPrompt);
+    let cleanedImageUrl = extractImageUrl(primaryData);
 
     if (!cleanedImageUrl) {
-      console.error("No image in AI response:", JSON.stringify(data).slice(0, 500));
+      const fallbackData = await callAiGateway(fallbackPrompt);
+      cleanedImageUrl = extractImageUrl(fallbackData);
+    }
+
+    if (!cleanedImageUrl) {
+      console.error("No image in AI response after retry");
       return new Response(JSON.stringify({ error: "No image generated", fallback: image_url }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
