@@ -396,18 +396,11 @@ export default function Index() {
       <Navbar gt={gt} />
       <main className="flex-1 pt-16 md:pt-20 pb-20 lg:pb-0">
         <Hero gt={gt} />
-        <TrustBadges gt={gt} />
-        <WhatIsIt gt={gt} />
-        <CountryBadges gt={gt} />
-        <ForWhom gt={gt} />
         <EventCountdown gt={gt} />
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
-        <TicketCategories gt={gt} />
         <CrowdSlideshow gt={gt} />
-        {/* VideoSection removed */}
         <Reviews gt={gt} />
-        <NewsletterCTA gt={gt} />
       </main>
       <Footer gt={gt} />
       <BottomNav />
