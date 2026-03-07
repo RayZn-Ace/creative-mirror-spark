@@ -27,7 +27,7 @@ const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight
 const Field = ({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) => (
   <div>
     <label style={labelStyle}>{label}</label>
-    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} className="focus:border-pink-500" />
+    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} className="focus:border-blue-500" />
   </div>
 );
 
