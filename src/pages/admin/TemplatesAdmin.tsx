@@ -1075,7 +1075,7 @@ const InvoiceTab = () => {
                 <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Bankdaten im Footer anzeigen</span>
                 <button onClick={() => setTpl(p => ({ ...p, show_bank_details: !p.show_bank_details }))}
                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold"
-                  style={{ background: tpl.show_bank_details ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: tpl.show_bank_details ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.3)" }}>
+                  style={{ background: tpl.show_bank_details ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)", color: tpl.show_bank_details ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.3)" }}>
                   {tpl.show_bank_details ? "AN" : "AUS"}
                 </button>
               </div>
