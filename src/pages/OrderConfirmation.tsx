@@ -308,6 +308,41 @@ const OrderConfirmation = () => {
             </div>
           )}
 
+          {/* Muttizettel Prompt */}
+          {isPaid && eventMuttizettel && !muttizettelDismissed && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-6 rounded-2xl p-5 text-center"
+              style={{ background: "hsl(45 100% 50% / 0.12)", border: "1px solid hsl(45 100% 50% / 0.3)" }}
+            >
+              <FileText className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(45 100% 60%)" }} />
+              <p className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>
+                Noch keine 18? Muttizettel ausfüllen!
+              </p>
+              <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                Für dieses 16+ Event benötigst du eine Erziehungsbeauftragung. Fülle den Muttizettel jetzt digital aus.
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  to={`/muttizettel${eventId ? `?event=${eventId}` : ""}`}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.01]"
+                  style={{ background: "hsl(45 100% 50% / 0.25)", color: "hsl(45 100% 70%)", border: "1px solid hsl(45 100% 50% / 0.4)" }}
+                >
+                  Jetzt ausfüllen
+                </Link>
+                <button
+                  onClick={() => setMuttizettelDismissed(true)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-medium transition-all"
+                  style={{ color: "hsl(0 0% 100% / 0.5)" }}
+                >
+                  Später
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Actions */}
           <div className="space-y-2">
             <Link
