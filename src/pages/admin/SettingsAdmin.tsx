@@ -433,7 +433,7 @@ const SettingsAdmin = () => {
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-3 mb-2">
-        <Settings className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+        <Settings className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
         <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>Einstellungen</h1>
       </div>
 
