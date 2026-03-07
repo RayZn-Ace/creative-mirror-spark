@@ -348,7 +348,7 @@ const da: BaseTranslations = {
   freeTicketsTitle: "Gratis billetter & mere?", whatsappJoin: "Tilmeld dig nu", whatsappDesc: "Bliv en del af vores WhatsApp-fællesskab.",
   moreCities: "Flere byer", moreCitiesDesc: "Køb billetter til andre byer nu", kmAway: "km væk",
   footerQuestion: "Spørgsmål, problemer eller reservationsforespørgsler?", footerContact: "Kontakt os:",
-  footerOrganizer: "partyticket.app", imprint: "Kolofon", privacy: "Privatlivspolitik", terms: "Vilkår og betingelser",
+  footerOrganizer: "Nightlife Generation", imprint: "Kolofon", privacy: "Privatlivspolitik", terms: "Vilkår og betingelser",
   loading: "Indlæser...",
   weekdays: ["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"],
   monthsShort: ["","Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"],
