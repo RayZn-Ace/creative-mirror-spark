@@ -383,10 +383,37 @@ const TicketTemplateAdmin = () => {
   const [newSponsorText, setNewSponsorText] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  // Preview selectors
+  const [previewCategoryId, setPreviewCategoryId] = useState<string | null>(null);
+  const [previewSeriesId, setPreviewSeriesId] = useState<string | null>(null);
+  const [ticketCategories, setTicketCategories] = useState<Array<{ id: string; name: string; category_group: string | null; event_id: string }>>([]);
+  const [eventSeries, setEventSeries] = useState<Array<{ id: string; title: string; image_url: string | null }>>([]);
+  const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
+
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle();
-      if (data?.value) setTpl({ ...defaultTemplate, ...(data.value as any), gradient: { ...defaultGradient, ...((data.value as any).gradient || {}) }, content_blocks: (data.value as any).content_blocks || [] });
+      // Load template, categories, series, and events in parallel
+      const [tplRes, catRes, seriesRes, eventsRes] = await Promise.all([
+        supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle(),
+        supabase.from("ticket_categories").select("id, name, category_group, event_id"),
+        supabase.from("event_series").select("id, title, image_url").eq("status", "published"),
+        supabase.from("events").select("id, image_url, title, series_id").eq("status", "published"),
+      ]);
+
+      if (tplRes.data?.value) setTpl({ ...defaultTemplate, ...(tplRes.data.value as any), gradient: { ...defaultGradient, ...((tplRes.data.value as any).gradient || {}) }, content_blocks: (tplRes.data.value as any).content_blocks || [] });
+
+      if (catRes.data) {
+        // Only show categories from published events
+        const publishedEventIds = new Set((eventsRes.data || []).map(e => e.id));
+        setTicketCategories(catRes.data.filter(c => publishedEventIds.has(c.event_id)));
+      }
+      if (seriesRes.data) setEventSeries(seriesRes.data);
+      if (eventsRes.data) {
+        const map: Record<string, { image_url: string | null; title: string; series_id: string | null }> = {};
+        eventsRes.data.forEach(e => { map[e.id] = { image_url: e.image_url, title: e.title, series_id: e.series_id }; });
+        setEventsMap(map);
+      }
+
       setLoading(false);
     };
     load();
