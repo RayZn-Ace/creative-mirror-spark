@@ -50,8 +50,9 @@ interface TicketTemplate {
   show_holder_name: boolean;
   show_qr_code: boolean;
   logo_url: string;
-  background_image_url: string;
-  background_image_blur: number; // px blur amount
+  magic_ticket_enabled: boolean;
+  magic_ticket_blur: number; // px blur amount
+  magic_ticket_opacity: number; // 0-100
   background_image_opacity: number; // 0-100
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks: ContentBlock[];
