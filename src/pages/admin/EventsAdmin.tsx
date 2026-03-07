@@ -2303,42 +2303,30 @@ const EventsAdmin = () => {
       {/* Filters */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-        <button
-          onClick={() => setFilterOpenAir(!filterOpenAir)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-          style={{
-            background: filterOpenAir ? "hsl(45 90% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-            color: filterOpenAir ? "hsl(45 90% 55%)" : "hsl(0 0% 100% / 0.4)",
-            border: `1px solid ${filterOpenAir ? "hsl(45 90% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
-          }}
-        >
-          <Sun className="w-3 h-3" /> Nur Open Air
-        </button>
-        <button
-          onClick={() => setFilterSoldOut(filterSoldOut === "hide" ? "all" : "hide")}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-          style={{
-            background: filterSoldOut === "hide" ? "hsl(0 70% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-            color: filterSoldOut === "hide" ? "hsl(0 70% 55%)" : "hsl(0 0% 100% / 0.4)",
-            border: `1px solid ${filterSoldOut === "hide" ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
-          }}
-        >
-          <XCircle className="w-3 h-3" /> Ausverkaufte ausblenden
-        </button>
-        <button
-          onClick={() => setFilterSoldOut(filterSoldOut === "only" ? "all" : "only")}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
-          style={{
-            background: filterSoldOut === "only" ? "hsl(0 70% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-            color: filterSoldOut === "only" ? "hsl(0 70% 55%)" : "hsl(0 0% 100% / 0.4)",
-            border: `1px solid ${filterSoldOut === "only" ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
-          }}
-        >
-          <XCircle className="w-3 h-3" /> Nur Ausverkaufte
-        </button>
-        {(filterOpenAir || filterSoldOut !== "all") && (
+        {[
+          { label: "Nur Open Air", active: filterOpenAir, toggle: () => setFilterOpenAir(!filterOpenAir) },
+          { label: "Ausverkaufte ausblenden", active: filterSoldOut === "hide", toggle: () => setFilterSoldOut(filterSoldOut === "hide" ? "all" : "hide") },
+          { label: "Nur Ausverkaufte", active: filterSoldOut === "only", toggle: () => setFilterSoldOut(filterSoldOut === "only" ? "all" : "only") },
+          { label: "16+ Events", active: filter16Plus, toggle: () => setFilter16Plus(!filter16Plus) },
+          { label: "Mamma Mia Events", active: filterMammaMia, toggle: () => setFilterMammaMia(!filterMammaMia) },
+          { label: "Acts", active: filterActs, toggle: () => setFilterActs(!filterActs) },
+        ].map((f) => (
           <button
-            onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); }}
+            key={f.label}
+            onClick={f.toggle}
+            className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+            style={{
+              background: f.active ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+              color: f.active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+              border: `1px solid ${f.active ? "hsl(230 80% 56% / 0.4)" : "hsl(0 0% 100% / 0.1)"}`,
+            }}
+          >
+            {f.label}
+          </button>
+        ))}
+        {(filterOpenAir || filterSoldOut !== "all" || filter16Plus || filterMammaMia || filterActs) && (
+          <button
+            onClick={() => { setFilterOpenAir(false); setFilterSoldOut("all"); setFilter16Plus(false); setFilterMammaMia(false); setFilterActs(false); }}
             className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
             style={{ color: "hsl(230 80% 56%)" }}
           >
