@@ -424,7 +424,54 @@ const TicketTemplateAdmin = () => {
     load();
   }, []);
 
-  const save = async () => {
+  // Clean image via AI when series changes
+  useEffect(() => {
+    if (!previewSeriesId) return;
+
+    // Resolve source image URL
+    let srcUrl: string | null = null;
+    const series = eventSeries.find(s => s.id === previewSeriesId);
+    if (series?.image_url) {
+      srcUrl = series.image_url;
+    } else {
+      const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
+      if (ev?.image_url) srcUrl = ev.image_url;
+    }
+    if (!srcUrl) return;
+
+    // Already cleaned?
+    if (cleanedImages[srcUrl]) return;
+
+    let cancelled = false;
+    const clean = async () => {
+      setCleaningImage(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("clean-image", {
+          body: { image_url: srcUrl },
+        });
+        if (cancelled) return;
+        if (error) {
+          console.error("clean-image error:", error);
+          // Fallback: use original
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+        } else if (data?.cleaned_image_url) {
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: data.cleaned_image_url }));
+        } else {
+          // No cleaned image returned, use original
+          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+        }
+      } catch (e) {
+        console.error("clean-image failed:", e);
+        if (!cancelled) setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
+      } finally {
+        if (!cancelled) setCleaningImage(false);
+      }
+    };
+    clean();
+    return () => { cancelled = true; };
+  }, [previewSeriesId, eventSeries, eventsMap]);
+
+
     setSaving(true);
     const { error } = await supabase.from("settings").update({ value: tpl as any, updated_at: new Date().toISOString() }).eq("key", "ticket_template");
     setSaving(false);
