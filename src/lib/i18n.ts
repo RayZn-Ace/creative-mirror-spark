@@ -1210,7 +1210,7 @@ export interface GlobalTranslations {
 }
 
 const globalDe: GlobalTranslations = {
-  navHome: "Startseite", navDatesTickets: "Termine & Tickets", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
+  navHome: "Startseite", navDatesTickets: "Events", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
   navForWho: "Für wen?", navMedia: "Media", navBlog: "Blog",
   navBookUs: "Uns Buchen!", navRegisterLocation: "Location anmelden", navPartner: "Partner werden", navInfluencer: "Influencer", navJobs: "Jobs",
   heroTitle: "party", heroSubtitle: "ticket", heroDesc: "Dein Ticketshop für die besten Events & Partys. Über 150 Städte, 13 Länder.", heroTicketBtn: "Tickets sichern",
