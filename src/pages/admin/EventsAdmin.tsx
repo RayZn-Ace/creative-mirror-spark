@@ -1653,7 +1653,7 @@ const EventsAdmin = () => {
   const [filterActs, setFilterActs] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
-  const [showTioSync, setShowTioSync] = useState(false);
+  
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
