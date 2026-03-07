@@ -220,7 +220,7 @@ const SeriesAdmin = () => {
                   <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
                     Abbrechen
                   </button>
-                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>
