@@ -543,7 +543,7 @@ const TicketTemplateAdmin = () => {
               {TEXT_BLOCKS.map((b) => {
                 const active = tpl[b.key];
                 return (
-                  <button key={b.key} onClick={() => update(b.key, !active)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: active ? `${tpl.accent_color}22` : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${active ? tpl.accent_color : "hsl(0 0% 100% / 0.08)"}`, color: active ? tpl.accent_color : "hsl(0 0% 100% / 0.4)" }}>
+                  <button key={b.key} onClick={() => update(b.key, !active)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: active ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}`, color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)" }}>
                     {b.label}
                   </button>
                 );
