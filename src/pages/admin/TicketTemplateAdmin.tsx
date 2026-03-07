@@ -439,8 +439,17 @@ const TicketTemplateAdmin = () => {
     }
     if (!srcUrl) return;
 
-    // Already cleaned?
-    if (cleanedImages[srcUrl]) return;
+    // Already cleaned? (but ignore stale fallback entries that just point to the original URL)
+    const cached = cleanedImages[srcUrl];
+    if (cached && cached !== srcUrl) return;
+
+    if (cached === srcUrl) {
+      setCleanedImages(prev => {
+        const next = { ...prev };
+        delete next[srcUrl!];
+        return next;
+      });
+    }
 
     let cancelled = false;
     const clean = async () => {
@@ -450,19 +459,17 @@ const TicketTemplateAdmin = () => {
           body: { image_url: srcUrl },
         });
         if (cancelled) return;
+
         if (error) {
           console.error("clean-image error:", error);
-          // Fallback: use original
-          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
-        } else if (data?.cleaned_image_url) {
+          return;
+        }
+
+        if (data?.cleaned_image_url) {
           setCleanedImages(prev => ({ ...prev, [srcUrl!]: data.cleaned_image_url }));
-        } else {
-          // No cleaned image returned, use original
-          setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
         }
       } catch (e) {
         console.error("clean-image failed:", e);
-        if (!cancelled) setCleanedImages(prev => ({ ...prev, [srcUrl!]: srcUrl! }));
       } finally {
         if (!cancelled) setCleaningImage(false);
       }
