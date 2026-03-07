@@ -461,14 +461,7 @@ const TicketTemplateAdmin = () => {
     if (!previewSeriesId) return;
 
     // Resolve source image URL
-    let srcUrl: string | null = null;
-    const series = eventSeries.find(s => s.id === previewSeriesId);
-    if (series?.image_url) {
-      srcUrl = series.image_url;
-    } else {
-      const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-      if (ev?.image_url) srcUrl = ev.image_url;
-    }
+    const srcUrl = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
     if (!srcUrl) return;
 
     // Already cleaned? (but ignore stale fallback entries that just point to the original URL)
