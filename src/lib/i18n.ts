@@ -1242,7 +1242,7 @@ const globalEn: GlobalTranslations = {
   navBookUs: "Book Us!", navRegisterLocation: "Register Location", navPartner: "Become a Partner", navInfluencer: "Influencer", navJobs: "Jobs",
   heroTitle: "nightlife", heroSubtitle: " generation", heroDesc: "Your ticket shop for the best events & parties. Over 150 cities, 13 countries.", heroTicketBtn: "Get Tickets",
   trustCities: "CITIES", trustCountries: "COUNTRIES", trustFollowers: "FOLLOWERS", trustFans: "FANS",
-  whatIsTitle1: "What is", whatIsTitle2: "partyticket?", whatIsDesc: "The platform for unforgettable events! Find parties, concerts and shows near you – from various organizers, all in one place.",
+  whatIsTitle1: "What is", whatIsTitle2: "Nightlife Generation?", whatIsDesc: "The platform for unforgettable events! Find parties, concerts and shows near you – from various organizers, all in one place.",
   feat3hParty: "Events in 150+ cities", featLiveDj: "Various organizers", featGlitter: "Easy & secure booking", featFans: "250,000+ happy guests",
   countriesTitle1: "We are in", countriesTitle2: "13 countries", countriesDesc: "Events and parties across Europe – and beyond.",
   countryNames: { DE: "Germany", AT: "Austria", CH: "Switzerland", NL: "Netherlands", FR: "France", LU: "Luxembourg", BE: "Belgium", PL: "Poland", CZ: "Czech Republic", IT: "Italy", ES: "Spain", HR: "Croatia", BR: "Brazil" },
