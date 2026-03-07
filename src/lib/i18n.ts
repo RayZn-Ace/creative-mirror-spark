@@ -1219,7 +1219,7 @@ const globalDe: GlobalTranslations = {
   feat3hParty: "Events in 150+ Städten", featLiveDj: "Verschiedene Veranstalter", featGlitter: "Einfach & sicher buchen", featFans: "250.000+ zufriedene Gäste",
   countriesTitle1: "Wir sind in", countriesTitle2: "13 Ländern", countriesDesc: "Events und Partys in ganz Europa – und darüber hinaus.",
   countryNames: { DE: "Deutschland", AT: "Österreich", CH: "Schweiz", NL: "Niederlande", FR: "Frankreich", LU: "Luxemburg", BE: "Belgien", PL: "Polen", CZ: "Tschechien", IT: "Italien", ES: "Spanien", HR: "Kroatien", BR: "Brasilien" },
-  forWhomTitle1: "Für wen ist", forWhomTitle2: "partyticket?", forWhomDesc: "Egal ob JGA, Geburtstag oder einfach eine geile Nacht – bei uns findest du das passende Event!",
+  forWhomTitle1: "Für wen ist", forWhomTitle2: "Nightlife Generation?", forWhomDesc: "Egal ob JGA, Geburtstag oder einfach eine geile Nacht – bei uns findest du das passende Event!",
   audJga: "JGA / Bachelorette", audJgaDesc: "Die perfekte Feier mit den Mädels vor dem großen Tag.", audBirthday: "Geburtstage", audBirthdayDesc: "Feier deinen Geburtstag auf eine einzigartige und unvergessliche Art.", audGirlsNight: "Girls Night Out", audGirlsNightDesc: "Versammelt die Truppe und feiert die Nacht eures Lebens.", audGroups: "Gruppen", audGroupsDesc: "Spezielle Angebote für Gruppen ab 10 Personen.", audFans: "Party-Fans", audFansDesc: "Für alle, die gute Musik und Stimmung lieben!",
   countdownNext: "NÄCHSTES", countdownEvent: "EVENT", countdownDays: "Tage", countdownHours: "Stunden", countdownMinutes: "Minuten", countdownSeconds: "Sekunden", countdownTicketsFor: "Tickets für", countdownSecure: "sichern",
   upcomingTitle1: "KOMMENDE", upcomingTitle2: "TERMINE", upcomingAllDates: "Alle Termine anzeigen",
