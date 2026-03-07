@@ -48,8 +48,8 @@ const TicketUmbuchung = () => {
   };
 
   const inputStyle: React.CSSProperties = {
-    background: "hsl(220 20% 97%)",
-    border: "1px solid hsl(220 15% 88%)",
+    background: "hsl(220 15% 93%)",
+    border: "1px solid hsl(220 15% 85%)",
     color: "hsl(220 20% 15%)",
     borderRadius: "8px",
     padding: "12px 16px",
