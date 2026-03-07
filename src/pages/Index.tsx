@@ -55,12 +55,20 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
 function pad(n: number) { return String(n).padStart(2, "0"); }
 
 const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
-  const nextEvent = getNextEvent();
+  const [nextEvent, setNextEvent] = useState<{ title: string; city: string | null; date: string; time: string | null; location_name: string | null; slug: string } | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    supabase.from("events").select("title, city, date, time, location_name, slug")
+      .eq("status", "published").gte("date", today)
+      .order("date", { ascending: true }).limit(1)
+      .then(({ data }) => { if (data?.[0]) setNextEvent(data[0]); });
+  }, []);
+
+  useEffect(() => {
     if (!nextEvent) return;
-    const target = new Date(nextEvent.date).getTime();
+    const target = new Date(nextEvent.date + (nextEvent.time ? `T${nextEvent.time}` : "T20:00")).getTime();
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
       setTimeLeft({
@@ -89,9 +97,9 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
         </h2>
         <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8 flex-wrap">
           <MapPin className="w-4 h-4" />
-          <span>{nextEvent.city}, {nextEvent.country}</span>
+          <span>{nextEvent.city}</span>
           <span>·</span>
-          <span>{nextEvent.locationName}</span>
+          <span>{nextEvent.location_name}</span>
           <span>·</span>
           <span>{dateStr}</span>
         </div>
@@ -108,7 +116,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
             </motion.div>
           ))}
         </div>
-        <Link to={`/${nextEvent.city.toLowerCase().replace(/\s+/g, "-").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss")}`}
+        <Link to={`/termine`}
           className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
           <Ticket className="w-5 h-5" />
           {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
