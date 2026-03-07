@@ -4,7 +4,6 @@ import { Menu, X, Ticket, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
-import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 
 interface DropdownItem {
   label: string;
