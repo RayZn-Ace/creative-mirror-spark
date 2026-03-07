@@ -188,15 +188,15 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
 
   return (
     <div style={{ ...aspectStyle, background: bg, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)" }}>
-      {/* Blurred background image */}
-      {tpl.background_image_url && (
+      {/* Blurred background image (Magic Ticket) */}
+      {tpl.magic_ticket_enabled && previewImageUrl && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 0,
-          backgroundImage: `url(${tpl.background_image_url})`,
+          backgroundImage: `url(${previewImageUrl})`,
           backgroundSize: "cover", backgroundPosition: "center",
-          filter: `blur(${tpl.background_image_blur || 20}px)`,
-          opacity: (tpl.background_image_opacity ?? 40) / 100,
-          transform: "scale(1.1)", // prevent blur edge artifacts
+          filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
+          opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
+          transform: "scale(1.1)",
         }} />
       )}
       <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
