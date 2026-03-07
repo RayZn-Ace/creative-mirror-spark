@@ -113,6 +113,7 @@ const App = () => (
                 <Route path="coupons" element={<CouponsAdmin />} />
                 <Route path="werbemanager" element={<WerbemanagerAdmin />} />
                 <Route path="support" element={<SupportAdmin />} />
+                <Route path="muttizettel" element={<MuttizettelAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
