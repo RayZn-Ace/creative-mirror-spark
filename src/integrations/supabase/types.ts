@@ -290,8 +290,10 @@ export type Database = {
           id: string
           image_url: string | null
           info_sections: Json | null
+          is_16plus: boolean | null
           location_address: string | null
           location_name: string | null
+          muttizettel: boolean | null
           open_air: boolean | null
           series_id: string | null
           service_fee_enabled: boolean | null
@@ -319,8 +321,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           info_sections?: Json | null
+          is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
+          muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
@@ -348,8 +352,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           info_sections?: Json | null
+          is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
+          muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
