@@ -219,7 +219,7 @@ const TicketPreview = ({ tpl, previewImageUrl, previewCategoryName }: { tpl: Tic
               {tpl.show_time && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>UHRZEIT</span> 22:00 Uhr</div>}
               {tpl.show_location && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ORT</span> Baggi / Osho</div>}
               {tpl.show_address && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ADRESSE</span> Musterstr. 1</div>}
-              {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> Early Bird</div>}
+              {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> {previewCategoryName || "Early Bird"}</div>}
               {tpl.show_holder_name && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>NAME</span> Max Mustermann</div>}
             </div>
 
