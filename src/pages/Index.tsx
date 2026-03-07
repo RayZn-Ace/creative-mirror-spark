@@ -16,7 +16,6 @@ import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "
 import heroBg from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdAerial from "@/assets/crowd-aerial.jpg";
-import crowdVertical from "@/assets/crowd-vertical.jpg";
 import crowdWide from "@/assets/crowd-wide.jpg";
 import crowdGlowsticks from "@/assets/crowd-glowsticks.jpg";
 import crowdGlowsticks2 from "@/assets/crowd-glowsticks2.jpg";
