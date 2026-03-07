@@ -50,7 +50,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           <div>
             <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="mailto:info@partyticket.app" className="hover:text-primary transition-colors">info@partyticket.app</a>
+              <a href="mailto:info@nightlifegeneration.de" className="hover:text-primary transition-colors">info@nightlifegeneration.de</a>
               <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 hover:text-primary transition-colors">
                 <MessageCircle className="w-4 h-4" />
