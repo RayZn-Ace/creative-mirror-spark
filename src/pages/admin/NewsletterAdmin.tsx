@@ -284,6 +284,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Gift,
     gradient: "linear-gradient(135deg, #ec4899, #8b5cf6)",
     headerGradient: "linear-gradient(135deg, #8b5cf6, #a855f7)",
+    colorSchemeId: "dark-purple",
     blocks: () => [
       createBlock("heading", { text: "🎁 Exklusiv für dich!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
