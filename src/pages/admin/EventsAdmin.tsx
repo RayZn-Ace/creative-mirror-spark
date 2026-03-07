@@ -2201,6 +2201,60 @@ const EventsAdmin = () => {
     });
   };
 
+  const renderEventRow = (event: EventRow) => (
+    <div key={event.id} className="rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:border-white/15" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }} onClick={() => setEditing(event)}>
+      {event.image_url && <img src={event.image_url} alt="" className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
+            {event.date || "Kein Datum"}{event.location_name ? ` · ${event.location_name}` : ""}{event.city ? `, ${event.city}` : ""}
+          </span>
+          {event.highlight && <Star className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(45 80% 55%)" }} />}
+          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: event.status === "published" ? "hsl(142 70% 45% / 0.15)" : "hsl(0 0% 100% / 0.08)", color: event.status === "published" ? "hsl(142 70% 55%)" : "hsl(0 0% 100% / 0.4)" }}>
+            {event.status}
+          </span>
+          {event.open_air && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(45 90% 50% / 0.15)", color: "hsl(45 90% 55%)" }}>
+              ☀️ Open Air
+            </span>
+          )}
+          {event.sold_out && (
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
+              Ausverkauft
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{event.title}{event.tag ? ` · ${event.tag}` : ""}</span>
+          {eventStats[event.id] && (
+            <>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.12)", color: "hsl(200 80% 60%)" }}>
+                🎟 {eventStats[event.id].ticketsSold}
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 55%)" }}>
+                💰 {eventStats[event.id].revenue.toFixed(2)} €
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
+          <Send className="w-4 h-4" />
+        </button>
+        <button onClick={() => duplicateEvent(event)} className="p-2 rounded-lg hover:bg-white/5" title="Event duplizieren" style={{ color: "hsl(200 80% 60%)" }}>
+          <Copy className="w-4 h-4" />
+        </button>
+        <button onClick={() => toggleStatus(event)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+          {event.status === "published" ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+        <button onClick={() => remove(event.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
