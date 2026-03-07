@@ -183,7 +183,7 @@ const CouponsAdmin = () => {
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <Tag className="w-10 h-10 mx-auto mb-3" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Coupons vorhanden</p>
-          <button onClick={() => setEditing({ ...emptyCoupon })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>Jetzt ersten Coupon erstellen</button>
+          <button onClick={() => setEditing({ ...emptyCoupon })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>Jetzt ersten Coupon erstellen</button>
         </div>
       ) : (
         <div className="space-y-2">
