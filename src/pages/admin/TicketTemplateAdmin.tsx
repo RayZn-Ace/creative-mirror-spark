@@ -891,40 +891,141 @@ const TicketTemplateAdmin = () => {
               <Eye className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.4)" }} />
               <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Vorschau</h3>
             </div>
-            <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-              <TicketPreview tpl={tpl} previewImageUrl={DEMO_EVENT_IMAGE} />
+
+            {/* Preview mode selectors */}
+            <div className="space-y-3">
+              {/* Event Series selector */}
+              {eventSeries.length > 0 && (
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: "6px" }}>Eventreihe</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => setPreviewSeriesId(null)}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                      style={{
+                        background: !previewSeriesId ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                        color: !previewSeriesId ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                        border: `1px solid ${!previewSeriesId ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                      }}
+                    >
+                      Demo
+                    </button>
+                    {eventSeries.map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => setPreviewSeriesId(s.id)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                        style={{
+                          background: previewSeriesId === s.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                          color: previewSeriesId === s.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                          border: `1px solid ${previewSeriesId === s.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                        }}
+                      >
+                        {s.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Category selector */}
+              {(() => {
+                // Deduplicate categories by category_group or name
+                const seen = new Set<string>();
+                const uniqueCats = ticketCategories.filter(c => {
+                  const key = c.category_group || c.name;
+                  if (seen.has(key)) return false;
+                  seen.add(key);
+                  return true;
+                });
+                if (uniqueCats.length === 0) return null;
+                return (
+                  <div>
+                    <label style={{ ...labelStyle, marginBottom: "6px" }}>Kategorie</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        onClick={() => setPreviewCategoryId(null)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                        style={{
+                          background: !previewCategoryId ? "hsl(270 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                          color: !previewCategoryId ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                          border: `1px solid ${!previewCategoryId ? "hsl(270 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                        }}
+                      >
+                        Standard
+                      </button>
+                      {uniqueCats.map(c => {
+                        const group = c.category_group || c.name;
+                        const override = tpl.category_overrides?.[group.toUpperCase()];
+                        const accentCol = override?.accent_color || tpl.accent_color;
+                        return (
+                          <button
+                            key={c.id}
+                            onClick={() => setPreviewCategoryId(group)}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                            style={{
+                              background: previewCategoryId === group ? `${accentCol}22` : "hsl(0 0% 100% / 0.04)",
+                              color: previewCategoryId === group ? accentCol : "hsl(0 0% 100% / 0.4)",
+                              border: `1px solid ${previewCategoryId === group ? `${accentCol}44` : "hsl(0 0% 100% / 0.08)"}`,
+                            }}
+                          >
+                            {c.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
-            <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-              {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
-            </p>
-            
-            {/* Category Preview Cards */}
-            {tpl.category_overrides && Object.keys(tpl.category_overrides).length > 0 && (
-              <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>KATEGORIE-VORSCHAU</h4>
-                {Object.entries(tpl.category_overrides).map(([key, override]) => {
-                  const preset = CATEGORY_PRESETS[key];
-                  if (!preset) return null;
-                  const mergedTpl: TicketTemplate = {
+
+            {/* Computed preview */}
+            {(() => {
+              // Determine preview image from selected series
+              let previewImg = DEMO_EVENT_IMAGE;
+              if (previewSeriesId) {
+                const series = eventSeries.find(s => s.id === previewSeriesId);
+                if (series?.image_url) {
+                  previewImg = series.image_url;
+                } else {
+                  // Find first event of that series with an image
+                  const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
+                  if (ev?.image_url) previewImg = ev.image_url;
+                }
+              }
+
+              // Apply category override to tpl
+              let displayTpl = tpl;
+              if (previewCategoryId) {
+                const overrideKey = previewCategoryId.toUpperCase();
+                const override = tpl.category_overrides?.[overrideKey];
+                if (override) {
+                  displayTpl = {
                     ...tpl,
                     accent_color: override.accent_color,
                     background_color: override.background_color || tpl.background_color,
                     text_color: override.text_color || tpl.text_color,
                     gradient: override.gradient,
                   };
-                  return (
-                    <div key={key}>
-                      <p className="text-[10px] font-bold mb-1.5" style={{ color: override.accent_color }}>
-                        {preset.emoji} {preset.label}
-                      </p>
-                      <div className="flex justify-center p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.04)" }}>
-                        <TicketPreview tpl={mergedTpl} previewImageUrl={DEMO_EVENT_IMAGE} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                }
+              }
+
+              return (
+                <>
+                  <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    <TicketPreview tpl={displayTpl} previewImageUrl={previewImg} />
+                  </div>
+                  <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                    {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
+                    {previewSeriesId && (() => {
+                      const s = eventSeries.find(x => x.id === previewSeriesId);
+                      return s ? ` · ${s.title}` : "";
+                    })()}
+                    {previewCategoryId ? ` · ${previewCategoryId}` : ""}
+                  </p>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
