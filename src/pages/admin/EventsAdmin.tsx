@@ -1051,7 +1051,7 @@ const BlockTemplatePicker = ({ onSelect }: { onSelect: (template: BlockTemplate)
                           className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
                           style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.75)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
                         >
-                          <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(330 80% 55%)" }} />
+                          <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(230 80% 56%)" }} />
                           {tmpl.label}
                         </button>
                       );
