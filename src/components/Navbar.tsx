@@ -21,30 +21,10 @@ function buildNav(gt: GlobalTranslations) {
     { label: gt.navDatesTickets, path: "/termine" },
   ];
 
-  const groups: NavGroup[] = [
-    {
-      label: gt.navExperience,
-      items: [
-        { label: gt.navForWho, path: "/fuer-wen" },
-        { label: gt.navMedia, path: "/fotos" },
-        { label: gt.navBlog, path: "/vergangene-events" },
-      ],
-    },
-    {
-      label: gt.navCollaboration,
-      items: [
-        { label: gt.navBookUs, path: "/kontakt" },
-        { label: gt.navRegisterLocation, path: "/kontakt" },
-        { label: gt.navPartner, path: "/promoter" },
-        { label: gt.navInfluencer, path: "/kontakt" },
-        { label: gt.navJobs, path: "/jobs" },
-      ],
-    },
-  ];
+  const groups: NavGroup[] = [];
 
   const extraLinks = [
     { label: gt.navFaqSupport, path: "/faq" },
-    { label: gt.navTicketRebooking, path: "/ticket-umbuchung" },
     { label: "Muttizettel", path: "/muttizettel" },
   ];
 
