@@ -74,8 +74,8 @@ serve(async (req) => {
       );
     };
 
-    const primaryPrompt = "Create a clean background version of this event photo for a ticket preview. Remove poster-style text, badges, labels, and logos that are overlaid on the image, while preserving the real scene (crowd, lights, venue, atmosphere). If exact removal is not possible, generate a visually matching clean version of the same scene. Return an image result only.";
-    const fallbackPrompt = "Generate a text-free, logo-free background image inspired by this event photo. Keep the same mood, colors, lighting, and crowd/venue atmosphere for use as a blurred ticket backdrop. Return an image result only.";
+    const primaryPrompt = "Create a NEW clean background image inspired by this event photo. Keep a similar crowd, lighting, venue mood, and color atmosphere, but generate an original image with no readable text, logos, badges, labels, or branding. Return image output only.";
+    const fallbackPrompt = "Generate an original nightclub/event background image based on this reference photo's vibe (crowd, lights, colors). The result must contain no readable text or logos and should work as a blurred ticket backdrop. Return image output only.";
 
     const primaryData = await callAiGateway(primaryPrompt);
     let cleanedImageUrl = extractImageUrl(primaryData);
