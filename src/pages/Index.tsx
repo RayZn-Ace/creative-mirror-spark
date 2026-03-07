@@ -526,7 +526,7 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar gt={gt} />
-      <main className="flex-1 pt-16 md:pt-20">
+      <main className="flex-1 pt-16 md:pt-20 pb-20 lg:pb-0">
         <Hero gt={gt} />
         <TrustBadges gt={gt} />
         <WhatIsIt gt={gt} />
@@ -542,6 +542,7 @@ export default function Index() {
         <NewsletterCTA gt={gt} />
       </main>
       <Footer gt={gt} />
+      <BottomNav />
       <SupportChatbot />
       <SocialProofToast />
     </div>
