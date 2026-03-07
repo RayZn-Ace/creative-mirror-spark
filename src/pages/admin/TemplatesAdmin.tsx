@@ -344,7 +344,7 @@ const TemplatesAdmin = () => {
     <div className="max-w-5xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Palette className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+        <Palette className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
         <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>
           Vorlagen
         </h1>
