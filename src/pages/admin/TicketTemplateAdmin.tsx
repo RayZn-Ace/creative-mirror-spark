@@ -196,7 +196,7 @@ const TicketPreview = ({ tpl }: { tpl: TicketTemplate }) => {
         }} />
       )}
       <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
-      <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", display: "flex", flexDirection: isDinLang ? "row" : "column", gap: isDinLang ? "12px" : "16px", height: isDinLang ? "calc(100% - 4px)" : "auto" }}>
+      <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", display: "flex", flexDirection: isDinLang ? "row" : "column", gap: isDinLang ? "12px" : "16px", height: isDinLang ? "calc(100% - 4px)" : "auto", position: "relative", zIndex: 1 }}>
         {/* Left / Top */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}>
           {tpl.logo_url && (
