@@ -224,7 +224,7 @@ export default function Termine() {
     const load = async () => {
       const { data: series } = await supabase
         .from("event_series")
-        .select("id, slug, city, image_url")
+        .select("id, slug, city, image_url, title")
         .eq("status", "published");
 
       const { data: events } = await supabase
