@@ -187,90 +187,95 @@ const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewI
   const bg = tpl.gradient.enabled ? gradientCSS(tpl.gradient, tpl.background_color) : tpl.background_color;
 
   return (
-    <div style={{ ...aspectStyle, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)", display: "flex", flexDirection: isDinLang ? "row" : "column" }}>
-      {/* Left / Info side */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* Blurred background image (Magic Ticket) – only on info side */}
-        {tpl.magic_ticket_enabled && previewImageUrl && (
+    <div style={{ ...aspectStyle, borderRadius: "12px", overflow: "hidden", position: "relative", boxShadow: "0 8px 32px hsl(0 0% 0% / 0.4)", display: "flex", flexDirection: "column" }}>
+      {/* Accent bar – full width across both sides */}
+      <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 2, flexShrink: 0 }} />
+
+      {/* Body: info + qr */}
+      <div style={{ flex: 1, display: "flex", flexDirection: isDinLang ? "row" : "column", minHeight: 0 }}>
+        {/* Left / Info side */}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden", background: bg, display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {/* Blurred background image (Magic Ticket) – only on info side */}
+          {tpl.magic_ticket_enabled && previewImageUrl && (
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 0,
+              backgroundImage: `url(${previewImageUrl})`,
+              backgroundSize: "cover", backgroundPosition: "center",
+              filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
+              opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
+              transform: "scale(1.15)",
+            }} />
+          )}
+          <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
+            {tpl.logo_url && (
+              <div style={{ marginBottom: "6px" }}>
+                <div style={{ width: isDinLang ? "32px" : "48px", height: isDinLang ? "32px" : "48px", borderRadius: "6px", background: `${tpl.accent_color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color, fontWeight: 700 }}>LOGO</div>
+              </div>
+            )}
+            <div style={{ fontSize: isDinLang ? "7px" : "9px", fontWeight: 800, letterSpacing: "2px", color: tpl.accent_color, textTransform: "uppercase", marginBottom: "2px" }}>TICKET</div>
+            {tpl.show_event_title && <div style={{ fontSize: isDinLang ? "10px" : "14px", fontWeight: 800, color: tpl.accent_color, textTransform: "uppercase", lineHeight: 1.1, marginBottom: "6px" }}>EXAMPLE EVENT</div>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              {tpl.show_date && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>DATUM</span> 15.03.2026</div>}
+              {tpl.show_time && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>UHRZEIT</span> 22:00 Uhr</div>}
+              {tpl.show_location && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ORT</span> Baggi / Osho</div>}
+              {tpl.show_address && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ADRESSE</span> Musterstr. 1</div>}
+              {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> Early Bird</div>}
+              {tpl.show_holder_name && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>NAME</span> Max Mustermann</div>}
+            </div>
+
+            {/* Content Blocks Preview */}
+            {tpl.content_blocks.filter(b => b.enabled).map((block) => (
+              <div key={block.id} style={{ marginTop: "4px" }}>
+                {block.type === "text" && (
+                  <div style={{ fontSize: block.font_size === "lg" ? (isDinLang ? "8px" : "11px") : block.font_size === "md" ? (isDinLang ? "7px" : "9px") : (isDinLang ? "6px" : "8px"), fontWeight: block.bold ? 700 : 400, color: textCol, opacity: 0.85, lineHeight: 1.3 }}>
+                    {block.text || "Text…"}
+                  </div>
+                )}
+                {block.type === "image" && (
+                  <div style={{ width: `${block.image_width || 60}%`, maxWidth: isDinLang ? "60px" : "100px", height: isDinLang ? "16px" : "28px", borderRadius: "3px", background: `${tpl.accent_color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: "5px", color: tpl.accent_color, fontWeight: 700, textTransform: "uppercase" }}>Bild</span>
+                  </div>
+                )}
+                {block.type === "info_list" && (
+                  <div style={{ borderLeft: `2px solid ${tpl.accent_color}55`, paddingLeft: "4px" }}>
+                    {block.list_title && <div style={{ fontSize: isDinLang ? "5px" : "7px", fontWeight: 700, color: tpl.accent_color, textTransform: "uppercase", marginBottom: "1px" }}>{block.list_title}</div>}
+                    {(block.items || []).slice(0, 3).map((item, i) => (
+                      <div key={i} style={{ fontSize: isDinLang ? "5px" : "7px", color: textCol, opacity: 0.7 }}>• {item}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Sponsors */}
+            {tpl.sponsors.length > 0 && (
+              <div style={{ marginTop: "auto", paddingTop: "6px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                {tpl.sponsors.map((s, i) => (
+                  <span key={i} style={{ fontSize: "6px", color: textCol, opacity: 0.4, textTransform: "uppercase" }}>{s.type === "text" ? s.value : "📷 Sponsor"}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* QR section – solid background, no blur */}
+        {tpl.show_qr_code && (
           <div style={{
-            position: "absolute", inset: 0, zIndex: 0,
-            backgroundImage: `url(${previewImageUrl})`,
-            backgroundSize: "cover", backgroundPosition: "center",
-            filter: `blur(${tpl.magic_ticket_blur || 20}px)`,
-            opacity: (tpl.magic_ticket_opacity ?? 40) / 100,
-            transform: "scale(1.15)",
-          }} />
+            background: bg,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            padding: isDinLang ? "12px 16px" : "20px 24px",
+            ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33` } : { borderTop: `1px dashed ${textCol}33` }),
+          }}>
+            {tpl.show_category && (
+              <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
+            )}
+            <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
+            </div>
+            <div style={{ fontSize: "6px", color: textCol, opacity: 0.4, marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}>ABCD-EFGH-IJKL</div>
+          </div>
         )}
-        <div style={{ height: isDinLang ? "4px" : "6px", background: tpl.accent_color, position: "relative", zIndex: 1 }} />
-        <div style={{ padding: isDinLang ? "12px 16px" : "24px 28px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1, minWidth: 0 }}>
-          {tpl.logo_url && (
-            <div style={{ marginBottom: "6px" }}>
-              <div style={{ width: isDinLang ? "32px" : "48px", height: isDinLang ? "32px" : "48px", borderRadius: "6px", background: `${tpl.accent_color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: tpl.accent_color, fontWeight: 700 }}>LOGO</div>
-            </div>
-          )}
-          <div style={{ fontSize: isDinLang ? "7px" : "9px", fontWeight: 800, letterSpacing: "2px", color: tpl.accent_color, textTransform: "uppercase", marginBottom: "2px" }}>TICKET</div>
-          {tpl.show_event_title && <div style={{ fontSize: isDinLang ? "10px" : "14px", fontWeight: 800, color: tpl.accent_color, textTransform: "uppercase", lineHeight: 1.1, marginBottom: "6px" }}>EXAMPLE EVENT</div>}
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {tpl.show_date && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>DATUM</span> 15.03.2026</div>}
-            {tpl.show_time && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>UHRZEIT</span> 22:00 Uhr</div>}
-            {tpl.show_location && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ORT</span> Baggi / Osho</div>}
-            {tpl.show_address && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>ADRESSE</span> Musterstr. 1</div>}
-            {tpl.show_category && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>KATEGORIE</span> Early Bird</div>}
-            {tpl.show_holder_name && <div style={{ fontSize: isDinLang ? "7px" : "9px", color: textCol, opacity: 0.8 }}><span style={{ opacity: 0.5, marginRight: "4px" }}>NAME</span> Max Mustermann</div>}
-          </div>
-
-          {/* Content Blocks Preview */}
-          {tpl.content_blocks.filter(b => b.enabled).map((block) => (
-            <div key={block.id} style={{ marginTop: "4px" }}>
-              {block.type === "text" && (
-                <div style={{ fontSize: block.font_size === "lg" ? (isDinLang ? "8px" : "11px") : block.font_size === "md" ? (isDinLang ? "7px" : "9px") : (isDinLang ? "6px" : "8px"), fontWeight: block.bold ? 700 : 400, color: textCol, opacity: 0.85, lineHeight: 1.3 }}>
-                  {block.text || "Text…"}
-                </div>
-              )}
-              {block.type === "image" && (
-                <div style={{ width: `${block.image_width || 60}%`, maxWidth: isDinLang ? "60px" : "100px", height: isDinLang ? "16px" : "28px", borderRadius: "3px", background: `${tpl.accent_color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: "5px", color: tpl.accent_color, fontWeight: 700, textTransform: "uppercase" }}>Bild</span>
-                </div>
-              )}
-              {block.type === "info_list" && (
-                <div style={{ borderLeft: `2px solid ${tpl.accent_color}55`, paddingLeft: "4px" }}>
-                  {block.list_title && <div style={{ fontSize: isDinLang ? "5px" : "7px", fontWeight: 700, color: tpl.accent_color, textTransform: "uppercase", marginBottom: "1px" }}>{block.list_title}</div>}
-                  {(block.items || []).slice(0, 3).map((item, i) => (
-                    <div key={i} style={{ fontSize: isDinLang ? "5px" : "7px", color: textCol, opacity: 0.7 }}>• {item}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Sponsors */}
-          {tpl.sponsors.length > 0 && (
-            <div style={{ marginTop: "auto", paddingTop: "6px", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-              {tpl.sponsors.map((s, i) => (
-                <span key={i} style={{ fontSize: "6px", color: textCol, opacity: 0.4, textTransform: "uppercase" }}>{s.type === "text" ? s.value : "📷 Sponsor"}</span>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
-
-      {/* QR section – solid background, no blur */}
-      {tpl.show_qr_code && (
-        <div style={{
-          background: bg,
-          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          padding: isDinLang ? "12px 16px" : "20px 24px",
-          ...(isDinLang ? { borderLeft: `1px dashed ${textCol}33` } : { borderTop: `1px dashed ${textCol}33` }),
-        }}>
-          {tpl.show_category && (
-            <div style={{ fontSize: isDinLang ? "6px" : "8px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: tpl.accent_color, marginBottom: isDinLang ? "4px" : "6px", textAlign: "center", lineHeight: 1.2 }}>Last Chance<br />Ticket</div>
-          )}
-          <div style={{ width: isDinLang ? "56px" : "100px", height: isDinLang ? "56px" : "100px", background: "#fff", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: isDinLang ? "46px" : "84px", height: isDinLang ? "46px" : "84px", background: `repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / ${isDinLang ? "6px 6px" : "10px 10px"}`, borderRadius: "2px" }} />
-          </div>
-          <div style={{ fontSize: "6px", color: textCol, opacity: 0.4, marginTop: "3px", fontFamily: "monospace", letterSpacing: "1px" }}>ABCD-EFGH-IJKL</div>
-        </div>
-      )}
     </div>
   );
 };
