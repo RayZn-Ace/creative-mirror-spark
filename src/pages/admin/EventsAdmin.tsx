@@ -1955,9 +1955,6 @@ const EventsAdmin = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl sm:text-2xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Events</h1>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowTioSync(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)", border: "1px solid hsl(200 80% 55% / 0.3)" }}>
-            <RefreshCw className="w-4 h-4" /> Ticket.io Sync
-          </button>
           <button onClick={() => setShowBulkAdd(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)", border: "1px solid hsl(270 60% 55% / 0.3)" }}>
             <LayoutGrid className="w-4 h-4" /> Bulk Add
           </button>
