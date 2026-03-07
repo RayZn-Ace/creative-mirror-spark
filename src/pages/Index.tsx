@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  MapPin, Calendar, ArrowRight, Ticket, Clock, Music, Music2, Sparkles,
-  Users, Heart, Star, Gift, Mic, Quote, Send, MessageCircle,
-  ChevronLeft, ChevronRight, Globe, PartyPopper, Cake, Sun
+  MapPin, ArrowRight, Ticket, Music, Sparkles,
+  Users, Heart, Star, Gift, Mic, Quote,
+  ChevronLeft, ChevronRight, Sun
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
