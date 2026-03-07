@@ -1528,9 +1528,9 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
                             onClick={() => setSelectedTemplate(tmpl)}
                             className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all hover:scale-[1.02]"
                             style={{
-                              background: isSelected ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                              color: isSelected ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.7)",
-                              border: `1px solid ${isSelected ? "hsl(330 80% 55% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
+                              background: isSelected ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                              color: isSelected ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.7)",
+                              border: `1px solid ${isSelected ? "hsl(230 80% 56% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
                             }}
                           >
                             <Icon className="w-3.5 h-3.5 shrink-0" />
