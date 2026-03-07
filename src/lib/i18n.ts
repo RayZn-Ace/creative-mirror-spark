@@ -1246,7 +1246,7 @@ const globalEn: GlobalTranslations = {
   feat3hParty: "Events in 150+ cities", featLiveDj: "Various organizers", featGlitter: "Easy & secure booking", featFans: "250,000+ happy guests",
   countriesTitle1: "We are in", countriesTitle2: "13 countries", countriesDesc: "Events and parties across Europe – and beyond.",
   countryNames: { DE: "Germany", AT: "Austria", CH: "Switzerland", NL: "Netherlands", FR: "France", LU: "Luxembourg", BE: "Belgium", PL: "Poland", CZ: "Czech Republic", IT: "Italy", ES: "Spain", HR: "Croatia", BR: "Brazil" },
-  forWhomTitle1: "Who is", forWhomTitle2: "partyticket for?", forWhomDesc: "Whether it's a hen party, birthday or just an amazing night out – find the perfect event!",
+  forWhomTitle1: "Who is", forWhomTitle2: "Nightlife Generation for?", forWhomDesc: "Whether it's a hen party, birthday or just an amazing night out – find the perfect event!",
   audJga: "Hen Party", audJgaDesc: "The perfect celebration before the big day.", audBirthday: "Birthdays", audBirthdayDesc: "Celebrate your birthday in a unique and unforgettable way.", audGirlsNight: "Girls Night Out", audGirlsNightDesc: "Gather the crew and party the night away.", audGroups: "Groups", audGroupsDesc: "Special offers for groups of 10+.", audFans: "Party Lovers", audFansDesc: "For everyone who loves great music and vibes!",
   countdownNext: "NEXT", countdownEvent: "EVENT", countdownDays: "Days", countdownHours: "Hours", countdownMinutes: "Minutes", countdownSeconds: "Seconds", countdownTicketsFor: "Tickets for", countdownSecure: "get now",
   upcomingTitle1: "UPCOMING", upcomingTitle2: "DATES", upcomingAllDates: "View all dates",
