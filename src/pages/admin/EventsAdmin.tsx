@@ -1965,6 +1965,9 @@ const EventsAdmin = () => {
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
   const [filterOpenAir, setFilterOpenAir] = useState(false);
   const [filterSoldOut, setFilterSoldOut] = useState<"all" | "hide" | "only">("all");
+  const [filter16Plus, setFilter16Plus] = useState(false);
+  const [filterMammaMia, setFilterMammaMia] = useState(false);
+  const [filterActs, setFilterActs] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [showTioSync, setShowTioSync] = useState(false);
