@@ -197,6 +197,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Heart,
     gradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
     headerGradient: "linear-gradient(135deg, #fc5c7d, #6a82fb)",
+    colorSchemeId: "light-pink",
     blocks: () => [
       createBlock("heading", { text: "Was für eine Nacht! 💜", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
