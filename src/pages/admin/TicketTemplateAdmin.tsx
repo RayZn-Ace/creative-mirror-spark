@@ -447,8 +447,8 @@ const TicketTemplateAdmin = () => {
             <h3 className="text-sm font-bold mb-3" style={{ color: "hsl(0 0% 100%)" }}>Format</h3>
             <div className="grid grid-cols-2 gap-3">
               {FORMATS.map((f) => (
-                <button key={f.id} onClick={() => update("format", f.id)} className="text-left p-3 rounded-xl transition-all" style={{ background: tpl.format === f.id ? `${tpl.accent_color}22` : "hsl(0 0% 100% / 0.04)", border: `2px solid ${tpl.format === f.id ? tpl.accent_color : "hsl(0 0% 100% / 0.08)"}` }}>
-                  <div className="text-sm font-bold" style={{ color: tpl.format === f.id ? tpl.accent_color : "hsl(0 0% 100%)" }}>{f.label}</div>
+                <button key={f.id} onClick={() => update("format", f.id)} className="text-left p-3 rounded-xl transition-all" style={{ background: tpl.format === f.id ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.04)", border: `2px solid ${tpl.format === f.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}` }}>
+                  <div className="text-sm font-bold" style={{ color: tpl.format === f.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100%)" }}>{f.label}</div>
                   <div className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{f.desc}</div>
                 </button>
               ))}
@@ -543,7 +543,7 @@ const TicketTemplateAdmin = () => {
               {TEXT_BLOCKS.map((b) => {
                 const active = tpl[b.key];
                 return (
-                  <button key={b.key} onClick={() => update(b.key, !active)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: active ? `${tpl.accent_color}22` : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${active ? tpl.accent_color : "hsl(0 0% 100% / 0.08)"}`, color: active ? tpl.accent_color : "hsl(0 0% 100% / 0.4)" }}>
+                  <button key={b.key} onClick={() => update(b.key, !active)} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: active ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.04)", border: `1.5px solid ${active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.08)"}`, color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)" }}>
                     {b.label}
                   </button>
                 );
@@ -561,7 +561,7 @@ const TicketTemplateAdmin = () => {
                   { type: "image" as const, icon: <Image className="w-3.5 h-3.5" />, label: "Bild" },
                   { type: "info_list" as const, icon: <ListChecks className="w-3.5 h-3.5" />, label: "Info" },
                 ]).map(b => (
-                  <button key={b.type} onClick={() => addBlock(b.type)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105" style={{ background: `${tpl.accent_color}15`, color: tpl.accent_color, border: `1px solid ${tpl.accent_color}33` }}>
+                  <button key={b.type} onClick={() => addBlock(b.type)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.25)" }}>
                     {b.icon} {b.label}
                   </button>
                 ))}
