@@ -48,8 +48,8 @@ const TicketUmbuchung = () => {
   };
 
   const inputStyle: React.CSSProperties = {
-    background: "hsl(220 20% 97%)",
-    border: "1px solid hsl(220 15% 88%)",
+    background: "hsl(220 15% 93%)",
+    border: "1px solid hsl(220 15% 85%)",
     color: "hsl(220 20% 15%)",
     borderRadius: "8px",
     padding: "12px 16px",
@@ -137,7 +137,7 @@ const TicketUmbuchung = () => {
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={e => setFile(e.target.files?.[0] || null)}
               className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:cursor-pointer"
-              style={{ color: "hsl(220 10% 45%)", background: "hsl(220 20% 97%)", border: "1px solid hsl(220 15% 88%)", borderRadius: "8px", padding: "8px" }}
+              style={{ color: "hsl(220 10% 45%)", background: "hsl(220 15% 93%)", border: "1px solid hsl(220 15% 85%)", borderRadius: "8px", padding: "8px" }}
             />
           </div>
 
