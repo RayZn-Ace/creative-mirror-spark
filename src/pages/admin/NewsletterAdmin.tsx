@@ -99,6 +99,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Sparkles,
     gradient: "linear-gradient(135deg, #8b5cf6, #ec4899)",
     headerGradient: "linear-gradient(135deg, #8b5cf6, #a855f7)",
+    colorSchemeId: "dark-purple",
     blocks: () => [
       createBlock("heading", { text: "🪄 Deine nächsten Events", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
