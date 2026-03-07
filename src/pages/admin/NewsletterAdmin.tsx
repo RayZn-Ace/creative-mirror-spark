@@ -119,6 +119,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Calendar,
     gradient: "linear-gradient(135deg, #e91e8c, #7c3aed)",
     headerGradient: "linear-gradient(135deg, #e91e8c, #ff6b35)",
+    colorSchemeId: "light-pink",
     blocks: () => [
       createBlock("heading", { text: "🎶 Die Tour kommt!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
