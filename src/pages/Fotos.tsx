@@ -449,7 +449,7 @@ const Fotos = () => {
       {/* Videos */}
       <h2
         className="text-xl sm:text-2xl font-black uppercase tracking-wider mb-6"
-        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
+        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
       >
         Videos
       </h2>

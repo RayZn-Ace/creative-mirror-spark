@@ -75,7 +75,7 @@ const Promoter = () => {
 
   const inputStyle =
     "w-full px-4 py-3 rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50";
-  const inputBg = "bg-[hsl(220,20%,14%)] border border-[hsl(220,15%,20%)]";
+  const inputBg = "bg-[hsl(220,15%,93%)] border border-[hsl(220,15%,85%)]";
 
   return (
     <PageLayout title="" subtitle="">
