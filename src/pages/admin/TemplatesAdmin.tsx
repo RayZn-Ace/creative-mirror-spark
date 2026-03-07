@@ -793,7 +793,7 @@ const EmailTab = () => {
             <div className="mt-3 relative">
               <button onClick={() => setShowBlockMenu(!showBlockMenu)}
                 className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl text-xs font-bold transition-all"
-                style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(330 80% 55%)", border: "1px dashed hsl(330 80% 55% / 0.3)" }}>
+                style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(230 80% 56%)", border: "1px dashed hsl(230 80% 56% / 0.3)" }}>
                 <Plus className="w-4 h-4" /> Block hinzufügen
               </button>
               {showBlockMenu && (
