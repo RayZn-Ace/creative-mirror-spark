@@ -1001,7 +1001,7 @@ const TicketTemplateAdmin = () => {
                 const overrideKey = previewCategoryId.toUpperCase();
                 const override = tpl.category_overrides?.[overrideKey];
                 // Find the category name from ticketCategories
-                const cat = uniqueCategories.find(c => c.category_group === previewCategoryId);
+                const cat = ticketCategories.find(c => c.category_group === previewCategoryId);
                 categoryName = cat?.name;
                 if (override) {
                   displayTpl = {
