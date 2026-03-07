@@ -91,7 +91,7 @@ const getCityCoords = (city: string): [number, number] | null => {
 /* ─── i18n for this page ─── */
 const termineI18n: Record<string, Record<string, string>> = {
   de: {
-    title: "ALLE TERMINE",
+    title: "ALLE EVENTS",
     subtitle: "Finde dein Event in deiner Nähe",
     searchPlaceholder: "Stadt oder Location suchen...",
     nearYou: "In deiner Nähe",
@@ -108,7 +108,7 @@ const termineI18n: Record<string, Record<string, string>> = {
     moreDates: "weitere Termine",
   },
   en: {
-    title: "ALL DATES",
+    title: "ALL EVENTS",
     subtitle: "Find your event nearby",
     searchPlaceholder: "Search city or venue...",
     nearYou: "Near you",
