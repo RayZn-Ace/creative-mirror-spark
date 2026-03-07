@@ -22,6 +22,7 @@ const navItems = [
   { label: "Werbemanager", href: "/admin/werbemanager", icon: Megaphone },
   { label: "Support", href: "/admin/support", icon: Headphones },
   { label: "Muttizettel", href: "/admin/muttizettel", icon: ClipboardList },
+  { label: "Medien", href: "/admin/medien", icon: ImageIcon },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
