@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  MapPin, Calendar, ArrowRight, Ticket, Clock, Music, Music2, Sparkles,
-  Users, Heart, Star, Gift, Mic, Quote, Send, MessageCircle,
-  ChevronLeft, ChevronRight, Globe, PartyPopper, Cake, Sun
+  MapPin, ArrowRight, Ticket, Music, Sparkles,
+  Users, Heart, Star, Gift, Mic, Quote,
+  ChevronLeft, ChevronRight, Sun
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,7 +16,6 @@ import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "
 import heroBg from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdAerial from "@/assets/crowd-aerial.jpg";
-import crowdVertical from "@/assets/crowd-vertical.jpg";
 import crowdWide from "@/assets/crowd-wide.jpg";
 import crowdGlowsticks from "@/assets/crowd-glowsticks.jpg";
 import crowdGlowsticks2 from "@/assets/crowd-glowsticks2.jpg";
@@ -51,139 +50,6 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
   </section>
 );
 
-/* ─── Trust Badges ─── */
-const TrustBadges = ({ gt }: { gt: GlobalTranslations }) => {
-  const badges = [
-    { icon: MapPin, value: "150+", label: gt.trustCities },
-    { icon: Globe, value: "13+", label: gt.trustCountries },
-    { icon: Heart, value: "1.5M+", label: gt.trustFollowers },
-    { icon: Users, value: "250K+", label: gt.trustFans },
-  ];
-
-  return (
-    <section className="py-12 md:py-16 bg-card/50">
-      <div className="container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {badges.map((b, i) => (
-            <motion.div key={b.value} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              className="flex flex-col items-center text-center p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
-              <b.icon className="w-7 h-7 text-primary mb-3" />
-              <span className="font-display text-3xl md:text-4xl text-gradient-primary">{b.value}</span>
-              <span className="text-xs font-semibold tracking-wider text-muted-foreground mt-1">{b.label}</span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* ─── What Is It ─── */
-const WhatIsIt = ({ gt }: { gt: GlobalTranslations }) => {
-  const features = [
-    { icon: Clock, label: gt.feat3hParty },
-    { icon: Music2, label: gt.featLiveDj },
-    { icon: Sparkles, label: gt.featGlitter },
-    { icon: Users, label: gt.featFans },
-  ];
-
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-6">
-              <span className="italic">{gt.whatIsTitle1}</span>{" "}
-              <span className="text-gradient-primary">{gt.whatIsTitle2}</span>
-            </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8 max-w-lg">{gt.whatIsDesc}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {features.map((f, i) => (
-                <motion.div key={f.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                  className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/50">
-                  <f.icon className="w-5 h-5 text-primary shrink-0" />
-                  <span className="text-sm font-medium text-foreground">{f.label}</span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-            className="rounded-2xl overflow-hidden border border-border">
-            <img src={crowdParty} alt="Party Crowd" className="w-full h-[300px] md:h-[420px] object-cover" />
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* ─── Country Badges ─── */
-const countryCodes = [
-  { flag: "🇩🇪", code: "DE" }, { flag: "🇦🇹", code: "AT" },
-  { flag: "🇨🇭", code: "CH" }, { flag: "🇳🇱", code: "NL" },
-  { flag: "🇫🇷", code: "FR" }, { flag: "🇱🇺", code: "LU" },
-  { flag: "🇧🇪", code: "BE" }, { flag: "🇵🇱", code: "PL" },
-  { flag: "🇨🇿", code: "CZ" }, { flag: "🇮🇹", code: "IT" },
-  { flag: "🇪🇸", code: "ES" }, { flag: "🇭🇷", code: "HR" },
-  { flag: "🇧🇷", code: "BR" },
-];
-
-const CountryBadges = ({ gt }: { gt: GlobalTranslations }) => (
-  <section className="py-12 md:py-20">
-    <div className="container">
-      <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
-        {gt.countriesTitle1} <span className="text-gradient-primary">{gt.countriesTitle2}</span>
-      </h2>
-      <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{gt.countriesDesc}</p>
-      <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-        {countryCodes.map((c, i) => (
-          <motion.div key={c.flag} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
-            <span className="text-2xl">{c.flag}</span>
-            <span className="text-sm font-medium text-foreground">{gt.countryNames[c.code] || c.code}</span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-/* ─── For Whom ─── */
-const ForWhom = ({ gt }: { gt: GlobalTranslations }) => {
-  const audiences = [
-    { icon: PartyPopper, title: gt.audJga, desc: gt.audJgaDesc },
-    { icon: Cake, title: gt.audBirthday, desc: gt.audBirthdayDesc },
-    { icon: Heart, title: gt.audGirlsNight, desc: gt.audGirlsNightDesc },
-    { icon: Users, title: gt.audGroups, desc: gt.audGroupsDesc },
-    { icon: Star, title: gt.audFans, desc: gt.audFansDesc },
-  ];
-
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container">
-        <h2 className="font-display text-3xl md:text-5xl text-center mb-3 text-foreground">
-          <span className="italic">{gt.forWhomTitle1}</span>{" "}
-          <span className="text-gradient-primary">{gt.forWhomTitle2}</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{gt.forWhomDesc}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          <img src={crowdAerial} alt="Party crowd" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
-          <img src={crowdVertical} alt="Party atmosphere" className="rounded-2xl h-48 md:h-72 w-full object-cover" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {audiences.map((a, i) => (
-            <motion.div key={a.title} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-              className="p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
-              <a.icon className="w-5 h-5 text-primary mb-2" />
-              <h3 className="font-display text-lg text-primary mb-1">{a.title}</h3>
-              <p className="text-sm text-muted-foreground">{a.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ─── Event Countdown ─── */
 function pad(n: number) { return String(n).padStart(2, "0"); }
@@ -338,40 +204,6 @@ const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
   );
 };
 
-/* ─── Ticket Categories ─── */
-const TicketCategories = ({ gt }: { gt: GlobalTranslations }) => {
-  const tickets = [
-    { name: gt.ticketRegular, desc: gt.ticketRegularDesc, price: "Ab 19,99€", popular: false },
-    { name: gt.ticketDeluxe, desc: gt.ticketDeluxeDesc, price: "Ab 29,99€", popular: false },
-    { name: gt.ticketFan, desc: gt.ticketFanDesc, price: "Ab 49,99€", popular: true },
-  ];
-
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container">
-        <h2 className="font-display text-4xl md:text-5xl text-center mb-4 text-foreground">
-          {gt.ticketCatTitle1} <span className="text-gradient-primary">{gt.ticketCatTitle2}</span>
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">{gt.ticketCatDesc}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
-          {tickets.map((tk, i) => (
-            <motion.div key={tk.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              className={`relative flex flex-col p-6 rounded-xl border transition-all hover:scale-[1.02] ${tk.popular ? "border-primary bg-primary/5 glow-primary" : "border-border bg-card hover:border-primary/30"}`}>
-              {tk.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">{gt.ticketCatPopular}</span>}
-              <h3 className="font-display text-xl mb-2 text-foreground">{tk.name}</h3>
-              <p className="text-sm text-muted-foreground flex-1 mb-4">{tk.desc}</p>
-              <p className="font-display text-2xl text-gold mb-4">{tk.price}</p>
-              <Link to="/termine"
-                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
-                <Ticket className="w-4 h-4" />{gt.ticketCatSecure}
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
@@ -477,48 +309,6 @@ const Reviews = ({ gt }: { gt: GlobalTranslations }) => (
   </section>
 );
 
-/* ─── Newsletter CTA ─── */
-const NewsletterCTA = ({ gt }: { gt: GlobalTranslations }) => {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) setSubmitted(true);
-  };
-
-  return (
-    <section className="py-16 md:py-24 bg-card/50">
-      <div className="container max-w-2xl text-center">
-        <h2 className="font-display text-4xl md:text-5xl mb-4 text-foreground">
-          {gt.newsletterTitle1} <span className="text-gradient-gold">{gt.newsletterTitle2}</span>
-        </h2>
-        <p className="text-muted-foreground mb-8">{gt.newsletterDesc}</p>
-
-        {submitted ? (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-primary font-semibold text-lg">
-            {gt.newsletterThanks}
-          </motion.p>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-            <input type="email" required placeholder={gt.newsletterPlaceholder} value={email} onChange={e => setEmail(e.target.value)}
-              className="flex-1 px-4 py-3 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-            <button type="submit" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-              <Send className="w-4 h-4" /> {gt.newsletterSubmit}
-            </button>
-          </form>
-        )}
-
-        <div className="mt-8">
-          <a href="https://chat.whatsapp.com/GVs4g7qn75VA4DZVWTcNRv" target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[hsl(142,70%,45%)] text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity">
-            <MessageCircle className="w-5 h-5" /> {gt.whatsappJoinGroup}
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ─── Page ─── */
 export default function Index() {
@@ -529,18 +319,11 @@ export default function Index() {
       <Navbar gt={gt} />
       <main className="flex-1 pt-16 md:pt-20 pb-20 lg:pb-0">
         <Hero gt={gt} />
-        <TrustBadges gt={gt} />
-        <WhatIsIt gt={gt} />
-        <CountryBadges gt={gt} />
-        <ForWhom gt={gt} />
         <EventCountdown gt={gt} />
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
-        <TicketCategories gt={gt} />
         <CrowdSlideshow gt={gt} />
-        {/* VideoSection removed */}
         <Reviews gt={gt} />
-        <NewsletterCTA gt={gt} />
       </main>
       <Footer gt={gt} />
       <BottomNav />
