@@ -528,8 +528,8 @@ const ToggleChip = ({ label, checked, onChange }: { label: string; checked: bool
       border: `1px solid ${checked ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
     }}
   >
-    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.2)" }}>
-      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(330 80% 55%)" }} />}
+    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.2)" }}>
+      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(230 80% 56%)" }} />}
     </div>
     {label}
   </button>
