@@ -612,7 +612,7 @@ const EmailTab = () => {
               </div>
             ))}
             <button onClick={() => updateBlock(block.id, { events: [...block.events, { title: "", date: "", location: "" }] })}
-              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg" style={{ color: "hsl(330 80% 55%)", background: "hsl(330 80% 55% / 0.1)" }}>
+              className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg" style={{ color: "hsl(230 80% 56%)", background: "hsl(230 80% 56% / 0.1)" }}>
               <Plus className="w-3 h-3" /> Event hinzufügen
             </button>
           </div>
