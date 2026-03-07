@@ -1,7 +1,6 @@
 import { PageLayout } from "@/components/PageLayout";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
 
 const Muttizettel = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +18,27 @@ const Muttizettel = () => {
     setSubmitted(true);
   };
 
+  const inputStyle: React.CSSProperties = {
+    background: "hsl(220 20% 97%)",
+    border: "1px solid hsl(220 15% 88%)",
+    color: "hsl(220 20% 15%)",
+    borderRadius: "12px",
+    padding: "10px 16px",
+    fontSize: "14px",
+    width: "100%",
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    color: "hsl(220 10% 45%)",
+    fontSize: "12px",
+    fontWeight: 700,
+    textTransform: "uppercase" as const,
+    marginBottom: "6px",
+    display: "block",
+  };
+
   return (
     <PageLayout title="Muttizettel" subtitle="Für Gäste unter 18 Jahren">
       <div className="space-y-6">
@@ -29,22 +49,22 @@ const Muttizettel = () => {
         {submitted ? (
           <div
             className="p-8 rounded-2xl text-center"
-            style={{ background: "hsl(142 70% 45% / 0.1)", border: "1px solid hsl(142 70% 45% / 0.2)" }}
+            style={{ background: "hsl(142 70% 95%)", border: "1px solid hsl(142 70% 80%)" }}
           >
-            <p className="text-lg font-bold mb-2" style={{ color: "hsl(142 70% 55%)" }}>✓ Muttizettel eingereicht!</p>
-            <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            <p className="text-lg font-bold mb-2" style={{ color: "hsl(142 50% 35%)" }}>✓ Muttizettel eingereicht!</p>
+            <p className="text-sm" style={{ color: "hsl(220 10% 45%)" }}>
               Du erhältst eine Bestätigung per E-Mail. Bitte drucke den Muttizettel aus und bringe ihn unterschrieben mit.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Event</label>
+              <label style={labelStyle}>Event</label>
               <select
                 required
                 value={formData.eventName}
                 onChange={(e) => setFormData({ ...formData, eventName: e.target.value })}
-                className="pp-form-input"
+                style={inputStyle}
               >
                 <option value="">Event wählen...</option>
                 <option value="project-paderborn">PROJECT PADERBORN – 05.04.2025</option>
@@ -53,49 +73,49 @@ const Muttizettel = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Vollständiger Name des Kindes</label>
+              <label style={labelStyle}>Vollständiger Name des Kindes</label>
               <input
                 type="text" required maxLength={100}
                 value={formData.childName} onChange={(e) => setFormData({ ...formData, childName: e.target.value })}
-                className="pp-form-input" placeholder="Max Mustermann"
+                style={inputStyle} placeholder="Max Mustermann"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Geburtsdatum</label>
+              <label style={labelStyle}>Geburtsdatum</label>
               <input
                 type="date" required
                 value={formData.childBirthdate} onChange={(e) => setFormData({ ...formData, childBirthdate: e.target.value })}
-                className="pp-form-input"
+                style={inputStyle}
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Name Erziehungsberechtigte/r</label>
+              <label style={labelStyle}>Name Erziehungsberechtigte/r</label>
               <input
                 type="text" required maxLength={100}
                 value={formData.parentName} onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-                className="pp-form-input" placeholder="Maria Mustermann"
+                style={inputStyle} placeholder="Maria Mustermann"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>Telefon Erziehungsberechtigte/r</label>
+              <label style={labelStyle}>Telefon Erziehungsberechtigte/r</label>
               <input
                 type="tel" required maxLength={20}
                 value={formData.parentPhone} onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
-                className="pp-form-input" placeholder="+49 123 456789"
+                style={inputStyle} placeholder="+49 123 456789"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>E-Mail Erziehungsberechtigte/r</label>
+              <label style={labelStyle}>E-Mail Erziehungsberechtigte/r</label>
               <input
                 type="email" required maxLength={255}
                 value={formData.parentEmail} onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
-                className="pp-form-input" placeholder="maria@beispiel.de"
+                style={inputStyle} placeholder="maria@beispiel.de"
               />
             </div>
             <motion.button
               type="submit"
               className="w-full py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider"
-              style={{ background: "hsl(0 70% 50%)", color: "white", boxShadow: "0 4px 20px hsl(0 70% 50% / 0.4)" }}
+              style={{ background: "hsl(220 60% 50%)", color: "white", boxShadow: "0 4px 20px hsl(220 60% 50% / 0.3)" }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
             >
