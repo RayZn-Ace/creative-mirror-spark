@@ -177,7 +177,7 @@ const gradientCSS = (g: GradientConfig, fallback: string) => {
 const DEMO_EVENT_IMAGE = "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80";
 
 /* ─── Ticket Preview ─── */
-const TicketPreview = ({ tpl, previewImageUrl }: { tpl: TicketTemplate; previewImageUrl?: string }) => {
+const TicketPreview = ({ tpl, previewImageUrl, previewCategoryName }: { tpl: TicketTemplate; previewImageUrl?: string; previewCategoryName?: string }) => {
   const isDinLang = tpl.format === "din_lang";
   const aspectStyle = isDinLang
     ? { width: "100%", maxWidth: "480px", aspectRatio: "210/99" }
