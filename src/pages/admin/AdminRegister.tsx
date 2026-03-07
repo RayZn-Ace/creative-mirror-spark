@@ -94,7 +94,7 @@ const AdminRegister = () => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(330 80% 55%)", borderTopColor: "transparent" }} />
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(230 80% 56%)", borderTopColor: "transparent" }} />
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Einladung wird verarbeitet...</p>
         </div>
       </div>
