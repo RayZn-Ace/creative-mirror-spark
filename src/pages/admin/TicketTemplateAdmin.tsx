@@ -1068,13 +1068,8 @@ const TicketTemplateAdmin = () => {
               // Determine preview image from selected series
               let rawImg = DEMO_EVENT_IMAGE;
               if (previewSeriesId) {
-                const series = eventSeries.find(s => s.id === previewSeriesId);
-                if (series?.image_url) {
-                  rawImg = series.image_url;
-                } else {
-                  const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-                  if (ev?.image_url) rawImg = ev.image_url;
-                }
+                const resolvedSeriesImage = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
+                if (resolvedSeriesImage) rawImg = resolvedSeriesImage;
               }
               // Use AI-cleaned version if available
               const previewImg = cleanedImages[rawImg] || rawImg;
