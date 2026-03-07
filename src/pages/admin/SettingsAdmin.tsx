@@ -34,8 +34,8 @@ const Field = ({ label, value, onChange, placeholder, type = "text" }: { label: 
 const SectionCard = ({ icon: Icon, title, description, children, onSave, saving }: { icon: any; title: string; description: string; children: React.ReactNode; onSave?: () => void; saving?: boolean }) => (
   <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
     <div className="flex items-center gap-3 mb-1">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(330 80% 55% / 0.15)" }}>
-        <Icon className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(230 80% 56% / 0.15)" }}>
+        <Icon className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} />
       </div>
       <h3 className="text-base font-bold" style={{ color: "hsl(0 0% 100%)" }}>{title}</h3>
     </div>
