@@ -1433,9 +1433,9 @@ const EventEditView = ({
                       onClick={() => setEditing({ ...editing, service_fee_type: "percent" })}
                       className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
                       style={{
-                        background: editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)",
-                        color: editing.service_fee_type === "percent" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                        border: `1px solid ${editing.service_fee_type === "percent" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                        background: editing.service_fee_type === "percent" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_type === "percent" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_type === "percent" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
                       }}
                     >
                       Prozentual (%)
