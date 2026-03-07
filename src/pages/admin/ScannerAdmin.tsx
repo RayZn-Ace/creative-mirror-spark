@@ -823,7 +823,7 @@ const ScannerAdmin = () => {
                           type="submit"
                           disabled={scanningInProgress || !manualCode.trim()}
                           className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-30 flex items-center justify-center gap-2"
-                          style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)", border: "1px solid hsl(330 80% 55% / 0.3)" }}
+                          style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.3)" }}
                         >
                           {scanningInProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                           {scanningInProgress ? "Prüfe…" : "Einchecken"}
