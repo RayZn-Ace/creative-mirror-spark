@@ -1034,17 +1034,18 @@ const TicketTemplateAdmin = () => {
             {/* Computed preview */}
             {(() => {
               // Determine preview image from selected series
-              let previewImg = DEMO_EVENT_IMAGE;
+              let rawImg = DEMO_EVENT_IMAGE;
               if (previewSeriesId) {
                 const series = eventSeries.find(s => s.id === previewSeriesId);
                 if (series?.image_url) {
-                  previewImg = series.image_url;
+                  rawImg = series.image_url;
                 } else {
-                  // Find first event of that series with an image
                   const ev = Object.values(eventsMap).find(e => e.series_id === previewSeriesId && e.image_url);
-                  if (ev?.image_url) previewImg = ev.image_url;
+                  if (ev?.image_url) rawImg = ev.image_url;
                 }
               }
+              // Use AI-cleaned version if available
+              const previewImg = cleanedImages[rawImg] || rawImg;
 
               // Apply category override to tpl
               let displayTpl = tpl;
