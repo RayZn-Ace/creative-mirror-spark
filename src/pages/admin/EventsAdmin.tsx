@@ -1565,7 +1565,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
             </>
           ) : (
             <>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(230 80% 56%)" }}>
                 Schritt 2: Events auswählen ({selectedEvents.size} / {events.length})
               </p>
               <div className="flex items-center gap-2 mb-2">
