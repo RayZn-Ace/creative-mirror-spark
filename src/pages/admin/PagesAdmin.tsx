@@ -79,7 +79,7 @@ const PagesAdmin = () => {
         <button
           onClick={() => startEdit()}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-          style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
         >
           <Plus className="w-4 h-4" /> Neue Seite
         </button>
@@ -166,7 +166,7 @@ const PagesAdmin = () => {
                   <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
                     Abbrechen
                   </button>
-                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>

@@ -423,8 +423,8 @@ const ScannerAdmin = () => {
             onClick={() => setTab(t.key)}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all"
             style={{
-              background: tab === t.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
-              color: tab === t.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+               background: tab === t.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: tab === t.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -465,7 +465,7 @@ const ScannerAdmin = () => {
                   onClick={() => createLink()}
                   disabled={!selectedEvent}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-40"
-                  style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}
+                  style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
                 >
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Erstellen</span>
@@ -639,9 +639,9 @@ const ScannerAdmin = () => {
                   onClick={() => { setScanMode("camera"); resetInlineScan(); }}
                   className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
                   style={{
-                    background: scanMode === "camera" ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                    color: scanMode === "camera" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                    border: `1px solid ${scanMode === "camera" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    background: scanMode === "camera" ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                    color: scanMode === "camera" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                    border: `1px solid ${scanMode === "camera" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
                   }}
                 >
                   <Camera className="w-3.5 h-3.5" /> Kamera
@@ -650,9 +650,9 @@ const ScannerAdmin = () => {
                   onClick={() => { setScanMode("manual"); resetInlineScan(); }}
                   className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
                   style={{
-                    background: scanMode === "manual" ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                    color: scanMode === "manual" ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
-                    border: `1px solid ${scanMode === "manual" ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    background: scanMode === "manual" ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                    color: scanMode === "manual" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                    border: `1px solid ${scanMode === "manual" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
                   }}
                 >
                   <Keyboard className="w-3.5 h-3.5" /> Manuell
@@ -823,7 +823,7 @@ const ScannerAdmin = () => {
                           type="submit"
                           disabled={scanningInProgress || !manualCode.trim()}
                           className="w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-30 flex items-center justify-center gap-2"
-                          style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)", border: "1px solid hsl(330 80% 55% / 0.3)" }}
+                          style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.3)" }}
                         >
                           {scanningInProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                           {scanningInProgress ? "Prüfe…" : "Einchecken"}
@@ -854,7 +854,7 @@ const ScannerAdmin = () => {
               return (
                 <>
                   <div className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                    <span className="font-bold" style={{ color: "hsl(330 80% 55%)" }}>{missing.length}</span> Events ohne Scanner-Link · <span className="font-bold" style={{ color: "hsl(200 80% 55%)" }}>{events.length - missing.length}</span> bereits verlinkt
+                    <span className="font-bold" style={{ color: "hsl(230 80% 56%)" }}>{missing.length}</span> Events ohne Scanner-Link · <span className="font-bold" style={{ color: "hsl(200 80% 55%)" }}>{events.length - missing.length}</span> bereits verlinkt
                   </div>
                   <button
                     onClick={createBulkLinks}

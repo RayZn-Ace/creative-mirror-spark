@@ -26,7 +26,7 @@ const MuttizettelAdmin = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: "hsl(0 0% 100%)" }}>
-            <FileText className="w-6 h-6" style={{ color: "hsl(330 80% 55%)" }} />
+            <FileText className="w-6 h-6" style={{ color: "hsl(230 80% 56%)" }} />
             Muttizettel
           </h1>
           <p className="text-sm mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>

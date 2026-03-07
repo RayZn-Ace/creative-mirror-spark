@@ -432,7 +432,7 @@ const TicketTemplateAdmin = () => {
     <div className="max-w-5xl space-y-6">
       {/* Save button */}
       <div className="flex justify-end">
-        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern
         </button>

@@ -40,7 +40,7 @@ const AdminLogin = () => {
         <div className="text-center mb-8">
           <h1
             className="text-2xl font-black uppercase tracking-wider mb-2"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(330 80% 55%)" }}
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 56%)" }}
           >
             Admin Panel
           </h1>
@@ -106,9 +106,9 @@ const AdminLogin = () => {
             disabled={loading}
             className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.02] disabled:opacity-50"
             style={{
-              background: "hsl(330 80% 50%)",
+              background: "hsl(230 80% 56%)",
               color: "hsl(0 0% 100%)",
-              boxShadow: "0 4px 20px hsl(330 80% 50% / 0.3)",
+              boxShadow: "0 4px 20px hsl(230 80% 56% / 0.3)",
             }}
           >
             {loading ? "Anmelden..." : "Anmelden"}

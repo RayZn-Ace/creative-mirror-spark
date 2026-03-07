@@ -27,15 +27,15 @@ const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight
 const Field = ({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) => (
   <div>
     <label style={labelStyle}>{label}</label>
-    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} className="focus:border-pink-500" />
+    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} className="focus:border-blue-500" />
   </div>
 );
 
 const SectionCard = ({ icon: Icon, title, description, children, onSave, saving }: { icon: any; title: string; description: string; children: React.ReactNode; onSave?: () => void; saving?: boolean }) => (
   <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
     <div className="flex items-center gap-3 mb-1">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(330 80% 55% / 0.15)" }}>
-        <Icon className="w-4 h-4" style={{ color: "hsl(330 80% 55%)" }} />
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(230 80% 56% / 0.15)" }}>
+        <Icon className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} />
       </div>
       <h3 className="text-base font-bold" style={{ color: "hsl(0 0% 100%)" }}>{title}</h3>
     </div>
@@ -43,7 +43,7 @@ const SectionCard = ({ icon: Icon, title, description, children, onSave, saving 
     <div className="space-y-4">{children}</div>
     {onSave && (
       <div className="mt-5 flex justify-end">
-        <button onClick={onSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(330 80% 55%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={onSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 disabled:opacity-50" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Speichern
         </button>
@@ -433,7 +433,7 @@ const SettingsAdmin = () => {
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-3 mb-2">
-        <Settings className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+        <Settings className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
         <h1 className="text-xl font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>Einstellungen</h1>
       </div>
 
@@ -445,8 +445,8 @@ const SettingsAdmin = () => {
             onClick={() => setActiveTab(t.key)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center whitespace-nowrap"
             style={{
-              background: activeTab === t.key ? "hsl(330 80% 55% / 0.15)" : "transparent",
-              color: activeTab === t.key ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+              background: activeTab === t.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: activeTab === t.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             <t.icon className="w-4 h-4" />
@@ -641,7 +641,7 @@ const SettingsAdmin = () => {
                     setAddingUser(false);
                   }}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold w-full justify-center disabled:opacity-50"
-                  style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+                  style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
                 >
                   {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   Einladen
@@ -738,7 +738,7 @@ const SettingsAdmin = () => {
                       onClick={createRole}
                       disabled={creatingRole || !newRoleDisplayName.trim()}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
-                      style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+                      style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
                     >
                       {creatingRole ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                       Erstellen

@@ -420,8 +420,8 @@ const TrackingAdmin = () => {
             onClick={() => setActiveTab(tab.id)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={{
-              background: activeTab === tab.id ? "hsl(330 80% 55% / 0.15)" : "transparent",
-              color: activeTab === tab.id ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.5)",
+               background: activeTab === tab.id ? "hsl(230 80% 56% / 0.15)" : "transparent",
+              color: activeTab === tab.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             <tab.icon className="w-4 h-4" />

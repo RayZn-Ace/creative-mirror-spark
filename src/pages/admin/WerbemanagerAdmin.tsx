@@ -264,7 +264,7 @@ const WerbemanagerAdmin = () => {
 
           <div className="flex gap-2 pt-3">
             <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>Abbrechen</button>
-            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
+            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
           </div>
         </div>
       </div>
@@ -275,10 +275,10 @@ const WerbemanagerAdmin = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Megaphone className="w-5 h-5" style={{ color: "hsl(330 80% 55%)" }} />
+          <Megaphone className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
           <h1 className="text-xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Werbemanager</h1>
         </div>
-        <button onClick={() => setEditing({ ...emptyAd })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={() => setEditing({ ...emptyAd })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
           <Plus className="w-4 h-4" /> Neue Werbung
         </button>
       </div>
@@ -305,7 +305,7 @@ const WerbemanagerAdmin = () => {
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <Megaphone className="w-10 h-10 mx-auto mb-3" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Keine Werbung vorhanden</p>
-          <button onClick={() => setEditing({ ...emptyAd })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>Jetzt erste Werbung erstellen</button>
+          <button onClick={() => setEditing({ ...emptyAd })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>Jetzt erste Werbung erstellen</button>
         </div>
       ) : (
         <div className="space-y-2">

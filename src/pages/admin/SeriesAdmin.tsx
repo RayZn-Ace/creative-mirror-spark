@@ -118,7 +118,7 @@ const SeriesAdmin = () => {
         <button
           onClick={() => setEditing({ ...emptySeries })}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]"
-          style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
         >
           <Plus className="w-4 h-4" /> Neue Serie
         </button>
@@ -129,7 +129,7 @@ const SeriesAdmin = () => {
       ) : series.length === 0 ? (
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Serien vorhanden</p>
-          <button onClick={() => setEditing({ ...emptySeries })} className="text-sm font-bold" style={{ color: "hsl(330 80% 55%)" }}>
+          <button onClick={() => setEditing({ ...emptySeries })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>
             Jetzt erste Serie erstellen
           </button>
         </div>
@@ -220,7 +220,7 @@ const SeriesAdmin = () => {
                   <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
                     Abbrechen
                   </button>
-                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(330 80% 50%)", color: "hsl(0 0% 100%)" }}>
+                  <button onClick={save} className="flex-1 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>
