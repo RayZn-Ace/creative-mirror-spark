@@ -304,6 +304,7 @@ const TEMPLATES: NewsletterTemplate[] = [
     icon: Timer,
     gradient: "linear-gradient(135deg, #10b981, #059669)",
     headerGradient: "linear-gradient(135deg, #10b981, #059669)",
+    colorSchemeId: "light-green",
     blocks: () => [
       createBlock("heading", { text: "🐣 Early Bird Tickets!", level: 1, align: "center", color: "#ffffff" }),
       createBlock("spacer", { height: 8 }),
