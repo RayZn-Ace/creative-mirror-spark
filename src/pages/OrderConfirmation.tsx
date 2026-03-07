@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 interface OrderData {
   id: string;
@@ -35,6 +35,9 @@ const OrderConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const [eventMuttizettel, setEventMuttizettel] = useState(false);
+  const [eventId, setEventId] = useState<string | null>(null);
+  const [muttizettelDismissed, setMuttizettelDismissed] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -49,11 +52,26 @@ const OrderConfirmation = () => {
       if (data) {
         const orderData = data as unknown as OrderData;
         setOrder(orderData);
+        if ((data as any).event_id) {
+          setEventId((data as any).event_id);
+          checkMuttizettel((data as any).event_id);
+        }
         if (orderData.status === "paid") {
           fetchTickets();
         }
       }
       setLoading(false);
+    };
+
+    const checkMuttizettel = async (evId: string) => {
+      const { data } = await supabase
+        .from("events")
+        .select("is_16plus, muttizettel")
+        .eq("id", evId)
+        .maybeSingle();
+      if (data && (data as any).is_16plus && (data as any).muttizettel) {
+        setEventMuttizettel(true);
+      }
     };
 
     const fetchTickets = async () => {
@@ -77,6 +95,10 @@ const OrderConfirmation = () => {
         setOrder(updated);
         if (updated.status === "paid") {
           fetchTickets();
+          if ((data as any).event_id && !eventId) {
+            setEventId((data as any).event_id);
+            checkMuttizettel((data as any).event_id);
+          }
         }
         if (updated.status === "paid" || updated.status === "cancelled" || updated.status === "failed") {
           clearInterval(interval);
@@ -284,6 +306,41 @@ const OrderConfirmation = () => {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Muttizettel Prompt */}
+          {isPaid && eventMuttizettel && !muttizettelDismissed && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-6 rounded-2xl p-5 text-center"
+              style={{ background: "hsl(45 100% 50% / 0.12)", border: "1px solid hsl(45 100% 50% / 0.3)" }}
+            >
+              <FileText className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(45 100% 60%)" }} />
+              <p className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>
+                Noch keine 18? Muttizettel ausfüllen!
+              </p>
+              <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                Für dieses 16+ Event benötigst du eine Erziehungsbeauftragung. Fülle den Muttizettel jetzt digital aus.
+              </p>
+              <div className="flex gap-2">
+                <Link
+                  to={`/muttizettel${eventId ? `?event=${eventId}` : ""}`}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wide transition-all hover:scale-[1.01]"
+                  style={{ background: "hsl(45 100% 50% / 0.25)", color: "hsl(45 100% 70%)", border: "1px solid hsl(45 100% 50% / 0.4)" }}
+                >
+                  Jetzt ausfüllen
+                </Link>
+                <button
+                  onClick={() => setMuttizettelDismissed(true)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-medium transition-all"
+                  style={{ color: "hsl(0 0% 100% / 0.5)" }}
+                >
+                  Später
+                </button>
+              </div>
+            </motion.div>
           )}
 
           {/* Actions */}

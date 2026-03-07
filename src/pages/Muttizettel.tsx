@@ -1,5 +1,6 @@
 import { PageLayout } from "@/components/PageLayout";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Check, FileText, Users, User, Shield, ClipboardCheck, PartyPopper } from "lucide-react";
@@ -45,6 +46,7 @@ const emptyForm: MuttizettelForm = {
 };
 
 const Muttizettel = () => {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<MuttizettelForm>(emptyForm);
   const [events, setEvents] = useState<{ id: string; title: string; date: string | null }[]>([]);
@@ -59,7 +61,21 @@ const Muttizettel = () => {
       .eq("muttizettel", true)
       .order("date", { ascending: true })
       .then(({ data }) => {
-        if (data) setEvents(data);
+        if (data) {
+          setEvents(data);
+          // Auto-select event from URL param
+          const eventParam = searchParams.get("event");
+          if (eventParam) {
+            const match = data.find((e) => e.id === eventParam);
+            if (match) {
+              setForm((prev) => ({
+                ...prev,
+                eventId: match.id,
+                eventName: match.title + (match.date ? ` – ${new Date(match.date).toLocaleDateString("de-DE")}` : ""),
+              }));
+            }
+          }
+        }
       });
   }, []);
 
