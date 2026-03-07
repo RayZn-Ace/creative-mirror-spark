@@ -129,7 +129,7 @@ const de: BaseTranslations = {
   freeTicketsTitle: "Freikarten & mehr?", whatsappJoin: "Jetzt beitreten", whatsappDesc: "Werde Teil unserer WhatsApp-Community.",
   moreCities: "Weitere Städte", moreCitiesDesc: "Sichere dir jetzt Tickets für weitere Städte", kmAway: "km entfernt",
   footerQuestion: "Fragen, Probleme oder Reservierungsanfragen?", footerContact: "Kontaktiere uns:",
-  footerOrganizer: "partyticket.app", imprint: "Impressum", privacy: "Datenschutz", terms: "AGB",
+  footerOrganizer: "Nightlife Generation", imprint: "Impressum", privacy: "Datenschutz", terms: "AGB",
   loading: "Laden...",
   weekdays: ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"],
   monthsShort: ["","Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],
