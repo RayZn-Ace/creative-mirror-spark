@@ -1072,8 +1072,13 @@ const TicketTemplateAdmin = () => {
 
               return (
                 <>
-                  <div className="flex justify-center p-6 rounded-2xl" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                  <div className="flex justify-center p-6 rounded-2xl relative" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                     <TicketPreview tpl={previewTpl} previewImageUrl={previewImg} previewCategoryName={categoryName} />
+                    {cleaningImage && (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-2xl" style={{ background: "hsl(0 0% 0% / 0.5)", zIndex: 10 }}>
+                        <div className="flex items-center gap-2 text-white text-xs font-medium"><Loader2 className="w-4 h-4 animate-spin" /> Bild wird bereinigt…</div>
+                      </div>
+                    )}
                   </div>
                   <p className="text-center text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                     {tpl.format === "din_lang" ? "DIN Lang – 210 × 99 mm" : "A4 – 210 × 297 mm"}
