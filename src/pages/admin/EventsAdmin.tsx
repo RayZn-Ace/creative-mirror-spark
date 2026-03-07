@@ -1964,7 +1964,6 @@ const EventsAdmin = () => {
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
   const [filter16Plus, setFilter16Plus] = useState(false);
-  const [filter16Plus, setFilter16Plus] = useState(false);
   const [filterMammaMia, setFilterMammaMia] = useState(false);
   const [filterActs, setFilterActs] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
