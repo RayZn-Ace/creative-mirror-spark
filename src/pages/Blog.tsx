@@ -40,11 +40,11 @@ const Blog = () => {
     <PageLayout title="Blog & News" subtitle="Tipps, Stories und Insider-Wissen rund um unsere Events und Party-Tour.">
       {loading ? (
         <div className="text-center py-16">
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
+          <p className="text-sm" style={{ color: "hsl(220 10% 55%)" }}>Laden...</p>
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Noch keine Blog-Beiträge vorhanden.</p>
+          <p className="text-sm" style={{ color: "hsl(220 10% 55%)" }}>Noch keine Blog-Beiträge vorhanden.</p>
         </div>
       ) : (
         <div className="max-w-3xl mx-auto space-y-4">
@@ -53,48 +53,34 @@ const Blog = () => {
               key={post.id}
               to={`/blog/${post.slug}`}
               className="block rounded-2xl p-5 sm:p-6 transition-all hover:scale-[1.01]"
-              style={{
-                background: "hsl(220 40% 13%)",
-                border: "1px solid hsl(0 0% 100% / 0.08)",
-              }}
+              style={{ background: "hsl(220 15% 95%)", border: "1px solid hsl(220 15% 88%)" }}
             >
               <div className="flex items-center gap-3 mb-3 flex-wrap">
                 {post.category && (
-                  <span
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                    style={{ background: "hsl(220 60% 25%)", color: "hsl(210 80% 65%)" }}
-                  >
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(220 60% 50% / 0.1)", color: "hsl(220 60% 45%)" }}>
                     {post.category}
                   </span>
                 )}
                 {post.published_at && (
-                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(220 10% 55%)" }}>
                     <Calendar className="w-3 h-3" />
                     {formatDate(post.published_at)}
                   </span>
                 )}
                 {post.reading_time && (
-                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(220 10% 55%)" }}>
                     <Clock className="w-3 h-3" />
                     {post.reading_time}
                   </span>
                 )}
               </div>
-              <h2
-                className="text-base sm:text-lg font-black uppercase tracking-wide mb-2"
-                style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}
-              >
+              <h2 className="text-base sm:text-lg font-black uppercase tracking-wide mb-2" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}>
                 {post.title}
               </h2>
               {post.excerpt && (
-                <p className="text-sm mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                  {post.excerpt}
-                </p>
+                <p className="text-sm mb-3" style={{ color: "hsl(220 10% 45%)" }}>{post.excerpt}</p>
               )}
-              <span
-                className="inline-flex items-center gap-1 text-sm font-semibold"
-                style={{ color: "hsl(230 80% 55%)" }}
-              >
+              <span className="inline-flex items-center gap-1 text-sm font-semibold" style={{ color: "hsl(220 60% 50%)" }}>
                 Weiterlesen <ArrowRight className="w-3.5 h-3.5" />
               </span>
             </Link>

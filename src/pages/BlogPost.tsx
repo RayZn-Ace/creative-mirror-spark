@@ -15,7 +15,7 @@ interface BlogPost {
   published_at: string | null;
 }
 
-const BlogPost = () => {
+const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +44,7 @@ const BlogPost = () => {
     return (
       <PageLayout title="Blog" subtitle="">
         <div className="text-center py-16">
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
+          <p className="text-sm" style={{ color: "hsl(220 10% 55%)" }}>Laden...</p>
         </div>
       </PageLayout>
     );
@@ -54,10 +54,8 @@ const BlogPost = () => {
     return (
       <PageLayout title="Nicht gefunden" subtitle="">
         <div className="text-center py-16">
-          <p className="text-sm mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Dieser Beitrag existiert nicht.</p>
-          <Link to="/blog" className="text-sm font-semibold" style={{ color: "hsl(230 80% 55%)" }}>
-            ← Zurück zum Blog
-          </Link>
+          <p className="text-sm mb-4" style={{ color: "hsl(220 10% 45%)" }}>Dieser Beitrag existiert nicht.</p>
+          <Link to="/blog" className="text-sm font-semibold" style={{ color: "hsl(220 60% 50%)" }}>← Zurück zum Blog</Link>
         </div>
       </PageLayout>
     );
@@ -66,41 +64,31 @@ const BlogPost = () => {
   return (
     <PageLayout title={post.title} subtitle="">
       <div className="max-w-3xl mx-auto">
-        <Link
-          to="/blog"
-          className="inline-flex items-center gap-2 text-sm font-medium mb-6 hover:opacity-80 transition-opacity"
-          style={{ color: "hsl(230 80% 55%)" }}
-        >
+        <Link to="/blog" className="inline-flex items-center gap-2 text-sm font-medium mb-6 hover:opacity-80 transition-opacity" style={{ color: "hsl(220 60% 50%)" }}>
           <ArrowLeft className="w-4 h-4" /> Zurück zum Blog
         </Link>
 
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           {post.category && (
-            <span
-              className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-              style={{ background: "hsl(220 60% 25%)", color: "hsl(210 80% 65%)" }}
-            >
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "hsl(220 60% 50% / 0.1)", color: "hsl(220 60% 45%)" }}>
               {post.category}
             </span>
           )}
           {post.published_at && (
-            <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+            <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(220 10% 55%)" }}>
               <Calendar className="w-3 h-3" />
               {formatDate(post.published_at)}
             </span>
           )}
           {post.reading_time && (
-            <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+            <span className="flex items-center gap-1 text-[11px]" style={{ color: "hsl(220 10% 55%)" }}>
               <Clock className="w-3 h-3" />
               {post.reading_time}
             </span>
           )}
         </div>
 
-        <div
-          className="prose prose-invert max-w-none text-sm leading-relaxed"
-          style={{ color: "hsl(0 0% 100% / 0.7)" }}
-        >
+        <div className="prose max-w-none text-sm leading-relaxed" style={{ color: "hsl(220 10% 35%)" }}>
           {post.content?.split("\n").map((p, i) => (
             <p key={i} className="mb-4">{p}</p>
           ))}
@@ -110,4 +98,4 @@ const BlogPost = () => {
   );
 };
 
-export default BlogPost;
+export default BlogPostPage;
