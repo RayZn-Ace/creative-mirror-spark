@@ -854,7 +854,7 @@ const ScannerAdmin = () => {
               return (
                 <>
                   <div className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                    <span className="font-bold" style={{ color: "hsl(330 80% 55%)" }}>{missing.length}</span> Events ohne Scanner-Link · <span className="font-bold" style={{ color: "hsl(200 80% 55%)" }}>{events.length - missing.length}</span> bereits verlinkt
+                    <span className="font-bold" style={{ color: "hsl(230 80% 56%)" }}>{missing.length}</span> Events ohne Scanner-Link · <span className="font-bold" style={{ color: "hsl(200 80% 55%)" }}>{events.length - missing.length}</span> bereits verlinkt
                   </div>
                   <button
                     onClick={createBulkLinks}
