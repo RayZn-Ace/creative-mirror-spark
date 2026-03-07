@@ -2158,11 +2158,11 @@ const EventsAdmin = () => {
     : extraFiltered;
 
   // Build hierarchy: Country → City → Series → Events
-  type SeriesGroup = { seriesId: string | null; seriesTitle: string; events: EventRow[] };
-  type CityGroup = { city: string; seriesGroups: SeriesGroup[] };
-  type CountryGroup = { country: string; cityGroups: CityGroup[] };
+  interface HSeriesGroup { seriesId: string | null; seriesTitle: string; events: EventRow[] }
+  interface HCityGroup { city: string; seriesGroups: HSeriesGroup[] }
+  interface HCountryGroup { country: string; cityGroups: HCityGroup[] }
 
-  const countryMap = new Map<string, Map<string, Map<string, SeriesGroup>>>();
+  const countryAcc: Record<string, Record<string, Record<string, HSeriesGroup>>> = {};
 
   for (const event of filteredEvents) {
     const city = event.series_id ? (seriesCityMap[event.series_id] || event.city || "Unbekannt") : (event.city || "Unbekannt");
@@ -2170,25 +2170,19 @@ const EventsAdmin = () => {
     const seriesKey = event.series_id || "__none__";
     const seriesTitle = event.series_id ? (seriesMap[event.series_id] || "Unbekannte Serie") : "Ohne Serie";
 
-    if (!countryMap.has(country)) countryMap.set(country, new Map());
-    const cityMap = countryMap.get(country)!;
-    if (!cityMap.has(city)) cityMap.set(city, new Map());
-    const seriesGroupMap = cityMap.get(city)!;
-    if (!seriesGroupMap.has(seriesKey)) seriesGroupMap.set(seriesKey, { seriesId: event.series_id, seriesTitle, events: [] });
-    seriesGroupMap.get(seriesKey)!.events.push(event);
+    if (!countryAcc[country]) countryAcc[country] = {};
+    if (!countryAcc[country][city]) countryAcc[country][city] = {};
+    if (!countryAcc[country][city][seriesKey]) countryAcc[country][city][seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
+    countryAcc[country][city][seriesKey].events.push(event);
   }
 
-  const hierarchyData: CountryGroup[] = [];
-  for (const [country, cityMap] of countryMap) {
-    const cityGroups: CityGroup[] = [];
-    for (const [city, seriesGroupMap] of cityMap) {
-      const seriesGroups = Array.from(seriesGroupMap.values());
-      seriesGroups.sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
-      cityGroups.push({ city, seriesGroups });
-    }
-    cityGroups.sort((a, b) => a.city.localeCompare(b.city, "de"));
-    hierarchyData.push({ country, cityGroups });
-  }
+  const hierarchyData: HCountryGroup[] = Object.entries(countryAcc).map(([country, cities]) => ({
+    country,
+    cityGroups: Object.entries(cities).map(([city, seriesObj]) => ({
+      city,
+      seriesGroups: Object.values(seriesObj).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de")),
+    })).sort((a, b) => a.city.localeCompare(b.city, "de")),
+  }));
 
   hierarchyData.sort((a, b) => {
     if (a.country === "Deutschland") return -1;
