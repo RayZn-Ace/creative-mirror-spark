@@ -392,6 +392,8 @@ const TicketTemplateAdmin = () => {
   const [ticketCategories, setTicketCategories] = useState<Array<{ id: string; name: string; category_group: string | null; event_id: string }>>([]);
   const [eventSeries, setEventSeries] = useState<Array<{ id: string; title: string; image_url: string | null }>>([]);
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
+  const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
+  const [cleaningImage, setCleaningImage] = useState(false);
 
   useEffect(() => {
     const load = async () => {
