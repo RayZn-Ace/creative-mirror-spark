@@ -1513,7 +1513,7 @@ const BulkAddDialog = ({ events, onClose, onComplete }: { events: EventRow[]; on
         <div className="p-5 max-h-[70vh] overflow-y-auto space-y-5">
           {step === 1 ? (
             <>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(330 80% 55%)" }}>Schritt 1: Block-Vorlage wählen</p>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(230 80% 56%)" }}>Schritt 1: Block-Vorlage wählen</p>
               <div className="space-y-3">
                 {TEMPLATE_CATEGORIES.map((cat) => (
                   <div key={cat}>
