@@ -141,7 +141,25 @@ export default function CsvImportAdmin() {
   const totalRevenue = parsed.reduce((s, r) => s + r.grossTotal, 0);
   const totalTickets = parsed.reduce((s, r) => s + r.quantity, 0);
   const totalFees = parsed.reduce((s, r) => s + r.fees, 0);
+  const totalNet = parsed.reduce((s, r) => s + r.subtotal, 0);
+  const totalTaxes = parsed.reduce((s, r) => s + r.taxes, 0);
   const uniqueEmails = new Set(parsed.map(r => r.email.toLowerCase().trim()));
+
+  // Auto-detected ticket category breakdown
+  const ticketBreakdown = useMemo(() => {
+    const map: Record<string, { type: string; price: number; qty: number; revenue: number; fees: number }> = {};
+    for (const r of parsed) {
+      if (!map[r.ticketType]) map[r.ticketType] = { type: r.ticketType, price: r.pricePerTicket, qty: 0, revenue: 0, fees: 0 };
+      map[r.ticketType].qty += r.quantity;
+      map[r.ticketType].revenue += r.grossTotal;
+      map[r.ticketType].fees += r.fees;
+    }
+    return Object.values(map);
+  }, [parsed]);
+
+  // Average order value
+  const avgOrderValue = parsed.length > 0 ? totalRevenue / parsed.length : 0;
+  const avgTicketsPerOrder = parsed.length > 0 ? totalTickets / parsed.length : 0;
 
   const doImport = async () => {
     if (!config.eventTitle || !config.eventDate) {
