@@ -335,24 +335,86 @@ export default function CsvImportAdmin() {
       {/* STEP 2: Preview & Config */}
       {step === "preview" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: "Zeilen", value: parsed.length },
-              { label: "Tickets", value: totalTickets },
-              { label: "Kunden", value: uniqueEmails.size },
-              { label: "Umsatz", value: `${totalRevenue.toFixed(2)} €` },
-            ].map((s2) => (
-              <div key={s2.label} style={s.card} className="p-4 text-center">
-                <div style={s.muted} className="text-xs mb-1">{s2.label}</div>
-                <div className="text-lg font-bold" style={s.white}>{s2.value}</div>
+          {/* Auto-detected overview */}
+          <div style={s.card} className="p-5 space-y-4">
+            <h2 className="text-sm font-bold flex items-center gap-2" style={s.white}>
+              <BarChart3 className="w-4 h-4" style={s.accent} />
+              Automatisch erkannte Daten
+            </h2>
+
+            {/* Key metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Bestellungen", value: parsed.length, icon: <FileSpreadsheet className="w-4 h-4" /> },
+                { label: "Tickets gesamt", value: totalTickets, icon: <Ticket className="w-4 h-4" /> },
+                { label: "Einzigartige Kunden", value: uniqueEmails.size, icon: <Users className="w-4 h-4" /> },
+                { label: "Brutto-Umsatz", value: `${totalRevenue.toFixed(2)} €`, icon: <TrendingUp className="w-4 h-4" /> },
+              ].map((s2) => (
+                <div key={s2.label} style={{ ...s.card, background: "hsl(220 40% 8%)" }} className="p-4">
+                  <div className="flex items-center gap-2 mb-2" style={{ color: "hsl(230 80% 56%)" }}>{s2.icon}</div>
+                  <div className="text-lg font-bold" style={s.white}>{s2.value}</div>
+                  <div style={s.muted} className="text-xs">{s2.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Revenue breakdown */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { label: "Netto-Umsatz", value: `${totalNet.toFixed(2)} €` },
+                { label: "Gebühren", value: `${totalFees.toFixed(2)} €` },
+                { label: "Steuern", value: `${totalTaxes.toFixed(2)} €` },
+                { label: "Ø Bestellwert", value: `${avgOrderValue.toFixed(2)} €` },
+                { label: "Ø Tickets/Bestellung", value: avgTicketsPerOrder.toFixed(1) },
+              ].map((s2) => (
+                <div key={s2.label} style={{ ...s.card, background: "hsl(220 40% 8%)" }} className="p-3 text-center">
+                  <div style={s.muted} className="text-xs mb-1">{s2.label}</div>
+                  <div className="text-sm font-semibold" style={s.white}>{s2.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Ticket categories breakdown */}
+            <div>
+              <h3 className="text-xs font-semibold mb-2" style={s.muted}>Erkannte Ticket-Kategorien</h3>
+              <div className="space-y-2">
+                {ticketBreakdown.map((tb) => (
+                  <div
+                    key={tb.type}
+                    className="flex items-center justify-between p-3 rounded-lg"
+                    style={{ background: "hsl(220 40% 8%)", border: "1px solid hsl(0 0% 100% / 0.04)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Ticket className="w-4 h-4" style={s.accent} />
+                      <div>
+                        <div className="text-sm font-medium" style={s.white}>{tb.type}</div>
+                        <div className="text-xs" style={s.muted}>{tb.price.toFixed(2)} € pro Ticket</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6 text-right">
+                      <div>
+                        <div className="text-sm font-semibold" style={s.white}>{tb.qty}×</div>
+                        <div className="text-xs" style={s.muted}>Tickets</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold" style={s.white}>{tb.revenue.toFixed(2)} €</div>
+                        <div className="text-xs" style={s.muted}>Umsatz</div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold" style={{ color: "hsl(40 90% 60%)" }}>{tb.fees.toFixed(2)} €</div>
+                        <div className="text-xs" style={s.muted}>Gebühren</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
 
           {/* Event config */}
           <div style={s.card} className="p-5 space-y-4">
-            <h2 className="text-sm font-bold" style={s.white}>Event-Details</h2>
+            <h2 className="text-sm font-bold" style={s.white}>Event-Details (manuell)</h2>
+            <p className="text-xs" style={s.muted}>Diese Infos sind nicht in der CSV enthalten – bitte ergänzen.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label style={s.label}>Event-Titel *</label>
