@@ -56,6 +56,7 @@ const WerbemanagerAdmin = lazy(() => import("./pages/admin/WerbemanagerAdmin"));
 const SupportAdmin = lazy(() => import("./pages/admin/SupportAdmin"));
 const MuttizettelAdmin = lazy(() => import("./pages/admin/MuttizettelAdmin"));
 const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
+const CsvImportAdmin = lazy(() => import("./pages/admin/CsvImportAdmin"));
 
 const queryClient = new QueryClient();
 
