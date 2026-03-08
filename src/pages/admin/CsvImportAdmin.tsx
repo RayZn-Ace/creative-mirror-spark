@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, FileSpreadsheet, CheckCircle, AlertTriangle, Loader2, X, Eye } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, AlertTriangle, Loader2, X, Eye, Ticket, TrendingUp, Users, DollarSign, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
