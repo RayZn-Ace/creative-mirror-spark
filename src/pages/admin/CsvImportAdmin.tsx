@@ -133,6 +133,15 @@ export default function CsvImportAdmin() {
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
+    // Auto-detect event info from filename
+    const detected = parseFilename(f.name);
+    setConfig(prev => ({
+      ...prev,
+      eventTitle: detected.title || prev.eventTitle,
+      eventDate: detected.date || prev.eventDate,
+      eventCity: detected.city || prev.eventCity,
+      eventSlug: detected.title && detected.date ? generateSlug(detected.title, detected.date) : prev.eventSlug,
+    }));
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
