@@ -1423,7 +1423,7 @@ const CityPage = () => {
         
         // Filter to only events whose base slug (without date) matches exactly
         eventsData = data?.filter((e: any) => {
-          const baseSlug = e.slug.replace(/-\d{4}-\d{2}-\d{2}$/, "");
+          const baseSlug = e.slug.replace(/-\d{2}-\d{2}-\d{4}$/, "").replace(/-\d{4}-\d{2}-\d{2}$/, "");
           return baseSlug === citySlug;
         }) || null;
 
