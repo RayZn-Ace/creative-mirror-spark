@@ -57,6 +57,7 @@ const SupportAdmin = lazy(() => import("./pages/admin/SupportAdmin"));
 const MuttizettelAdmin = lazy(() => import("./pages/admin/MuttizettelAdmin"));
 const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
 const CsvImportAdmin = lazy(() => import("./pages/admin/CsvImportAdmin"));
+const WaitlistAdmin = lazy(() => import("./pages/admin/WaitlistAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -118,6 +119,7 @@ const App = () => (
                 <Route path="muttizettel" element={<MuttizettelAdmin />} />
                 <Route path="medien" element={<MediaAdmin />} />
                 <Route path="csv-import" element={<CsvImportAdmin />} />
+                <Route path="waitlist" element={<WaitlistAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
