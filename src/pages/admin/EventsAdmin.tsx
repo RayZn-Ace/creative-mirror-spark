@@ -2015,6 +2015,84 @@ const EventsAdmin = () => {
         )}
       </div>
 
+      {/* Sold Out Overview */}
+      {(() => {
+        const soldOutEvents = events.filter(e => e.sold_out && e.status === "published" && e.date && e.date >= new Date().toISOString().split("T")[0]);
+        if (soldOutEvents.length === 0) return null;
+        const toggleSoldOut = async (event: EventRow) => {
+          await supabase.from("events").update({ sold_out: !event.sold_out }).eq("id", event.id);
+          toast.success(event.sold_out ? "Ausverkauft-Status entfernt" : "Als ausverkauft markiert");
+          load();
+        };
+        return (
+          <div className="mb-5">
+            <button
+              onClick={() => setShowSoldOutPanel(!showSoldOutPanel)}
+              className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all"
+              style={{
+                background: "hsl(0 70% 50% / 0.08)",
+                border: "1px solid hsl(0 70% 50% / 0.2)",
+                color: "hsl(0 70% 60%)",
+              }}
+            >
+              <XCircle className="w-4 h-4" />
+              <span>{soldOutEvents.length} ausverkaufte Events</span>
+              <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${showSoldOutPanel ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {showSoldOutPanel && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-2 pt-3">
+                    {soldOutEvents.sort((a, b) => (a.date || "").localeCompare(b.date || "")).map((event) => (
+                      <div
+                        key={event.id}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                        style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
+                      >
+                        {event.image_url && <img src={event.image_url} alt="" className="w-12 h-9 rounded-lg object-cover flex-shrink-0 grayscale opacity-70" />}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-bold truncate block" style={{ color: "hsl(0 0% 100%)" }}>
+                            {event.title}
+                          </span>
+                          <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                            {event.date} · {event.city}{event.location_name ? ` · ${event.location_name}` : ""}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => toggleSoldOut(event)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all hover:scale-[1.03]"
+                          style={{
+                            background: "hsl(142 70% 45% / 0.15)",
+                            color: "hsl(142 70% 55%)",
+                            border: "1px solid hsl(142 70% 45% / 0.3)",
+                          }}
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          Zurücksetzen
+                        </button>
+                        <button
+                          onClick={() => setEditing(event)}
+                          className="p-2 rounded-lg hover:bg-white/5"
+                          style={{ color: "hsl(0 0% 100% / 0.4)" }}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })()}
+
       {/* Tabs */}
       <div className="flex gap-1 mb-5 rounded-xl p-1" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
         {([
