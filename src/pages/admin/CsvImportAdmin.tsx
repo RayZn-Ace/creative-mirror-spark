@@ -61,6 +61,35 @@ const parseCsvLine = (line: string): string[] => {
   return result;
 };
 
+const parseFilename = (filename: string): { title: string; date: string; city: string } => {
+  const name = filename.replace(/\.csv$/i, "");
+  // Try to extract date (YYYY-MM-DD or DD.MM.YYYY or DD-MM-YYYY)
+  const isoMatch = name.match(/(\d{4})-(\d{2})-(\d{2})/);
+  const euMatch = name.match(/(\d{2})[.\-](\d{2})[.\-](\d{4})/);
+  let date = "";
+  let rest = name;
+  if (isoMatch) {
+    date = isoMatch[0];
+    rest = name.replace(isoMatch[0], "");
+  } else if (euMatch) {
+    date = `${euMatch[3]}-${euMatch[2]}-${euMatch[1]}`;
+    rest = name.replace(euMatch[0], "");
+  }
+  // Split remaining by common separators
+  const parts = rest.split(/[-_\s]+/).filter(Boolean);
+  // Known German cities for auto-detection
+  const knownCities = ["Mainz","Berlin","Hamburg","München","Muenchen","Köln","Koeln","Frankfurt","Stuttgart","Dortmund","Essen","Leipzig","Dresden","Hannover","Düsseldorf","Duesseldorf","Bonn","Paderborn","Bielefeld","Aachen","Augsburg","Bochum","Braunschweig","Karlsruhe","Nürnberg","Nuernberg","Erfurt","Bautzen","Celle","Detmold","Bottrop","Salzburg","Wien","Zürich","Zuerich","Amsterdam","Paris"];
+  let city = "";
+  const titleParts: string[] = [];
+  for (const p of parts) {
+    const match = knownCities.find(c => c.toLowerCase() === p.toLowerCase());
+    if (match && !city) { city = match; }
+    else { titleParts.push(p); }
+  }
+  const title = titleParts.join(" ").trim();
+  return { title, date, city };
+};
+
 const generateSlug = (title: string, date: string): string => {
   const base = title
     .toLowerCase()
@@ -104,6 +133,15 @@ export default function CsvImportAdmin() {
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
+    // Auto-detect event info from filename
+    const detected = parseFilename(f.name);
+    setConfig(prev => ({
+      ...prev,
+      eventTitle: detected.title || prev.eventTitle,
+      eventDate: detected.date || prev.eventDate,
+      eventCity: detected.city || prev.eventCity,
+      eventSlug: detected.title && detected.date ? generateSlug(detected.title, detected.date) : prev.eventSlug,
+    }));
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
