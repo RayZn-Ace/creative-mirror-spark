@@ -1,0 +1,1 @@
+UPDATE events SET sold_out = true WHERE id = 'ac576540-3790-4cb7-94a7-c51f09fe3727'
