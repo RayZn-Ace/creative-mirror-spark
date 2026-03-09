@@ -55,12 +55,15 @@ const Hero = ({ gt }: { gt: GlobalTranslations }) => (
 function pad(n: number) { return String(n).padStart(2, "0"); }
 
 const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
-  const [nextEvent, setNextEvent] = useState<{ title: string; city: string | null; date: string; time: string | null; location_name: string | null; slug: string } | null>(null);
+  const [nextEvent, setNextEvent] = useState<{
+    title: string; subtitle: string | null; city: string | null; date: string;
+    time: string | null; location_name: string | null; slug: string; image_url: string | null;
+  } | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
-    supabase.from("events").select("title, city, date, time, location_name, slug")
+    supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url")
       .eq("status", "published").gte("date", today)
       .order("date", { ascending: true }).limit(1)
       .then(({ data }) => { if (data?.[0]) setNextEvent(data[0]); });
@@ -90,36 +93,92 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
   });
 
   return (
-    <section className="py-16 md:py-24 bg-card/50">
-      <div className="container text-center">
-        <h2 className="font-display text-4xl md:text-5xl mb-2 text-foreground">
-          {gt.countdownNext} <span className="text-gradient-gold">{gt.countdownEvent}</span>
-        </h2>
-        <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8 flex-wrap">
-          <MapPin className="w-4 h-4" />
-          <span>{nextEvent.city}</span>
-          <span>·</span>
-          <span>{nextEvent.location_name}</span>
-          <span>·</span>
-          <span>{dateStr}</span>
+    <section className="py-16 md:py-24">
+      <div className="container px-4">
+        {/* Label */}
+        <div className="flex items-center gap-2 mb-6">
+          <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            {gt.countdownNext} {gt.countdownEvent}
+          </span>
         </div>
-        <div className="flex justify-center gap-4 md:gap-6 mb-10">
-          {[
-            { val: timeLeft.days, label: gt.countdownDays },
-            { val: timeLeft.hours, label: gt.countdownHours },
-            { val: timeLeft.mins, label: gt.countdownMinutes },
-            { val: timeLeft.secs, label: gt.countdownSeconds },
-          ].map(u => (
-            <motion.div key={u.label} className="flex flex-col items-center" initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} viewport={{ once: true }}>
-              <span className="font-display text-4xl md:text-6xl text-primary">{pad(u.val)}</span>
-              <span className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{u.label}</span>
-            </motion.div>
-          ))}
-        </div>
-        <Link to={`/termine`}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all">
-          <Ticket className="w-5 h-5" />
-          {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
+
+        <Link
+          to={`/${nextEvent.slug}`}
+          className="group block rounded-2xl border border-primary/30 bg-card overflow-hidden hover:border-primary/60 transition-all duration-300"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            {/* Flyer image */}
+            <div className="relative overflow-hidden aspect-[3/4] sm:aspect-[4/5] lg:aspect-auto lg:min-h-[500px]">
+              {nextEvent.image_url ? (
+                <img
+                  src={nextEvent.image_url}
+                  alt={nextEvent.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-card" />
+              )}
+              {/* Gradient fade on mobile (bottom) and desktop (right) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-card" />
+            </div>
+
+            {/* Info side */}
+            <div className="relative flex flex-col justify-center p-8 md:p-12 -mt-20 lg:mt-0">
+              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl uppercase tracking-wide text-foreground mb-2 group-hover:text-primary transition-colors">
+                {nextEvent.title}
+              </h2>
+              {nextEvent.subtitle && (
+                <p className="text-base md:text-lg text-muted-foreground mb-6 max-w-md">
+                  {nextEvent.subtitle}
+                </p>
+              )}
+
+              {/* Meta */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground mb-8">
+                {nextEvent.city && (
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    {nextEvent.city}
+                  </span>
+                )}
+                {nextEvent.location_name && (
+                  <span className="flex items-center gap-1.5">
+                    <Music className="w-4 h-4 text-primary" />
+                    {nextEvent.location_name}
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  {dateStr}
+                </span>
+              </div>
+
+              {/* Countdown */}
+              <div className="flex gap-3 md:gap-5 mb-8">
+                {[
+                  { val: timeLeft.days, label: gt.countdownDays },
+                  { val: timeLeft.hours, label: gt.countdownHours },
+                  { val: timeLeft.mins, label: gt.countdownMinutes },
+                  { val: timeLeft.secs, label: gt.countdownSeconds },
+                ].map(u => (
+                  <div key={u.label} className="flex flex-col items-center px-3 py-2 rounded-xl bg-muted/50 border border-border min-w-[60px]">
+                    <span className="font-display text-2xl md:text-3xl text-primary">{pad(u.val)}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{u.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div>
+                <span className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg group-hover:shadow-[var(--shadow-glow)] transition-shadow duration-300">
+                  <Ticket className="w-5 h-5" />
+                  {gt.countdownTicketsFor} {nextEvent.city} {gt.countdownSecure}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </div>
+            </div>
+          </div>
         </Link>
       </div>
     </section>
