@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   MapPin, ArrowRight, Ticket, Music, Sparkles,
   Users, Heart, Star, Gift, Mic, Quote,
-  ChevronLeft, ChevronRight, Sun
+  ChevronLeft, ChevronRight, Sun, Instagram
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -339,6 +339,122 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
 };
 
 
+/* ─── Instagram Reels ─── */
+const REEL_URLS = [
+  "https://www.instagram.com/reel/DG5hMXlIzxd/",
+  "https://www.instagram.com/reel/DGy1x3vIlWl/",
+  "https://www.instagram.com/reel/DGtVVR1oGPv/",
+  "https://www.instagram.com/reel/DGl9u3OIBj8/",
+  "https://www.instagram.com/reel/DGgWMCIInWK/",
+];
+
+const InstagramReels = () => {
+  const [activeReel, setActiveReel] = useState(0);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollTo = useCallback((idx: number) => {
+    setActiveReel(idx);
+    scrollRef.current?.children[idx]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, []);
+
+  useEffect(() => {
+    // Load Instagram embed script
+    const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
+    if (!existing) {
+      const script = document.createElement("script");
+      script.src = "https://www.instagram.com/embed.js";
+      script.async = true;
+      document.body.appendChild(script);
+    } else if ((window as any).instgrm) {
+      (window as any).instgrm.Embeds.process();
+    }
+  }, []);
+
+  // Re-process embeds when active reel changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [activeReel]);
+
+  return (
+    <section className="py-16 md:py-24 bg-card/50">
+      <div className="container px-4">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)" }}>
+            <Instagram className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl text-foreground">
+            Folge <span className="text-gradient-primary">uns</span>
+          </h2>
+        </div>
+        <p className="text-center text-muted-foreground mb-2">@nightlifegeneration_de</p>
+        <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Reels von unserem Instagram</p>
+
+        {/* Horizontal scroll carousel */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {REEL_URLS.map((url, i) => (
+            <div
+              key={i}
+              className="snap-center shrink-0 w-[320px] md:w-[360px]"
+            >
+              <blockquote
+                className="instagram-media"
+                data-instgrm-permalink={url}
+                data-instgrm-version="14"
+                style={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: "12px",
+                  maxWidth: "360px",
+                  minWidth: "280px",
+                  width: "100%",
+                  margin: "0",
+                }}
+              >
+                <div className="flex items-center justify-center h-[480px]">
+                  <div className="animate-pulse text-muted-foreground text-sm">Reel lädt...</div>
+                </div>
+              </blockquote>
+            </div>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div className="flex justify-center gap-2 mt-4">
+          {REEL_URLS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => scrollTo(i)}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${i === activeReel ? "bg-primary w-6" : "bg-foreground/20 hover:bg-foreground/40"}`}
+              aria-label={`Reel ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* CTA to Instagram */}
+        <div className="text-center mt-8">
+          <a
+            href="https://www.instagram.com/nightlifegeneration_de/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)", color: "white" }}
+          >
+            <Instagram className="w-4 h-4" />
+            Auf Instagram folgen
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 /* ─── Reviews ─── */
 const reviews = [
   { name: "Camila R.", text: "Beste Nacht meines Lebens! Die Stimmung war unglaublich, ich habe jeden Moment genossen. Hab schon Tickets für's nächste Mal!", rating: 5 },
@@ -390,6 +506,7 @@ export default function Index() {
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
         <CrowdSlideshow gt={gt} />
+        <InstagramReels />
         <Reviews gt={gt} />
       </main>
       <Footer gt={gt} />
