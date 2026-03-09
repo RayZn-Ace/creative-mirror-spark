@@ -563,7 +563,12 @@ export default function Termine() {
                       />
                       
                       {group.events.every(e => e.soldOut) && (
-                        <div className="absolute inset-0 pointer-events-none z-10">
+                        <motion.div
+                          className="absolute inset-0 pointer-events-none z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5, delay: 0.2 }}
+                        >
                           <div
                             className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
                             style={{
@@ -578,7 +583,7 @@ export default function Termine() {
                           >
                             AUSVERKAUFT
                           </div>
-                        </div>
+                        </motion.div>
                       )}
 
                       {group.km !== null && (

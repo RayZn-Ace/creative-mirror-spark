@@ -1274,24 +1274,32 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
           animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         />
-        {event.soldOut && (
-          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-            <div
-              className="absolute font-black uppercase text-center text-white text-sm sm:text-base tracking-widest"
-              style={{
-                background: "hsl(0 70% 45%)",
-                width: "120%",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%) rotate(-35deg)",
-                padding: "8px 0",
-                boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
-              }}
+        <AnimatePresence>
+          {event.soldOut && (
+            <motion.div
+              className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              AUSVERKAUFT
-            </div>
-          </div>
-        )}
+              <div
+                className="absolute font-black uppercase text-center text-white text-sm sm:text-base tracking-widest"
+                style={{
+                  background: "hsl(0 70% 45%)",
+                  width: "120%",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%) rotate(-35deg)",
+                  padding: "8px 0",
+                  boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
+                }}
+              >
+                AUSVERKAUFT
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     )}
     {!headerImage && (
