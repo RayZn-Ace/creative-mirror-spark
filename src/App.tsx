@@ -119,6 +119,7 @@ const App = () => (
                 <Route path="muttizettel" element={<MuttizettelAdmin />} />
                 <Route path="medien" element={<MediaAdmin />} />
                 <Route path="csv-import" element={<CsvImportAdmin />} />
+                <Route path="waitlist" element={<WaitlistAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
