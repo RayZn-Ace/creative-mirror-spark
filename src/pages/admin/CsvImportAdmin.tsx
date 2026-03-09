@@ -408,6 +408,9 @@ export default function CsvImportAdmin() {
                   {detectedFromFilename.date && (
                     <span>Datum: <strong style={s.white}>{detectedFromFilename.date.split('-').reverse().join('.')}</strong></span>
                   )}
+                  {detectedFromFilename.location && (
+                    <span>Location: <strong style={s.white}>{detectedFromFilename.location}</strong></span>
+                  )}
                 </div>
               </div>
             </div>
