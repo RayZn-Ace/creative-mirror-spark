@@ -231,7 +231,7 @@ const Muttizettel = () => {
   );
 
   return (
-    <PageLayout>
+    <PageLayout title="Muttizettel">
       <div className="container mx-auto max-w-2xl py-12 px-4">
         <div className="text-center mb-8">
           <h1 className="font-display text-4xl md:text-6xl tracking-wider text-foreground">
