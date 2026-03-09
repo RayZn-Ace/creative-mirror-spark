@@ -49,7 +49,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>Instagram</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>@gimmegimmeparty</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>@nightlifegeneration_de</div>
           </div>
         </a>
 
