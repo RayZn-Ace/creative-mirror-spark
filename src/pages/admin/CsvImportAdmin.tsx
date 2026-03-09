@@ -130,6 +130,7 @@ export default function CsvImportAdmin() {
   const [step, setStep] = useState<"upload" | "preview" | "importing" | "done">("upload");
   const [importLog, setImportLog] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [detectedFromFilename, setDetectedFromFilename] = useState<{ title: string; date: string; city: string } | null>(null);
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
