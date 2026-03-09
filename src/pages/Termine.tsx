@@ -636,10 +636,17 @@ export default function Termine() {
 
                     {/* CTA */}
                     <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                        <Ticket className="w-4 h-4" />
-                        {t.tickets}
-                      </span>
+                      {group.events.every(e => e.soldOut) ? (
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "hsl(0 70% 55%)" }}>
+                          <XCircle className="w-4 h-4" />
+                          Warteliste
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                          <Ticket className="w-4 h-4" />
+                          {t.tickets}
+                        </span>
+                      )}
                       <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </div>
