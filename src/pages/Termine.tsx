@@ -557,13 +557,32 @@ export default function Termine() {
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                         loading="lazy"
                          style={{
-                           transition: "filter 0.6s ease, opacity 0.6s ease",
+                           transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.5s ease",
                            ...(group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
                          }}
                       />
                       
+                      {group.events.every(e => e.soldOut) && (
+                        <div className="absolute inset-0 pointer-events-none z-10">
+                          <div
+                            className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
+                            style={{
+                              background: "hsl(0 70% 45%)",
+                              width: "120%",
+                              top: "50%",
+                              left: "50%",
+                              transform: "translate(-50%, -50%) rotate(-35deg)",
+                              padding: "6px 0",
+                              boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
+                            }}
+                          >
+                            AUSVERKAUFT
+                          </div>
+                        </div>
+                      )}
+
                       {group.km !== null && (
-                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium">
+                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20">
                           <MapPin className="w-3 h-3 text-primary" />
                           {group.km} {t.kmAway}
                         </div>
