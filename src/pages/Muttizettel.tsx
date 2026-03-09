@@ -1,388 +1,449 @@
+import { useState, useEffect, useMemo } from "react";
 import { PageLayout } from "@/components/PageLayout";
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import SignaturePad from "@/components/SignaturePad";
+import BirthdayPicker from "@/components/BirthdayPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, ChevronRight, Check, FileText, Users, User, Shield, ClipboardCheck, PartyPopper } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShieldCheck, Lock, Download, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const STEPS = [
-  { label: "Event", icon: PartyPopper },
-  { label: "Elternteil", icon: Users },
-  { label: "Kind", icon: User },
-  { label: "Begleitperson", icon: Shield },
-  { label: "Zusammenfassung", icon: ClipboardCheck },
-  { label: "Fertig", icon: Check },
-];
+interface EventOption { id: string; title: string; date: string; }
 
-interface MuttizettelForm {
-  eventId: string;
-  eventName: string;
-  parentName: string;
-  parentAddress: string;
-  parentZip: string;
-  parentCity: string;
-  parentCountry: string;
-  parentPhone: string;
-  parentBirthdate: string;
-  parentEmail: string;
-  childName: string;
-  childBirthdate: string;
-  childAddress: string;
-  childZip: string;
-  childCity: string;
-  childPhone: string;
-  companionName: string;
-  companionPhone: string;
-  companionBirthdate: string;
-}
+const COUNTRIES = ["Deutschland", "Österreich", "Schweiz"];
 
-const emptyForm: MuttizettelForm = {
-  eventId: "", eventName: "",
-  parentName: "", parentAddress: "", parentZip: "", parentCity: "", parentCountry: "Deutschland",
-  parentPhone: "", parentBirthdate: "", parentEmail: "",
-  childName: "", childBirthdate: "", childAddress: "", childZip: "", childCity: "", childPhone: "",
-  companionName: "", companionPhone: "", companionBirthdate: "",
+const handleZipChange = (value: string, country: string): string => {
+  const digitsOnly = value.replace(/\D/g, "");
+  const maxLen = country === "Deutschland" ? 5 : 10;
+  return digitsOnly.slice(0, maxLen);
+};
+
+const calcAge = (birthday: string, refDate?: Date): number => {
+  const birth = new Date(birthday);
+  const today = refDate || new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
 };
 
 const Muttizettel = () => {
-  const [searchParams] = useSearchParams();
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState<MuttizettelForm>(emptyForm);
-  const [events, setEvents] = useState<{ id: string; title: string; date: string | null }[]>([]);
+  const [step, setStep] = useState(1);
+  const totalSteps = 6;
+
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState("");
+
+  const [parentName, setParentName] = useState("");
+  const [parentAddress, setParentAddress] = useState("");
+  const [parentZip, setParentZip] = useState("");
+  const [parentCity, setParentCity] = useState("");
+  const [parentCountry, setParentCountry] = useState("Deutschland");
+  const [parentPhone, setParentPhone] = useState("");
+  const [parentBirthday, setParentBirthday] = useState("");
+
+  const [minorName, setMinorName] = useState("");
+  const [minorAddress, setMinorAddress] = useState("");
+  const [minorZip, setMinorZip] = useState("");
+  const [minorCity, setMinorCity] = useState("");
+  const [minorCountry, setMinorCountry] = useState("Deutschland");
+  const [minorPhone, setMinorPhone] = useState("");
+  const [minorBirthday, setMinorBirthday] = useState("");
+  const [copyParentAddress, setCopyParentAddress] = useState(false);
+
+  const [skipSupervisor, setSkipSupervisor] = useState(false);
+  const [supervisorName, setSupervisorName] = useState("");
+  const [supervisorAddress, setSupervisorAddress] = useState("");
+  const [supervisorZip, setSupervisorZip] = useState("");
+  const [supervisorCity, setSupervisorCity] = useState("");
+  const [supervisorCountry, setSupervisorCountry] = useState("Deutschland");
+  const [supervisorEmail, setSupervisorEmail] = useState("");
+  const [supervisorPhone, setSupervisorPhone] = useState("");
+  const [supervisorBirthday, setSupervisorBirthday] = useState("");
+  const [copySupervisorAddress, setCopySupervisorAddress] = useState(false);
+
+  const [parentSignature, setParentSignature] = useState<string | null>(null);
+  const [supervisorSignature, setSupervisorSignature] = useState<string | null>(null);
+  const [skipSignature, setSkipSignature] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptNewsletter, setAcceptNewsletter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [direction, setDirection] = useState(1);
+  const [submittedFormId, setSubmittedFormId] = useState<string | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("events")
-      .select("id, title, date")
+    supabase.from("events").select("id, title, date")
       .eq("status", "published")
-      .eq("muttizettel", true)
+      .gte("date", new Date().toISOString().split("T")[0])
       .order("date", { ascending: true })
-      .then(({ data }) => {
-        if (data) {
-          setEvents(data);
-          // Auto-select event from URL param
-          const eventParam = searchParams.get("event");
-          if (eventParam) {
-            const match = data.find((e) => e.id === eventParam);
-            if (match) {
-              setForm((prev) => ({
-                ...prev,
-                eventId: match.id,
-                eventName: match.title + (match.date ? ` – ${new Date(match.date).toLocaleDateString("de-DE")}` : ""),
-              }));
-            }
-          }
-        }
-      });
+      .then(({ data }) => { if (data) setEvents(data); });
   }, []);
 
-  const set = (key: keyof MuttizettelForm, val: string) => setForm((p) => ({ ...p, [key]: val }));
-
-  const canNext = (): boolean => {
-    if (step === 0) return !!form.eventId;
-    if (step === 1) return !!form.parentName && !!form.parentPhone && !!form.parentBirthdate;
-    if (step === 2) return !!form.childName && !!form.childBirthdate;
-    if (step === 3) return !!form.companionName && !!form.companionPhone;
-    return true;
-  };
-
-  const next = () => { if (canNext()) { setDirection(1); setStep((s) => Math.min(s + 1, 5)); } };
-  const prev = () => { setDirection(-1); setStep((s) => Math.max(s - 1, 0)); };
-
-  const submit = async () => {
-    setSubmitting(true);
-    const { error } = await supabase.from("muttizettel_submissions").insert({
-      event_id: form.eventId || null,
-      event_name: form.eventName,
-      parent_name: form.parentName,
-      parent_address: form.parentAddress,
-      parent_zip: form.parentZip,
-      parent_city: form.parentCity,
-      parent_country: form.parentCountry,
-      parent_phone: form.parentPhone,
-      parent_birthdate: form.parentBirthdate || null,
-      parent_email: form.parentEmail || null,
-      child_name: form.childName,
-      child_birthdate: form.childBirthdate,
-      child_address: form.childAddress || null,
-      child_zip: form.childZip || null,
-      child_city: form.childCity || null,
-      child_phone: form.childPhone || null,
-      companion_name: form.companionName || null,
-      companion_phone: form.companionPhone || null,
-      companion_birthdate: form.companionBirthdate || null,
-    } as any);
-    setSubmitting(false);
-    if (error) {
-      toast.error("Fehler beim Einreichen. Bitte versuche es erneut.");
-      console.error(error);
-    } else {
-      setDirection(1);
-      setStep(5);
+  useEffect(() => {
+    if (copyParentAddress) {
+      setMinorAddress(parentAddress); setMinorZip(parentZip); setMinorCity(parentCity); setMinorCountry(parentCountry);
     }
-  };
+  }, [copyParentAddress, parentAddress, parentZip, parentCity, parentCountry]);
 
-  const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none transition-all bg-[hsl(220_15%_93%)] border border-[hsl(220_15%_85%)] text-[hsl(220_20%_15%)] focus:border-[hsl(230_80%_56%)] focus:ring-2 focus:ring-[hsl(230_80%_56%/0.15)]";
-  const labelCls = "block text-xs font-bold uppercase tracking-wide mb-1.5 text-muted-foreground";
+  useEffect(() => {
+    if (copySupervisorAddress) {
+      setSupervisorAddress(parentAddress); setSupervisorZip(parentZip); setSupervisorCity(parentCity); setSupervisorCountry(parentCountry);
+    }
+  }, [copySupervisorAddress, parentAddress, parentZip, parentCity, parentCountry]);
 
-  const slideVariants = {
-    enter: (d: number) => ({ x: d > 0 ? 60 : -60, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -60 : 60, opacity: 0 }),
-  };
+  const selectedEventLabel = useMemo(() => {
+    const ev = events.find((e) => e.id === selectedEvent);
+    return ev ? ev.title : "";
+  }, [selectedEvent, events]);
 
-  const renderStep = () => {
+  const validateStep = (): string | null => {
     switch (step) {
-      case 0:
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Wähle das Event, für das du den Muttizettel einreichen möchtest.</p>
-            <div className="space-y-2">
-              {events.map((ev) => (
-                <button
-                  key={ev.id}
-                  type="button"
-                  onClick={() => { set("eventId", ev.id); set("eventName", ev.title + (ev.date ? ` – ${new Date(ev.date).toLocaleDateString("de-DE")}` : "")); }}
-                  className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all text-sm font-medium ${
-                    form.eventId === ev.id
-                      ? "border-[hsl(230_80%_56%)] bg-[hsl(230_80%_56%/0.08)] text-foreground shadow-sm"
-                      : "border-border bg-card text-muted-foreground hover:border-[hsl(230_80%_56%/0.4)]"
-                  }`}
-                >
-                  <span className="font-semibold">{ev.title}</span>
-                  {ev.date && <span className="ml-2 opacity-60">{new Date(ev.date).toLocaleDateString("de-DE")}</span>}
-                </button>
-              ))}
-              {events.length === 0 && (
-                <p className="text-sm text-muted-foreground py-8 text-center">Keine Events mit Muttizettel verfügbar.</p>
-              )}
-            </div>
-          </div>
-        );
-
-      case 1:
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Daten der sorgeberechtigten Person (z.B. Vater oder Mutter).</p>
-            <div>
-              <label className={labelCls}>👤 Name Elternteil *</label>
-              <input className={inputCls} required value={form.parentName} onChange={(e) => set("parentName", e.target.value)} placeholder="Vor- & Nachname" />
-            </div>
-            <div>
-              <label className={labelCls}>🏡 Anschrift</label>
-              <input className={inputCls} value={form.parentAddress} onChange={(e) => set("parentAddress", e.target.value)} placeholder="Straße, Hausnummer" />
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <input className={inputCls} value={form.parentZip} onChange={(e) => set("parentZip", e.target.value)} placeholder="PLZ" />
-                <input className={inputCls} value={form.parentCity} onChange={(e) => set("parentCity", e.target.value)} placeholder="Stadt" />
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>🌍 Land</label>
-              <select className={inputCls} value={form.parentCountry} onChange={(e) => set("parentCountry", e.target.value)}>
-                <option>Deutschland</option>
-                <option>Österreich</option>
-                <option>Schweiz</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>📞 Telefon *</label>
-              <input className={inputCls} type="tel" required value={form.parentPhone} onChange={(e) => set("parentPhone", e.target.value)} placeholder="+49 123 456789" />
-            </div>
-            <div>
-              <label className={labelCls}>🎂 Geburtsdatum *</label>
-              <input className={inputCls} type="date" required value={form.parentBirthdate} onChange={(e) => set("parentBirthdate", e.target.value)} />
-            </div>
-            <div>
-              <label className={labelCls}>✉️ E-Mail</label>
-              <input className={inputCls} type="email" value={form.parentEmail} onChange={(e) => set("parentEmail", e.target.value)} placeholder="elternteil@beispiel.de" />
-            </div>
-          </div>
-        );
-
+      case 1: return !selectedEvent ? "Bitte wähle ein Event aus." : null;
       case 2:
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Daten des minderjährigen Gastes.</p>
-            <div>
-              <label className={labelCls}>👤 Name des Kindes *</label>
-              <input className={inputCls} required value={form.childName} onChange={(e) => set("childName", e.target.value)} placeholder="Vor- & Nachname" />
-            </div>
-            <div>
-              <label className={labelCls}>🎂 Geburtsdatum *</label>
-              <input className={inputCls} type="date" required value={form.childBirthdate} onChange={(e) => set("childBirthdate", e.target.value)} />
-            </div>
-            <div>
-              <label className={labelCls}>🏡 Anschrift</label>
-              <input className={inputCls} value={form.childAddress} onChange={(e) => set("childAddress", e.target.value)} placeholder="Straße, Hausnummer" />
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <input className={inputCls} value={form.childZip} onChange={(e) => set("childZip", e.target.value)} placeholder="PLZ" />
-                <input className={inputCls} value={form.childCity} onChange={(e) => set("childCity", e.target.value)} placeholder="Stadt" />
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>📞 Telefon</label>
-              <input className={inputCls} type="tel" value={form.childPhone} onChange={(e) => set("childPhone", e.target.value)} placeholder="+49 123 456789" />
-            </div>
-          </div>
-        );
-
+        if (!parentName.trim()) return "Name des Elternteils fehlt.";
+        if (!parentAddress.trim()) return "Anschrift des Elternteils fehlt.";
+        if (!parentPhone.trim()) return "Telefon des Elternteils fehlt.";
+        if (!parentBirthday) return "Geburtsdatum des Elternteils fehlt.";
+        if (calcAge(parentBirthday) < 18) return "Die sorgeberechtigte Person muss über 18 Jahre alt sein.";
+        return null;
       case 3:
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Die volljährige Person, die während der Veranstaltung die Aufsicht übernimmt.</p>
-            <div>
-              <label className={labelCls}>👤 Name Begleitperson *</label>
-              <input className={inputCls} required value={form.companionName} onChange={(e) => set("companionName", e.target.value)} placeholder="Vor- & Nachname" />
-            </div>
-            <div>
-              <label className={labelCls}>📞 Telefon *</label>
-              <input className={inputCls} type="tel" required value={form.companionPhone} onChange={(e) => set("companionPhone", e.target.value)} placeholder="+49 123 456789" />
-            </div>
-            <div>
-              <label className={labelCls}>🎂 Geburtsdatum</label>
-              <input className={inputCls} type="date" value={form.companionBirthdate} onChange={(e) => set("companionBirthdate", e.target.value)} />
-            </div>
-          </div>
-        );
-
+        if (!minorName.trim()) return "Name der minderjährigen Person fehlt.";
+        if (!minorAddress.trim()) return "Anschrift fehlt.";
+        if (!minorPhone.trim()) return "Telefon fehlt.";
+        if (!minorBirthday) return "Geburtsdatum fehlt.";
+        { const age = calcAge(minorBirthday); if (age >= 18) return "Die Person muss unter 18 Jahre alt sein."; if (age < 16) return "Die Person muss mindestens 16 Jahre alt sein."; }
+        return null;
       case 4:
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Bitte prüfe deine Angaben.</p>
-            {[
-              { title: "Event", value: form.eventName },
-              { title: "Elternteil", value: `${form.parentName}${form.parentPhone ? ` · ${form.parentPhone}` : ""}` },
-              { title: "Kind", value: `${form.childName} · ${form.childBirthdate ? new Date(form.childBirthdate).toLocaleDateString("de-DE") : ""}` },
-              { title: "Begleitperson", value: `${form.companionName}${form.companionPhone ? ` · ${form.companionPhone}` : ""}` },
-            ].map((item) => (
-              <div key={item.title} className="rounded-xl border border-border bg-card p-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">{item.title}</p>
-                <p className="text-sm font-medium text-foreground">{item.value}</p>
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Mit dem Einreichen bestätigst du, dass alle Angaben korrekt sind und die sorgeberechtigte Person der Erziehungsbeauftragung zustimmt.
-            </p>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="text-center py-8 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[hsl(142_70%_45%)] flex items-center justify-center mx-auto">
-              <Check className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground">Muttizettel eingereicht! 🎉</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Dein Muttizettel wurde erfolgreich hinterlegt. Bitte bringe einen gültigen Ausweis zum Event mit.
-            </p>
-            <button
-              onClick={() => { setForm(emptyForm); setStep(0); }}
-              className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              Neuen Muttizettel erstellen
-            </button>
-          </div>
-        );
+        if (!skipSupervisor) {
+          if (!supervisorName.trim()) return "Name der Aufsichtsperson fehlt.";
+          if (!supervisorAddress.trim()) return "Anschrift der Aufsichtsperson fehlt.";
+          if (!supervisorEmail.trim()) return "E-Mail der Aufsichtsperson fehlt.";
+          if (!supervisorPhone.trim()) return "Telefon der Aufsichtsperson fehlt.";
+          if (!supervisorBirthday) return "Geburtsdatum der Aufsichtsperson fehlt.";
+          if (calcAge(supervisorBirthday) < 18) return "Die Aufsichtsperson muss über 18 Jahre alt sein.";
+        }
+        return null;
+      case 5: return (!skipSignature && !parentSignature) ? "Bitte unterschreibe oder wähle 'nicht online unterschreiben'." : null;
+      case 6:
+        if (!email.trim()) return "Bitte gib eine E-Mail-Adresse ein.";
+        if (!acceptPrivacy) return "Bitte stimme der Datenschutzerklärung zu.";
+        return null;
     }
+    return null;
   };
+
+  const next = () => { const err = validateStep(); if (err) { toast.error(err); return; } setStep((s) => Math.min(s + 1, totalSteps)); };
+  const prev = () => setStep((s) => Math.max(s - 1, 1));
+
+  const handleSubmit = async () => {
+    const err = validateStep();
+    if (err) { toast.error(err); return; }
+    setSubmitting(true);
+    const selectedEv = events.find((e) => e.id === selectedEvent);
+
+    const { data, error } = await supabase.from("u18_forms").insert({
+      event_id: selectedEvent,
+      event_title: selectedEv?.title || "",
+      event_date: selectedEv?.date || null,
+      parent_name: parentName.trim(),
+      parent_address: parentAddress.trim(),
+      parent_zip: parentZip.trim(),
+      parent_city: parentCity.trim(),
+      parent_country: parentCountry,
+      parent_phone: parentPhone.trim(),
+      parent_birthday: parentBirthday,
+      minor_name: minorName.trim(),
+      minor_address: minorAddress.trim(),
+      minor_zip: minorZip.trim(),
+      minor_city: minorCity.trim(),
+      minor_country: minorCountry,
+      minor_phone: minorPhone.trim(),
+      minor_birthday: minorBirthday,
+      supervisor_name: skipSupervisor ? null : supervisorName.trim() || null,
+      supervisor_address: skipSupervisor ? null : supervisorAddress.trim() || null,
+      supervisor_zip: skipSupervisor ? null : supervisorZip.trim() || null,
+      supervisor_city: skipSupervisor ? null : supervisorCity.trim() || null,
+      supervisor_country: skipSupervisor ? null : supervisorCountry || null,
+      supervisor_email: skipSupervisor ? null : supervisorEmail.trim() || null,
+      supervisor_phone: skipSupervisor ? null : supervisorPhone.trim() || null,
+      supervisor_birthday: skipSupervisor ? null : supervisorBirthday || null,
+      email: email.trim(),
+      has_signature: !skipSignature && !!parentSignature,
+      has_supervisor_signature: !skipSignature && !skipSupervisor && !!supervisorSignature,
+      accept_newsletter: acceptNewsletter,
+      parent_signature: !skipSignature ? parentSignature : null,
+      supervisor_signature: !skipSignature && !skipSupervisor ? supervisorSignature : null,
+    } as any).select("id").single();
+
+    if (error) { toast.error("Fehler beim Speichern: " + error.message); }
+    else if (data) { setSubmittedFormId(data.id); toast.success("Clubzettel wurde erfolgreich erstellt! 🎉"); }
+    setSubmitting(false);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!submittedFormId) return;
+    setDownloadingPdf(true);
+    try {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/generate-u18-pdf`,
+        { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: submittedFormId }) }
+      );
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "PDF-Generierung fehlgeschlagen"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `clubzettel-${submittedFormId.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("PDF heruntergeladen!");
+    } catch (err: any) {
+      toast.error(err.message || "PDF konnte nicht heruntergeladen werden.");
+    } finally { setDownloadingPdf(false); }
+  };
+
+  const CountrySelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="bg-card border-border"><SelectValue /></SelectTrigger>
+      <SelectContent>{COUNTRIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
+    </Select>
+  );
+
+  const SecurityBadge = () => (
+    <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs mt-6 pt-4 border-t border-border">
+      <Lock size={12} />
+      Sichere Datenübertragung durch SSL SHA-256 Verschlüsselung
+    </div>
+  );
 
   return (
-    <PageLayout title="Muttizettel" subtitle="Dein Clubzettel für eine unvergessliche Nacht. 🎉">
-      <div className="max-w-lg mx-auto">
-        {/* Progress bar */}
-        {step < 5 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              {STEPS.slice(0, 5).map((s, i) => {
-                const Icon = s.icon;
-                const done = i < step;
-                const active = i === step;
-                return (
-                  <div key={s.label} className="flex flex-col items-center gap-1">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                        done
-                          ? "bg-[hsl(230_80%_56%)] text-white"
-                          : active
-                          ? "bg-[hsl(230_80%_56%/0.15)] text-[hsl(230_80%_56%)] border-2 border-[hsl(230_80%_56%)]"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {done ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
-                    </div>
-                    <span className={`text-[10px] font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="h-1 rounded-full bg-muted overflow-hidden">
-              <motion.div
-                className="h-full bg-[hsl(230_80%_56%)] rounded-full"
-                initial={false}
-                animate={{ width: `${(step / 4) * 100}%` }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Schritt {step + 1} von 5 – {STEPS[step].label}</p>
-          </div>
-        )}
-
-        {/* Step content */}
-        <div className="relative overflow-hidden min-h-[300px]">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={step}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-            >
-              {renderStep()}
-            </motion.div>
-          </AnimatePresence>
+    <PageLayout title="Muttizettel">
+      <div className="container mx-auto max-w-2xl py-12 px-4">
+        <div className="text-center mb-8">
+          <h1 className="font-display text-4xl md:text-6xl tracking-wider text-foreground">
+            MUTTI<span className="text-gradient-primary">ZETTEL</span>
+          </h1>
+          <div className="w-20 h-1 bg-primary mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* Navigation */}
-        {step < 5 && (
-          <div className="flex gap-3 mt-8">
-            {step > 0 && (
-              <motion.button
-                type="button"
-                onClick={prev}
-                className="flex-1 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider border border-border bg-card text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2"
-                whileTap={{ scale: 0.97 }}
+        {submittedFormId ? (
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 text-center space-y-6">
+            <CheckCircle className="mx-auto text-primary" size={56} />
+            <h2 className="font-display text-2xl tracking-wider text-foreground">CLUBZETTEL ERSTELLT!</h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              Dein Clubzettel wurde erfolgreich gespeichert. Du kannst ihn jetzt als PDF herunterladen und ausdrucken.
+            </p>
+            <Button onClick={handleDownloadPdf} disabled={downloadingPdf} size="lg" className="font-display tracking-wider gap-2">
+              {downloadingPdf ? (<><Loader2 size={18} className="animate-spin" />PDF WIRD GENERIERT...</>) : (<><Download size={18} />CLUBZETTEL ALS PDF HERUNTERLADEN</>)}
+            </Button>
+            <div className="pt-4 border-t border-border">
+              <button
+                onClick={() => {
+                  setSubmittedFormId(null); setStep(1); setSelectedEvent("");
+                  setParentName(""); setParentAddress(""); setParentZip(""); setParentCity(""); setParentPhone(""); setParentBirthday("");
+                  setMinorName(""); setMinorAddress(""); setMinorZip(""); setMinorCity(""); setMinorPhone(""); setMinorBirthday("");
+                  setSupervisorName(""); setSupervisorAddress(""); setSupervisorZip(""); setSupervisorCity(""); setSupervisorEmail(""); setSupervisorPhone(""); setSupervisorBirthday("");
+                  setEmail(""); setAcceptPrivacy(false); setAcceptNewsletter(false);
+                  setParentSignature(null); setSupervisorSignature(null); setSkipSignature(false); setSkipSupervisor(false);
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <ChevronLeft className="w-4 h-4" /> Zurück
-              </motion.button>
-            )}
-            <motion.button
-              type="button"
-              onClick={step === 4 ? submit : next}
-              disabled={!canNext() || submitting}
-              className={`flex-1 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider text-white flex items-center justify-center gap-2 transition-all ${
-                canNext() && !submitting
-                  ? "bg-[hsl(230_80%_56%)] hover:bg-[hsl(230_80%_50%)] shadow-lg shadow-[hsl(230_80%_56%/0.3)]"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
-              whileTap={canNext() ? { scale: 0.97 } : {}}
-            >
-              {submitting ? "Wird eingereicht..." : step === 4 ? "Einreichen" : "Weiter"}{" "}
-              {!submitting && step < 4 && <ChevronRight className="w-4 h-4" />}
-            </motion.button>
+                Neuen Clubzettel erstellen
+              </button>
+            </div>
+            <SecurityBadge />
           </div>
-        )}
+        ) : (
+          <>
+            <div className="mb-6">
+              <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                <span>Schritt {step} von {totalSteps} – {selectedEventLabel || "Veranstaltung"}</span>
+                <span>{Math.round((step / totalSteps) * 100)}%</span>
+              </div>
+              <Progress value={(step / totalSteps) * 100} className="h-2" />
+            </div>
 
-        {/* SSL note */}
-        {step < 5 && (
-          <p className="text-center text-[10px] text-muted-foreground mt-4 flex items-center justify-center gap-1">
-            🔒 Sichere Datenübertragung durch SSL-Verschlüsselung
-          </p>
+            <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <ShieldCheck className="mx-auto text-primary" size={40} />
+                    <h2 className="font-display text-2xl tracking-wider">Jetzt ausfüllen und den Clubzettel erhalten</h2>
+                    <p className="text-muted-foreground text-sm">Bitte gib an, um welche Veranstaltung es sich handelt.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Event auswählen *</Label>
+                    <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                      <SelectTrigger className="bg-card border-border"><SelectValue placeholder="Event auswählen" /></SelectTrigger>
+                      <SelectContent>
+                        {events.map((ev) => (
+                          <SelectItem key={ev.id} value={ev.id}>{ev.title} – {new Date(ev.date).toLocaleDateString("de-DE")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-5">
+                  <p className="text-muted-foreground text-sm">Bitte gib die Daten der sorgeberechtigten Person ein. (z.B. Vater oder Mutter)</p>
+                  <div className="space-y-3">
+                    <div><Label>👤 Name Elternteil *</Label><Input value={parentName} onChange={(e) => setParentName(e.target.value)} className="bg-card border-border" /></div>
+                    <div><Label>🏡 Straße + Hausnr. *</Label><Input value={parentAddress} onChange={(e) => setParentAddress(e.target.value)} className="bg-card border-border" placeholder="Musterstraße 1" /></div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div><Label>PLZ *</Label><Input value={parentZip} onChange={(e) => setParentZip(handleZipChange(e.target.value, parentCountry))} className="bg-card border-border" inputMode="numeric" maxLength={parentCountry === "Deutschland" ? 5 : 10} /></div>
+                      <div className="col-span-2"><Label>Ort *</Label><Input value={parentCity} onChange={(e) => setParentCity(e.target.value)} className="bg-card border-border" /></div>
+                    </div>
+                    <CountrySelect value={parentCountry} onChange={setParentCountry} />
+                    <div><Label>📞 Telefon *</Label><Input type="tel" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} className="bg-card border-border" /></div>
+                    <div>
+                      <Label>🎈 Geburtsdatum *</Label>
+                      <BirthdayPicker value={parentBirthday} onChange={setParentBirthday} />
+                      {parentBirthday && calcAge(parentBirthday) < 18 && <p className="text-destructive text-xs mt-1">Die sorgeberechtigte Person muss über 18 sein.</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-5">
+                  <p className="text-muted-foreground text-sm">Bitte gib die Daten der unter 18-jährigen Person ein.</p>
+                  <div className="space-y-3">
+                    <div><Label>👤 Name unter 18 *</Label><Input value={minorName} onChange={(e) => setMinorName(e.target.value)} className="bg-card border-border" /></div>
+                    <div>
+                      <Label className="flex items-center justify-between"><span>🏡 Straße + Hausnr. *</span>
+                        <button type="button" onClick={() => setCopyParentAddress(!copyParentAddress)} className="text-xs text-primary hover:underline">ADRESSE ÜBERNEHMEN</button>
+                      </Label>
+                      <Input value={minorAddress} onChange={(e) => { setMinorAddress(e.target.value); setCopyParentAddress(false); }} className="bg-card border-border" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div><Label>PLZ *</Label><Input value={minorZip} onChange={(e) => { setMinorZip(handleZipChange(e.target.value, minorCountry)); setCopyParentAddress(false); }} className="bg-card border-border" inputMode="numeric" maxLength={minorCountry === "Deutschland" ? 5 : 10} /></div>
+                      <div className="col-span-2"><Label>Ort *</Label><Input value={minorCity} onChange={(e) => { setMinorCity(e.target.value); setCopyParentAddress(false); }} className="bg-card border-border" /></div>
+                    </div>
+                    <CountrySelect value={minorCountry} onChange={(v) => { setMinorCountry(v); setCopyParentAddress(false); }} />
+                    <div><Label>📞 Telefon *</Label><Input type="tel" value={minorPhone} onChange={(e) => setMinorPhone(e.target.value)} className="bg-card border-border" /></div>
+                    <div>
+                      <Label>🎈 Geburtsdatum *</Label>
+                      <BirthdayPicker value={minorBirthday} onChange={setMinorBirthday} />
+                      {minorBirthday && calcAge(minorBirthday) >= 18 && <p className="text-destructive text-xs mt-1">Die Person muss unter 18 Jahre alt sein.</p>}
+                      {minorBirthday && calcAge(minorBirthday) < 16 && <p className="text-destructive text-xs mt-1">Die Person muss mindestens 16 Jahre alt sein.</p>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="space-y-5">
+                  <p className="text-muted-foreground text-sm">Bitte gib die Daten der Aufsichtsperson an (über 18 Jahre alt).</p>
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                    <Checkbox checked={skipSupervisor} onCheckedChange={(v) => setSkipSupervisor(!!v)} id="skip-supervisor" />
+                    <div>
+                      <label htmlFor="skip-supervisor" className="text-sm font-medium cursor-pointer">Aufsichtsperson später eintragen</label>
+                      <p className="text-xs text-muted-foreground mt-1">Der Muttizettel muss dann ausgedruckt und handschriftlich ergänzt werden.</p>
+                    </div>
+                  </div>
+                  {!skipSupervisor && (
+                    <div className="space-y-3">
+                      <div><Label>👤 Name (18+) *</Label><Input value={supervisorName} onChange={(e) => setSupervisorName(e.target.value)} className="bg-card border-border" /></div>
+                      <div>
+                        <Label className="flex items-center justify-between"><span>🏡 Straße + Hausnr. *</span>
+                          <button type="button" onClick={() => setCopySupervisorAddress(!copySupervisorAddress)} className="text-xs text-primary hover:underline">ADRESSE ÜBERNEHMEN</button>
+                        </Label>
+                        <Input value={supervisorAddress} onChange={(e) => { setSupervisorAddress(e.target.value); setCopySupervisorAddress(false); }} className="bg-card border-border" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div><Label>PLZ *</Label><Input value={supervisorZip} onChange={(e) => { setSupervisorZip(handleZipChange(e.target.value, supervisorCountry)); setCopySupervisorAddress(false); }} className="bg-card border-border" inputMode="numeric" maxLength={supervisorCountry === "Deutschland" ? 5 : 10} /></div>
+                        <div className="col-span-2"><Label>Ort *</Label><Input value={supervisorCity} onChange={(e) => { setSupervisorCity(e.target.value); setCopySupervisorAddress(false); }} className="bg-card border-border" /></div>
+                      </div>
+                      <CountrySelect value={supervisorCountry} onChange={(v) => { setSupervisorCountry(v); setCopySupervisorAddress(false); }} />
+                      <div><Label>✉️ E-Mail *</Label><Input type="email" value={supervisorEmail} onChange={(e) => setSupervisorEmail(e.target.value)} className="bg-card border-border" /></div>
+                      <div><Label>📞 Telefon *</Label><Input type="tel" value={supervisorPhone} onChange={(e) => setSupervisorPhone(e.target.value)} className="bg-card border-border" /></div>
+                      <div>
+                        <Label>🎈 Geburtsdatum *</Label>
+                        <BirthdayPicker value={supervisorBirthday} onChange={setSupervisorBirthday} />
+                        {supervisorBirthday && calcAge(supervisorBirthday) < 18 && <p className="text-destructive text-xs mt-1">Die Aufsichtsperson muss über 18 Jahre alt sein.</p>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {step === 5 && (
+                <div className="space-y-6">
+                  <p className="text-muted-foreground text-sm">Unterschriften der beteiligten Personen</p>
+                  {!skipSignature && (
+                    <>
+                      <SignaturePad label="Unterschrift der sorgeberechtigten Person" onSignatureChange={setParentSignature} value={parentSignature} />
+                      <p className="text-xs text-muted-foreground">Hiermit erkläre ich mich als sorgeberechtigte Person einverstanden, dass ich die Aufsicht an die angegebene Person übertrage.</p>
+                      {!skipSupervisor && (
+                        <>
+                          <div className="border-t border-border pt-4" />
+                          <SignaturePad label="Unterschrift der Aufsichtsperson (18+)" onSignatureChange={setSupervisorSignature} value={supervisorSignature} />
+                          <p className="text-xs text-muted-foreground">Hiermit bestätige ich, die Aufsicht über die oben genannte minderjährige Person zu übernehmen.</p>
+                        </>
+                      )}
+                    </>
+                  )}
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                    <Checkbox checked={skipSignature} onCheckedChange={(v) => setSkipSignature(!!v)} id="skip-sig" />
+                    <label htmlFor="skip-sig" className="text-sm cursor-pointer">Der Clubzettel soll nicht online unterschrieben werden</label>
+                  </div>
+                </div>
+              )}
+
+              {step === 6 && (
+                <div className="space-y-6">
+                  <p className="text-muted-foreground text-sm">Wohin soll der Clubzettel geschickt werden?</p>
+                  <div><Label>✉️ E-Mail-Adresse *</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-card border-border" placeholder="deine@email.de" /></div>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} id="privacy" />
+                      <div>
+                        <label htmlFor="privacy" className="text-sm font-medium cursor-pointer">Ich stimme der Datenschutzerklärung zu. *</label>
+                        <p className="text-xs text-muted-foreground mt-1">Deine Daten werden zur Verarbeitung und Generierung des Clubzettels gespeichert. Art. 21 DSGVO Widerspruchsrecht besteht jederzeit.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Checkbox checked={acceptNewsletter} onCheckedChange={(v) => setAcceptNewsletter(!!v)} id="newsletter" />
+                      <div>
+                        <label htmlFor="newsletter" className="text-sm cursor-pointer">Ich stimme zu, über neue Partys informiert zu werden.</label>
+                        <p className="text-xs text-muted-foreground mt-1">Newsletter-Daten werden zum Versand gespeichert. Art. 21 DSGVO Widerspruchsrecht besteht jederzeit.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+                {step > 1 ? (
+                  <Button variant="outline" onClick={prev} className="font-display tracking-wider gap-1"><ChevronLeft size={16} />ZURÜCK</Button>
+                ) : <div />}
+                {step < totalSteps ? (
+                  <Button onClick={next} className="font-display tracking-wider gap-1">WEITER<ChevronRight size={16} /></Button>
+                ) : (
+                  <Button onClick={handleSubmit} disabled={submitting} className="font-display tracking-wider">
+                    {submitting ? "WIRD GESENDET..." : "CLUBZETTEL ERHALTEN"}
+                  </Button>
+                )}
+              </div>
+              <SecurityBadge />
+            </div>
+          </>
         )}
       </div>
     </PageLayout>
