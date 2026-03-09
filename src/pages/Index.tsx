@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import {
   MapPin, ArrowRight, Ticket, Music, Sparkles,
   Users, Heart, Star, Gift, Mic, Quote,
-  ChevronLeft, ChevronRight, Sun
+  ChevronLeft, ChevronRight, Sun, Instagram
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
