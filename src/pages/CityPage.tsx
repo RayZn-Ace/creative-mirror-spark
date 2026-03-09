@@ -1260,19 +1260,39 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
     {headerImage && (
-      <motion.img
-        src={headerImage}
-        alt={cityName}
-        className="w-[85%] sm:w-[75%] max-w-md mx-auto rounded-2xl mb-4 sm:mb-6"
-        style={{
-          boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)",
-          transition: "filter 0.6s ease, opacity 0.6s ease",
-          ...(event.soldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
-        }}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      />
+      <div className="relative w-[85%] sm:w-[75%] max-w-md mx-auto mb-4 sm:mb-6">
+        <motion.img
+          src={headerImage}
+          alt={cityName}
+          className="w-full rounded-2xl"
+          style={{
+            boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)",
+            transition: "filter 0.6s ease, opacity 0.6s ease",
+            ...(event.soldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+          }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        />
+        {event.soldOut && (
+          <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+            <div
+              className="absolute font-black uppercase text-center text-white text-sm sm:text-base tracking-widest"
+              style={{
+                background: "hsl(0 70% 45%)",
+                width: "120%",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%) rotate(-35deg)",
+                padding: "8px 0",
+                boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
+              }}
+            >
+              AUSVERKAUFT
+            </div>
+          </div>
+        )}
+      </div>
     )}
     {!headerImage && (
       <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase leading-[0.9]"
