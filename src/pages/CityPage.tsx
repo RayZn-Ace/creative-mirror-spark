@@ -1116,10 +1116,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       </a>
 
       {event.soldOut ? (
-        <div className="text-center py-8 sm:py-12">
-          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>{t.soldOutTitle}</div>
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{t.soldOutDesc}</p>
-        </div>
+        <WaitlistForm eventId={event.id} t={t} />
       ) : loadingTickets ? (
         <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{t.ticketsLoading}</div></div>
       ) : (
