@@ -64,6 +64,48 @@ Deno.serve(async (req) => {
       totalEur += item.priceEur * item.quantity;
     }
 
+    // Validate and apply discount code
+    let discountAmount = 0;
+    let appliedCouponId: string | null = null;
+    if (discountCode && typeof discountCode === "string" && discountCode.trim().length > 0) {
+      const { data: coupon } = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("code", discountCode.trim().toUpperCase())
+        .eq("active", true)
+        .maybeSingle();
+
+      if (coupon) {
+        // Check if coupon is for this event or global
+        const isValidForEvent = !coupon.event_id || coupon.event_id === eventId;
+        // Check max uses
+        const isUnderLimit = !coupon.max_uses || coupon.used_count < coupon.max_uses;
+        // Check validity dates
+        const now = new Date();
+        const validFrom = coupon.valid_from ? new Date(coupon.valid_from) : null;
+        const validUntil = coupon.valid_until ? new Date(coupon.valid_until) : null;
+        const isInDateRange = (!validFrom || now >= validFrom) && (!validUntil || now <= validUntil);
+        // Check min order amount
+        const meetsMinimum = !coupon.min_order_amount || totalEur >= coupon.min_order_amount;
+
+        if (isValidForEvent && isUnderLimit && isInDateRange && meetsMinimum) {
+          if (coupon.discount_type === "percentage") {
+            discountAmount = totalEur * (coupon.discount_value / 100);
+          } else {
+            discountAmount = Math.min(coupon.discount_value, totalEur);
+          }
+          appliedCouponId = coupon.id;
+          console.log(`Coupon ${coupon.code} applied: -${discountAmount.toFixed(2)} EUR`);
+        } else {
+          console.log(`Coupon ${discountCode} invalid: event=${isValidForEvent}, limit=${isUnderLimit}, date=${isInDateRange}, min=${meetsMinimum}`);
+        }
+      } else {
+        console.log(`Coupon code "${discountCode}" not found`);
+      }
+    }
+
+    totalEur = Math.max(0, totalEur - discountAmount);
+
     // Fetch event service fee config
     const { data: eventData } = await supabase
       .from("events")
