@@ -61,7 +61,7 @@ const parseCsvLine = (line: string): string[] => {
   return result;
 };
 
-export const parseFilename = (filename: string): { title: string; date: string; city: string } => {
+export const parseFilename = (filename: string): { title: string; date: string; city: string; location: string } => {
   const name = filename.replace(/\.csv$/i, "");
   // Try to extract date (YYYY-MM-DD or DD.MM.YYYY or DD-MM-YYYY)
   const isoMatch = name.match(/(\d{4})-(\d{2})-(\d{2})/);
@@ -79,15 +79,31 @@ export const parseFilename = (filename: string): { title: string; date: string; 
   const parts = rest.split(/[-_\s]+/).filter(Boolean);
   // Known German cities for auto-detection
   const knownCities = ["Mainz","Berlin","Hamburg","München","Muenchen","Köln","Koeln","Frankfurt","Stuttgart","Dortmund","Essen","Leipzig","Dresden","Hannover","Düsseldorf","Duesseldorf","Bonn","Paderborn","Bielefeld","Aachen","Augsburg","Bochum","Braunschweig","Karlsruhe","Nürnberg","Nuernberg","Erfurt","Bautzen","Celle","Detmold","Bottrop","Salzburg","Wien","Zürich","Zuerich","Amsterdam","Paris"];
+  // Known locations for auto-detection
+  const knownLocations: Record<string, string> = {
+    "penthouse": "Finn's Penthouse Eventlocation",
+    "finns": "Finn's Penthouse Eventlocation",
+    "finnspenthouse": "Finn's Penthouse Eventlocation",
+    "stadtpark": "Stadtpark",
+    "clubinio": "Clubinio",
+    "warehouse": "Warehouse",
+    "halle": "Halle",
+    "fabrik": "Fabrik",
+    "palace": "Palace",
+    "arena": "Arena",
+  };
   let city = "";
+  let location = "";
   const titleParts: string[] = [];
   for (const p of parts) {
-    const match = knownCities.find(c => c.toLowerCase() === p.toLowerCase());
-    if (match && !city) { city = match; }
+    const cityMatch = knownCities.find(c => c.toLowerCase() === p.toLowerCase());
+    const locKey = Object.keys(knownLocations).find(k => k === p.toLowerCase());
+    if (cityMatch && !city) { city = cityMatch; }
+    else if (locKey && !location) { location = knownLocations[locKey]; }
     else { titleParts.push(p); }
   }
   const title = titleParts.join(" ").trim();
-  return { title, date, city };
+  return { title, date, city, location };
 };
 
 const generateSlug = (title: string, date: string): string => {
