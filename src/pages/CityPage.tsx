@@ -961,6 +961,110 @@ const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; cu
   );
 };
 
+/* ─── Waitlist Form ─── */
+const WaitlistForm = ({ eventId, t }: { eventId: string; t: Translations }) => {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Bitte gib eine gültige E-Mail-Adresse ein");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    const { error: dbError } = await supabase.from("waitlist").insert({ event_id: eventId, email: email.trim().toLowerCase() });
+    setSubmitting(false);
+    if (dbError) {
+      if (dbError.code === "23505") {
+        setSubmitted(true); // already on waitlist
+      } else {
+        setError("Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+      }
+      return;
+    }
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="text-center py-6 sm:py-10">
+      <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
+        {t.soldOutTitle}
+      </div>
+      <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+        {t.soldOutDesc}
+      </p>
+
+      <AnimatePresence mode="wait">
+        {submitted ? (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center gap-2"
+          >
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2" style={{ background: "hsl(142 70% 45% / 0.15)" }}>
+              <svg className="w-6 h-6" style={{ color: "hsl(142 70% 55%)" }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <p className="text-sm font-bold" style={{ color: "hsl(142 70% 55%)" }}>Du stehst auf der Warteliste! 🎉</p>
+            <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Wir benachrichtigen dich, sobald Tickets verfügbar sind.</p>
+          </motion.div>
+        ) : (
+          <motion.form
+            key="form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-3 max-w-sm mx-auto"
+          >
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+              Warteliste beitreten
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                placeholder="Deine E-Mail-Adresse"
+                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all focus:ring-1"
+                style={{
+                  background: "hsl(0 0% 100% / 0.08)",
+                  border: `1px solid ${error ? "hsl(0 70% 50% / 0.5)" : "hsl(0 0% 100% / 0.15)"}`,
+                  color: "hsl(0 0% 100%)",
+                  caretColor: "hsl(330 80% 55%)",
+                }}
+                required
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-5 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.02] disabled:opacity-50"
+                style={{
+                  background: "hsl(330 80% 55%)",
+                  color: "hsl(0 0% 100%)",
+                  boxShadow: "0 4px 15px hsl(330 80% 55% / 0.3)",
+                }}
+              >
+                {submitting ? "..." : "Eintragen"}
+              </button>
+            </div>
+            {error && (
+              <p className="text-xs" style={{ color: "hsl(0 70% 55%)" }}>{error}</p>
+            )}
+            <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+              Keine Spam-Mails. Nur eine Benachrichtigung, wenn Tickets verfügbar sind.
+            </p>
+          </motion.form>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 /* ─── Ticket Widget ─── */
 const SAVED_INFO_KEY = "gimme_checkout_info";
 
