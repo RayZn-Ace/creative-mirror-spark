@@ -61,7 +61,7 @@ const parseCsvLine = (line: string): string[] => {
   return result;
 };
 
-const parseFilename = (filename: string): { title: string; date: string; city: string } => {
+export const parseFilename = (filename: string): { title: string; date: string; city: string } => {
   const name = filename.replace(/\.csv$/i, "");
   // Try to extract date (YYYY-MM-DD or DD.MM.YYYY or DD-MM-YYYY)
   const isoMatch = name.match(/(\d{4})-(\d{2})-(\d{2})/);
