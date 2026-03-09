@@ -39,7 +39,7 @@ const Kontakt = () => (
         </a>
 
         <a
-          href="https://instagram.com/gimmegimmeparty"
+          href="https://www.instagram.com/nightlifegeneration_de/"
           target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(220 15% 95%)", border: "1px solid hsl(220 15% 88%)" }}
@@ -49,7 +49,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>Instagram</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>@gimmegimmeparty</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>@nightlifegeneration_de</div>
           </div>
         </a>
 

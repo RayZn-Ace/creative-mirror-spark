@@ -4,7 +4,7 @@ import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
 
 const socialLinks = [
-  { icon: Instagram, href: "https://www.instagram.com/nightlife.generation", label: "Instagram" },
+  { icon: Instagram, href: "https://www.instagram.com/nightlifegeneration_de/", label: "Instagram" },
   { icon: Facebook, href: "https://www.facebook.com/nightlifegeneration", label: "Facebook" },
   { icon: Youtube, href: "https://www.youtube.com/@nightlifegeneration", label: "YouTube" },
 ];
