@@ -1650,7 +1650,8 @@ const EventsAdmin = () => {
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
   const [filter16Plus, setFilter16Plus] = useState(false);
   const [filterMammaMia, setFilterMammaMia] = useState(false);
-  const [filterActs, setFilterActs] = useState(false);
+   const [filterActs, setFilterActs] = useState(false);
+  const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   
