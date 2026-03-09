@@ -1264,9 +1264,12 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
         src={headerImage}
         alt={cityName}
         className="w-[85%] sm:w-[75%] max-w-md mx-auto rounded-2xl mb-4 sm:mb-6"
-        style={{ boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)" }}
+        style={{
+          boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)",
+          ...(event.soldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
+        }}
         initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       />
     )}
