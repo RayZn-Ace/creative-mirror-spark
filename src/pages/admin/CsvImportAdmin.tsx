@@ -158,6 +158,7 @@ export default function CsvImportAdmin() {
       eventTitle: detected.title || prev.eventTitle,
       eventDate: detected.date || prev.eventDate,
       eventCity: detected.city || prev.eventCity,
+      eventLocation: detected.location || prev.eventLocation,
       eventSlug: detected.title && detected.date ? generateSlug(detected.title, detected.date) : prev.eventSlug,
     }));
     const reader = new FileReader();
