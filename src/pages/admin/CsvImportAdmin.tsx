@@ -130,11 +130,13 @@ export default function CsvImportAdmin() {
   const [step, setStep] = useState<"upload" | "preview" | "importing" | "done">("upload");
   const [importLog, setImportLog] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [detectedFromFilename, setDetectedFromFilename] = useState<{ title: string; date: string; city: string } | null>(null);
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
     // Auto-detect event info from filename
     const detected = parseFilename(f.name);
+    setDetectedFromFilename(detected);
     setConfig(prev => ({
       ...prev,
       eventTitle: detected.title || prev.eventTitle,
@@ -373,6 +375,27 @@ export default function CsvImportAdmin() {
       {/* STEP 2: Preview & Config */}
       {step === "preview" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {/* Filename detection banner */}
+          {detectedFromFilename && (detectedFromFilename.title || detectedFromFilename.date || detectedFromFilename.city) && (
+            <div style={{ ...s.card, background: "hsl(230 80% 56% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.3)" }} className="p-4 flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(140 60% 50%)" }} />
+              <div>
+                <div className="text-sm font-semibold mb-1" style={s.white}>📎 Aus Dateiname erkannt</div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" style={s.muted}>
+                  {detectedFromFilename.title && (
+                    <span>Titel: <strong style={s.white}>{detectedFromFilename.title}</strong></span>
+                  )}
+                  {detectedFromFilename.city && (
+                    <span>Stadt: <strong style={s.white}>{detectedFromFilename.city}</strong></span>
+                  )}
+                  {detectedFromFilename.date && (
+                    <span>Datum: <strong style={s.white}>{detectedFromFilename.date.split('-').reverse().join('.')}</strong></span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Auto-detected overview */}
           <div style={s.card} className="p-5 space-y-4">
             <h2 className="text-sm font-bold flex items-center gap-2" style={s.white}>
