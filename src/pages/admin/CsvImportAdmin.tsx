@@ -136,6 +136,7 @@ export default function CsvImportAdmin() {
     setFile(f);
     // Auto-detect event info from filename
     const detected = parseFilename(f.name);
+    setDetectedFromFilename(detected);
     setConfig(prev => ({
       ...prev,
       eventTitle: detected.title || prev.eventTitle,
