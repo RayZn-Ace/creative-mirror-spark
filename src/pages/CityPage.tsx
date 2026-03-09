@@ -1562,7 +1562,22 @@ const CityPage = () => {
         }
       }
 
-      if (!eventsData || eventsData.length === 0) { navigate("/", { replace: true }); return; }
+      // 3) Try exact event slug match
+      if (!eventsData || eventsData.length === 0) {
+        const { data: exactMatch } = await supabase
+          .from("events")
+          .select("*")
+          .eq("slug", citySlug)
+          .eq("status", "published")
+          .maybeSingle();
+        if (exactMatch) {
+          eventsData = [exactMatch];
+          city = exactMatch.city || exactMatch.title || "Unknown";
+        } else {
+          navigate("/", { replace: true });
+          return;
+        }
+      }
 
       // Set header image from series or first event
       const imgUrl = series?.image_url || eventsData[0]?.image_url || null;
