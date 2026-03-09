@@ -556,6 +556,7 @@ export default function Termine() {
                         alt={group.city}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
                         loading="lazy"
+                        style={group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : undefined}
                       />
                       
                       {group.km !== null && (
