@@ -393,7 +393,7 @@ export default function CsvImportAdmin() {
       {step === "preview" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Filename detection banner */}
-          {detectedFromFilename && (detectedFromFilename.title || detectedFromFilename.date || detectedFromFilename.city) && (
+          {detectedFromFilename && (detectedFromFilename.title || detectedFromFilename.date || detectedFromFilename.city || detectedFromFilename.location) && (
             <div style={{ ...s.card, background: "hsl(230 80% 56% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.3)" }} className="p-4 flex items-start gap-3">
               <CheckCircle className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(140 60% 50%)" }} />
               <div>
