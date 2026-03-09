@@ -222,6 +222,19 @@ Deno.serve(async (req) => {
       })
       .eq("id", order.id);
 
+    // Increment coupon used_count
+    if (appliedCouponId) {
+      await supabase.rpc("increment_coupon_usage", { coupon_id: appliedCouponId }).catch(() => {
+        // Fallback: direct update
+        supabase.from("coupons").update({ used_count: undefined }).eq("id", appliedCouponId);
+      });
+      // Simple increment via raw update
+      const { data: couponData } = await supabase.from("coupons").select("used_count").eq("id", appliedCouponId).single();
+      if (couponData) {
+        await supabase.from("coupons").update({ used_count: couponData.used_count + 1 }).eq("id", appliedCouponId);
+      }
+    }
+
     // Return checkout URL
     const checkoutUrl = mollieData._links?.checkout?.href;
 
