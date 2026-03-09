@@ -535,126 +535,256 @@ export default function Termine() {
             <p className="text-muted-foreground">{t.noResultsHint}</p>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedGroups.map((group, idx) => (
-              <motion.div
-                key={`${group.slug}-${group.city}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(idx * 0.04, 0.4) }}
-              >
-                <NeonGlowCard imageUrl={group.imageUrl} index={idx} className="rounded-2xl">
-                <Link
-                  to={`/${group.slug}`}
-                  className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all duration-300 relative z-[2]"
+          <>
+            {/* ── Featured Next Event ── */}
+            {(() => {
+              const featured = sortedGroups[0];
+              const nextDate = featured.events.find(e => !e.soldOut) || featured.events[0];
+              const allSoldOut = featured.events.every(e => e.soldOut);
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-10"
                 >
-                  {/* Image */}
-                  {group.imageUrl && (
-                    <div className="relative overflow-hidden rounded-t-2xl" style={{ aspectRatio: "1920 / 1080" }}>
-                      <img
-                        src={group.imageUrl}
-                        alt={group.city}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
-                        loading="lazy"
-                         style={{
-                           transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.5s ease",
-                           ...(group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
-                         }}
-                      />
-                      
-                      {group.events.every(e => e.soldOut) && (
-                        <motion.div
-                          className="absolute inset-0 pointer-events-none z-10"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                          <div
-                            className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                      {t.nextDate || "Nächstes Event"}
+                    </span>
+                  </div>
+                  <NeonGlowCard imageUrl={featured.imageUrl} index={0} className="rounded-2xl">
+                    <Link
+                      to={`/${featured.slug}`}
+                      className="group block rounded-2xl border border-primary/30 bg-card overflow-hidden hover:border-primary/60 transition-all duration-300 relative z-[2]"
+                    >
+                      {/* Large hero image */}
+                      <div className="relative overflow-hidden" style={{ aspectRatio: "21 / 9" }}>
+                        {featured.imageUrl ? (
+                          <img
+                            src={featured.imageUrl}
+                            alt={featured.city}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform"
                             style={{
-                              background: "hsl(0 70% 45%)",
-                              width: "120%",
-                              top: "50%",
-                              left: "50%",
-                              transform: "translate(-50%, -50%) rotate(-35deg)",
-                              padding: "6px 0",
-                              boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
+                              transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.7s ease",
+                              ...(allSoldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
                             }}
-                          >
-                            AUSVERKAUFT
-                          </div>
-                        </motion.div>
-                      )}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-card" />
+                        )}
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
 
-                      {group.km !== null && (
-                        <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20">
-                          <MapPin className="w-3 h-3 text-primary" />
-                          {group.km} {t.kmAway}
+                        {allSoldOut && (
+                          <motion.div
+                            className="absolute inset-0 pointer-events-none z-10"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                          >
+                            <div
+                              className="absolute font-black uppercase text-center text-white text-lg sm:text-2xl tracking-widest"
+                              style={{
+                                background: "hsl(0 70% 45%)",
+                                width: "120%",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%) rotate(-35deg)",
+                                padding: "10px 0",
+                                boxShadow: "0 2px 12px hsl(0 0% 0% / 0.5)",
+                              }}
+                            >
+                              AUSVERKAUFT
+                            </div>
+                          </motion.div>
+                        )}
+
+                        {featured.km !== null && (
+                          <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/90 text-sm font-medium z-20 backdrop-blur-sm">
+                            <MapPin className="w-3.5 h-3.5 text-primary" />
+                            {featured.km} {t.kmAway}
+                          </div>
+                        )}
+
+                        {/* Content overlay on image */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-10">
+                          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display uppercase tracking-wide text-foreground mb-2 drop-shadow-lg">
+                            {featured.city}
+                          </h2>
+                          {nextDate?.locationName && (
+                            <p className="text-sm md:text-base text-muted-foreground mb-4 drop-shadow-md">
+                              {nextDate.locationName}
+                            </p>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-3">
+                            {/* Date badges */}
+                            <div className="flex flex-wrap gap-1.5">
+                              {featured.events.map((ev) => (
+                                <span
+                                  key={ev.id}
+                                  className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-2 rounded-lg border backdrop-blur-sm ${
+                                    ev.soldOut
+                                      ? "border-destructive/30 bg-destructive/20 text-destructive line-through"
+                                      : ev.openAir
+                                      ? "border-amber-500/30 bg-amber-500/20 text-amber-400"
+                                      : "border-border/50 bg-background/60 text-foreground"
+                                  }`}
+                                >
+                                  {ev.openAir && <Sun className="w-3 h-3" />}
+                                  {ev.soldOut && <XCircle className="w-3 h-3" />}
+                                  {formatDate(ev.date)}
+                                </span>
+                              ))}
+                            </div>
+
+                            {/* CTA Button */}
+                            <div className="ml-auto">
+                              {allSoldOut ? (
+                                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
+                                  <XCircle className="w-4 h-4" />
+                                  Warteliste
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:shadow-[var(--shadow-glow)] transition-shadow duration-300">
+                                  <Ticket className="w-4 h-4" />
+                                  {t.tickets}
+                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </NeonGlowCard>
+                </motion.div>
+              );
+            })()}
+
+            {/* ── Remaining Events Grid ── */}
+            {sortedGroups.length > 1 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sortedGroups.slice(1).map((group, idx) => (
+                  <motion.div
+                    key={`${group.slug}-${group.city}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(idx * 0.04, 0.4) }}
+                  >
+                    <NeonGlowCard imageUrl={group.imageUrl} index={idx + 1} className="rounded-2xl">
+                    <Link
+                      to={`/${group.slug}`}
+                      className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all duration-300 relative z-[2]"
+                    >
+                      {/* Image */}
+                      {group.imageUrl && (
+                        <div className="relative overflow-hidden rounded-t-2xl" style={{ aspectRatio: "1920 / 1080" }}>
+                          <img
+                            src={group.imageUrl}
+                            alt={group.city}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform"
+                            loading="lazy"
+                             style={{
+                               transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.5s ease",
+                               ...(group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+                             }}
+                          />
+                          
+                          {group.events.every(e => e.soldOut) && (
+                            <motion.div
+                              className="absolute inset-0 pointer-events-none z-10"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.5, delay: 0.2 }}
+                            >
+                              <div
+                                className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
+                                style={{
+                                  background: "hsl(0 70% 45%)",
+                                  width: "120%",
+                                  top: "50%",
+                                  left: "50%",
+                                  transform: "translate(-50%, -50%) rotate(-35deg)",
+                                  padding: "6px 0",
+                                  boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
+                                }}
+                              >
+                                AUSVERKAUFT
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {group.km !== null && (
+                            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20">
+                              <MapPin className="w-3 h-3 text-primary" />
+                              {group.km} {t.kmAway}
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  <div className="p-5">
-                    {/* City name + distance */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-xl font-display uppercase tracking-wide group-hover:text-primary transition-colors" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
-                          {group.city}
-                        </h3>
-                        {group.events[0]?.locationName && (
-                          <p className="text-sm text-muted-foreground mt-0.5">{group.events[0].locationName}</p>
-                        )}
+                      <div className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-xl font-display uppercase tracking-wide group-hover:text-primary transition-colors" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
+                              {group.city}
+                            </h3>
+                            {group.events[0]?.locationName && (
+                              <p className="text-sm text-muted-foreground mt-0.5">{group.events[0].locationName}</p>
+                            )}
+                          </div>
+                          {!group.imageUrl && group.km !== null && (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full shrink-0">
+                              <MapPin className="w-3 h-3 text-primary" />
+                              {group.km} km
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {group.events.map((ev) => (
+                            <span
+                              key={ev.id}
+                              className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border ${
+                                ev.soldOut
+                                  ? "border-destructive/30 bg-destructive/10 text-destructive line-through"
+                                  : ev.openAir
+                                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                                  : "border-border bg-muted/30 text-foreground"
+                              }`}
+                            >
+                              {ev.openAir && <Sun className="w-3 h-3" />}
+                              {ev.soldOut && <XCircle className="w-3 h-3" />}
+                              {formatDate(ev.date)}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          {group.events.every(e => e.soldOut) ? (
+                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "hsl(0 70% 55%)" }}>
+                              <XCircle className="w-4 h-4" />
+                              Warteliste
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                              <Ticket className="w-4 h-4" />
+                              {t.tickets}
+                            </span>
+                          )}
+                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        </div>
                       </div>
-                      {!group.imageUrl && group.km !== null && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full shrink-0">
-                          <MapPin className="w-3 h-3 text-primary" />
-                          {group.km} km
-                        </span>
-                      )}
-                    </div>
-
-                    {/* All dates as horizontal wrap */}
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {group.events.map((ev) => (
-                        <span
-                          key={ev.id}
-                          className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border ${
-                            ev.soldOut
-                              ? "border-destructive/30 bg-destructive/10 text-destructive line-through"
-                              : ev.openAir
-                              ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-                              : "border-border bg-muted/30 text-foreground"
-                          }`}
-                        >
-                          {ev.openAir && <Sun className="w-3 h-3" />}
-                          {ev.soldOut && <XCircle className="w-3 h-3" />}
-                          {formatDate(ev.date)}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* CTA */}
-                    <div className="flex items-center justify-between">
-                      {group.events.every(e => e.soldOut) ? (
-                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "hsl(0 70% 55%)" }}>
-                          <XCircle className="w-4 h-4" />
-                          Warteliste
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                          <Ticket className="w-4 h-4" />
-                          {t.tickets}
-                        </span>
-                      )}
-                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                </Link>
-                </NeonGlowCard>
-              </motion.div>
-            ))}
-          </div>
+                    </Link>
+                    </NeonGlowCard>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Count */}
