@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     <div style="background:#f9f9f9;border-radius:12px;padding:32px;">
       <h2 style="font-size:20px;color:#1a1a1a;margin:0 0 16px;">Du wurdest eingeladen! 🎉</h2>
       <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 16px;">
-        Du wurdest als <strong>${roleLabels[appRole] || appRole}</strong> zum Admin-Bereich von Gimme Gimme Party eingeladen.
+        Du wurdest als <strong>${roleLabels[appRole] || appRole}</strong> zum Admin-Bereich von Nightlife Generation eingeladen.
       </p>
       <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px;">
         Klicke auf den Button, um dein Konto zu aktivieren und ein Passwort festzulegen.
