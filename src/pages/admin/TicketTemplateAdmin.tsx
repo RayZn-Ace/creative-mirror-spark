@@ -1160,12 +1160,8 @@ const TicketTemplateAdmin = () => {
 
             {/* Computed preview */}
             {(() => {
-              // Determine preview image from selected series
-              let rawImg = DEMO_EVENT_IMAGE;
-              if (previewSeriesId) {
-                const resolvedSeriesImage = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
-                if (resolvedSeriesImage) rawImg = resolvedSeriesImage;
-              }
+              // Use the resolved preview image (series or demo)
+              const rawImg = currentPreviewSrcUrl;
               // Use AI-cleaned version if available
               const previewImg = cleanedImages[rawImg] || rawImg;
 
@@ -1191,8 +1187,8 @@ const TicketTemplateAdmin = () => {
                 }
               }
 
-              // If a series is selected, force magic ticket enabled for preview
-              const previewTpl = previewSeriesId ? { ...displayTpl, magic_ticket_enabled: true } : displayTpl;
+              // Force magic ticket enabled when a series is selected OR when magic_ticket is enabled
+              const previewTpl = { ...displayTpl, magic_ticket_enabled: previewSeriesId ? true : displayTpl.magic_ticket_enabled };
 
               return (
                 <>
