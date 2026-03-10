@@ -884,6 +884,13 @@ Deno.serve(async (req) => {
     const ticketPdfBase64 = btoa(String.fromCharCode(...ticketPdfBytes));
     const invoicePdfBase64 = btoa(String.fromCharCode(...invoicePdfBytes));
 
+    // ─── Download only mode: return PDFs as base64 ───
+    if (download_only) {
+      return new Response(JSON.stringify({ ticket_pdf: ticketPdfBase64, invoice_pdf: invoicePdfBase64 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ─── Build email ───
     const htmlEmail = buildEmailHTML({
       recipientName: order.name || "",
