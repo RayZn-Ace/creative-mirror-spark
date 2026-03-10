@@ -1,7 +1,7 @@
 import { PageLayout } from "@/components/PageLayout";
 import { usePageContent } from "@/hooks/usePageContent";
 
-const headingStyle = { color: "hsl(220 20% 15%)", fontFamily: "'Orbitron', sans-serif" };
+const headingClass = "text-foreground font-display";
 
 const fallbackSections = [
   { title: "§ 1 Geltungsbereich", body: "Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge, die über die Website zwischen dem Veranstalter und dem Kunden geschlossen werden." },
