@@ -342,10 +342,10 @@ const PagesAdmin = () => {
   const [subtitle, setSubtitle] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // James Butler settings
-  const [jamesEnabled, setJamesEnabled] = useState(false);
-  const [jamesSelfLearn, setJamesSelfLearn] = useState(false);
-  const [jamesLoading, setJamesLoading] = useState(true);
+  // Alfred Butler settings
+  const [alfredEnabled, setAlfredEnabled] = useState(false);
+  const [alfredSelfLearn, setAlfredSelfLearn] = useState(false);
+  const [alfredLoading, setAlfredLoading] = useState(true);
 
   const load = async () => {
     const { data } = await supabase.from("page_contents").select("*").order("page_key");
