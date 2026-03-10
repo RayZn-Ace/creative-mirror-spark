@@ -295,13 +295,13 @@ export default function SupportChatbot() {
           {/* Header */}
           <div
             className="p-4 flex items-center gap-3"
-            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "hsl(217 91% 50%)" }}
+            style={{ background: mode === "live" ? "hsl(142 70% 35%)" : "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))" }}
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
               <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Alfred"}</p>
               <p className="text-xs text-white/70">
-                {mode === "live" ? "Verbunden mit Mitarbeiter" : "partyticket Support"}
+                {mode === "live" ? "Verbunden mit Mitarbeiter" : "NIGHTLIFE Support"}
               </p>
             </div>
             {mode === "live" && <span className="ml-1 w-2 h-2 rounded-full bg-white animate-pulse" />}
@@ -381,7 +381,7 @@ export default function SupportChatbot() {
               type="submit"
               disabled={isTyping}
               className="px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(217 91% 50%)", color: "hsl(0 0% 100%)" }}
+              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(270 90% 55%)", color: "hsl(0 0% 100%)" }}
             >
               <Send className="w-4 h-4" />
             </button>
