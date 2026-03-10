@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 
 
+
+
+
 /* ─── Helpers ─── */
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => n.toLocaleString("de-DE");
@@ -122,11 +125,25 @@ const AnalyticsAdmin = () => {
   const [detailTab, setDetailTab] = useState<"overview" | "revenue" | "orders" | "customers" | "events" | "geo" | "tickets">("overview");
 
   useEffect(() => {
+    const fetchAll = async (query: any) => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await query.range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
     Promise.all([
-      supabase.from("orders").select("id, total_amount, service_fee, status, paid_at, created_at, email, event_id, name, birth_date, items, phone").then(r => r.data ?? []),
-      supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id, ticket_category_id, holder_email").then(r => r.data ?? []),
+      fetchAll(supabase.from("orders").select("id, total_amount, service_fee, status, paid_at, created_at, email, event_id, name, birth_date, items, phone")),
+      fetchAll(supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id, ticket_category_id, holder_email")),
       supabase.from("events").select("id, title, date, city, status, slug, location_name, sold_out, open_air").then(r => r.data ?? []),
-      supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city, source").then(r => r.data ?? []),
+      fetchAll(supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city, source")),
       supabase.from("ticket_categories").select("id, name, price, category_group, group_size, event_id, sold_out, badge").then(r => r.data ?? []),
     ]).then(([o, t, e, s, c]) => {
       setOrders(o); setTickets(t); setEvents(e); setSubscribers(s); setCategories(c);

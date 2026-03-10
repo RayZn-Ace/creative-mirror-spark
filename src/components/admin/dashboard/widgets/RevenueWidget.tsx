@@ -6,26 +6,33 @@ const RevenueWidget = () => {
   const [revenue, setRevenue] = useState({ today: 0, week: 0, month: 0, orderCount: 0 });
 
   useEffect(() => {
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
-    const weekAgo = new Date(now.getTime() - 7 * 86400000).toISOString();
-    const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const fetchAll = async () => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await supabase.from("orders").select("total_amount, paid_at, status").eq("status", "paid").range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
 
-    supabase
-      .from("orders")
-      .select("total_amount, paid_at, status")
-      .eq("status", "paid")
-      .then(({ data }) => {
-        if (!data) return;
-        let today = 0, week = 0, month = 0;
-        data.forEach((o) => {
-          const pa = o.paid_at ?? "";
-          if (pa >= todayStr) today += Number(o.total_amount);
-          if (pa >= weekAgo) week += Number(o.total_amount);
-          if (pa >= monthAgo) month += Number(o.total_amount);
-        });
-        setRevenue({ today, week, month, orderCount: data.length });
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      const weekAgo = new Date(now.getTime() - 7 * 86400000).toISOString();
+      const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+      let today = 0, week = 0, month = 0;
+      all.forEach((o) => {
+        const pa = o.paid_at ?? "";
+        if (pa >= todayStr) today += Number(o.total_amount);
+        if (pa >= weekAgo) week += Number(o.total_amount);
+        if (pa >= monthAgo) month += Number(o.total_amount);
       });
+      setRevenue({ today, week, month, orderCount: all.length });
+    };
+    fetchAll();
   }, []);
 
   const rows = [

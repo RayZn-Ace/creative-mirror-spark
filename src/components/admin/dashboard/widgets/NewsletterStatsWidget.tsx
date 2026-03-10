@@ -6,19 +6,26 @@ const NewsletterStatsWidget = () => {
   const [stats, setStats] = useState({ total: 0, active: 0, unsubscribed: 0, recentCount: 0 });
 
   useEffect(() => {
-    supabase
-      .from("newsletter_subscribers")
-      .select("id, unsubscribed, created_at")
-      .then(({ data }) => {
-        if (!data) return;
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-        setStats({
-          total: data.length,
-          active: data.filter((s) => !s.unsubscribed).length,
-          unsubscribed: data.filter((s) => s.unsubscribed).length,
-          recentCount: data.filter((s) => s.created_at >= weekAgo).length,
-        });
+    const fetchAll = async () => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await supabase.from("newsletter_subscribers").select("id, unsubscribed, created_at").range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      setStats({
+        total: all.length,
+        active: all.filter((s) => !s.unsubscribed).length,
+        unsubscribed: all.filter((s) => s.unsubscribed).length,
+        recentCount: all.filter((s) => s.created_at >= weekAgo).length,
       });
+    };
+    fetchAll();
   }, []);
 
   return (
