@@ -40,6 +40,8 @@ interface EventRow {
   open_air: boolean | null;
   sold_out: boolean | null;
   highlight: boolean | null;
+  insurance_enabled: boolean | null;
+  insurance_amount: number | null;
 }
 
 interface TicketCategory {

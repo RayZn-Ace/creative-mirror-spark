@@ -14,6 +14,7 @@ interface OrderData {
   total_amount: number;
   currency: string;
   service_fee: number;
+  insurance_fee: number;
   created_at: string;
   paid_at: string | null;
 }
@@ -191,6 +192,16 @@ const OrderConfirmation = () => {
               <div className="flex justify-between text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
                 <span>Servicegebühr</span>
                 <span>{order.service_fee.toFixed(2).replace(".", ",")} €</span>
+              </div>
+            )}
+
+            {order.insurance_fee > 0 && (
+              <div className="flex justify-between text-sm" style={{ color: "hsl(210 80% 70%)" }}>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Ticketversicherung
+                </span>
+                <span>{order.insurance_fee.toFixed(2).replace(".", ",")} €</span>
               </div>
             )}
 

@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, country } = body;
+    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, country, insuranceAccepted } = body;
 
     // Country-based payment method mapping for Mollie
     const COUNTRY_METHODS: Record<string, string[]> = {
@@ -106,10 +106,10 @@ Deno.serve(async (req) => {
 
     totalEur = Math.max(0, totalEur - discountAmount);
 
-    // Fetch event service fee config
+    // Fetch event service fee config + insurance config
     const { data: eventData } = await supabase
       .from("events")
-      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat")
+      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat, insurance_enabled, insurance_amount")
       .eq("id", eventId)
       .single();
 
@@ -122,7 +122,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    const grandTotalEur = totalEur + serviceFeeEur;
+    let insuranceFeeEur = 0;
+    if (insuranceAccepted && eventData?.insurance_enabled && eventData.insurance_amount > 0) {
+      insuranceFeeEur = Number(eventData.insurance_amount);
+    }
+
+    const grandTotalEur = totalEur + serviceFeeEur + insuranceFeeEur;
 
     // Convert to target currency for Mollie
     const EUR_RATES: Record<string, number> = {
@@ -159,6 +164,7 @@ Deno.serve(async (req) => {
         total_amount: grandTotalEur,
         currency: mollieCurrency,
         service_fee: serviceFeeEur,
+        insurance_fee: insuranceFeeEur,
         status: "pending",
       })
       .select("id")

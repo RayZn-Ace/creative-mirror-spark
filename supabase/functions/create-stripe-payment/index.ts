@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase } = body;
+    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, insuranceAccepted } = body;
 
     if (!email || !eventId || !items || items.length === 0) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -35,10 +35,10 @@ Deno.serve(async (req) => {
       totalEur += item.priceEur * item.quantity;
     }
 
-    // Fetch event service fee config
+    // Fetch event service fee config + insurance config
     const { data: eventData } = await supabase
       .from("events")
-      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat, title")
+      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat, title, insurance_enabled, insurance_amount")
       .eq("id", eventId)
       .single();
 
@@ -51,7 +51,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    const grandTotalEur = totalEur + serviceFeeEur;
+    let insuranceFeeEur = 0;
+    if (insuranceAccepted && eventData?.insurance_enabled && eventData.insurance_amount > 0) {
+      insuranceFeeEur = Number(eventData.insurance_amount);
+    }
+
+    const grandTotalEur = totalEur + serviceFeeEur + insuranceFeeEur;
 
     // Convert EUR to target currency
     const EUR_RATES: Record<string, number> = {
@@ -84,6 +89,7 @@ Deno.serve(async (req) => {
         total_amount: grandTotalEur,
         currency: targetCurrency,
         service_fee: serviceFeeEur,
+        insurance_fee: insuranceFeeEur,
         status: "pending",
       })
       .select("id")
@@ -125,6 +131,22 @@ Deno.serve(async (req) => {
           unit_amount: ZERO_DECIMAL_CURRENCIES.includes(targetCurrency)
             ? Math.round(serviceFeeEur * rate)
             : Math.round(serviceFeeEur * rate * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    // Add insurance fee as separate line item if applicable
+    if (insuranceFeeEur > 0) {
+      lineItems.push({
+        price_data: {
+          currency: targetCurrency.toLowerCase(),
+          product_data: {
+            name: "Ticketversicherung",
+          },
+          unit_amount: ZERO_DECIMAL_CURRENCIES.includes(targetCurrency)
+            ? Math.round(insuranceFeeEur * rate)
+            : Math.round(insuranceFeeEur * rate * 100),
         },
         quantity: 1,
       });
