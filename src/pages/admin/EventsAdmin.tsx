@@ -1733,8 +1733,24 @@ const EventsAdmin = () => {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Event wirklich löschen?")) return;
-    await supabase.from("events").delete().eq("id", id);
+    if (!confirm("Event wirklich löschen? Alle zugehörigen Ticket-Kategorien, Tickets und Bestellungen werden ebenfalls gelöscht.")) return;
+    
+    // Delete in correct order to respect foreign key constraints
+    const { error: ticketErr } = await supabase.from("tickets").delete().eq("event_id", id);
+    if (ticketErr) { toast.error("Fehler beim Löschen der Tickets: " + ticketErr.message); return; }
+    
+    const { error: orderErr } = await supabase.from("orders").delete().eq("event_id", id);
+    if (orderErr) { toast.error("Fehler beim Löschen der Bestellungen: " + orderErr.message); return; }
+    
+    const { error: catErr } = await supabase.from("ticket_categories").delete().eq("event_id", id);
+    if (catErr) { toast.error("Fehler beim Löschen der Ticket-Kategorien: " + catErr.message); return; }
+
+    const { error: waitErr } = await supabase.from("waitlist").delete().eq("event_id", id);
+    if (waitErr) { toast.error("Fehler beim Löschen der Warteliste: " + waitErr.message); return; }
+
+    const { error } = await supabase.from("events").delete().eq("id", id);
+    if (error) { toast.error("Fehler beim Löschen: " + error.message); return; }
+    
     toast.success("Event gelöscht");
     setEditing(null);
     load();
