@@ -241,6 +241,30 @@ const MediaAdmin = () => {
     },
   });
 
+  // Upload cover image directly
+  const handleCoverUpload = useCallback(async (file: File, albumId: string) => {
+    setUploadingCover(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${albumId}/cover-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("media-photos").upload(path, file);
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("media-photos").getPublicUrl(path);
+      const { error } = await supabase.from("media_albums").update({ cover_image_url: urlData.publicUrl }).eq("id", albumId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["admin-media-albums"] });
+      if (selectedAlbum && selectedAlbum.id === albumId) {
+        setSelectedAlbum({ ...selectedAlbum, cover_image_url: urlData.publicUrl });
+      }
+      toast.success("Titelbild gesetzt");
+    } catch (e) {
+      toast.error("Fehler beim Hochladen des Titelbilds");
+      console.error(e);
+    } finally {
+      setUploadingCover(false);
+    }
+  }, [queryClient, selectedAlbum]);
+
   // Delete media item
   const deleteMediaMutation = useMutation({
     mutationFn: async (item: MediaItem) => {
