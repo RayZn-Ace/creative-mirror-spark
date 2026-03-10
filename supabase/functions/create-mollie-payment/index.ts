@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, country } = body;
+    const { email, name, birthDate, phone, eventId, items, currency, discountCode, redirectBase, country, insuranceAccepted } = body;
 
     // Country-based payment method mapping for Mollie
     const COUNTRY_METHODS: Record<string, string[]> = {
