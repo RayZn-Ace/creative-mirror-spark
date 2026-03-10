@@ -15,6 +15,12 @@ async function fetchQRCode(data: string): Promise<Uint8Array> {
   return new Uint8Array(await res.arrayBuffer());
 }
 
+/* ─── Strip non-WinAnsi characters (emojis etc.) ─── */
+function stripEmojis(text: string): string {
+  // Remove characters outside the basic Latin/Latin-1 range that WinAnsi can't encode
+  return text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]/gu, "").replace(/\s{2,}/g, " ").trim();
+}
+
 /* ─── Helpers ─── */
 function wrapText(text: string, font: any, size: number, maxWidth: number): string[] {
   const words = text.split(" ");
