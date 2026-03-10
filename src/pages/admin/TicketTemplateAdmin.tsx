@@ -839,8 +839,7 @@ const TicketTemplateAdmin = () => {
                 const override = tpl.category_overrides?.[key];
                 const isEnabled = !!override;
                 const currentOverride = override || design.override;
-                const [isRenaming, setIsRenaming] = useState(false);
-                const [renameValue, setRenameValue] = useState(design.label);
+                const isRenaming = renamingDesignKey === key;
                 
                 return (
                   <div key={key} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isEnabled ? currentOverride.accent_color + "44" : "hsl(0 0% 100% / 0.06)"}` }}>
