@@ -249,10 +249,20 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
       </div>
       <div className="sm:hidden space-y-2">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="pp-ticket-title text-sm">{item.name}</h4>
             {item.badge && <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{translateBadge(item.badge, t)}</span>}
           </div>
+          {item.scarcityCount != null && (
+            <motion.span
+              className="inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+              style={{ background: item.scarcityCount <= 10 ? "hsl(0 70% 50% / 0.2)" : "hsl(35 90% 50% / 0.2)", color: item.scarcityCount <= 10 ? "hsl(0 70% 60%)" : "hsl(35 90% 55%)" }}
+              animate={{ opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              🔥 Nur noch {item.scarcityCount} verfügbar!
+            </motion.span>
+          )}
           <p className="pp-ticket-desc mt-0.5 text-xs">{translateTicketDesc(item.name, item.description, t)}</p>
         </div>
         <div className="flex items-center justify-between">
