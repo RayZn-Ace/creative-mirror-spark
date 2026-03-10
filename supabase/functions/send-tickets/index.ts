@@ -931,17 +931,23 @@ Deno.serve(async (req) => {
       .eq("key", "invoice");
 
     // ─── Build ticket data ───
-    const ticketData = tickets.map((t: any) => ({
-      qr_code: t.qr_code,
-      holder_name: t.holder_name,
-      category_name: t.ticket_categories?.name || "Ticket",
-      category_group: t.ticket_categories?.category_group || null,
-      event_title: t.events?.title || "Event",
-      event_date: t.events?.date || null,
-      event_time: t.events?.time || null,
-      location_name: t.events?.location_name || null,
-      location_address: t.events?.location_address || null,
-    }));
+    const ticketData = tickets.map((t: any) => {
+      // Resolve magic ticket image: prefer series image, then event image
+      const seriesImg = t.events?.event_series?.image_url || null;
+      const eventImg = t.events?.image_url || null;
+      return {
+        qr_code: t.qr_code,
+        holder_name: t.holder_name,
+        category_name: t.ticket_categories?.name || "Ticket",
+        category_group: t.ticket_categories?.category_group || null,
+        event_title: t.events?.title || "Event",
+        event_date: t.events?.date || null,
+        event_time: t.events?.time || null,
+        location_name: t.events?.location_name || null,
+        location_address: t.events?.location_address || null,
+        magic_image_url: seriesImg || eventImg,
+      };
+    });
 
     const orderItems = (order.items as any[]) || [];
     const eventTitle = ticketData[0]?.event_title || "Event";
