@@ -391,12 +391,21 @@ export default function Termine() {
       groups = groups.filter((g) => g.category === selectedCategory);
     }
 
-    // Sort by distance (if available), then alphabetically
+    // Sort: highlight first, then by distance (if available), then by next date
     groups.sort((a, b) => {
+      // Highlight events always first
+      if (a.hasHighlight && !b.hasHighlight) return -1;
+      if (!a.hasHighlight && b.hasHighlight) return 1;
+
+      // Then by distance if available
       if (a.km !== null && b.km !== null) return a.km - b.km;
       if (a.km !== null) return -1;
       if (b.km !== null) return 1;
-      return a.city.localeCompare(b.city);
+
+      // Then by nearest upcoming date
+      const aDate = a.events[0]?.date || "9999";
+      const bDate = b.events[0]?.date || "9999";
+      return aDate.localeCompare(bDate);
     });
 
     return groups;
