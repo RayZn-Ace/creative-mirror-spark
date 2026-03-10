@@ -432,7 +432,7 @@ export default function CsvImportAdmin() {
                 { label: "Brutto-Umsatz", value: `${totalRevenue.toFixed(2)} €`, icon: <TrendingUp className="w-4 h-4" /> },
               ].map((s2) => (
                 <div key={s2.label} style={{ ...s.card, background: "hsl(220 40% 8%)" }} className="p-4">
-                  <div className="flex items-center gap-2 mb-2" style={{ color: "hsl(230 80% 56%)" }}>{s2.icon}</div>
+                  <div className="flex items-center gap-2 mb-2" style={{ color: "hsl(270 70% 55%)" }}>{s2.icon}</div>
                   <div className="text-lg font-bold" style={s.white}>{s2.value}</div>
                   <div style={s.muted} className="text-xs">{s2.label}</div>
                 </div>

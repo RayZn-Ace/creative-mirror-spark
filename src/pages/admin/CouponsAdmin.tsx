@@ -206,7 +206,7 @@ const CouponsAdmin = () => {
                     )}
                     {!c.active && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Inaktiv</span>}
                     {isExpired && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>Abgelaufen</span>}
-                    {eventName && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)" }}>📅 {eventName}</span>}
+                    {eventName && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 70% 55% / 0.12)", color: "hsl(270 70% 55%)" }}>📅 {eventName}</span>}
                   </div>
                   {c.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{c.description}</p>}
                 </div>
