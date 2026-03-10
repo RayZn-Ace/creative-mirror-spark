@@ -288,7 +288,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-          <Ticket className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} /> Tickets ({tickets.length})
+          <Ticket className="w-4 h-4" style={{ color: "hsl(270 70% 55%)" }} /> Tickets ({tickets.length})
         </h4>
         <button
           onClick={() => setEditingTicket({ ...emptyTicket })}
