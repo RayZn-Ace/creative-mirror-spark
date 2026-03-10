@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       </p>
     </div>
     <p style="font-size:12px;color:#999;text-align:center;margin-top:24px;">
-      © Gimme Gimme Party • mail@gimmegimmeparty.com
+      © Nightlife Generation • mail@nightlifeticket.app
     </p>
   </div>
 </body>
