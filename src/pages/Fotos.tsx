@@ -411,17 +411,18 @@ const Fotos = () => {
             {displayPhotos.slice(0, visibleCount).map((photo, i) => (
               <motion.div
                 key={`${photo.src}-${i}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: Math.min(i, 20) * 0.06 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: Math.min(i % 20, 8) * 0.03 }}
                 className="break-inside-avoid mb-3 overflow-hidden rounded-xl cursor-pointer group relative"
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={photo.thumb || photo.src}
                   alt={photo.alt}
-                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 bg-muted ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
                   loading="lazy"
+                  decoding="async"
                 />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <span className="text-white text-sm font-medium">{photo.alt}</span>
