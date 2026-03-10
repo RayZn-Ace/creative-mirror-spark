@@ -50,6 +50,7 @@ interface TicketItem {
   soldOut: boolean;
   badge?: string;
   comingSoon?: boolean;
+  scarcityCount?: number | null; // KVK: fake remaining count per session
 }
 
 interface TicketCategory {
