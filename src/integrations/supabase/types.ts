@@ -290,6 +290,8 @@ export type Database = {
           id: string
           image_url: string | null
           info_sections: Json | null
+          insurance_amount: number | null
+          insurance_enabled: boolean | null
           is_16plus: boolean | null
           location_address: string | null
           location_name: string | null
@@ -321,6 +323,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           info_sections?: Json | null
+          insurance_amount?: number | null
+          insurance_enabled?: boolean | null
           is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
@@ -352,6 +356,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           info_sections?: Json | null
+          insurance_amount?: number | null
+          insurance_enabled?: boolean | null
           is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
@@ -673,6 +679,7 @@ export type Database = {
           email: string
           event_id: string | null
           id: string
+          insurance_fee: number | null
           items: Json
           mollie_payment_id: string | null
           name: string | null
@@ -692,6 +699,7 @@ export type Database = {
           email: string
           event_id?: string | null
           id?: string
+          insurance_fee?: number | null
           items?: Json
           mollie_payment_id?: string | null
           name?: string | null
@@ -711,6 +719,7 @@ export type Database = {
           email?: string
           event_id?: string | null
           id?: string
+          insurance_fee?: number | null
           items?: Json
           mollie_payment_id?: string | null
           name?: string | null
