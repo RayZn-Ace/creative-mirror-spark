@@ -478,7 +478,7 @@ const TicketTemplateAdmin = () => {
 
   // Clean image via AI when the source image changes
   useEffect(() => {
-    if (!tpl.magic_ticket_enabled && !previewSeriesId) return;
+    if (!tpl.magic_ticket_enabled && !previewSeriesId && !previewEventId) return;
 
     const srcUrl = currentPreviewSrcUrl;
     if (!srcUrl) return;
