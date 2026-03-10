@@ -303,8 +303,8 @@ async function generateTicketPDF(tickets: Array<{
         const sy = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: sy, size: 6, font: fontRegular, color: txColor, opacity: 0.4 });
-            sx += fontRegular.widthOfTextAtSize(s.value, 6) + 12;
+            page.drawText(stripEmojis(s.value), { x: sx, y: sy, size: 6, font: fontRegular, color: txColor, opacity: 0.4 });
+            sx += fontRegular.widthOfTextAtSize(stripEmojis(s.value), 6) + 12;
           }
         }
       }
