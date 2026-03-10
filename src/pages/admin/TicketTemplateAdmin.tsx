@@ -877,7 +877,7 @@ const TicketTemplateAdmin = () => {
                           <span
                             className="text-xs font-bold cursor-pointer hover:underline"
                             style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}
-                            onClick={() => { setRenameValue(design.label); setIsRenaming(true); }}
+                            onClick={() => { setRenameValue(design.label); setRenamingDesignKey(key); }}
                             title="Klicken zum Umbenennen"
                           >
                             {design.label}
