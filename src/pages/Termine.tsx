@@ -300,7 +300,7 @@ export default function Termine() {
             highlight: e.highlight || false,
           })),
           imageUrl: first.image_url,
-          category: deriveCategory(first.title || ""),
+          category: first.tag || first.title || "Sonstige",
           hasHighlight: evts.some((e) => e.highlight),
         });
       });
