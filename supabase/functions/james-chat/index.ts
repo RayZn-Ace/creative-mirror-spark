@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `Du bist James, der freundliche Support-Assistent von NIGHTLIFE GENERATION – dem Veranstalter der größten Schüler- und Jugendpartys in Deutschland.
+const SYSTEM_PROMPT = `Du bist Alfred, der freundliche Support-Assistent von NIGHTLIFE GENERATION – dem Veranstalter der größten Schüler- und Jugendpartys in Deutschland.
 
 PERSÖNLICHKEIT:
 - Du chattest locker, freundlich und enthusiastisch wie ein echter Mensch, NICHT wie ein steifer Bot
@@ -80,7 +80,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("james-chat error:", e);
+    console.error("alfred-chat error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -21,7 +21,7 @@ export default function SupportChatbot() {
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
-    { from: "bot", text: "Hey! 👋 Ich bin James, dein Ansprechpartner für alles rund um partyticket. Was kann ich für dich tun?" },
+    { from: "bot", text: "Hey! 👋 Ich bin Alfred, dein Ansprechpartner für alles rund um NIGHTLIFE GENERATION. Was kann ich für dich tun?" },
   ]);
   const [aiHistory, setAiHistory] = useState<AIMessage[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
@@ -77,7 +77,7 @@ export default function SupportChatbot() {
     { label: "💬 Live Chat", query: "Ich möchte mit einem Mitarbeiter chatten" },
   ];
 
-  const askJames = useCallback(async (userText: string, history: AIMessage[]): Promise<string> => {
+  const askAlfred = useCallback(async (userText: string, history: AIMessage[]): Promise<string> => {
     const newHistory = [...history, { role: "user" as const, content: userText }];
     setAiHistory(newHistory);
 
@@ -90,7 +90,7 @@ export default function SupportChatbot() {
       setAiHistory(prev => [...prev, { role: "assistant", content: reply }]);
       return reply;
     } catch (e) {
-      console.error("James AI error:", e);
+      console.error("Alfred AI error:", e);
       return "Entschuldigung, da ist etwas schiefgelaufen. Versuch es bitte nochmal! 😅";
     }
   }, []);
@@ -186,7 +186,7 @@ export default function SupportChatbot() {
     }
 
     setIsTyping(true);
-    const reply = await askJames(query, aiHistory);
+    const reply = await askAlfred(query, aiHistory);
     setIsTyping(false);
 
     if (reply.trim() === "ESCALATE") {
@@ -253,7 +253,7 @@ export default function SupportChatbot() {
     }
 
     setIsTyping(true);
-    const reply = await askJames(userText, aiHistory);
+    const reply = await askAlfred(userText, aiHistory);
     setIsTyping(false);
 
     if (reply.trim() === "ESCALATE") {
@@ -283,7 +283,7 @@ export default function SupportChatbot() {
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
-              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "James"}</p>
+              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Alfred"}</p>
               <p className="text-xs text-white/70">
                 {mode === "live" ? "Verbunden mit Mitarbeiter" : "partyticket Support"}
               </p>
@@ -320,7 +320,7 @@ export default function SupportChatbot() {
               <div className="flex justify-start">
                 <div className="px-3 py-2 rounded-xl text-sm flex items-center gap-2" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.5)" }}>
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  James tippt...
+                  Alfred tippt...
                 </div>
               </div>
             )}
@@ -381,7 +381,7 @@ export default function SupportChatbot() {
             style={{ background: "hsl(220 50% 15%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
-              Fragen? James hilft! 💬
+              Fragen? Alfred hilft! 💬
             </p>
           </motion.div>
           <button

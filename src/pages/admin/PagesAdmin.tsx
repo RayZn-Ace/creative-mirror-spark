@@ -342,10 +342,10 @@ const PagesAdmin = () => {
   const [subtitle, setSubtitle] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // James Butler settings
-  const [jamesEnabled, setJamesEnabled] = useState(false);
-  const [jamesSelfLearn, setJamesSelfLearn] = useState(false);
-  const [jamesLoading, setJamesLoading] = useState(true);
+  // Alfred Butler settings
+  const [alfredEnabled, setAlfredEnabled] = useState(false);
+  const [alfredSelfLearn, setAlfredSelfLearn] = useState(false);
+  const [alfredLoading, setAlfredLoading] = useState(true);
 
   const load = async () => {
     const { data } = await supabase.from("page_contents").select("*").order("page_key");
@@ -353,24 +353,24 @@ const PagesAdmin = () => {
     setLoading(false);
   };
 
-  const loadJamesSettings = async () => {
-    const { data } = await supabase.from("settings").select("value").eq("key", "james_butler").maybeSingle();
+  const loadAlfredSettings = async () => {
+    const { data } = await supabase.from("settings").select("value").eq("key", "alfred_butler").maybeSingle();
     if (data?.value) {
       const val = data.value as any;
-      setJamesEnabled(val.enabled ?? false);
-      setJamesSelfLearn(val.self_learn ?? false);
+      setAlfredEnabled(val.enabled ?? false);
+      setAlfredSelfLearn(val.self_learn ?? false);
     }
-    setJamesLoading(false);
+    setAlfredLoading(false);
   };
 
-  const saveJamesSettings = async (enabled: boolean, selfLearn: boolean) => {
+  const saveAlfredSettings = async (enabled: boolean, selfLearn: boolean) => {
     await supabase.from("settings").upsert(
-      { key: "james_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
+      { key: "alfred_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
       { onConflict: "key" }
     );
   };
 
-  useEffect(() => { load(); loadJamesSettings(); }, []);
+  useEffect(() => { load(); loadAlfredSettings(); }, []);
 
   const detectType = (content: Record<string, any>): PageType => {
     if (content?.categories && Array.isArray(content.categories)) return "faq";
@@ -515,7 +515,7 @@ const PagesAdmin = () => {
         </div>
       )}
 
-      {/* James der Butler */}
+      {/* Alfred der Butler */}
       <div className="mt-8 rounded-2xl p-5 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -523,31 +523,31 @@ const PagesAdmin = () => {
               <Bot className="w-5 h-5" style={{ color: "hsl(270 80% 56%)" }} />
             </div>
             <div>
-              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>James der Butler</h3>
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Alfred der Butler</h3>
               <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>KI-Support-Chatbot für deine Besucher</p>
             </div>
           </div>
           <button
             onClick={() => {
-              const next = !jamesEnabled;
-              setJamesEnabled(next);
-              if (!next) setJamesSelfLearn(false);
-              saveJamesSettings(next, next ? jamesSelfLearn : false);
-              toast.success(next ? "James aktiviert" : "James deaktiviert");
+              const next = !alfredEnabled;
+              setAlfredEnabled(next);
+              if (!next) setAlfredSelfLearn(false);
+              saveAlfredSettings(next, next ? alfredSelfLearn : false);
+              toast.success(next ? "Alfred aktiviert" : "Alfred deaktiviert");
             }}
-            disabled={jamesLoading}
+            disabled={alfredLoading}
             className="w-11 h-6 rounded-full relative transition-all cursor-pointer"
-            style={{ background: jamesEnabled ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.1)" }}
+            style={{ background: alfredEnabled ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.1)" }}
           >
             <div
               className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
-              style={{ background: "#fff", left: jamesEnabled ? "22px" : "2px" }}
+              style={{ background: "#fff", left: alfredEnabled ? "22px" : "2px" }}
             />
           </button>
         </div>
 
         <AnimatePresence>
-          {jamesEnabled && (
+          {alfredEnabled && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -560,24 +560,24 @@ const PagesAdmin = () => {
                   <div>
                     <p className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>Selbstständig lernen</p>
                     <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                      {jamesSelfLearn
-                        ? "James darf eigene Antworten generieren und über den FAQ-Inhalt hinausgehen"
-                        : "James antwortet ausschließlich mit Inhalten aus dem vorhandenen FAQ"}
+                       {alfredSelfLearn
+                        ? "Alfred darf eigene Antworten generieren und über den FAQ-Inhalt hinausgehen"
+                        : "Alfred antwortet ausschließlich mit Inhalten aus dem vorhandenen FAQ"}
                     </p>
                   </div>
                   <button
                     onClick={() => {
-                      const next = !jamesSelfLearn;
-                      setJamesSelfLearn(next);
-                      saveJamesSettings(jamesEnabled, next);
+                      const next = !alfredSelfLearn;
+                      setAlfredSelfLearn(next);
+                      saveAlfredSettings(alfredEnabled, next);
                       toast.success(next ? "Selbstständiges Lernen aktiviert" : "Nur FAQ-Modus aktiv");
                     }}
                     className="w-11 h-6 rounded-full relative transition-all cursor-pointer shrink-0 ml-4"
-                    style={{ background: jamesSelfLearn ? "hsl(150 70% 45%)" : "hsl(0 0% 100% / 0.1)" }}
+                    style={{ background: alfredSelfLearn ? "hsl(150 70% 45%)" : "hsl(0 0% 100% / 0.1)" }}
                   >
                     <div
                       className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
-                      style={{ background: "#fff", left: jamesSelfLearn ? "22px" : "2px" }}
+                      style={{ background: "#fff", left: alfredSelfLearn ? "22px" : "2px" }}
                     />
                   </button>
                 </div>
@@ -585,9 +585,9 @@ const PagesAdmin = () => {
                 {/* Info box */}
                 <div className="rounded-xl p-3" style={{ background: "hsl(270 80% 56% / 0.06)", border: "1px solid hsl(270 80% 56% / 0.12)" }}>
                   <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                    {jamesSelfLearn
-                      ? "⚡ James nutzt KI, um auch auf unbekannte Fragen intelligent zu antworten. Er greift zusätzlich auf allgemeines Wissen zurück."
-                      : "📋 James beantwortet nur Fragen, die im FAQ hinterlegt sind. Unbekannte Fragen werden höflich abgelehnt."}
+                    {alfredSelfLearn
+                      ? "⚡ Alfred nutzt KI, um auch auf unbekannte Fragen intelligent zu antworten. Er greift zusätzlich auf allgemeines Wissen zurück."
+                      : "📋 Alfred beantwortet nur Fragen, die im FAQ hinterlegt sind. Unbekannte Fragen werden höflich abgelehnt."}
                   </p>
                 </div>
               </div>
