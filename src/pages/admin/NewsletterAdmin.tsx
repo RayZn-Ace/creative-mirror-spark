@@ -1470,15 +1470,42 @@ ${bodyContent}
         <div className="hidden xl:block">
           <div className="sticky top-4 space-y-4">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Eye className="w-3.5 h-3.5" style={{ color: "hsl(215 90% 55%)" }} />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Live-Vorschau</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-3.5 h-3.5" style={{ color: "hsl(270 70% 55%)" }} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Live-Vorschau</span>
+                </div>
+                <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                  {([
+                    { device: "mobile" as const, icon: Smartphone, label: "Mobil" },
+                    { device: "desktop" as const, icon: Monitor, label: "Desktop" },
+                  ]).map(({ device, icon: I, label }) => (
+                    <button
+                      key={device}
+                      onClick={() => setPreviewDevice(device)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider transition-all"
+                      style={{
+                        background: previewDevice === device ? "hsl(270 70% 55% / 0.2)" : "transparent",
+                        color: previewDevice === device ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.3)",
+                      }}
+                      title={label}
+                    >
+                      <I className="w-3 h-3" />
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div
-                className="rounded-2xl overflow-hidden shadow-xl"
-                style={{ border: "1px solid hsl(0 0% 100% / 0.08)", transform: "scale(0.85)", transformOrigin: "top center" }}
-              >
-                <div style={{ background: "#f4f4f4" }} dangerouslySetInnerHTML={{ __html: buildHtml() }} />
+              <div className="flex justify-center">
+                <div
+                  className="rounded-2xl overflow-hidden shadow-xl transition-all duration-300"
+                  style={{
+                    border: "1px solid hsl(0 0% 100% / 0.08)",
+                    width: previewDevice === "mobile" ? 375 : "100%",
+                    maxWidth: previewDevice === "desktop" ? 650 : 375,
+                  }}
+                >
+                  <div style={{ background: "#f4f4f4" }} dangerouslySetInnerHTML={{ __html: buildHtml() }} />
+                </div>
               </div>
             </div>
 
