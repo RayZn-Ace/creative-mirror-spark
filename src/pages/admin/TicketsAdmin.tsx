@@ -495,7 +495,7 @@ const TicketsAdmin = () => {
                   <button onClick={() => setEditing(null)} className="flex-1 py-3 rounded-xl text-sm font-bold transition-colors hover:bg-white/[0.06]" style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.5)" }}>
                     Abbrechen
                   </button>
-                  <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
+                  <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99]" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>
