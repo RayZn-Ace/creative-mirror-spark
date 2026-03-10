@@ -10,7 +10,7 @@ import {
   Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List,
 } from "lucide-react";
 import { toast } from "sonner";
-import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
+
 
 // ─── Block Types ───────────────────────────────────────────────
 type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list" | "voucher" | "timer";
