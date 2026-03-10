@@ -137,6 +137,58 @@ const ResendTicketsButton = ({ orderId }: { orderId: string }) => {
   );
 };
 
+/* ─── Download Tickets Button ─── */
+const DownloadTicketsButton = ({ orderId }: { orderId: string }) => {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-tickets", {
+        body: { order_id: orderId, download_only: true },
+      });
+      if (error) throw error;
+      // data should contain base64 PDF
+      const pdfBase64 = data?.ticket_pdf || data?.ticketPdf;
+      if (!pdfBase64) throw new Error("Kein PDF erhalten");
+      const byteChars = atob(pdfBase64);
+      const byteArray = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tickets-${orderId.slice(0, 8)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Tickets heruntergeladen");
+    } catch (err: any) {
+      toast.error("Fehler: " + (err.message || "Unbekannt"));
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={downloading}
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all hover:scale-[1.03] disabled:opacity-50"
+      style={{
+        background: "hsl(270 60% 55% / 0.12)",
+        color: "hsl(270 60% 65%)",
+        border: "1px solid hsl(270 60% 55% / 0.2)",
+      }}
+      title="Tickets als PDF herunterladen"
+    >
+      {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+      Download
+    </button>
+  );
+};
+
 const CustomersAdmin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [events, setEvents] = useState<EventInfo[]>([]);
