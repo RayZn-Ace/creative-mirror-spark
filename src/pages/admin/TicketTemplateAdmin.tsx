@@ -98,6 +98,7 @@ const defaultTemplate: TicketTemplate = {
   sponsors: [],
   content_blocks: [],
   category_overrides: {},
+  category_designs: [...DEFAULT_CATEGORY_DESIGNS],
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
