@@ -568,6 +568,17 @@ const MediaAdmin = () => {
                   </span>
                 </div>
                 <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0], album.id)}
+                    />
+                    <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+                      <span><Star className="w-3 h-3 mr-1" />Titelbild</span>
+                    </Button>
+                  </label>
                   <Button
                     variant="outline"
                     size="sm"
