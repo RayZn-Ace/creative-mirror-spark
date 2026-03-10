@@ -309,9 +309,11 @@ export default function Termine() {
             locationName: e.location_name,
             soldOut: e.sold_out || false,
             openAir: e.open_air || false,
+            highlight: e.highlight || false,
           })),
           imageUrl: first.image_url,
           category: deriveCategory(first.title || ""),
+          hasHighlight: evts.some((e) => e.highlight),
         });
       });
 
