@@ -853,7 +853,7 @@ const NewsletterAdmin = () => {
 
   // Recipient filters
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("paid");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [ageFilter, setAgeFilter] = useState<AgeFilter>({ min: null, max: null });
