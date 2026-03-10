@@ -278,6 +278,8 @@ export default function SupportChatbot() {
     }
   };
 
+  if (!alfredEnabled) return null;
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {chatOpen ? (
