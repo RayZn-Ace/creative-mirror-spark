@@ -440,7 +440,7 @@ async function generateTicketPDF(tickets: Array<{
           const qrY = 60;
           // Category label above QR
           if (tpl.show_category) {
-            const catLabel = `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`;
+            const catLabel = stripEmojis(`${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`);
             const catW = fontBold.widthOfTextAtSize(catLabel.toUpperCase(), 10);
             page.drawText(catLabel.toUpperCase(), { x: (width - catW) / 2, y: qrY + qrSize + 24, size: 10, font: fontBold, color: acColor });
           }
