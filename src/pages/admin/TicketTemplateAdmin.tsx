@@ -402,6 +402,8 @@ const TicketTemplateAdmin = () => {
   const [renamingDesignKey, setRenamingDesignKey] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
+  const initialLoadDone = useState(false);
+
   useEffect(() => {
     const load = async () => {
       // Load template, categories, series, and events in parallel
@@ -412,15 +414,25 @@ const TicketTemplateAdmin = () => {
         supabase.from("events").select("id, image_url, title, series_id").eq("status", "published"),
       ]);
 
+      let resolvedTpl = { ...defaultTemplate };
+
       if (tplRes.data?.value) {
         const raw = tplRes.data.value as any;
-        setTpl({
+        resolvedTpl = {
           ...defaultTemplate,
           ...raw,
           gradient: { ...defaultGradient, ...(raw.gradient || {}) },
           content_blocks: raw.content_blocks || [],
           category_designs: raw.category_designs ?? [...DEFAULT_CATEGORY_DESIGNS],
-        });
+        };
+        setTpl(resolvedTpl);
+      } else {
+        // No row exists yet – create it now with defaults so future saves/deletes persist
+        setTpl(resolvedTpl);
+        await supabase.from("settings").upsert(
+          { key: "ticket_template", value: resolvedTpl as any, updated_at: new Date().toISOString() },
+          { onConflict: "key" }
+        );
       }
 
       if (catRes.data) {
@@ -436,6 +448,7 @@ const TicketTemplateAdmin = () => {
       }
 
       setLoading(false);
+      initialLoadDone[1](true);
     };
     load();
   }, []);
@@ -488,7 +501,8 @@ const TicketTemplateAdmin = () => {
   }, [previewSeriesId, eventSeries, eventsMap]);
 
 
-    const save = async () => {
+  const save = async () => {
+    setSaving(true);
     const { error } = await supabase.from("settings").upsert(
       { key: "ticket_template", value: tpl as any, updated_at: new Date().toISOString() },
       { onConflict: "key" }
@@ -498,8 +512,21 @@ const TicketTemplateAdmin = () => {
     else toast.success("Ticket-Vorlage gespeichert");
   };
 
-  const update = <K extends keyof TicketTemplate>(key: K, val: TicketTemplate[K]) => setTpl((p) => ({ ...p, [key]: val }));
-
+  const update = <K extends keyof TicketTemplate>(key: K, val: TicketTemplate[K]) => {
+    setTpl((p) => {
+      const next = { ...p, [key]: val };
+      // Auto-save category_designs and category_overrides changes immediately
+      if (key === "category_designs" || key === "category_overrides") {
+        supabase.from("settings").upsert(
+          { key: "ticket_template", value: next as any, updated_at: new Date().toISOString() },
+          { onConflict: "key" }
+        ).then(({ error }) => {
+          if (error) { toast.error("Fehler beim automatischen Speichern"); console.error(error); }
+        });
+      }
+      return next;
+    });
+  };
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
