@@ -2114,70 +2114,31 @@ const EventsAdmin = () => {
       ) : filteredEvents.length === 0 && isSearching ? (
         <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Events gefunden</p>
       ) : (
-        <div className="space-y-8">
-          {hierarchyData.map((countryGroup) => {
-            const countryKey = `country__${countryGroup.country}`;
-            const countryEventCount = countryGroup.cityGroups.reduce((sum, cg) => sum + cg.seriesGroups.reduce((s, sg) => s + sg.events.length, 0), 0);
+        <div className="space-y-6">
+          {seriesGroups.map((group) => {
+            const hasSeries = !!group.seriesId;
+            const skipSeriesLevel = seriesGroups.length === 1 && !group.seriesId;
+
+            if (skipSeriesLevel) {
+              return (
+                <div key="__none__" className="space-y-2">
+                  {group.events.map((event) => renderEventRow(event))}
+                </div>
+              );
+            }
+
+            const seriesCollapseKey = `series__${group.seriesId || "__none__"}`;
             return (
-              <div key={countryGroup.country}>
-                <button onClick={() => toggleCollapse(countryKey)} className="flex items-center gap-2 mb-4 w-full text-left">
-                  <Globe className="w-4 h-4" style={{ color: "hsl(200 70% 55%)" }} />
-                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{countryGroup.country} ({countryEventCount})</span>
-                  {isCollapsed(countryKey) ? <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+              <div key={group.seriesId || "none"}>
+                <button onClick={() => toggleCollapse(seriesCollapseKey)} className="flex items-center gap-2 mb-2 w-full text-left group">
+                  {hasSeries && <Layers className="w-3.5 h-3.5" style={{ color: "hsl(270 60% 55%)" }} />}
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{group.seriesTitle} ({group.events.length})</span>
+                  {isCollapsed(seriesCollapseKey) ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
                 </button>
                 <AnimatePresence initial={false}>
-                  {!isCollapsed(countryKey) && (
-                    <motion.div className="space-y-5 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(200 70% 55% / 0.2)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                      {countryGroup.cityGroups.map((cityGroup) => {
-                        const cityKey = `city__${countryGroup.country}__${cityGroup.city}`;
-                        const cityEventCount = cityGroup.seriesGroups.reduce((s, sg) => s + sg.events.length, 0);
-                        return (
-                          <div key={cityGroup.city}>
-                            <button onClick={() => toggleCollapse(cityKey)} className="flex items-center gap-2 mb-3 w-full text-left">
-                              <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} />
-                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{cityGroup.city} ({cityEventCount})</span>
-                              {isCollapsed(cityKey) ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-                            </button>
-                            <AnimatePresence initial={false}>
-                              {!isCollapsed(cityKey) && (
-                                <motion.div className="space-y-3 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(230 80% 56% / 0.15)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                  {cityGroup.seriesGroups.map((group) => {
-                                    const hasSeries = !!group.seriesId;
-                                    // If only one series group in city and it's "Ohne Serie", skip series level
-                                    const skipSeriesLevel = cityGroup.seriesGroups.length === 1 && !group.seriesId;
-
-                                    if (skipSeriesLevel) {
-                                      return (
-                                        <div key="__none__" className="space-y-2">
-                                          {group.events.map((event) => renderEventRow(event))}
-                                        </div>
-                                      );
-                                    }
-
-                                    const seriesCollapseKey = `series__${cityGroup.city}__${group.seriesId || "__none__"}`;
-                                    return (
-                                      <div key={group.seriesId || "none"}>
-                                        <button onClick={() => toggleCollapse(seriesCollapseKey)} className="flex items-center gap-2 mb-2 w-full text-left group">
-                                          {hasSeries && <Layers className="w-3.5 h-3.5" style={{ color: "hsl(270 60% 55%)" }} />}
-                                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{group.seriesTitle} ({group.events.length})</span>
-                                          {isCollapsed(seriesCollapseKey) ? <ChevronRight className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-                                        </button>
-                                        <AnimatePresence initial={false}>
-                                          {!isCollapsed(seriesCollapseKey) && (
-                                            <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                              {group.events.map((event) => renderEventRow(event))}
-                                            </motion.div>
-                                          )}
-                                        </AnimatePresence>
-                                      </div>
-                                    );
-                                  })}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      })}
+                  {!isCollapsed(seriesCollapseKey) && (
+                    <motion.div className="space-y-2 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(270 60% 55% / 0.15)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      {group.events.map((event) => renderEventRow(event))}
                     </motion.div>
                   )}
                 </AnimatePresence>

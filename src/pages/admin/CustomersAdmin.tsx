@@ -325,7 +325,7 @@ const CustomersAdmin = () => {
       return sortAsc ? cmp : -cmp;
     });
     return result;
-  }, [customers, search, sortField, sortAsc, statusFilter, cityFilter, eventMap, ticketsByOrderId]);
+  }, [customers, search, sortField, sortAsc, statusFilter, eventMap, ticketsByOrderId]);
 
   const getEventTitle = (eventId: string | null) => {
     if (!eventId) return "–";
