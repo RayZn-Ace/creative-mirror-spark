@@ -396,6 +396,7 @@ export type Database = {
           description: string | null
           event_date: string | null
           event_id: string | null
+          event_id_ref: string | null
           id: string
           location: string | null
           photo_count: number
@@ -411,6 +412,7 @@ export type Database = {
           description?: string | null
           event_date?: string | null
           event_id?: string | null
+          event_id_ref?: string | null
           id?: string
           location?: string | null
           photo_count?: number
@@ -426,6 +428,7 @@ export type Database = {
           description?: string | null
           event_date?: string | null
           event_id?: string | null
+          event_id_ref?: string | null
           id?: string
           location?: string | null
           photo_count?: number
@@ -443,6 +446,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "media_albums_event_id_ref_fkey"
+            columns: ["event_id_ref"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
         ]
       }
       media_photos: {
@@ -452,8 +462,10 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
+          media_type: string
           sort_order: number | null
           thumbnail_url: string | null
+          video_url: string | null
         }
         Insert: {
           album_id: string
@@ -461,8 +473,10 @@ export type Database = {
           created_at?: string
           id?: string
           image_url: string
+          media_type?: string
           sort_order?: number | null
           thumbnail_url?: string | null
+          video_url?: string | null
         }
         Update: {
           album_id?: string
@@ -470,8 +484,10 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string
+          media_type?: string
           sort_order?: number | null
           thumbnail_url?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
