@@ -453,12 +453,16 @@ const TicketTemplateAdmin = () => {
     load();
   }, []);
 
-  // Clean image via AI when series changes
-  useEffect(() => {
-    if (!previewSeriesId) return;
+  // Resolve the current preview image URL (series image or demo)
+  const currentPreviewSrcUrl = previewSeriesId
+    ? resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap) || DEMO_EVENT_IMAGE
+    : DEMO_EVENT_IMAGE;
 
-    // Resolve source image URL
-    const srcUrl = resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap);
+  // Clean image via AI when the source image changes
+  useEffect(() => {
+    if (!tpl.magic_ticket_enabled && !previewSeriesId) return;
+
+    const srcUrl = currentPreviewSrcUrl;
     if (!srcUrl) return;
 
     // Already cleaned? (but ignore stale fallback entries that just point to the original URL)
@@ -498,7 +502,7 @@ const TicketTemplateAdmin = () => {
     };
     clean();
     return () => { cancelled = true; };
-  }, [previewSeriesId, eventSeries, eventsMap]);
+  }, [currentPreviewSrcUrl, tpl.magic_ticket_enabled]);
 
 
   const save = async () => {
