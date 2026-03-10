@@ -1099,7 +1099,7 @@ const NewsletterAdmin = () => {
 <body style="margin:0;padding:0;background:${cs.bodyBg};font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:${cs.bodyBg};padding:40px 0;">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="background:${cs.cardBg};border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+<table cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:${cs.cardBg};border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 <tr><td style="background:${cs.headerGradient};padding:32px 40px;">
 <h1 style="margin:0;color:${cs.headerText};font-size:24px;font-weight:800;">${subject || "Newsletter"}</h1>
 </td></tr>
