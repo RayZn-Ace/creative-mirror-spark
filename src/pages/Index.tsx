@@ -473,12 +473,12 @@ const InstagramReels = () => {
 
 /* ─── Reviews ─── */
 const reviews = [
-  { name: "Camila R.", text: "Beste Nacht meines Lebens! Die Stimmung war unglaublich, ich habe jeden Moment genossen. Hab schon Tickets für's nächste Mal!", rating: 5 },
-  { name: "Fernanda L.", text: "Wir haben den JGA meiner Freundin dort gefeiert und es war PERFEKT. Die Energie, einfach alles war unglaublich!", rating: 5 },
-  { name: "Patricia M.", text: "Ich habe meinen 40. Geburtstag mit Freunden gefeiert. Ein einzigartiges Erlebnis, die Atmosphäre war magisch!", rating: 5 },
-  { name: "Ana Clara S.", text: "Die Organisation war perfekt, die Tickets super einfach zu kaufen und der Einlass lief reibungslos. Top Erlebnis!", rating: 5 },
-  { name: "Juliana K.", text: "Wir waren mit 15 Freunden da. Die Organisation war top, der Gruppenrabatt hat sich absolut gelohnt. Wir kommen wieder!", rating: 5 },
-  { name: "Marcos T.", text: "Richtig gute Party! Die Buchung war einfach und der Abend war unvergesslich. Absolute Empfehlung!", rating: 5 },
+  { name: "Lena M., 17", text: "Omg die Party war SO sick 🔥 Hab noch nie so krass gefeiert, die Musik war on point und die Vibes einfach unreal. Nächstes Mal bin ich 100% wieder da!!", rating: 5 },
+  { name: "Finn T., 18", text: "Bruder, bester Abend seit langem fr fr. Sound war heftig, Leute waren alle drauf und die Orga war mega smooth. 10/10 no cap 🙌", rating: 5 },
+  { name: "Mia S., 16", text: "War meine erste richtige Party und ich bin OBSESSED. Alles war so gut organisiert und die Stimmung war einfach crazy. Komm definitiv wieder!! 💜", rating: 5 },
+  { name: "Noah K., 19", text: "Tickets kaufen war easy, Einlass ging mega schnell und drinnen war's dann einfach nur lit. Feiern mit den Jungs war legendär 🎉", rating: 5 },
+  { name: "Emilia R., 17", text: "Die Location war ein Traum und alle hatten richtig Bock. Hab so viele neue Leute kennengelernt, das war echt die beste Nacht ever 🤩", rating: 5 },
+  { name: "Luis P., 18", text: "Hatte erst keinen Bock aber dann war ich da und es war WILD. Beste Entscheidung, wir gehen jetzt zu jeder Nightlife Generation Party lol 😂", rating: 5 },
 ];
 
 const Reviews = ({ gt }: { gt: GlobalTranslations }) => (
