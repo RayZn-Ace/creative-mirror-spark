@@ -49,7 +49,7 @@ const WIDGET_COMPONENTS: Record<WidgetType, React.LazyExoticComponent<React.Comp
   sales_chart: SalesChartWidget,
   event_calendar: EventCalendarWidget,
   scanner_activity: ScannerActivityWidget,
-  city_breakdown: CityBreakdownWidget,
+  
   avg_order_value: AvgOrderValueWidget,
   payment_status: PaymentStatusWidget,
   peak_hours: PeakHoursWidget,
