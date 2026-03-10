@@ -424,7 +424,7 @@ async function generateTicketPDF(tickets: Array<{
           }
           for (const item of (block.items || [])) {
             if (!item || y < 250) break;
-            page.drawText(`• ${item}`, { x: m + 6, y, size: 9, font: fontRegular, color: txColor });
+            page.drawText(stripEmojis(`• ${item}`), { x: m + 6, y, size: 9, font: fontRegular, color: txColor });
             y -= 14;
           }
           y -= 6;
