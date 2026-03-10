@@ -94,11 +94,6 @@ const makeInfoSections = (event: CityEvent, t: Translations) => [
     title: t.admissionTitle,
     content: t.admissionContent,
   },
-  {
-    id: "whatsapp",
-    title: t.freeTicketsTitle,
-    content: "whatsapp",
-  },
 ];
 
 /* ─── Instagram / WhatsApp config ─── */
