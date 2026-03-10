@@ -1236,6 +1236,10 @@ const TicketTemplateAdmin = () => {
                       const s = eventSeries.find(x => x.id === previewSeriesId);
                       return s ? ` · ${s.title}` : "";
                     })()}
+                    {previewEventId && (() => {
+                      const ev = eventsMap[previewEventId];
+                      return ev ? ` · ${ev.title}` : "";
+                    })()}
                     {previewCategoryId ? ` · ${previewCategoryId}` : ""}
                   </p>
                 </>
