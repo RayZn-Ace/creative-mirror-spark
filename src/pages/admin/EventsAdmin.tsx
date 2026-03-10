@@ -1845,51 +1845,30 @@ const EventsAdmin = () => {
   const filteredEvents = isSearching
     ? extraFiltered.filter((e) => {
         const q = search.toLowerCase();
-        const city = e.series_id ? seriesCityMap[e.series_id] : e.city;
-        const country = getCountry(city || null);
         return (
           e.title.toLowerCase().includes(q) ||
           (e.city || "").toLowerCase().includes(q) ||
           (e.tag || "").toLowerCase().includes(q) ||
           (e.slug || "").toLowerCase().includes(q) ||
-          country.toLowerCase().includes(q) ||
           (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
         );
       })
     : extraFiltered;
 
-  // Build hierarchy: Country → City → Series → Events
+  // Build hierarchy: Series → Events (flat, no country/city grouping)
   interface HSeriesGroup { seriesId: string | null; seriesTitle: string; events: EventRow[] }
-  interface HCityGroup { city: string; seriesGroups: HSeriesGroup[] }
-  interface HCountryGroup { country: string; cityGroups: HCityGroup[] }
 
-  const countryAcc: Record<string, Record<string, Record<string, HSeriesGroup>>> = {};
+  const seriesAcc: Record<string, HSeriesGroup> = {};
 
   for (const event of filteredEvents) {
-    const city = event.series_id ? (seriesCityMap[event.series_id] || event.city || "Unbekannt") : (event.city || "Unbekannt");
-    const country = getCountry(city);
     const seriesKey = event.series_id || "__none__";
     const seriesTitle = event.series_id ? (seriesMap[event.series_id] || "Unbekannte Serie") : "Ohne Serie";
 
-    if (!countryAcc[country]) countryAcc[country] = {};
-    if (!countryAcc[country][city]) countryAcc[country][city] = {};
-    if (!countryAcc[country][city][seriesKey]) countryAcc[country][city][seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
-    countryAcc[country][city][seriesKey].events.push(event);
+    if (!seriesAcc[seriesKey]) seriesAcc[seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
+    seriesAcc[seriesKey].events.push(event);
   }
 
-  const hierarchyData: HCountryGroup[] = Object.entries(countryAcc).map(([country, cities]) => ({
-    country,
-    cityGroups: Object.entries(cities).map(([city, seriesObj]) => ({
-      city,
-      seriesGroups: Object.values(seriesObj).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de")),
-    })).sort((a, b) => a.city.localeCompare(b.city, "de")),
-  }));
-
-  hierarchyData.sort((a, b) => {
-    if (a.country === "Deutschland") return -1;
-    if (b.country === "Deutschland") return 1;
-    return a.country.localeCompare(b.country, "de");
-  });
+  const seriesGroups: HSeriesGroup[] = Object.values(seriesAcc).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
 
   // When searching, override collapse: everything is expanded
   const isCollapsed = (key: string) => isSearching ? false : collapsed[key] !== false;
