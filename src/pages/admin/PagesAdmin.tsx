@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle, Eye, ChevronRight, Search } from "lucide-react";
+import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle, Eye, ChevronRight, Search, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -342,13 +342,35 @@ const PagesAdmin = () => {
   const [subtitle, setSubtitle] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // James Butler settings
+  const [jamesEnabled, setJamesEnabled] = useState(false);
+  const [jamesSelfLearn, setJamesSelfLearn] = useState(false);
+  const [jamesLoading, setJamesLoading] = useState(true);
+
   const load = async () => {
     const { data } = await supabase.from("page_contents").select("*").order("page_key");
     setPages((data as PageRow[]) || []);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  const loadJamesSettings = async () => {
+    const { data } = await supabase.from("settings").select("value").eq("key", "james_butler").maybeSingle();
+    if (data?.value) {
+      const val = data.value as any;
+      setJamesEnabled(val.enabled ?? false);
+      setJamesSelfLearn(val.self_learn ?? false);
+    }
+    setJamesLoading(false);
+  };
+
+  const saveJamesSettings = async (enabled: boolean, selfLearn: boolean) => {
+    await supabase.from("settings").upsert(
+      { key: "james_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
+  };
+
+  useEffect(() => { load(); loadJamesSettings(); }, []);
 
   const detectType = (content: Record<string, any>): PageType => {
     if (content?.categories && Array.isArray(content.categories)) return "faq";
@@ -492,6 +514,87 @@ const PagesAdmin = () => {
           ))}
         </div>
       )}
+
+      {/* James der Butler */}
+      <div className="mt-8 rounded-2xl p-5 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(270 80% 56% / 0.15)" }}>
+              <Bot className="w-5 h-5" style={{ color: "hsl(270 80% 56%)" }} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>James der Butler</h3>
+              <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>KI-Support-Chatbot für deine Besucher</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const next = !jamesEnabled;
+              setJamesEnabled(next);
+              if (!next) setJamesSelfLearn(false);
+              saveJamesSettings(next, next ? jamesSelfLearn : false);
+              toast.success(next ? "James aktiviert" : "James deaktiviert");
+            }}
+            disabled={jamesLoading}
+            className="w-11 h-6 rounded-full relative transition-all cursor-pointer"
+            style={{ background: jamesEnabled ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.1)" }}
+          >
+            <div
+              className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
+              style={{ background: "#fff", left: jamesEnabled ? "22px" : "2px" }}
+            />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {jamesEnabled && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                {/* Self-learn toggle */}
+                <div className="flex items-center justify-between rounded-xl p-3" style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>Selbstständig lernen</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      {jamesSelfLearn
+                        ? "James darf eigene Antworten generieren und über den FAQ-Inhalt hinausgehen"
+                        : "James antwortet ausschließlich mit Inhalten aus dem vorhandenen FAQ"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !jamesSelfLearn;
+                      setJamesSelfLearn(next);
+                      saveJamesSettings(jamesEnabled, next);
+                      toast.success(next ? "Selbstständiges Lernen aktiviert" : "Nur FAQ-Modus aktiv");
+                    }}
+                    className="w-11 h-6 rounded-full relative transition-all cursor-pointer shrink-0 ml-4"
+                    style={{ background: jamesSelfLearn ? "hsl(150 70% 45%)" : "hsl(0 0% 100% / 0.1)" }}
+                  >
+                    <div
+                      className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
+                      style={{ background: "#fff", left: jamesSelfLearn ? "22px" : "2px" }}
+                    />
+                  </button>
+                </div>
+
+                {/* Info box */}
+                <div className="rounded-xl p-3" style={{ background: "hsl(270 80% 56% / 0.06)", border: "1px solid hsl(270 80% 56% / 0.12)" }}>
+                  <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                    {jamesSelfLearn
+                      ? "⚡ James nutzt KI, um auch auf unbekannte Fragen intelligent zu antworten. Er greift zusätzlich auf allgemeines Wissen zurück."
+                      : "📋 James beantwortet nur Fragen, die im FAQ hinterlegt sind. Unbekannte Fragen werden höflich abgelehnt."}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Edit Full-Screen Side-by-Side */}
       <AnimatePresence>
