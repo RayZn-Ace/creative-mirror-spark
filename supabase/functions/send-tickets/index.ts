@@ -623,7 +623,8 @@ async function generateInvoicePDF(opts: {
     const valW = font.widthOfTextAtSize(t.value, size);
     
     if (t.bold) {
-      page.drawRectangle({ x: marginR - 200, y: y - 5, width: 200, height: 24, color: lightBg });
+      y -= 8; // extra spacing before Gesamtbetrag
+      page.drawRectangle({ x: marginR - 200, y: y - 6, width: 200, height: 26, color: lightBg });
     }
     page.drawText(t.label, { x: marginR - 8 - valW - 20 - labelW, y, size, font, color: t.bold ? darkColor : grayColor });
     page.drawText(t.value, { x: marginR - 8 - valW, y, size, font, color: darkColor });
