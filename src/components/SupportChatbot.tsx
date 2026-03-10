@@ -411,7 +411,7 @@ export default function SupportChatbot() {
             aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
-            <span className="relative z-10 text-2xl" role="img" aria-label="Butler">🤵</span>
+            <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
           </button>
         </div>
       )}
