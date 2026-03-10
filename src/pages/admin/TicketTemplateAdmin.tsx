@@ -115,49 +115,6 @@ const PRESETS: Array<{ name: string; template: Partial<TicketTemplate> }> = [
   { name: "Purple Haze", template: { background_color: "#0f0020", accent_color: "#a855f7", text_color: "#f3e8ff", gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" } } },
 ];
 
-/* ─── Category Design Presets ─── */
-const CATEGORY_PRESETS: Record<string, { label: string; emoji: string; override: CategoryOverride }> = {
-  REGULAR: {
-    label: "Regular",
-    emoji: "🟢",
-    override: {
-      accent_color: "#22c55e",
-      gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" },
-      background_color: "#020d02",
-      text_color: "#dcfce7",
-    },
-  },
-  DELUXE: {
-    label: "Deluxe",
-    emoji: "🔵",
-    override: {
-      accent_color: "#38bdf8",
-      gradient: { enabled: true, type: "linear", angle: 160, color_from: "#0a1628", color_to: "#164e63" },
-      background_color: "#0a1628",
-      text_color: "#e0f2fe",
-    },
-  },
-  PREMIUM: {
-    label: "Premium",
-    emoji: "👑",
-    override: {
-      accent_color: "#d4a030",
-      gradient: { enabled: true, type: "radial", angle: 0, color_from: "#1a1610", color_to: "#2a2010" },
-      background_color: "#1a1610",
-      text_color: "#f5f0e0",
-    },
-  },
-  FAN: {
-    label: "Fan",
-    emoji: "💖",
-    override: {
-      accent_color: "#d9338a",
-      gradient: { enabled: true, type: "linear", angle: 135, color_from: "#14041a", color_to: "#2a0a20" },
-      background_color: "#14041a",
-      text_color: "#fce7f3",
-    },
-  },
-};
 
 const FORMATS = [
   { id: "din_lang" as const, label: "DIN Lang (Hartticket)", desc: "210 × 99 mm" },
