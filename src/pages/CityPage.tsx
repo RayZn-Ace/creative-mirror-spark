@@ -1101,6 +1101,14 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
         const groups: Record<string, TicketItem[]> = {};
         const now = new Date();
+        // Get or create a session seed for consistent KVK values
+        let sessionSeed = sessionStorage.getItem("kvk_seed");
+        if (!sessionSeed) {
+          sessionSeed = String(Math.random());
+          sessionStorage.setItem("kvk_seed", sessionSeed);
+        }
+        const seedNum = parseFloat(sessionSeed);
+
         for (const row of data) {
           // Skip internal-only tickets (free tickets for admin use)
           if (row.internal_only) continue;
@@ -1112,6 +1120,20 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           if (!groups[group]) groups[group] = [];
           const currency = getCurrencyForCity(event.city);
           const lang = getLangForCity(event.city);
+
+          // KVK: compute a consistent fake remaining count per ticket per session
+          let scarcityCount: number | null = null;
+          if (row.kvk_enabled && row.max_capacity) {
+            const minPct = row.kvk_min_percent ?? 5;
+            const maxPct = row.kvk_max_percent ?? 25;
+            // Use a hash-like approach: combine seed with ticket id for per-ticket consistency
+            const ticketHash = row.id.split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+            const factor = ((seedNum * 1000 + ticketHash) % 100) / 100; // 0-1
+            const minCount = Math.max(1, Math.round(row.max_capacity * minPct / 100));
+            const maxCount = Math.max(minCount + 1, Math.round(row.max_capacity * maxPct / 100));
+            scarcityCount = Math.round(minCount + factor * (maxCount - minCount));
+          }
+
           groups[group].push({
             id: row.id,
             name: row.name,
@@ -1121,6 +1143,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
             soldOut: row.sold_out || false,
             badge: row.badge || undefined,
             comingSoon: row.coming_soon || false,
+            scarcityCount,
           });
         }
         setTicketCategories(Object.entries(groups).map(([title, items]) => ({ title, items })));
