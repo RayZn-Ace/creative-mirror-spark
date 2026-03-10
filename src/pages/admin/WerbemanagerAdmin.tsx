@@ -305,7 +305,7 @@ const WerbemanagerAdmin = () => {
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <Megaphone className="w-10 h-10 mx-auto mb-3" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Keine Werbung vorhanden</p>
-          <button onClick={() => setEditing({ ...emptyAd })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>Jetzt erste Werbung erstellen</button>
+          <button onClick={() => setEditing({ ...emptyAd })} className="text-sm font-bold" style={{ color: "hsl(270 70% 55%)" }}>Jetzt erste Werbung erstellen</button>
         </div>
       ) : (
         <div className="space-y-2">

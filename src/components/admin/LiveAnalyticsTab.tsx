@@ -279,8 +279,8 @@ const LiveAnalyticsTab = () => {
                 onClick={() => setTimeRange(tr.id)}
                 className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all"
                 style={{
-                  background: timeRange === tr.id ? "hsl(230 80% 56% / 0.15)" : "transparent",
-                  color: timeRange === tr.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                  background: timeRange === tr.id ? "hsl(270 70% 55% / 0.15)" : "transparent",
+                  color: timeRange === tr.id ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.4)",
                 }}
               >
                 {tr.label}

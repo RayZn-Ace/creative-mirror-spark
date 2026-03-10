@@ -122,9 +122,9 @@ const MuttizettelAdmin = () => {
             onClick={() => setActiveTab(tab.key)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
             style={{
-              background: activeTab === tab.key ? "hsl(230 80% 56% / 0.15)" : "hsl(220 30% 12%)",
-              border: `1px solid ${activeTab === tab.key ? "hsl(230 80% 56% / 0.4)" : "hsl(220 20% 22%)"}`,
-              color: activeTab === tab.key ? "hsl(230 80% 65%)" : "hsl(0 0% 100% / 0.5)",
+               background: activeTab === tab.key ? "hsl(270 70% 55% / 0.15)" : "hsl(220 30% 12%)",
+              border: `1px solid ${activeTab === tab.key ? "hsl(270 70% 55% / 0.4)" : "hsl(220 20% 22%)"}`,
+              color: activeTab === tab.key ? "hsl(270 70% 65%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             {tab.icon}
