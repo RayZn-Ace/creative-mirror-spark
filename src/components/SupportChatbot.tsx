@@ -320,7 +320,7 @@ export default function SupportChatbot() {
               <div className="flex justify-start">
                 <div className="px-3 py-2 rounded-xl text-sm flex items-center gap-2" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.5)" }}>
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  James tippt...
+                  Alfred tippt...
                 </div>
               </div>
             )}
