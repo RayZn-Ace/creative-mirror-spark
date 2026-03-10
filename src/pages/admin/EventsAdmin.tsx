@@ -254,6 +254,10 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       sale_end: editingTicket.sale_end || null,
       internal_only: editingTicket.internal_only || false,
       group_size: editingTicket.group_size || 1,
+      max_capacity: editingTicket.max_capacity || null,
+      kvk_enabled: editingTicket.kvk_enabled || false,
+      kvk_min_percent: editingTicket.kvk_min_percent ?? 5,
+      kvk_max_percent: editingTicket.kvk_max_percent ?? 25,
       event_id: eventId,
     };
     if (editingTicket.id) {
