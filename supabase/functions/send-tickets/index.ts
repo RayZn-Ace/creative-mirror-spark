@@ -112,6 +112,9 @@ interface TicketTemplate {
   show_holder_name: boolean;
   show_qr_code: boolean;
   logo_url: string;
+  magic_ticket_enabled?: boolean;
+  magic_ticket_blur?: number;
+  magic_ticket_opacity?: number;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks?: ContentBlock[];
   category_overrides?: Record<string, CategoryOverride>;
