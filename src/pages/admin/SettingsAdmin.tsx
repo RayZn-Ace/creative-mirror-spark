@@ -738,7 +738,7 @@ const SettingsAdmin = () => {
                       onClick={createRole}
                       disabled={creatingRole || !newRoleDisplayName.trim()}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
-                      style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
+                      style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}
                     >
                       {creatingRole ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                       Erstellen
