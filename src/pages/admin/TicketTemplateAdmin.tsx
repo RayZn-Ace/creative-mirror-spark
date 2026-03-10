@@ -866,7 +866,7 @@ const TicketTemplateAdmin = () => {
                                 designs[designIdx] = { ...designs[designIdx], label: renameValue.trim(), key: newKey };
                                 update("category_designs" as any, designs);
                               }
-                              setIsRenaming(false);
+                              setRenamingDesignKey(null);
                             }}
                             onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                             autoFocus
