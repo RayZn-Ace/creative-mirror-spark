@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle } from "lucide-react";
+import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle, Eye, ChevronRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
