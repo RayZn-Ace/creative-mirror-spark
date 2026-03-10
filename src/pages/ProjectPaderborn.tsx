@@ -855,24 +855,6 @@ const ProjectPaderborn = () => {
         <PPFooter />
       </div>
 
-      {/* WhatsApp Floating Button - shows after scrolling 50% */}
-      <AnimatePresence>
-        {showWhatsapp && (
-          <motion.a
-            href={`https://wa.me/${whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pp-whatsapp-btn"
-            aria-label="WhatsApp Chat"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <MessageCircle className="w-6 h-6" />
-          </motion.a>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
