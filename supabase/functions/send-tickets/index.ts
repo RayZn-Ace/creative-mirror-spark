@@ -112,6 +112,9 @@ interface TicketTemplate {
   show_holder_name: boolean;
   show_qr_code: boolean;
   logo_url: string;
+  magic_ticket_enabled?: boolean;
+  magic_ticket_blur?: number;
+  magic_ticket_opacity?: number;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks?: ContentBlock[];
   category_overrides?: Record<string, CategoryOverride>;
@@ -135,6 +138,7 @@ async function generateTicketPDF(tickets: Array<{
   event_time: string | null;
   location_name: string | null;
   location_address: string | null;
+  magic_image_url: string | null;
 }>, tpl: TicketTemplate): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -180,25 +184,102 @@ async function generateTicketPDF(tickets: Array<{
     const { width, height } = page.getSize();
     const m = isDinLang ? 20 : 30; // margin
 
-    // Background with gradient simulation using multiple strips
-    if (effectiveTpl.gradient?.enabled) {
-      const [fromR, fromG, fromB] = hexToRgb(effectiveTpl.gradient!.color_from);
-      const [toR, toG, toB] = hexToRgb(effectiveTpl.gradient!.color_to);
-      const strips = 40;
-      const isRadial = effectiveTpl.gradient!.type === "radial";
-      for (let i = 0; i < strips; i++) {
-        const t = i / (strips - 1);
-        // For radial: center is "from", edges are "to"
-        const factor = isRadial ? (t < 0.5 ? t * 2 : (1 - t) * 2) : t;
-        const r = fromR + (toR - fromR) * (isRadial ? 1 - factor : t);
-        const g = fromG + (toG - fromG) * (isRadial ? 1 - factor : t);
-        const b = fromB + (toB - fromB) * (isRadial ? 1 - factor : t);
-        const stripW = width / strips;
-        page.drawRectangle({ x: stripW * i, y: 0, width: stripW + 1, height, color: rgb(r, g, b) });
+    // Background with gradient simulation
+    const drawGradientBg = (page: any, x0: number, y0: number, w: number, h: number, grad: GradientConfig) => {
+      const [fromR, fromG, fromB] = hexToRgb(grad.color_from);
+      const [toR, toG, toB] = hexToRgb(grad.color_to);
+      const strips = 100;
+      const isRadial = grad.type === "radial";
+      const angle = (grad as any).angle || 135;
+
+      if (isRadial) {
+        // Radial: draw from outside-in with concentric rectangles
+        const cx = x0 + w / 2;
+        const cy = y0 + h / 2;
+        for (let i = strips - 1; i >= 0; i--) {
+          const t = i / (strips - 1);
+          const r = toR + (fromR - toR) * (1 - t);
+          const g = toG + (fromG - toG) * (1 - t);
+          const b = toB + (fromB - toB) * (1 - t);
+          const scaleX = (1 - t) * w / 2 + 1;
+          const scaleY = (1 - t) * h / 2 + 1;
+          page.drawRectangle({
+            x: cx - scaleX, y: cy - scaleY,
+            width: scaleX * 2, height: scaleY * 2,
+            color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
+          });
+        }
+      } else {
+        // Linear: use horizontal strips, compute gradient position based on angle
+        const rad = (angle * Math.PI) / 180;
+        const dx = Math.cos(rad);
+        const dy = Math.sin(rad);
+        // Project all corners to find min/max along gradient direction
+        const corners = [[0, 0], [w, 0], [w, h], [0, h]];
+        const projections = corners.map(([cx, cy]) => cx * dx + cy * dy);
+        const minProj = Math.min(...projections);
+        const maxProj = Math.max(...projections);
+        const span = maxProj - minProj || 1;
+
+        const stripH = h / strips;
+        for (let i = 0; i < strips; i++) {
+          // For each horizontal strip, compute the center y position
+          const sy = i * stripH;
+          // Calculate the average gradient position for this strip
+          // Use center-x and center-y of the strip
+          const centerX = w / 2;
+          const centerY = sy + stripH / 2;
+          const proj = centerX * dx + centerY * dy;
+          const t = Math.max(0, Math.min(1, (proj - minProj) / span));
+          const r = fromR + (toR - fromR) * t;
+          const g = fromG + (toG - fromG) * t;
+          const b = fromB + (toB - fromB) * t;
+          page.drawRectangle({
+            x: x0, y: y0 + sy,
+            width: w, height: stripH + 0.5,
+            color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
+          });
+        }
       }
+    };
+
+    if (effectiveTpl.gradient?.enabled) {
+      drawGradientBg(page, 0, 0, width, height, effectiveTpl.gradient!);
     } else {
       page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
     }
+    
+    // Magic Ticket: embed blurred event/series image as background overlay
+    if (tpl.magic_ticket_enabled && ticket.magic_image_url) {
+      try {
+        const imgRes = await fetch(ticket.magic_image_url);
+        if (imgRes.ok) {
+          const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
+          const ct = imgRes.headers.get("content-type") || "";
+          const bgImg = ct.includes("png") ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+          const opacity = (tpl.magic_ticket_opacity ?? 40) / 100;
+          // Cover the info area (not QR section for DIN Lang)
+          const imgAreaW = isDinLang && tpl.show_qr_code ? width - 160 : width;
+          // Scale to cover
+          const imgRatio = bgImg.width / bgImg.height;
+          const areaRatio = imgAreaW / height;
+          let drawW: number, drawH: number, drawX: number, drawY: number;
+          if (imgRatio > areaRatio) {
+            drawH = height;
+            drawW = height * imgRatio;
+            drawX = (imgAreaW - drawW) / 2;
+            drawY = 0;
+          } else {
+            drawW = imgAreaW;
+            drawH = imgAreaW / imgRatio;
+            drawX = 0;
+            drawY = (height - drawH) / 2;
+          }
+          page.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH, opacity });
+        }
+      } catch (e) { console.error("Magic ticket image failed:", e); }
+    }
+
     // Accent bar
     page.drawRectangle({ x: 0, y: height - (isDinLang ? 4 : 6), width, height: isDinLang ? 4 : 6, color: acColor });
 
@@ -801,7 +882,9 @@ Deno.serve(async (req) => {
     const [ticketsRes, orderRes, settingsRes] = await Promise.all([
       supabase.from("tickets").select(`
         qr_code, holder_name, holder_email,
-        events:event_id (title, date, time, location_name, location_address),
+        events:event_id (title, date, time, location_name, location_address, image_url, series_id,
+          event_series:series_id (image_url)
+        ),
         ticket_categories:ticket_category_id (name, category_group)
       `).eq("order_id", order_id),
       supabase.from("orders").select("*").eq("id", order_id).single(),
@@ -848,17 +931,23 @@ Deno.serve(async (req) => {
       .eq("key", "invoice");
 
     // ─── Build ticket data ───
-    const ticketData = tickets.map((t: any) => ({
-      qr_code: t.qr_code,
-      holder_name: t.holder_name,
-      category_name: t.ticket_categories?.name || "Ticket",
-      category_group: t.ticket_categories?.category_group || null,
-      event_title: t.events?.title || "Event",
-      event_date: t.events?.date || null,
-      event_time: t.events?.time || null,
-      location_name: t.events?.location_name || null,
-      location_address: t.events?.location_address || null,
-    }));
+    const ticketData = tickets.map((t: any) => {
+      // Resolve magic ticket image: prefer series image, then event image
+      const seriesImg = t.events?.event_series?.image_url || null;
+      const eventImg = t.events?.image_url || null;
+      return {
+        qr_code: t.qr_code,
+        holder_name: t.holder_name,
+        category_name: t.ticket_categories?.name || "Ticket",
+        category_group: t.ticket_categories?.category_group || null,
+        event_title: t.events?.title || "Event",
+        event_date: t.events?.date || null,
+        event_time: t.events?.time || null,
+        location_name: t.events?.location_name || null,
+        location_address: t.events?.location_address || null,
+        magic_image_url: seriesImg || eventImg,
+      };
+    });
 
     const orderItems = (order.items as any[]) || [];
     const eventTitle = ticketData[0]?.event_title || "Event";
