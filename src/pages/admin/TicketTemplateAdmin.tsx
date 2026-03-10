@@ -1098,39 +1098,51 @@ const TicketTemplateAdmin = () => {
 
             {/* Preview mode selectors */}
             <div className="space-y-3">
-              {/* Event Series selector */}
-              {eventSeries.length > 0 && (
-                <div>
-                  <label style={{ ...labelStyle, marginBottom: "6px" }}>Eventreihe</label>
-                  <div className="flex flex-wrap gap-1.5">
+              {/* Event / Series selector */}
+              <div>
+                <label style={{ ...labelStyle, marginBottom: "6px" }}>{eventSeries.length > 0 ? "Eventreihe" : "Event-Vorschau"}</label>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => { setPreviewSeriesId(null); setPreviewEventId(null); }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                    style={{
+                      background: !previewSeriesId && !previewEventId ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                      color: !previewSeriesId && !previewEventId ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                      border: `1px solid ${!previewSeriesId && !previewEventId ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    }}
+                  >
+                    Demo
+                  </button>
+                  {eventSeries.length > 0 ? eventSeries.map(s => (
                     <button
-                      onClick={() => setPreviewSeriesId(null)}
+                      key={s.id}
+                      onClick={() => { setPreviewSeriesId(s.id); setPreviewEventId(null); }}
                       className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
                       style={{
-                        background: !previewSeriesId ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                        color: !previewSeriesId ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
-                        border: `1px solid ${!previewSeriesId ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                        background: previewSeriesId === s.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                        color: previewSeriesId === s.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                        border: `1px solid ${previewSeriesId === s.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
                       }}
                     >
-                      Demo
+                      {s.title}
                     </button>
-                    {eventSeries.map(s => (
-                      <button
-                        key={s.id}
-                        onClick={() => setPreviewSeriesId(s.id)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-                        style={{
-                          background: previewSeriesId === s.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                          color: previewSeriesId === s.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
-                          border: `1px solid ${previewSeriesId === s.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
-                        }}
-                      >
-                        {s.title}
-                      </button>
-                    ))}
-                  </div>
+                  )) : eventsList.map(ev => (
+                    <button
+                      key={ev.id}
+                      onClick={() => { setPreviewEventId(ev.id); setPreviewSeriesId(null); }}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all max-w-[160px] truncate"
+                      style={{
+                        background: previewEventId === ev.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                        color: previewEventId === ev.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                        border: `1px solid ${previewEventId === ev.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                      }}
+                      title={ev.title}
+                    >
+                      {ev.title}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
 
               {/* Category Design selector (from template designs, not individual ticket names) */}
               {(() => {
