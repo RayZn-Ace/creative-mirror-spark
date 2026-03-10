@@ -49,9 +49,9 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "GIMME <verification@gimmegimmeparty.com>",
+        from: "Nightlife Generation <verification@nightlifeticket.app>",
         to: [email],
-        subject: "Dein Verifizierungscode – GIMME Tickets",
+        subject: "Dein Verifizierungscode – Nightlife Tickets",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #0a0a0a; color: #ffffff; border-radius: 16px;">
             <h1 style="font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">GIMME</h1>

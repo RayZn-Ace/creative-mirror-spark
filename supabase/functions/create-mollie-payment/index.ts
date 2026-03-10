@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
     }
 
     // Build redirect URL
-    const redirectUrl = `${redirectBase || "https://gimmegimmeparty.de"}/bestellung/${order.id}`;
+    const redirectUrl = `${redirectBase || "https://nightlifeticket.app"}/bestellung/${order.id}`;
 
     // Get webhook URL
     const webhookUrl = `${SUPABASE_URL}/functions/v1/mollie-webhook`;

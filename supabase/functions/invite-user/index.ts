@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     // Build redirect URL
     const origin = req.headers.get("origin") 
       || req.headers.get("referer")?.replace(/\/[^/]*$/, "")
-      || "https://gimmegimmeparty.de";
+      || "https://nightlifeticket.app";
     const redirectTo = `${origin}/admin/register`;
 
     // Generate invite link (does NOT send email when using generateLink)
@@ -112,12 +112,12 @@ Deno.serve(async (req) => {
 <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="font-size:24px;color:#1a1a1a;margin:0;">GIMME GIMME PARTY</h1>
+      <h1 style="font-size:24px;color:#1a1a1a;margin:0;">NIGHTLIFE GENERATION</h1>
     </div>
     <div style="background:#f9f9f9;border-radius:12px;padding:32px;">
       <h2 style="font-size:20px;color:#1a1a1a;margin:0 0 16px;">Du wurdest eingeladen! 🎉</h2>
       <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 16px;">
-        Du wurdest als <strong>${roleLabels[appRole] || appRole}</strong> zum Admin-Bereich von Gimme Gimme Party eingeladen.
+        Du wurdest als <strong>${roleLabels[appRole] || appRole}</strong> zum Admin-Bereich von Nightlife Generation eingeladen.
       </p>
       <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px;">
         Klicke auf den Button, um dein Konto zu aktivieren und ein Passwort festzulegen.
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       </p>
     </div>
     <p style="font-size:12px;color:#999;text-align:center;margin-top:24px;">
-      © Gimme Gimme Party • mail@gimmegimmeparty.com
+      © Nightlife Generation • mail@nightlifeticket.app
     </p>
   </div>
 </body>
@@ -146,9 +146,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Gimme Gimme Party <onboarding@gimmegimmeparty.com>",
+        from: "Nightlife Generation <onboarding@nightlifeticket.app>",
         to: [email],
-        subject: "Du wurdest eingeladen – Gimme Gimme Party Admin 🎉",
+        subject: "Du wurdest eingeladen – Nightlife Generation Admin 🎉",
         html: htmlContent,
       }),
     });
