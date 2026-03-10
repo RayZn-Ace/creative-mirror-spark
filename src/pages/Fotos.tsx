@@ -1,12 +1,15 @@
 import { PageLayout } from "@/components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3 } from "lucide-react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3, Video } from "lucide-react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
+// Fallback static images
 import crowdAerial from "@/assets/crowd-aerial.jpg";
 import crowdGlowsticks from "@/assets/crowd-glowsticks.jpg";
 import crowdGlowsticks2 from "@/assets/crowd-glowsticks2.jpg";
@@ -16,7 +19,7 @@ import dancerHappy from "@/assets/dancer-happy.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdVertical from "@/assets/crowd-vertical.jpg";
 
-const photos = [
+const fallbackPhotos = [
   { src: crowdAerial, alt: "Party Crowd von oben" },
   { src: crowdGlowsticks, alt: "Crowd mit Leuchtstäben" },
   { src: crowdWide, alt: "Volle Venue Panorama" },
@@ -27,7 +30,7 @@ const photos = [
   { src: crowdVertical, alt: "Party Crowd" },
 ];
 
-const videos = [
+const fallbackVideos = [
   { id: "53dTybHhlaw", title: "Video 1" },
   { id: "LrTjwGo_6Z4", title: "Video 2" },
   { id: "s8-6TQHgslw", title: "Video 3" },
@@ -44,6 +47,11 @@ const gridOptions = [
   { cols: 4, icon: LayoutGrid, label: "4 Spalten" },
 ];
 
+const getYoutubeId = (url: string) => {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+};
+
 const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
@@ -53,9 +61,69 @@ const Fotos = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [speed, setSpeed] = useState(3000);
   const [shuffled, setShuffled] = useState(false);
-  const [displayPhotos, setDisplayPhotos] = useState(photos);
   const [showControls, setShowControls] = useState(true);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch albums
+  const { data: albums = [] } = useQuery({
+    queryKey: ["public-media-albums"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("media_albums")
+        .select("*")
+        .eq("status", "published")
+        .order("event_date", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Fetch photos for selected album
+  const { data: albumMedia = [] } = useQuery({
+    queryKey: ["public-media-photos", selectedAlbumId],
+    queryFn: async () => {
+      if (!selectedAlbumId) return [];
+      const { data, error } = await supabase
+        .from("media_photos")
+        .select("*")
+        .eq("album_id", selectedAlbumId)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!selectedAlbumId,
+  });
+
+  // Separate photos and videos from album
+  const dbPhotos = useMemo(() =>
+    albumMedia
+      .filter((m: any) => (m.media_type || "photo") === "photo")
+      .map((m: any) => ({ src: m.image_url, alt: m.caption || "Foto" })),
+    [albumMedia]
+  );
+
+  const dbVideos = useMemo(() =>
+    albumMedia
+      .filter((m: any) => m.media_type === "video" && m.video_url)
+      .map((m: any) => {
+        const ytId = getYoutubeId(m.video_url || "");
+        return { id: ytId || m.video_url, title: m.caption || "Video", isYoutube: !!ytId, url: m.video_url };
+      }),
+    [albumMedia]
+  );
+
+  // Use DB data if album selected, else fallback
+  const photos = selectedAlbumId && dbPhotos.length > 0 ? dbPhotos : fallbackPhotos;
+  const videos = selectedAlbumId ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
+
+  const [displayPhotos, setDisplayPhotos] = useState(photos);
+
+  useEffect(() => {
+    setDisplayPhotos(photos);
+    setShuffled(false);
+    setSlideshowIndex(0);
+  }, [selectedAlbumId, albumMedia]);
 
   // Shuffle
   const shufflePhotos = useCallback(() => {
@@ -66,16 +134,16 @@ const Fotos = () => {
     }
     setDisplayPhotos(arr);
     setShuffled(true);
-  }, []);
+  }, [photos]);
 
   const resetOrder = useCallback(() => {
     setDisplayPhotos(photos);
     setShuffled(false);
-  }, []);
+  }, [photos]);
 
   // Slideshow auto-advance
   useEffect(() => {
-    if (viewMode === "slideshow" && isPlaying) {
+    if (viewMode === "slideshow" && isPlaying && displayPhotos.length > 0) {
       timerRef.current = setInterval(() => {
         setSlideshowIndex((prev) => (prev + 1) % displayPhotos.length);
       }, speed);
@@ -112,7 +180,7 @@ const Fotos = () => {
 
   return (
     <PageLayout title="Fotos & Videos" subtitle="Wir posten alles auf Social Media – oft auch Location-Fotografen/Videografen.">
-      {/* Lightbox with navigation */}
+      {/* Lightbox */}
       <AnimatePresence>
         {lightbox !== null && (
           <motion.div
@@ -158,6 +226,38 @@ const Fotos = () => {
         )}
       </AnimatePresence>
 
+      {/* Album selector */}
+      {albums.length > 0 && (
+        <div className="mb-8">
+          <h2
+            className="text-lg sm:text-xl font-black uppercase tracking-wider mb-4"
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
+          >
+            Alben
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+            <button
+              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${!selectedAlbumId ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setSelectedAlbumId(null)}
+            >
+              Alle
+            </button>
+            {albums.map((album: any) => (
+              <button
+                key={album.id}
+                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedAlbumId === album.id ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                onClick={() => setSelectedAlbumId(album.id)}
+              >
+                {album.cover_image_url && (
+                  <img src={album.cover_image_url} alt="" className="w-6 h-6 rounded-md object-cover" />
+                )}
+                {album.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Fotos Header + Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h2
@@ -168,7 +268,6 @@ const Fotos = () => {
         </h2>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* View mode toggles */}
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center bg-muted rounded-lg p-1 gap-0.5">
               <Tooltip>
@@ -206,7 +305,6 @@ const Fotos = () => {
               </Tooltip>
             </div>
 
-            {/* Grid size selector (only in grid/masonry) */}
             {(viewMode === "grid" || viewMode === "masonry") && (
               <div className="flex items-center bg-muted rounded-lg p-1 gap-0.5">
                 {gridOptions.map((opt) => (
@@ -225,7 +323,6 @@ const Fotos = () => {
               </div>
             )}
 
-            {/* Shuffle */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -242,7 +339,7 @@ const Fotos = () => {
       </div>
 
       {/* Grid View */}
-      {viewMode === "grid" && (
+      {viewMode === "grid" && displayPhotos.length > 0 && (
         <div className={`grid ${gridColsClass} gap-3 mb-16`}>
           {displayPhotos.map((photo, i) => (
             <motion.div
@@ -273,7 +370,7 @@ const Fotos = () => {
       )}
 
       {/* Masonry View */}
-      {viewMode === "masonry" && (
+      {viewMode === "masonry" && displayPhotos.length > 0 && (
         <div className={`columns-1 ${gridCols >= 2 ? "sm:columns-2" : ""} ${gridCols >= 3 ? "lg:columns-3" : ""} ${gridCols >= 4 ? "xl:columns-4" : ""} gap-3 mb-16`}>
           {displayPhotos.map((photo, i) => (
             <motion.div
@@ -299,9 +396,8 @@ const Fotos = () => {
       )}
 
       {/* Slideshow View */}
-      {viewMode === "slideshow" && (
+      {viewMode === "slideshow" && displayPhotos.length > 0 && (
         <div className="mb-16">
-          {/* Main Slide */}
           <div
             className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-black mb-4 group"
             onMouseEnter={() => setShowControls(true)}
@@ -320,10 +416,8 @@ const Fotos = () => {
               />
             </AnimatePresence>
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
 
-            {/* Nav arrows */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: showControls ? 1 : 0 }}
@@ -343,25 +437,19 @@ const Fotos = () => {
               </button>
             </motion.div>
 
-            {/* Bottom controls */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: showControls ? 1 : 0, y: showControls ? 0 : 10 }}
               className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-3"
             >
-              {/* Title + counter */}
               <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-white font-bold text-lg drop-shadow-lg">
-                    {displayPhotos[slideshowIndex].alt}
-                  </p>
-                </div>
+                <p className="text-white font-bold text-lg drop-shadow-lg">
+                  {displayPhotos[slideshowIndex].alt}
+                </p>
                 <Badge variant="secondary" className="bg-black/40 backdrop-blur text-white border-none">
                   {slideshowIndex + 1} / {displayPhotos.length}
                 </Badge>
               </div>
-
-              {/* Progress bar */}
               <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
@@ -378,7 +466,6 @@ const Fotos = () => {
               </div>
             </motion.div>
 
-            {/* Fullscreen button */}
             <motion.button
               initial={{ opacity: 0 }}
               animate={{ opacity: showControls ? 1 : 0 }}
@@ -389,7 +476,6 @@ const Fotos = () => {
             </motion.button>
           </div>
 
-          {/* Slideshow Controls Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-4 bg-muted rounded-xl p-4">
             <div className="flex items-center gap-2">
               <Button
@@ -416,7 +502,6 @@ const Fotos = () => {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
-
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <SlidersHorizontal className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-xs text-muted-foreground whitespace-nowrap">{(speed / 1000).toFixed(1)}s</span>
@@ -431,7 +516,6 @@ const Fotos = () => {
             </div>
           </div>
 
-          {/* Thumbnail strip */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin">
             {displayPhotos.map((photo, i) => (
               <button
@@ -446,48 +530,67 @@ const Fotos = () => {
         </div>
       )}
 
+      {/* No photos message */}
+      {displayPhotos.length === 0 && selectedAlbumId && (
+        <div className="text-center py-16 text-muted-foreground mb-16">
+          <Image className="w-12 h-12 mx-auto mb-4 opacity-40" />
+          <p className="text-lg font-medium">Keine Fotos in diesem Album</p>
+        </div>
+      )}
+
       {/* Videos */}
-      <h2
-        className="text-xl sm:text-2xl font-black uppercase tracking-wider mb-6"
-        style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
-      >
-        Videos
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {videos.map((video) => (
-          <div key={video.id} className="overflow-hidden rounded-xl aspect-video relative">
-            {playingVideo === video.id ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${video.id}?autoplay=1`}
-                title={video.title}
-                className="w-full h-full"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-            ) : (
-              <div
-                className="relative w-full h-full cursor-pointer group"
-                onClick={() => setPlayingVideo(video.id)}
-              >
-                <img
-                  src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all">
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center"
-                    style={{ background: "hsl(330 80% 55%)" }}
-                  >
-                    <Play className="w-6 h-6 ml-0.5" style={{ color: "hsl(0 0% 100%)" }} />
-                  </div>
+      {videos.length > 0 && (
+        <>
+          <h2
+            className="text-xl sm:text-2xl font-black uppercase tracking-wider mb-6"
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
+          >
+            Videos
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {videos.map((video: any) => {
+              const ytId = video.isYoutube ? (video.id || getYoutubeId(video.url)) : null;
+              return (
+                <div key={video.id || video.url} className="overflow-hidden rounded-xl aspect-video relative">
+                  {ytId && playingVideo === ytId ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                      title={video.title}
+                      className="w-full h-full"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                    />
+                  ) : ytId ? (
+                    <div
+                      className="relative w-full h-full cursor-pointer group"
+                      onClick={() => setPlayingVideo(ytId)}
+                    >
+                      <img
+                        src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all">
+                        <div
+                          className="w-14 h-14 rounded-full flex items-center justify-center"
+                          style={{ background: "hsl(330 80% 55%)" }}
+                        >
+                          <Play className="w-6 h-6 ml-0.5" style={{ color: "hsl(0 0% 100%)" }} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <a href={video.url} target="_blank" rel="noopener noreferrer" className="w-full h-full flex items-center justify-center bg-muted">
+                      <Video className="w-10 h-10 text-muted-foreground" />
+                    </a>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </PageLayout>
   );
 };
