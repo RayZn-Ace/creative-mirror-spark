@@ -134,7 +134,7 @@ const s = {
   } as React.CSSProperties,
   muted: { color: "hsl(0 0% 100% / 0.4)", fontSize: 13 },
   white: { color: "hsl(0 0% 100%)" },
-  accent: { color: "hsl(230 80% 56%)" },
+  accent: { color: "hsl(270 70% 55%)" },
 };
 
 export default function CsvImportAdmin() {
