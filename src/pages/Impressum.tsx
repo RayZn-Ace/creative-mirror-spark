@@ -8,7 +8,7 @@ const Impressum = () => (
     <div className="space-y-6">
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Angaben gemäß § 5 TMG</h2>
-        <p>Swaye Event & Gastro UG (haftungsbeschränkt)<br />Joshua Eiffinger<br />Holzhofstraße 1<br />55116 Mainz</p>
+        <p>Swaye Event & Gastro UG (haftungsbeschränkt)<br />Joshua Eiffinger<br /><p>Swaye Event & Gastro UG (haftungsbeschränkt)<br />Joshua Eiffinger<br />Holzhofstraße 17<br />55116 Mainz</p><br />55116 Mainz</p>
       </div>
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Vertreten durch</h2>
