@@ -58,15 +58,31 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
   const [nextEvent, setNextEvent] = useState<{
     title: string; subtitle: string | null; city: string | null; date: string;
     time: string | null; location_name: string | null; slug: string; image_url: string | null;
+    highlight?: boolean;
   } | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const [isHighlight, setIsHighlight] = useState(false);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
-    supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url")
-      .eq("status", "published").gte("date", today)
+    // First try to find a highlight event
+    supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight")
+      .eq("status", "published").eq("highlight", true).gte("date", today)
       .order("date", { ascending: true }).limit(1)
-      .then(({ data }) => { if (data?.[0]) setNextEvent(data[0]); });
+      .then(({ data }) => {
+        if (data?.[0]) {
+          setNextEvent(data[0]);
+          setIsHighlight(true);
+        } else {
+          // Fallback: next upcoming event
+          supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight")
+            .eq("status", "published").gte("date", today)
+            .order("date", { ascending: true }).limit(1)
+            .then(({ data: fallback }) => {
+              if (fallback?.[0]) setNextEvent(fallback[0]);
+            });
+        }
+      });
   }, []);
 
   useEffect(() => {
