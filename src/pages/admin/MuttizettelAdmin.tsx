@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Search, Trash2, RefreshCw } from "lucide-react";
+import { FileText, Search, Trash2, RefreshCw, Radio, CalendarClock, History } from "lucide-react";
 import { toast } from "sonner";
 
 interface MuttizettelEntry {
@@ -18,10 +18,19 @@ interface MuttizettelEntry {
   has_supervisor_signature: boolean;
 }
 
+type TabKey = "live" | "upcoming" | "past";
+
+const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
+  { key: "live", label: "Live Events", icon: <Radio className="w-4 h-4" /> },
+  { key: "upcoming", label: "Zukünftige Events", icon: <CalendarClock className="w-4 h-4" /> },
+  { key: "past", label: "Vergangene Events", icon: <History className="w-4 h-4" /> },
+];
+
 const MuttizettelAdmin = () => {
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState<MuttizettelEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabKey>("live");
 
   const fetchEntries = async () => {
     setLoading(true);
@@ -44,10 +53,49 @@ const MuttizettelAdmin = () => {
     toast.success("Gelöscht");
   };
 
-  const filtered = entries.filter((e) => {
+  const categorized = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+
+    const live: MuttizettelEntry[] = [];
+    const upcoming: MuttizettelEntry[] = [];
+    const past: MuttizettelEntry[] = [];
+
+    for (const entry of entries) {
+      if (!entry.event_date) {
+        // No event date → treat as past
+        past.push(entry);
+        continue;
+      }
+      const eventDateStr = entry.event_date.split("T")[0];
+      if (eventDateStr === todayStr) {
+        live.push(entry);
+      } else if (eventDateStr > todayStr) {
+        upcoming.push(entry);
+      } else {
+        past.push(entry);
+      }
+    }
+
+    return { live, upcoming, past };
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    const list = categorized[activeTab];
     const q = search.toLowerCase();
-    return !q || e.minor_name?.toLowerCase().includes(q) || e.parent_name?.toLowerCase().includes(q) || e.event_title?.toLowerCase().includes(q);
-  });
+    if (!q) return list;
+    return list.filter((e) =>
+      e.minor_name?.toLowerCase().includes(q) ||
+      e.parent_name?.toLowerCase().includes(q) ||
+      e.event_title?.toLowerCase().includes(q)
+    );
+  }, [categorized, activeTab, search]);
+
+  const tabCounts = useMemo(() => ({
+    live: categorized.live.length,
+    upcoming: categorized.upcoming.length,
+    past: categorized.past.length,
+  }), [categorized]);
 
   return (
     <div className="space-y-6">
@@ -66,6 +114,31 @@ const MuttizettelAdmin = () => {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
+            style={{
+              background: activeTab === tab.key ? "hsl(230 80% 56% / 0.15)" : "hsl(220 30% 12%)",
+              border: `1px solid ${activeTab === tab.key ? "hsl(230 80% 56% / 0.4)" : "hsl(220 20% 22%)"}`,
+              color: activeTab === tab.key ? "hsl(230 80% 65%)" : "hsl(0 0% 100% / 0.5)",
+            }}
+          >
+            {tab.icon}
+            {tab.label}
+            <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs" style={{
+              background: activeTab === tab.key ? "hsl(230 80% 56% / 0.2)" : "hsl(220 20% 18%)",
+              color: activeTab === tab.key ? "hsl(230 80% 70%)" : "hsl(0 0% 100% / 0.4)",
+            }}>
+              {tabCounts[tab.key]}
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
         <input type="text" placeholder="Name oder Event suchen..." value={search} onChange={(e) => setSearch(e.target.value)}
@@ -77,16 +150,16 @@ const MuttizettelAdmin = () => {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid hsl(220 20% 18%)" }}>
-                {["Datum", "Kind", "Geb.", "Elternteil", "Telefon", "Event", "Aufsichtsperson", "Unterschriften", ""].map((h) => (
+                {["Datum", "Kind", "Geb.", "Elternteil", "Telefon", "Event", "Event-Datum", "Aufsichtsperson", "Unterschriften", ""].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</td></tr>
+                <tr><td colSpan={10} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Clubzettel gefunden.</td></tr>
+                <tr><td colSpan={10} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Clubzettel gefunden.</td></tr>
               ) : (
                 filtered.map((entry) => (
                   <tr key={entry.id} style={{ borderBottom: "1px solid hsl(220 20% 15%)" }} className="hover:bg-[hsl(220_30%_12%)] transition-colors">
@@ -96,6 +169,9 @@ const MuttizettelAdmin = () => {
                     <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_name}</td>
                     <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_phone}</td>
                     <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.event_title || "–"}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                      {entry.event_date ? new Date(entry.event_date).toLocaleDateString("de-DE") : "–"}
+                    </td>
                     <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.supervisor_name || "–"}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
