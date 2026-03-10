@@ -1016,7 +1016,10 @@ const CustomersAdmin = () => {
                                         </td>
                                         <td className="px-3 py-2 text-center">
                                           {order.status === "paid" && (
-                                            <ResendTicketsButton orderId={order.id} />
+                                            <div className="flex items-center gap-1.5 justify-center">
+                                              <ResendTicketsButton orderId={order.id} />
+                                              <DownloadTicketsButton orderId={order.id} />
+                                            </div>
                                           )}
                                         </td>
                                       </tr>
