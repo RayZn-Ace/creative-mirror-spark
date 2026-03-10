@@ -412,7 +412,16 @@ const TicketTemplateAdmin = () => {
         supabase.from("events").select("id, image_url, title, series_id").eq("status", "published"),
       ]);
 
-      if (tplRes.data?.value) setTpl({ ...defaultTemplate, ...(tplRes.data.value as any), gradient: { ...defaultGradient, ...((tplRes.data.value as any).gradient || {}) }, content_blocks: (tplRes.data.value as any).content_blocks || [] });
+      if (tplRes.data?.value) {
+        const raw = tplRes.data.value as any;
+        setTpl({
+          ...defaultTemplate,
+          ...raw,
+          gradient: { ...defaultGradient, ...(raw.gradient || {}) },
+          content_blocks: raw.content_blocks || [],
+          category_designs: raw.category_designs || [...DEFAULT_CATEGORY_DESIGNS],
+        });
+      }
 
       if (catRes.data) {
         // Only show categories from published events
