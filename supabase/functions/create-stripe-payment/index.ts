@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const redirectUrl = `${redirectBase || "https://gimmegimmeparty.de"}/bestellung/${order.id}`;
+    const redirectUrl = `${redirectBase || "https://nightlifeticket.app"}/bestellung/${order.id}`;
     const webhookUrl = `${SUPABASE_URL}/functions/v1/stripe-webhook`;
 
     // Build line items for Stripe Checkout

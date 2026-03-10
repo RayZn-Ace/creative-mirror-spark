@@ -146,9 +146,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Gimme Gimme Party <onboarding@gimmegimmeparty.com>",
+        from: "Nightlife Generation <onboarding@nightlifeticket.app>",
         to: [email],
-        subject: "Du wurdest eingeladen – Gimme Gimme Party Admin 🎉",
+        subject: "Du wurdest eingeladen – Nightlife Generation Admin 🎉",
         html: htmlContent,
       }),
     });

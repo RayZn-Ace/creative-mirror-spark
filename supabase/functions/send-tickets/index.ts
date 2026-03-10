@@ -899,9 +899,9 @@ Deno.serve(async (req) => {
     });
 
     // ─── Determine sender ───
-    const senderName = emailSettings.sender_name || "GIMME GIMME";
-    const senderEmail = "ticket@gimmegimmeparty.com";
-    const replyTo = emailSettings.reply_to || "ticket@gimmegimmeparty.com";
+    const senderName = emailSettings.sender_name || "Nightlife Generation";
+    const senderEmail = "ticket@nightlifeticket.app";
+    const replyTo = emailSettings.reply_to || "ticket@nightlifeticket.app";
 
     // ─── Send via Resend ───
     const resendRes = await fetch("https://api.resend.com/emails", {

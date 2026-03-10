@@ -848,8 +848,8 @@ const NewsletterAdmin = () => {
     createBlock("text"),
     createBlock("button"),
   ]);
-  const [fromName, setFromName] = useState("GIMME Events");
-  const [fromEmail, setFromEmail] = useState("newsletter@gimmegimmeparty.com");
+  const [fromName, setFromName] = useState("Nightlife Generation");
+  const [fromEmail, setFromEmail] = useState("newsletter@nightlifeticket.app");
 
   // Recipient filters
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");

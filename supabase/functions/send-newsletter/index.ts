@@ -571,7 +571,7 @@ Deno.serve(async (req) => {
     }
 
     const from = `${fromName || "Newsletter"} <${fromEmail || "onboarding@resend.dev"}>`;
-    const siteUrl = Deno.env.get("SITE_URL") || "https://gimmegimmeparty.com";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://nightlifeticket.app";
 
     let upcomingEvents: EventRow[] = [];
     let recipientCityMap: Map<string, string | null> = new Map();
