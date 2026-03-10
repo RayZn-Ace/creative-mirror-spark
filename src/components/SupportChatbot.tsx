@@ -288,8 +288,9 @@ export default function SupportChatbot() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{
-            background: "hsl(220 50% 12%)",
-            border: "1px solid hsl(0 0% 100% / 0.1)",
+            background: "hsl(270 30% 10%)",
+            border: "1px solid hsl(270 60% 40% / 0.2)",
+            boxShadow: "0 0 40px hsl(270 80% 50% / 0.1)",
           }}
         >
           {/* Header */}
