@@ -393,7 +393,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                   </select>
                   {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
                     <p className="text-[10px] px-1" style={{ color: "hsl(45 80% 55%)" }}>
-                      ⚠️ Diese Gruppe existiert nicht mehr in den Vorlagen. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(230 80% 56%)" }}>Vorlagen → Kategorie-Designs</a> prüfen.
+                      ⚠️ Diese Gruppe existiert nicht mehr in den Vorlagen. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(270 70% 55%)" }}>Vorlagen → Kategorie-Designs</a> prüfen.
                     </p>
                   )}
                 </div>
