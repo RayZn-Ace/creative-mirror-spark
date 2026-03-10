@@ -123,9 +123,10 @@ const Fotos = () => {
     [albumMedia]
   );
 
-  // Use DB data if album selected, else fallback
-  const photos = selectedAlbumId && dbPhotos.length > 0 ? dbPhotos : fallbackPhotos;
-  const videos = selectedAlbumId ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
+  // Use DB data if we have albums, else fallback
+  const hasDbData = albums.length > 0;
+  const photos = hasDbData && dbPhotos.length > 0 ? dbPhotos : (!hasDbData ? fallbackPhotos : []);
+  const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
 
