@@ -129,11 +129,13 @@ const Fotos = () => {
   const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   useEffect(() => {
     setDisplayPhotos(photos);
     setShuffled(false);
     setSlideshowIndex(0);
+    setVisibleCount(20);
   }, [selectedAlbumId, albumMedia]);
 
   // Shuffle
