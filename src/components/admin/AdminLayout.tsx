@@ -51,7 +51,7 @@ const AdminLayout = () => {
           <button
             onClick={signOut}
             className="text-sm underline"
-            style={{ color: "hsl(230 80% 56%)" }}
+            style={{ color: "hsl(270 70% 55%)" }}
           >
             Ausloggen
           </button>
