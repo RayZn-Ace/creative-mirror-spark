@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
         total_amount: grandTotalEur,
         currency: targetCurrency,
         service_fee: serviceFeeEur,
+        insurance_fee: insuranceFeeEur,
         status: "pending",
       })
       .select("id")
