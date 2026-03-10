@@ -300,7 +300,7 @@ export default function SupportChatbot() {
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
-              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Alfred"}</p>
+              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Sophia"}</p>
               <p className="text-xs text-white/70">
                 {mode === "live" ? "Verbunden mit Mitarbeiter" : "NIGHTLIFE Support"}
               </p>
