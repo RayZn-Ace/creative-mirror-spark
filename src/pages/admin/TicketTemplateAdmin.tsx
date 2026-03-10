@@ -489,7 +489,10 @@ const TicketTemplateAdmin = () => {
 
 
     const save = async () => {
-    const { error } = await supabase.from("settings").update({ value: tpl as any, updated_at: new Date().toISOString() }).eq("key", "ticket_template");
+    const { error } = await supabase.from("settings").upsert(
+      { key: "ticket_template", value: tpl as any, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
     setSaving(false);
     if (error) { toast.error("Fehler beim Speichern"); console.error(error); }
     else toast.success("Ticket-Vorlage gespeichert");
