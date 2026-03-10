@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle } from "lucide-react";
+import { Plus, Pencil, Save, X, Trash2, GripVertical, ChevronDown, ChevronUp, FileText, HelpCircle, Eye, ChevronRight, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -243,6 +243,88 @@ const FAQEditor = ({
   );
 };
 
+/* ── Sections Preview (Impressum, Datenschutz, AGB) ── */
+const SectionsPreview = ({ title, subtitle, sections }: { title: string; subtitle: string; sections: PageSection[] }) => (
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-black uppercase mb-2" style={{ color: "hsl(220 20% 15%)", letterSpacing: "-0.02em" }}>
+      {title || "Seitentitel"}
+    </h1>
+    {subtitle && (
+      <p className="text-xs font-semibold uppercase tracking-wider mb-8" style={{ color: "hsl(230 80% 50%)" }}>
+        {subtitle}
+      </p>
+    )}
+    <div className="space-y-5">
+      {sections.length === 0 && (
+        <p className="text-sm italic" style={{ color: "hsl(220 10% 60%)" }}>Noch keine Abschnitte hinzugefügt…</p>
+      )}
+      {sections.map((s, idx) => (
+        <div key={idx}>
+          <h2 className="text-base font-bold uppercase mb-1.5" style={{ color: "hsl(220 20% 15%)" }}>{s.title || "Überschrift"}</h2>
+          {(s.body || "").split("\n").map((line, i) => (
+            <p key={i} className="text-sm leading-relaxed" style={{ color: "hsl(220 10% 40%)" }}>{line || "\u00A0"}</p>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+/* ── FAQ Preview ── */
+const FAQPreviewItem = ({ q, a }: { q: string; a: string }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: "1px solid hsl(220 15% 90%)" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-4 text-left transition-colors"
+        style={{ background: open ? "hsl(220 20% 97%)" : "transparent" }}
+      >
+        <span className="text-sm font-semibold pr-4" style={{ color: "hsl(220 20% 20%)" }}>{q || "Frage?"}</span>
+        <ChevronDown className="w-4 h-4 shrink-0 transition-transform" style={{ color: "hsl(220 10% 50%)", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+      </button>
+      {open && (
+        <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: "hsl(220 10% 40%)" }}>{a || "Antwort…"}</p>
+      )}
+    </div>
+  );
+};
+
+const FAQPreview = ({ subtitle, categories }: { subtitle: string; categories: FAQCategory[] }) => (
+  <div>
+    <div className="text-center mb-8">
+      <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4" style={{ background: "hsl(230 80% 56% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.15)" }}>
+        <HelpCircle className="w-6 h-6" style={{ color: "hsl(230 80% 50%)" }} />
+      </div>
+      <h1 className="text-2xl font-black uppercase mb-2" style={{ color: "hsl(220 20% 15%)", letterSpacing: "-0.02em" }}>
+        Häufige Fragen
+      </h1>
+      <p className="text-sm" style={{ color: "hsl(220 10% 50%)" }}>{subtitle || "Alles was du wissen musst"}</p>
+    </div>
+    <div className="space-y-5">
+      {categories.length === 0 && (
+        <p className="text-sm italic text-center" style={{ color: "hsl(220 10% 60%)" }}>Noch keine Kategorien hinzugefügt…</p>
+      )}
+      {categories.map((cat, idx) => (
+        <div key={idx}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">{cat.emoji}</span>
+            <h2 className="text-xs font-black uppercase tracking-[0.15em]" style={{ color: "hsl(230 80% 50%)" }}>{cat.title || "Kategorie"}</h2>
+          </div>
+          <div className="rounded-xl overflow-hidden" style={{ background: "hsl(0 0% 100%)", border: "1px solid hsl(220 15% 90%)", boxShadow: "0 1px 3px hsl(220 20% 80% / 0.2)" }}>
+            {cat.items.map((item, i) => (
+              <FAQPreviewItem key={i} q={item.q} a={item.a} />
+            ))}
+            {cat.items.length === 0 && (
+              <p className="p-4 text-sm italic" style={{ color: "hsl(220 10% 60%)" }}>Keine Fragen</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 /* ── Preset pages ── */
 const PRESET_PAGES = [
   { key: "faq", title: "FAQ", type: "faq" as PageType, icon: HelpCircle },
@@ -411,7 +493,7 @@ const PagesAdmin = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+      {/* Edit Full-Screen Side-by-Side */}
       <AnimatePresence>
         {editing && (
           <>
@@ -423,13 +505,14 @@ const PagesAdmin = () => {
               onClick={() => setEditing(null)}
             />
             <motion.div
-              className="fixed inset-2 sm:inset-y-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl z-50 rounded-2xl overflow-y-auto"
+              className="fixed inset-2 sm:inset-4 z-50 rounded-2xl overflow-hidden flex flex-col lg:flex-row"
               style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
             >
-              <div className="p-6 space-y-5">
+              {/* ── Left: Editor ── */}
+              <div className="flex-1 min-w-0 overflow-y-auto p-6 space-y-5 lg:max-w-[50%]">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>
                     {editing.title || editing.page_key} bearbeiten
@@ -483,7 +566,7 @@ const PagesAdmin = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2 sticky bottom-0 pb-2">
+                <div className="flex gap-3 pt-2 sticky bottom-0 pb-2" style={{ background: "hsl(220 50% 10%)" }}>
                   <button
                     onClick={() => setEditing(null)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-bold"
@@ -498,6 +581,28 @@ const PagesAdmin = () => {
                   >
                     <Save className="w-4 h-4" /> Speichern
                   </button>
+                </div>
+              </div>
+
+              {/* ── Right: Live Preview ── */}
+              <div
+                className="hidden lg:flex flex-col flex-1 min-w-0 border-l"
+                style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}
+              >
+                <div className="flex items-center gap-2 px-4 py-3" style={{ background: "hsl(0 0% 100% / 0.03)", borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <Eye className="w-4 h-4" style={{ color: "hsl(230 80% 65%)" }} />
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                    Live-Vorschau
+                  </span>
+                </div>
+                <div className="flex-1 overflow-y-auto bg-white rounded-br-2xl">
+                  <div className="p-6 sm:p-10 max-w-3xl mx-auto">
+                    {pageType === "faq" ? (
+                      <FAQPreview subtitle={subtitle} categories={categories} />
+                    ) : (
+                      <SectionsPreview title={editing.title || ""} subtitle={subtitle} sections={sections} />
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
