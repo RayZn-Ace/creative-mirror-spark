@@ -290,7 +290,7 @@ async function generateTicketPDF(tickets: Array<{
           }
           for (const item of (block.items || [])) {
             if (!item || y < m + 10) break;
-            page.drawText(`• ${item}`, { x: m + 4, y, size: 7, font: fontRegular, color: txColor });
+            page.drawText(stripEmojis(`• ${item}`), { x: m + 4, y, size: 7, font: fontRegular, color: txColor });
             y -= 10;
           }
           y -= 4;
