@@ -195,6 +195,16 @@ const OrderConfirmation = () => {
               </div>
             )}
 
+            {order.insurance_fee > 0 && (
+              <div className="flex justify-between text-sm" style={{ color: "hsl(210 80% 70%)" }}>
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Ticketversicherung
+                </span>
+                <span>{order.insurance_fee.toFixed(2).replace(".", ",")} €</span>
+              </div>
+            )}
+
             <div className="h-px" style={{ background: "hsl(0 0% 100% / 0.15)" }} />
             <div className="flex justify-between font-bold" style={{ color: "hsl(0 0% 100%)" }}>
               <span>Gesamt</span>
