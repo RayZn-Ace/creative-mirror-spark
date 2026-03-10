@@ -288,8 +288,9 @@ export default function SupportChatbot() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{
-            background: "hsl(220 50% 12%)",
-            border: "1px solid hsl(0 0% 100% / 0.1)",
+            background: "hsl(270 30% 10%)",
+            border: "1px solid hsl(270 60% 40% / 0.2)",
+            boxShadow: "0 0 40px hsl(270 80% 50% / 0.1)",
           }}
         >
           {/* Header */}
@@ -320,7 +321,7 @@ export default function SupportChatbot() {
                   <div
                     className="max-w-[80%] px-3 py-2 rounded-xl text-sm whitespace-pre-line"
                     style={{
-                      background: m.from === "user" ? "hsl(217 91% 50%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(0 0% 100% / 0.08)",
+                      background: m.from === "user" ? "hsl(270 70% 45%)" : m.from === "admin" ? "hsl(142 70% 35% / 0.3)" : "hsl(270 30% 18%)",
                       color: "hsl(0 0% 100%)",
                       border: m.from === "admin" ? "1px solid hsl(142 70% 40% / 0.3)" : "none",
                     }}
