@@ -986,8 +986,6 @@ const NewsletterAdmin = () => {
       // Tag filter
       if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
 
-      // City filter for subscribers
-      if (cityFilter !== "all" && s.city !== cityFilter) return;
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
