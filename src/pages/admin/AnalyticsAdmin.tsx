@@ -12,14 +12,14 @@ import {
 } from "lucide-react";
 
 /* ─── Fetch all rows (handles >1000 limit) ─── */
-async function fetchAll<T = any>(table: string, columns: string): Promise<T[]> {
+async function fetchAllFrom(query: any): Promise<any[]> {
   const PAGE = 1000;
-  let all: T[] = [];
+  let all: any[] = [];
   let from = 0;
   while (true) {
-    const { data, error } = await supabase.from(table).select(columns).range(from, from + PAGE - 1);
+    const { data, error } = await query.range(from, from + PAGE - 1);
     if (error || !data || data.length === 0) break;
-    all = all.concat(data as T[]);
+    all = all.concat(data);
     if (data.length < PAGE) break;
     from += PAGE;
   }
