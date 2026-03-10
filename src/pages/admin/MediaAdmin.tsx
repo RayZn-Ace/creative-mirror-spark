@@ -46,6 +46,7 @@ const MediaAdmin = () => {
   const [newAlbum, setNewAlbum] = useState({ title: "", description: "", event_date: "", location: "" });
   const [newVideo, setNewVideo] = useState({ url: "", caption: "" });
   const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [mediaFilter, setMediaFilter] = useState<"all" | "photo" | "video">("all");
 
   // Fetch albums
@@ -240,6 +241,30 @@ const MediaAdmin = () => {
     },
   });
 
+  // Upload cover image directly
+  const handleCoverUpload = useCallback(async (file: File, albumId: string) => {
+    setUploadingCover(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${albumId}/cover-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("media-photos").upload(path, file);
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("media-photos").getPublicUrl(path);
+      const { error } = await supabase.from("media_albums").update({ cover_image_url: urlData.publicUrl }).eq("id", albumId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["admin-media-albums"] });
+      if (selectedAlbum && selectedAlbum.id === albumId) {
+        setSelectedAlbum({ ...selectedAlbum, cover_image_url: urlData.publicUrl });
+      }
+      toast.success("Titelbild gesetzt");
+    } catch (e) {
+      toast.error("Fehler beim Hochladen des Titelbilds");
+      console.error(e);
+    } finally {
+      setUploadingCover(false);
+    }
+  }, [queryClient, selectedAlbum]);
+
   // Delete media item
   const deleteMediaMutation = useMutation({
     mutationFn: async (item: MediaItem) => {
@@ -283,6 +308,18 @@ const MediaAdmin = () => {
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2">
+            {/* Cover image upload */}
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0], selectedAlbum.id)}
+              />
+              <Button asChild variant="outline" disabled={uploadingCover} size="sm">
+                <span><Star className="w-4 h-4 mr-1" />{uploadingCover ? "Lädt..." : "Titelbild ändern"}</span>
+              </Button>
+            </label>
             <label className="cursor-pointer">
               <input
                 type="file"
@@ -531,6 +568,17 @@ const MediaAdmin = () => {
                   </span>
                 </div>
                 <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0], album.id)}
+                    />
+                    <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+                      <span><Star className="w-3 h-3 mr-1" />Titelbild</span>
+                    </Button>
+                  </label>
                   <Button
                     variant="outline"
                     size="sm"
