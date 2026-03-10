@@ -45,7 +45,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
           <div>
             <h3 className="font-display text-lg text-foreground mb-4">Kontakt</h3>
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="mailto:info@nightlifegeneration.de" className="hover:text-primary transition-colors">info@nightlifegeneration.de</a>
+              <a href="mailto:support@swayeagency.de" className="hover:text-primary transition-colors">support@swayeagency.de</a>
             </div>
           </div>
 
