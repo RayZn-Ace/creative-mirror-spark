@@ -353,24 +353,24 @@ const PagesAdmin = () => {
     setLoading(false);
   };
 
-  const loadJamesSettings = async () => {
-    const { data } = await supabase.from("settings").select("value").eq("key", "james_butler").maybeSingle();
+  const loadAlfredSettings = async () => {
+    const { data } = await supabase.from("settings").select("value").eq("key", "alfred_butler").maybeSingle();
     if (data?.value) {
       const val = data.value as any;
-      setJamesEnabled(val.enabled ?? false);
-      setJamesSelfLearn(val.self_learn ?? false);
+      setAlfredEnabled(val.enabled ?? false);
+      setAlfredSelfLearn(val.self_learn ?? false);
     }
-    setJamesLoading(false);
+    setAlfredLoading(false);
   };
 
-  const saveJamesSettings = async (enabled: boolean, selfLearn: boolean) => {
+  const saveAlfredSettings = async (enabled: boolean, selfLearn: boolean) => {
     await supabase.from("settings").upsert(
-      { key: "james_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
+      { key: "alfred_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
       { onConflict: "key" }
     );
   };
 
-  useEffect(() => { load(); loadJamesSettings(); }, []);
+  useEffect(() => { load(); loadAlfredSettings(); }, []);
 
   const detectType = (content: Record<string, any>): PageType => {
     if (content?.categories && Array.isArray(content.categories)) return "faq";
