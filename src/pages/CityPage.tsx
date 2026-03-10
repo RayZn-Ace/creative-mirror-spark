@@ -100,8 +100,8 @@ const makeInfoSections = (event: CityEvent, t: Translations) => [
 ];
 
 /* ─── Instagram / WhatsApp config ─── */
-const instagramHandle = "@gimmegimmeparty";
-const instagramUrl = "https://instagram.com/gimmegimmeparty";
+const instagramHandle = "@nightlifegeneration_de";
+const instagramUrl = "https://instagram.com/nightlifegeneration_de";
 const whatsappNumber = "49123456789";
 
 /* ─── Cart Timer ─── */
