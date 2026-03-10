@@ -11,33 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import BulkEditDialog from "@/components/admin/BulkEditDialog";
 
-/* ─── City → Country mapping ─── */
-const CITY_COUNTRY: Record<string, string> = {
-  // Austria
-  Dornbirn: "Österreich", Gralla: "Österreich", Innsbruck: "Österreich", Kitzbühel: "Österreich",
-  Kollerschlag: "Österreich", Linz: "Österreich", Salzburg: "Österreich", "St. Martin": "Österreich",
-  Vöcklabruck: "Österreich", Wien: "Österreich",
-  // Switzerland
-  Lyss: "Schweiz", Olten: "Schweiz", "St. Gallen": "Schweiz", Winterthur: "Schweiz", Zürich: "Schweiz",
-  // Netherlands
-  Amsterdam: "Niederlande", Rotterdam: "Niederlande", Utrecht: "Niederlande",
-  // Belgium
-  Antwerpen: "Belgien",
-  // France
-  "Le Havre": "Frankreich", Mathay: "Frankreich", Paris: "Frankreich",
-  // Luxembourg
-  Luxembourg: "Luxemburg",
-  // Poland
-  Krakow: "Polen",
-  // Croatia
-  Zadar: "Kroatien",
-  // Brazil
-  "São Paulo": "Brasilien",
-};
-const getCountry = (city: string | null) => {
-  if (!city) return "Unbekannt";
-  return CITY_COUNTRY[city] || "Deutschland";
-};
 
 interface GalleryConfig {
   grid_cols?: number;
@@ -1872,51 +1845,30 @@ const EventsAdmin = () => {
   const filteredEvents = isSearching
     ? extraFiltered.filter((e) => {
         const q = search.toLowerCase();
-        const city = e.series_id ? seriesCityMap[e.series_id] : e.city;
-        const country = getCountry(city || null);
         return (
           e.title.toLowerCase().includes(q) ||
           (e.city || "").toLowerCase().includes(q) ||
           (e.tag || "").toLowerCase().includes(q) ||
           (e.slug || "").toLowerCase().includes(q) ||
-          country.toLowerCase().includes(q) ||
           (e.series_id && (seriesMap[e.series_id] || "").toLowerCase().includes(q))
         );
       })
     : extraFiltered;
 
-  // Build hierarchy: Country → City → Series → Events
+  // Build hierarchy: Series → Events (flat, no country/city grouping)
   interface HSeriesGroup { seriesId: string | null; seriesTitle: string; events: EventRow[] }
-  interface HCityGroup { city: string; seriesGroups: HSeriesGroup[] }
-  interface HCountryGroup { country: string; cityGroups: HCityGroup[] }
 
-  const countryAcc: Record<string, Record<string, Record<string, HSeriesGroup>>> = {};
+  const seriesAcc: Record<string, HSeriesGroup> = {};
 
   for (const event of filteredEvents) {
-    const city = event.series_id ? (seriesCityMap[event.series_id] || event.city || "Unbekannt") : (event.city || "Unbekannt");
-    const country = getCountry(city);
     const seriesKey = event.series_id || "__none__";
     const seriesTitle = event.series_id ? (seriesMap[event.series_id] || "Unbekannte Serie") : "Ohne Serie";
 
-    if (!countryAcc[country]) countryAcc[country] = {};
-    if (!countryAcc[country][city]) countryAcc[country][city] = {};
-    if (!countryAcc[country][city][seriesKey]) countryAcc[country][city][seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
-    countryAcc[country][city][seriesKey].events.push(event);
+    if (!seriesAcc[seriesKey]) seriesAcc[seriesKey] = { seriesId: event.series_id, seriesTitle, events: [] };
+    seriesAcc[seriesKey].events.push(event);
   }
 
-  const hierarchyData: HCountryGroup[] = Object.entries(countryAcc).map(([country, cities]) => ({
-    country,
-    cityGroups: Object.entries(cities).map(([city, seriesObj]) => ({
-      city,
-      seriesGroups: Object.values(seriesObj).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de")),
-    })).sort((a, b) => a.city.localeCompare(b.city, "de")),
-  }));
-
-  hierarchyData.sort((a, b) => {
-    if (a.country === "Deutschland") return -1;
-    if (b.country === "Deutschland") return 1;
-    return a.country.localeCompare(b.country, "de");
-  });
+  const seriesGroups: HSeriesGroup[] = Object.values(seriesAcc).sort((a, b) => a.seriesTitle.localeCompare(b.seriesTitle, "de"));
 
   // When searching, override collapse: everything is expanded
   const isCollapsed = (key: string) => isSearching ? false : collapsed[key] !== false;
@@ -2162,70 +2114,31 @@ const EventsAdmin = () => {
       ) : filteredEvents.length === 0 && isSearching ? (
         <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Events gefunden</p>
       ) : (
-        <div className="space-y-8">
-          {hierarchyData.map((countryGroup) => {
-            const countryKey = `country__${countryGroup.country}`;
-            const countryEventCount = countryGroup.cityGroups.reduce((sum, cg) => sum + cg.seriesGroups.reduce((s, sg) => s + sg.events.length, 0), 0);
+        <div className="space-y-6">
+          {seriesGroups.map((group) => {
+            const hasSeries = !!group.seriesId;
+            const skipSeriesLevel = seriesGroups.length === 1 && !group.seriesId;
+
+            if (skipSeriesLevel) {
+              return (
+                <div key="__none__" className="space-y-2">
+                  {group.events.map((event) => renderEventRow(event))}
+                </div>
+              );
+            }
+
+            const seriesCollapseKey = `series__${group.seriesId || "__none__"}`;
             return (
-              <div key={countryGroup.country}>
-                <button onClick={() => toggleCollapse(countryKey)} className="flex items-center gap-2 mb-4 w-full text-left">
-                  <Globe className="w-4 h-4" style={{ color: "hsl(200 70% 55%)" }} />
-                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{countryGroup.country} ({countryEventCount})</span>
-                  {isCollapsed(countryKey) ? <ChevronRight className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-4 h-4 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
+              <div key={group.seriesId || "none"}>
+                <button onClick={() => toggleCollapse(seriesCollapseKey)} className="flex items-center gap-2 mb-2 w-full text-left group">
+                  {hasSeries && <Layers className="w-3.5 h-3.5" style={{ color: "hsl(270 60% 55%)" }} />}
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{group.seriesTitle} ({group.events.length})</span>
+                  {isCollapsed(seriesCollapseKey) ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
                 </button>
                 <AnimatePresence initial={false}>
-                  {!isCollapsed(countryKey) && (
-                    <motion.div className="space-y-5 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(200 70% 55% / 0.2)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                      {countryGroup.cityGroups.map((cityGroup) => {
-                        const cityKey = `city__${countryGroup.country}__${cityGroup.city}`;
-                        const cityEventCount = cityGroup.seriesGroups.reduce((s, sg) => s + sg.events.length, 0);
-                        return (
-                          <div key={cityGroup.city}>
-                            <button onClick={() => toggleCollapse(cityKey)} className="flex items-center gap-2 mb-3 w-full text-left">
-                              <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} />
-                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{cityGroup.city} ({cityEventCount})</span>
-                              {isCollapsed(cityKey) ? <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3.5 h-3.5 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-                            </button>
-                            <AnimatePresence initial={false}>
-                              {!isCollapsed(cityKey) && (
-                                <motion.div className="space-y-3 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(230 80% 56% / 0.15)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                  {cityGroup.seriesGroups.map((group) => {
-                                    const hasSeries = !!group.seriesId;
-                                    // If only one series group in city and it's "Ohne Serie", skip series level
-                                    const skipSeriesLevel = cityGroup.seriesGroups.length === 1 && !group.seriesId;
-
-                                    if (skipSeriesLevel) {
-                                      return (
-                                        <div key="__none__" className="space-y-2">
-                                          {group.events.map((event) => renderEventRow(event))}
-                                        </div>
-                                      );
-                                    }
-
-                                    const seriesCollapseKey = `series__${cityGroup.city}__${group.seriesId || "__none__"}`;
-                                    return (
-                                      <div key={group.seriesId || "none"}>
-                                        <button onClick={() => toggleCollapse(seriesCollapseKey)} className="flex items-center gap-2 mb-2 w-full text-left group">
-                                          {hasSeries && <Layers className="w-3.5 h-3.5" style={{ color: "hsl(270 60% 55%)" }} />}
-                                          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{group.seriesTitle} ({group.events.length})</span>
-                                          {isCollapsed(seriesCollapseKey) ? <ChevronRight className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} /> : <ChevronDown className="w-3 h-3 ml-auto" style={{ color: "hsl(0 0% 100% / 0.3)" }} />}
-                                        </button>
-                                        <AnimatePresence initial={false}>
-                                          {!isCollapsed(seriesCollapseKey) && (
-                                            <motion.div className="space-y-2 overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                                              {group.events.map((event) => renderEventRow(event))}
-                                            </motion.div>
-                                          )}
-                                        </AnimatePresence>
-                                      </div>
-                                    );
-                                  })}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      })}
+                  {!isCollapsed(seriesCollapseKey) && (
+                    <motion.div className="space-y-2 pl-4 overflow-hidden" style={{ borderLeft: "2px solid hsl(270 60% 55% / 0.15)" }} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      {group.events.map((event) => renderEventRow(event))}
                     </motion.div>
                   )}
                 </AnimatePresence>

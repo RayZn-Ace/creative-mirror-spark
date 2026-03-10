@@ -10,7 +10,7 @@ import {
   Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List,
 } from "lucide-react";
 import { toast } from "sonner";
-import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
+
 
 // ─── Block Types ───────────────────────────────────────────────
 type BlockType = "heading" | "text" | "image" | "button" | "divider" | "spacer" | "event-highlight" | "event-list" | "voucher" | "timer";
@@ -853,7 +853,7 @@ const NewsletterAdmin = () => {
 
   // Recipient filters
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("paid");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [ageFilter, setAgeFilter] = useState<AgeFilter>({ min: null, max: null });
@@ -966,11 +966,6 @@ const NewsletterAdmin = () => {
       if (orderFilter === "cancelled" && o.status !== "cancelled") return;
       if (orderFilter === "unpaid" && o.status === "paid") return;
 
-      // City filter
-      if (cityFilter !== "all") {
-        const eventCity = o.event_id ? eventMap.get(o.event_id)?.city : null;
-        if (eventCity !== cityFilter) return;
-      }
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
@@ -991,8 +986,6 @@ const NewsletterAdmin = () => {
       // Tag filter
       if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
 
-      // City filter for subscribers
-      if (cityFilter !== "all" && s.city !== cityFilter) return;
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
@@ -1014,7 +1007,7 @@ const NewsletterAdmin = () => {
     }
 
     return result;
-  }, [orders, subscribers, orderFilter, cityFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds]);
+  }, [orders, subscribers, orderFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds]);
 
   // Add subscriber
   const addSubscriber = async () => {
@@ -1555,11 +1548,6 @@ ${bodyContent}
                             </div>
                           </div>
 
-                          {/* City Filter */}
-                          <div>
-                            <label className={labelCls} style={labelStyle}>Stadt</label>
-                            <CitySearchFilter cities={allCities} value={cityFilter} onChange={setCityFilter} compact />
-                          </div>
 
                           {/* Age Filter */}
                           <div>

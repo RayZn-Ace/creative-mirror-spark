@@ -19,7 +19,7 @@ export type WidgetType =
   | "sales_chart"
   | "event_calendar"
   | "scanner_activity"
-  | "city_breakdown"
+  
   | "avg_order_value"
   | "payment_status"
   | "peak_hours"
@@ -30,7 +30,7 @@ export type WidgetType =
   | "welcome_greeting"
   | "capacity_overview"
   | "revenue_by_event"
-  | "geo_heatmap";
+  | "revenue_by_event";
 
 export const WIDGET_META: Record<WidgetType, { label: string; description: string; icon: string; defaultW: number; defaultH: number }> = {
   stats: { label: "Statistiken", description: "Übersicht über Serien, Events, Tickets & Seiten", icon: "BarChart3", defaultW: 4, defaultH: 4 },
@@ -46,7 +46,7 @@ export const WIDGET_META: Record<WidgetType, { label: string; description: strin
   sales_chart: { label: "Verkaufs-Chart", description: "Ticket-Verkäufe der letzten 7 Tage als Diagramm", icon: "LineChart", defaultW: 4, defaultH: 5 },
   event_calendar: { label: "Event-Kalender", description: "Monatsübersicht aller geplanten Events", icon: "Calendar", defaultW: 2, defaultH: 5 },
   scanner_activity: { label: "Scanner-Aktivität", description: "Aktive Scanner-Links und deren Status", icon: "QrCode", defaultW: 2, defaultH: 4 },
-  city_breakdown: { label: "Städte-Verteilung", description: "Ticketverkäufe aufgeteilt nach Stadt", icon: "MapPin", defaultW: 2, defaultH: 5 },
+  
   avg_order_value: { label: "Ø Bestellwert", description: "Durchschnittlicher Warenkorbwert über Zeit", icon: "Receipt", defaultW: 2, defaultH: 4 },
   payment_status: { label: "Zahlungsstatus", description: "Verteilung der Bestellungen nach Status (bezahlt, ausstehend, abgelaufen)", icon: "CreditCard", defaultW: 2, defaultH: 4 },
   peak_hours: { label: "Peak-Zeiten", description: "Zu welchen Uhrzeiten werden die meisten Tickets gekauft?", icon: "Clock", defaultW: 2, defaultH: 5 },
@@ -57,7 +57,7 @@ export const WIDGET_META: Record<WidgetType, { label: string; description: strin
   welcome_greeting: { label: "Begrüßung", description: "Personalisierte Begrüßung mit Uhrzeit und Datum", icon: "Sparkles", defaultW: 2, defaultH: 3 },
   capacity_overview: { label: "Kapazitäts-Check", description: "Wie viele Tickets sind pro Event noch verfügbar", icon: "Gauge", defaultW: 2, defaultH: 5 },
   revenue_by_event: { label: "Umsatz pro Event", description: "Umsatz-Ranking der Events", icon: "PiggyBank", defaultW: 2, defaultH: 5 },
-  geo_heatmap: { label: "Geo-Heatmap", description: "Interaktive Heatmap der Umsätze nach Stadt", icon: "MapPin", defaultW: 4, defaultH: 6 },
+  
 };
 
 export const DEFAULT_LAYOUT: DashboardWidget[] = [

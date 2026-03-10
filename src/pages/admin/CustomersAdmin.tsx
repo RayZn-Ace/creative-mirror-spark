@@ -6,7 +6,6 @@ import {
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
   Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check, Send, Loader2,
 } from "lucide-react";
-import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
 import { toast } from "sonner";
 
 type Order = {
@@ -200,7 +199,7 @@ const CustomersAdmin = () => {
   const [sortField, setSortField] = useState<SortField>("lastOrder");
   const [sortAsc, setSortAsc] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importPreview, setImportPreview] = useState<{ headers: string[]; rows: string[][] } | null>(null);
@@ -314,9 +313,6 @@ const CustomersAdmin = () => {
         c.orders.some((o) => o.status === statusFilter)
       );
     }
-    if (cityFilter !== "all") {
-      result = result.filter((c) => getCustomerCitiesSet(c).has(cityFilter));
-    }
     result.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
@@ -328,7 +324,7 @@ const CustomersAdmin = () => {
       return sortAsc ? cmp : -cmp;
     });
     return result;
-  }, [customers, search, sortField, sortAsc, statusFilter, cityFilter, eventMap, ticketsByOrderId]);
+  }, [customers, search, sortField, sortAsc, statusFilter, eventMap, ticketsByOrderId]);
 
   const getEventTitle = (eventId: string | null) => {
     if (!eventId) return "–";
@@ -387,10 +383,6 @@ const CustomersAdmin = () => {
     const rows = orders.filter(o => {
       const d = new Date(o.created_at);
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
-      if (cityFilter !== "all") {
-        const city = o.event_id ? eventMap.get(o.event_id)?.city : null;
-        if (city !== cityFilter) return false;
-      }
       return true;
     }).map(o => {
       const ev = o.event_id ? eventMap.get(o.event_id) : null;
@@ -824,13 +816,6 @@ const CustomersAdmin = () => {
           <option value="pending" style={{ background: "hsl(220 50% 10%)" }}>Nur ausstehend</option>
           <option value="failed" style={{ background: "hsl(220 50% 10%)" }}>Nur fehlgeschlagen</option>
         </select>
-        {allCities.length > 0 && (
-          <CitySearchFilter
-            cities={allCities}
-            value={cityFilter}
-            onChange={setCityFilter}
-          />
-        )}
       </div>
 
       {/* Sort buttons */}
