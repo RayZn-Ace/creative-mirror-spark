@@ -22,7 +22,7 @@ export default function SupportChatbot() {
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
-    { from: "bot", text: "Hey! 👋 Ich bin Alfred, dein Ansprechpartner für alles rund um NIGHTLIFE GENERATION. Was kann ich für dich tun?" },
+    { from: "bot", text: "Hey! 👋 Ich bin Sophia, deine Ansprechpartnerin für alles rund um NIGHTLIFE GENERATION. Was kann ich für dich tun?" },
   ]);
   const [aiHistory, setAiHistory] = useState<AIMessage[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
@@ -300,7 +300,7 @@ export default function SupportChatbot() {
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
-              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Alfred"}</p>
+              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Sophia"}</p>
               <p className="text-xs text-white/70">
                 {mode === "live" ? "Verbunden mit Mitarbeiter" : "NIGHTLIFE Support"}
               </p>
@@ -337,7 +337,7 @@ export default function SupportChatbot() {
               <div className="flex justify-start">
                 <div className="px-3 py-2 rounded-xl text-sm flex items-center gap-2" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.5)" }}>
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  Alfred tippt...
+                  Sophia tippt...
                 </div>
               </div>
             )}
@@ -398,7 +398,7 @@ export default function SupportChatbot() {
             style={{ background: "hsl(270 80% 20%)", border: "1px solid hsl(270 80% 56% / 0.3)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
-              Fragen? Alfred hilft! 🎩
+              Fragen? Sophia hilft! 💬
             </p>
           </motion.div>
           <button
@@ -408,10 +408,10 @@ export default function SupportChatbot() {
               background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
               boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
             }}
-            aria-label="Alfred Support Chat öffnen"
+            aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
-            <span className="relative z-10 text-2xl" role="img" aria-label="Butler">🤵</span>
+            <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
           </button>
         </div>
       )}
