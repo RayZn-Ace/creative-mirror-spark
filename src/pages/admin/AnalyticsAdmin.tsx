@@ -11,6 +11,21 @@ import {
   Percent, Repeat, UserCheck, Globe, Zap, ArrowRight,
 } from "lucide-react";
 
+/* ─── Fetch all rows (handles >1000 limit) ─── */
+async function fetchAll<T = any>(table: string, columns: string): Promise<T[]> {
+  const PAGE = 1000;
+  let all: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase.from(table).select(columns).range(from, from + PAGE - 1);
+    if (error || !data || data.length === 0) break;
+    all = all.concat(data as T[]);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
 
 /* ─── Helpers ─── */
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
