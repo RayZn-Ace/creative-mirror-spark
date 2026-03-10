@@ -267,7 +267,7 @@ export default function Termine() {
               highlight: e.highlight || false,
             })),
             imageUrl: s.image_url || firstEvent?.image_url || null,
-            category: deriveCategory(firstEvent?.title || s.slug),
+            category: firstEvent?.tag || s.title || "Sonstige",
             hasHighlight: evts.some((e) => e.highlight),
           });
         });
