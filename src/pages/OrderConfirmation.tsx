@@ -14,6 +14,7 @@ interface OrderData {
   total_amount: number;
   currency: string;
   service_fee: number;
+  insurance_fee: number;
   created_at: string;
   paid_at: string | null;
 }
