@@ -1,7 +1,7 @@
 import { PageLayout } from "@/components/PageLayout";
 import { usePageContent } from "@/hooks/usePageContent";
 
-const headingStyle = { color: "hsl(220 20% 15%)", fontFamily: "'Orbitron', sans-serif" };
+const headingClass = "text-foreground font-display";
 
 const fallbackSections = [
   { title: "Angaben gemäß § 5 TMG", body: "Swaye Event & Gastro UG (haftungsbeschränkt)\nJoshua Eiffinger\nHolzhofstraße 17\n55116 Mainz" },
@@ -27,7 +27,7 @@ const Impressum = () => {
         ) : (
           sections.map((section, idx) => (
             <div key={idx}>
-              <h2 className="text-lg font-bold uppercase mb-2" style={headingStyle}>
+              <h2 className={`text-lg font-bold uppercase mb-2 ${headingClass}`}>
                 {section.title}
               </h2>
               {section.body.split("\n").map((line, lineIdx) => (
