@@ -419,9 +419,23 @@ const Fotos = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <span className="text-white text-sm font-medium">{photo.alt}</span>
               </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+          {visibleCount < displayPhotos.length && (
+            <div className="flex justify-center mt-6 mb-16">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="gap-2"
+              >
+                Mehr anzeigen ({displayPhotos.length - visibleCount} weitere)
+              </Button>
+            </div>
+          )}
+          {visibleCount >= displayPhotos.length && <div className="mb-16" />}
+        </>
       )}
 
       {/* Slideshow View */}
