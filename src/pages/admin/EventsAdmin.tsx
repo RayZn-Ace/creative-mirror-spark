@@ -433,6 +433,14 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             </div>
           </div>
           {/* Features */}
+          {(() => {
+            const addFeature = () => {
+              if (featuresInput.trim()) {
+                setEditingTicket({ ...editingTicket, features: [...(editingTicket.features || []), featuresInput.trim()] });
+                setFeaturesInput("");
+              }
+            };
+            return (
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Features</label>
             <div className="flex flex-wrap gap-1 mb-2">
