@@ -188,7 +188,28 @@ const Muttizettel = () => {
     } as any).select("id").single();
 
     if (error) { toast.error("Fehler beim Speichern: " + error.message); }
-    else if (data) { setSubmittedFormId(data.id); toast.success("Clubzettel wurde erfolgreich erstellt! 🎉"); }
+    else if (data) {
+      setSubmittedFormId(data.id);
+      toast.success("Clubzettel wurde erfolgreich erstellt! 🎉");
+
+      // Send email with PDF in background
+      try {
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const emailRes = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/send-u18-email`,
+          { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: data.id }) }
+        );
+        if (emailRes.ok) {
+          toast.success("Clubzettel wurde per E-Mail versendet! 📧");
+        } else {
+          console.error("Email send failed:", await emailRes.text());
+          toast.error("E-Mail-Versand fehlgeschlagen. Du kannst den PDF trotzdem herunterladen.");
+        }
+      } catch (emailErr) {
+        console.error("Email send error:", emailErr);
+      }
+    }
     setSubmitting(false);
   };
 
