@@ -12,7 +12,7 @@ export default function BottomNav() {
   const tabs = [
     { icon: Calendar, label: "Events", path: "/" },
     { icon: Ticket, label: gt.navTickets || "Tickets", path: "/termine" },
-    { icon: Image, label: gt.navMedia || "Fotos", path: "/fotos" },
+    { icon: Image, label: gt.navMedia || "Partymomente", path: "/fotos" },
     { icon: User, label: "Profil", path: "/meine-tickets" },
   ];
 
