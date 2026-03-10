@@ -1370,7 +1370,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
                 <span className="text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Versicherungsbeitrag</span>
                 <div className="text-2xl font-black mt-1" style={{ color: "hsl(210 80% 55%)" }}>
                   {event.insuranceAmount.toFixed(2).replace(".", ",")} €
-                  <span className="text-xs font-normal ml-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>pro Bestellung</span>
+                  <span className="text-xs font-normal ml-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>pro Ticket</span>
                 </div>
               </div>
 

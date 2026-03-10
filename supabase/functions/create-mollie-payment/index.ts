@@ -124,7 +124,8 @@ Deno.serve(async (req) => {
 
     let insuranceFeeEur = 0;
     if (insuranceAccepted && eventData?.insurance_enabled && eventData.insurance_amount > 0) {
-      insuranceFeeEur = Number(eventData.insurance_amount);
+      const totalTickets = items.reduce((sum: number, i: any) => sum + (i.quantity || 0), 0);
+      insuranceFeeEur = Number(eventData.insurance_amount) * totalTickets;
     }
 
     const grandTotalEur = totalEur + serviceFeeEur + insuranceFeeEur;
