@@ -140,7 +140,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   insurance_enabled: false, insurance_amount: 0,
 };
 
-const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1 };
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1, max_capacity: null as number | null, kvk_enabled: false, kvk_min_percent: 5, kvk_max_percent: 25 };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
