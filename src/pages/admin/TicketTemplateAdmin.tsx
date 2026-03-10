@@ -35,6 +35,13 @@ interface CategoryOverride {
   text_color?: string;
 }
 
+interface CategoryDesign {
+  key: string;
+  label: string;
+  emoji: string;
+  override: CategoryOverride;
+}
+
 interface TicketTemplate {
   format: "din_lang" | "a4";
   background_color: string;
@@ -51,13 +58,21 @@ interface TicketTemplate {
   show_qr_code: boolean;
   logo_url: string;
   magic_ticket_enabled: boolean;
-  magic_ticket_blur: number; // px blur amount
-  magic_ticket_opacity: number; // 0-100
-  background_image_opacity: number; // 0-100
+  magic_ticket_blur: number;
+  magic_ticket_opacity: number;
+  background_image_opacity: number;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks: ContentBlock[];
   category_overrides?: Record<string, CategoryOverride>;
+  category_designs?: CategoryDesign[];
 }
+
+const DEFAULT_CATEGORY_DESIGNS: CategoryDesign[] = [
+  { key: "REGULAR", label: "Regular", emoji: "🟢", override: { accent_color: "#22c55e", gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" }, background_color: "#020d02", text_color: "#dcfce7" } },
+  { key: "DELUXE", label: "Deluxe", emoji: "🔵", override: { accent_color: "#38bdf8", gradient: { enabled: true, type: "linear", angle: 160, color_from: "#0a1628", color_to: "#164e63" }, background_color: "#0a1628", text_color: "#e0f2fe" } },
+  { key: "PREMIUM", label: "Premium", emoji: "👑", override: { accent_color: "#d4a030", gradient: { enabled: true, type: "radial", angle: 0, color_from: "#1a1610", color_to: "#2a2010" }, background_color: "#1a1610", text_color: "#f5f0e0" } },
+  { key: "FAN", label: "Fan", emoji: "💖", override: { accent_color: "#d9338a", gradient: { enabled: true, type: "linear", angle: 135, color_from: "#14041a", color_to: "#2a0a20" }, background_color: "#14041a", text_color: "#fce7f3" } },
+];
 
 const defaultGradient: GradientConfig = { enabled: false, type: "linear", angle: 135, color_from: "#14141e", color_to: "#2a1a3e" };
 
@@ -83,6 +98,7 @@ const defaultTemplate: TicketTemplate = {
   sponsors: [],
   content_blocks: [],
   category_overrides: {},
+  category_designs: [...DEFAULT_CATEGORY_DESIGNS],
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -99,49 +115,6 @@ const PRESETS: Array<{ name: string; template: Partial<TicketTemplate> }> = [
   { name: "Purple Haze", template: { background_color: "#0f0020", accent_color: "#a855f7", text_color: "#f3e8ff", gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" } } },
 ];
 
-/* ─── Category Design Presets ─── */
-const CATEGORY_PRESETS: Record<string, { label: string; emoji: string; override: CategoryOverride }> = {
-  REGULAR: {
-    label: "Regular",
-    emoji: "🟢",
-    override: {
-      accent_color: "#22c55e",
-      gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" },
-      background_color: "#020d02",
-      text_color: "#dcfce7",
-    },
-  },
-  DELUXE: {
-    label: "Deluxe",
-    emoji: "🔵",
-    override: {
-      accent_color: "#38bdf8",
-      gradient: { enabled: true, type: "linear", angle: 160, color_from: "#0a1628", color_to: "#164e63" },
-      background_color: "#0a1628",
-      text_color: "#e0f2fe",
-    },
-  },
-  PREMIUM: {
-    label: "Premium",
-    emoji: "👑",
-    override: {
-      accent_color: "#d4a030",
-      gradient: { enabled: true, type: "radial", angle: 0, color_from: "#1a1610", color_to: "#2a2010" },
-      background_color: "#1a1610",
-      text_color: "#f5f0e0",
-    },
-  },
-  FAN: {
-    label: "Fan",
-    emoji: "💖",
-    override: {
-      accent_color: "#d9338a",
-      gradient: { enabled: true, type: "linear", angle: 135, color_from: "#14041a", color_to: "#2a0a20" },
-      background_color: "#14041a",
-      text_color: "#fce7f3",
-    },
-  },
-};
 
 const FORMATS = [
   { id: "din_lang" as const, label: "DIN Lang (Hartticket)", desc: "210 × 99 mm" },
@@ -426,6 +399,8 @@ const TicketTemplateAdmin = () => {
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
   const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
   const [cleaningImage, setCleaningImage] = useState(false);
+  const [renamingDesignKey, setRenamingDesignKey] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -437,7 +412,16 @@ const TicketTemplateAdmin = () => {
         supabase.from("events").select("id, image_url, title, series_id").eq("status", "published"),
       ]);
 
-      if (tplRes.data?.value) setTpl({ ...defaultTemplate, ...(tplRes.data.value as any), gradient: { ...defaultGradient, ...((tplRes.data.value as any).gradient || {}) }, content_blocks: (tplRes.data.value as any).content_blocks || [] });
+      if (tplRes.data?.value) {
+        const raw = tplRes.data.value as any;
+        setTpl({
+          ...defaultTemplate,
+          ...raw,
+          gradient: { ...defaultGradient, ...(raw.gradient || {}) },
+          content_blocks: raw.content_blocks || [],
+          category_designs: raw.category_designs || [...DEFAULT_CATEGORY_DESIGNS],
+        });
+      }
 
       if (catRes.data) {
         // Only show categories from published events
@@ -820,31 +804,101 @@ const TicketTemplateAdmin = () => {
             </div>
           </div>
 
-          {/* Category Overrides */}
+          {/* Category Designs (dynamic) */}
           <div style={sectionStyle}>
-            <h3 className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>Kategorie-Designs</h3>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Kategorie-Designs</h3>
+              <button
+                onClick={() => {
+                  const designs = [...(tpl.category_designs || [])];
+                  const newKey = `CUSTOM_${Date.now()}`;
+                  designs.push({
+                    key: newKey,
+                    label: "Neue Kategorie",
+                    emoji: "🎨",
+                    override: {
+                      accent_color: tpl.accent_color,
+                      gradient: { ...tpl.gradient },
+                      background_color: tpl.background_color,
+                      text_color: tpl.text_color,
+                    },
+                  });
+                  update("category_designs" as any, designs);
+                  // Also enable it immediately
+                  const overrides = { ...(tpl.category_overrides || {}) };
+                  overrides[newKey] = {
+                    accent_color: tpl.accent_color,
+                    gradient: { ...tpl.gradient },
+                    background_color: tpl.background_color,
+                    text_color: tpl.text_color,
+                  };
+                  update("category_overrides" as any, overrides);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105"
+                style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.25)" }}
+              >
+                <Plus className="w-3 h-3" /> Neues Design
+              </button>
+            </div>
             <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Jede Ticket-Kategorie bekommt ihr eigenes Farbdesign. Deaktiviert = globales Design wird verwendet.</p>
             
             <div className="space-y-3">
-              {Object.entries(CATEGORY_PRESETS).map(([key, preset]) => {
+              {(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS).map((design, designIdx) => {
+                const key = design.key;
                 const override = tpl.category_overrides?.[key];
                 const isEnabled = !!override;
-                const currentOverride = override || preset.override;
+                const currentOverride = override || design.override;
+                const isRenaming = renamingDesignKey === key;
                 
                 return (
                   <div key={key} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isEnabled ? currentOverride.accent_color + "44" : "hsl(0 0% 100% / 0.06)"}` }}>
                     {/* Header */}
                     <div className="flex items-center justify-between px-3 py-2.5" style={{ background: isEnabled ? `${currentOverride.accent_color}11` : "hsl(0 0% 100% / 0.02)" }}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{preset.emoji}</span>
-                        <span className="text-xs font-bold" style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}>{preset.label}</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="text-sm">{design.emoji}</span>
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => {
+                              if (renameValue.trim()) {
+                                const designs = [...(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS)];
+                                const newKey = renameValue.trim().toUpperCase().replace(/\s+/g, "_");
+                                // Move override to new key if key changed
+                                if (newKey !== key && tpl.category_overrides?.[key]) {
+                                  const overrides = { ...(tpl.category_overrides || {}) };
+                                  overrides[newKey] = overrides[key];
+                                  delete overrides[key];
+                                  update("category_overrides" as any, overrides);
+                                }
+                                designs[designIdx] = { ...designs[designIdx], label: renameValue.trim(), key: newKey };
+                                update("category_designs" as any, designs);
+                              }
+                              setRenamingDesignKey(null);
+                            }}
+                            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                            autoFocus
+                            className="text-xs font-bold px-2 py-0.5 rounded-lg flex-1"
+                            style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.4)", color: "hsl(0 0% 100%)", outline: "none" }}
+                          />
+                        ) : (
+                          <span
+                            className="text-xs font-bold cursor-pointer hover:underline"
+                            style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}
+                            onClick={() => { setRenameValue(design.label); setRenamingDesignKey(key); }}
+                            title="Klicken zum Umbenennen"
+                          >
+                            {design.label}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {isEnabled && (
                           <button
                             onClick={() => {
                               const overrides = { ...(tpl.category_overrides || {}) };
-                              overrides[key] = preset.override;
+                              overrides[key] = design.override;
                               update("category_overrides" as any, overrides);
                             }}
                             className="px-2 py-0.5 rounded text-[9px] font-bold"
@@ -859,7 +913,7 @@ const TicketTemplateAdmin = () => {
                             if (isEnabled) {
                               delete overrides[key];
                             } else {
-                              overrides[key] = { ...preset.override };
+                              overrides[key] = { ...design.override };
                             }
                             update("category_overrides" as any, overrides);
                           }}
@@ -870,6 +924,20 @@ const TicketTemplateAdmin = () => {
                           }}
                         >
                           {isEnabled ? "AN" : "AUS"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!confirm(`"${design.label}" wirklich löschen?`)) return;
+                            const designs = [...(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS)].filter((_, i) => i !== designIdx);
+                            update("category_designs" as any, designs);
+                            const overrides = { ...(tpl.category_overrides || {}) };
+                            delete overrides[key];
+                            update("category_overrides" as any, overrides);
+                          }}
+                          className="p-1 rounded-lg hover:bg-white/5"
+                          title="Löschen"
+                        >
+                          <X className="w-3 h-3" style={{ color: "hsl(0 70% 55%)" }} />
                         </button>
                       </div>
                     </div>
@@ -955,7 +1023,7 @@ const TicketTemplateAdmin = () => {
                           <div className="absolute top-0 left-0 right-0 h-1" style={{ background: currentOverride.accent_color }} />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: currentOverride.accent_color }}>
-                              {preset.label} TICKET
+                              {design.label} TICKET
                             </span>
                           </div>
                         </div>

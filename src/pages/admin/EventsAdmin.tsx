@@ -175,6 +175,23 @@ const Section = ({ title, icon: Icon, children }: { title: string; icon: any; ch
 const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets: TicketRow[]; onReload: () => void }) => {
   const [editingTicket, setEditingTicket] = useState<Partial<TicketRow> | null>(null);
   const [featuresInput, setFeaturesInput] = useState("");
+  const [categoryDesigns, setCategoryDesigns] = useState<Array<{ key: string; label: string }>>([]);
+  const [showNewGroupInput, setShowNewGroupInput] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+
+  useEffect(() => {
+    supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle().then(({ data }) => {
+      if (data?.value) {
+        const designs = (data.value as any).category_designs || [
+          { key: "REGULAR", label: "Regular" },
+          { key: "DELUXE", label: "Deluxe" },
+          { key: "PREMIUM", label: "Premium" },
+          { key: "FAN", label: "Fan" },
+        ];
+        setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
+      }
+    });
+  }, []);
 
   const saveTicket = async () => {
     if (!editingTicket?.name) { toast.error("Ticketname ist Pflicht"); return; }
@@ -304,7 +321,69 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             <Field label="Preis (€)" value={editingTicket.price} onChange={(v: string) => setEditingTicket({ ...editingTicket, price: parseFloat(v) || 0 })} type="number" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Kategorie-Gruppe" value={editingTicket.category_group} onChange={(v: string) => setEditingTicket({ ...editingTicket, category_group: v })} placeholder="z.B. REGULAR, DELUXE, FAN" />
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Kategorie-Gruppe</label>
+              {showNewGroupInput ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="Neuer Name…"
+                    className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(230 80% 56% / 0.4)" }}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newGroupName.trim()) {
+                        setEditingTicket({ ...editingTicket, category_group: newGroupName.trim().toUpperCase().replace(/\s+/g, "_") });
+                        setShowNewGroupInput(false);
+                        setNewGroupName("");
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (newGroupName.trim()) {
+                        setEditingTicket({ ...editingTicket, category_group: newGroupName.trim().toUpperCase().replace(/\s+/g, "_") });
+                      }
+                      setShowNewGroupInput(false);
+                      setNewGroupName("");
+                    }}
+                    className="px-3 py-2 rounded-xl text-xs font-bold"
+                    style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 56%)" }}
+                  >OK</button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <select
+                    value={editingTicket.category_group || "REGULAR"}
+                    onChange={(e) => {
+                      if (e.target.value === "__NEW__") {
+                        setShowNewGroupInput(true);
+                      } else {
+                        setEditingTicket({ ...editingTicket, category_group: e.target.value });
+                      }
+                    }}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
+                  >
+                    {categoryDesigns.map(d => (
+                      <option key={d.key} value={d.key}>{d.label} ({d.key})</option>
+                    ))}
+                    {/* Show current value if not in list */}
+                    {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
+                      <option value={editingTicket.category_group}>{editingTicket.category_group}</option>
+                    )}
+                    <option value="__NEW__">+ Neue Gruppe erstellen…</option>
+                  </select>
+                  {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
+                    <p className="text-[10px] px-1" style={{ color: "hsl(45 80% 55%)" }}>
+                      ⚠️ Diese Gruppe hat noch kein Design. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(230 80% 56%)" }}>Vorlagen → Kategorie-Designs</a> anpassen.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
             <Field label="Badge" value={editingTicket.badge} onChange={(v: string) => setEditingTicket({ ...editingTicket, badge: v })} placeholder="z.B. FAST AUSVERKAUFT" />
           </div>
           <Field label="Beschreibung" value={editingTicket.description} onChange={(v: string) => setEditingTicket({ ...editingTicket, description: v })} />
