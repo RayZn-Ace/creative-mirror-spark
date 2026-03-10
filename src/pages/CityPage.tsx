@@ -1334,6 +1334,82 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         </>
       )}
 
+      {/* Insurance Popup */}
+      <AnimatePresence>
+        {showInsurancePopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "hsl(0 0% 0% / 0.7)", backdropFilter: "blur(8px)" }}
+            onClick={() => { setShowInsurancePopup(false); setInsuranceAccepted(false); setShowCheckout(true); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="w-full max-w-sm rounded-2xl p-6 space-y-5"
+              style={{ background: "hsl(220 30% 14%)", border: "1px solid hsl(0 0% 100% / 0.15)", boxShadow: "0 20px 60px hsl(0 0% 0% / 0.5)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center space-y-2">
+                <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center" style={{ background: "hsl(210 80% 55% / 0.15)", border: "1px solid hsl(210 80% 55% / 0.3)" }}>
+                  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="hsl(210, 80%, 55%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3 className="text-lg font-black uppercase tracking-wider" style={{ color: "hsl(0 0% 100%)" }}>
+                  Ticket versichern?
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                  Schütze dein Ticket gegen Krankheit, Unfall oder andere unvorhergesehene Ereignisse. Bei Stornierung erhältst du den vollen Ticketpreis zurück.
+                </p>
+              </div>
+
+              <div className="rounded-xl p-4 text-center" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                <span className="text-xs uppercase tracking-wider font-bold" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Versicherungsbeitrag</span>
+                <div className="text-2xl font-black mt-1" style={{ color: "hsl(210 80% 55%)" }}>
+                  {event.insuranceAmount.toFixed(2).replace(".", ",")} €
+                  <span className="text-xs font-normal ml-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>pro Bestellung</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  onClick={() => { setShowInsurancePopup(false); setInsuranceAccepted(false); setShowCheckout(true); }}
+                  className="flex-1 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide"
+                  style={{ background: "hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.2)" }}
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                >
+                  Nein, danke
+                </motion.button>
+                <motion.button
+                  onClick={() => { setShowInsurancePopup(false); setInsuranceAccepted(true); setShowCheckout(true); }}
+                  className="flex-[1.5] py-3.5 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2"
+                  style={{ background: "hsl(210 80% 50%)", color: "hsl(0 0% 100%)", border: "1px solid hsl(210 80% 60% / 0.5)", boxShadow: "0 4px 15px hsl(210 80% 50% / 0.3)" }}
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Ja, versichern
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Insurance indicator in checkout */}
+      {insuranceAccepted && event.insuranceEnabled && showCheckout && (
+        <div className="flex items-center justify-between py-2 px-3 rounded-xl text-sm"
+          style={{ background: "hsl(210 80% 55% / 0.1)", border: "1px solid hsl(210 80% 55% / 0.25)", color: "hsl(210 80% 70%)" }}>
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Ticketversicherung
+          </span>
+          <span className="font-bold">+{event.insuranceAmount.toFixed(2).replace(".", ",")} €</span>
+        </div>
+      )}
+
       <a href={instagramUrl} target="_blank" rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all hover:opacity-100"
         style={{ color: "hsl(0 0% 100% / 0.8)", border: "1px solid hsl(0 0% 100% / 0.25)", background: "hsl(0 0% 100% / 0.1)" }}>
