@@ -94,11 +94,6 @@ const makeInfoSections = (event: CityEvent, t: Translations) => [
     title: t.admissionTitle,
     content: t.admissionContent,
   },
-  {
-    id: "whatsapp",
-    title: t.freeTicketsTitle,
-    content: "whatsapp",
-  },
 ];
 
 /* ─── Instagram / WhatsApp config ─── */
@@ -1803,15 +1798,6 @@ const CityPage = () => {
 
         <CityFooter t={t} />
       </div>
-      <AnimatePresence>
-        {showWhatsapp && (
-          <motion.a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer"
-            className="pp-whatsapp-btn" aria-label="WhatsApp Chat"
-            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0 }}>
-            <MessageCircle className="w-6 h-6" />
-          </motion.a>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

@@ -93,7 +93,7 @@ interface SeriesOption {
 const DEFAULT_INFO_SECTIONS: InfoBlock[] = [
   { id: "eventinfo", title: "Eventinformationen", content: "auto-eventinfo" },
   { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
-  { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
+  
   { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
 ];
 
@@ -120,7 +120,7 @@ const BLOCK_TEMPLATES: BlockTemplate[] = [
   { id: "divider", label: "Visueller Trenner", icon: Minus, category: "Layout", block: { id: "", title: "───", content: "divider" } },
   { id: "spacer", label: "Abstand", icon: Space, category: "Layout", block: { id: "", title: "", content: "spacer" } },
   // Widgets
-  { id: "whatsapp", label: "WhatsApp Community", icon: MessageCircle, category: "Widgets", block: { id: "", title: "Freikarten & mehr", content: "whatsapp" } },
+  
   { id: "weitere-staedte", label: "Weitere Städte", icon: Map, category: "Widgets", block: { id: "", title: "Weitere Städte", content: "weitere-staedte" } },
   { id: "gallery-photos", label: "Mediengalerie – Fotos", icon: Image, category: "Widgets", block: { id: "", title: "Impressionen", content: "gallery-photos" } },
   { id: "gallery-videos", label: "Mediengalerie – Videos", icon: Video, category: "Widgets", block: { id: "", title: "Videos", content: "gallery-videos" } },
