@@ -445,8 +445,8 @@ const SettingsAdmin = () => {
             onClick={() => setActiveTab(t.key)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 justify-center whitespace-nowrap"
             style={{
-              background: activeTab === t.key ? "hsl(230 80% 56% / 0.15)" : "transparent",
-              color: activeTab === t.key ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+              background: activeTab === t.key ? "hsl(270 70% 55% / 0.15)" : "transparent",
+              color: activeTab === t.key ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.5)",
             }}
           >
             <t.icon className="w-4 h-4" />
