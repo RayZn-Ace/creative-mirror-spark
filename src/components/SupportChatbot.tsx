@@ -22,7 +22,7 @@ export default function SupportChatbot() {
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([
-    { from: "bot", text: "Hey! 👋 Ich bin Alfred, dein Ansprechpartner für alles rund um NIGHTLIFE GENERATION. Was kann ich für dich tun?" },
+    { from: "bot", text: "Hey! 👋 Ich bin Sophia, deine Ansprechpartnerin für alles rund um NIGHTLIFE GENERATION. Was kann ich für dich tun?" },
   ]);
   const [aiHistory, setAiHistory] = useState<AIMessage[]>([]);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
