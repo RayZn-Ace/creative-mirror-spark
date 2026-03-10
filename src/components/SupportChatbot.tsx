@@ -90,7 +90,7 @@ export default function SupportChatbot() {
       setAiHistory(prev => [...prev, { role: "assistant", content: reply }]);
       return reply;
     } catch (e) {
-      console.error("James AI error:", e);
+      console.error("Alfred AI error:", e);
       return "Entschuldigung, da ist etwas schiefgelaufen. Versuch es bitte nochmal! 😅";
     }
   }, []);
