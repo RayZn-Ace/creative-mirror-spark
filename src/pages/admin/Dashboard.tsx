@@ -60,7 +60,7 @@ const WIDGET_COMPONENTS: Record<WidgetType, React.LazyExoticComponent<React.Comp
   welcome_greeting: WelcomeGreetingWidget,
   capacity_overview: CapacityOverviewWidget,
   revenue_by_event: RevenueByEventWidget,
-  geo_heatmap: GeoHeatmapWidget,
+  
 };
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {

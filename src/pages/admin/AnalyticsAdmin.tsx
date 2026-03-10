@@ -1244,63 +1244,6 @@ const AnalyticsAdmin = () => {
         </>
       )}
 
-      {/* ═══════ GEO TAB ═══════ */}
-      {detailTab === "geo" && (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            <StatCard icon={Globe} label="Städte" value={cityData.length} color="hsl(200 80% 55%)" />
-            <StatCard icon={Euro} label="Top Stadt Umsatz" value={cityData[0] ? `${fmt(cityData[0].revenue)}€` : "–"} color="hsl(140 60% 50%)" sub={cityData[0]?.name} />
-            <StatCard icon={MapPin} label="Ø Umsatz/Stadt" value={`${fmt(cityData.length > 0 ? totalRevenue / cityData.length : 0)}€`} color="hsl(260 70% 60%)" />
-          </div>
-
-          {/* Interactive Heatmap */}
-          <SectionHeader>Interaktive Heatmap</SectionHeader>
-          <CityHeatmap data={cityData} />
-
-          {/* City pie + list */}
-          <SectionHeader>Umsatz nach Stadt</SectionHeader>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div style={cardStyle} className="p-5">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie data={cityData.slice(0, 10)} dataKey="revenue" cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} label={({ name }) => name}>
-                    {cityData.slice(0, 10).map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip {...tooltipStyle} formatter={(v: number) => [`${fmt(v)}€`]} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={cardStyle} className="overflow-hidden">
-              <div className="max-h-[300px] overflow-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr style={{ background: "hsl(0 0% 100% / 0.03)" }}>
-                      {["Stadt", "Umsatz", "Bestellungen", "Tickets"].map(h => (
-                        <th key={h} className="px-4 py-3 text-left font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.3)", fontSize: 10 }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cityData.map((c, i) => (
-                      <tr key={c.name} className="border-t" style={{ borderColor: "hsl(0 0% 100% / 0.04)" }}>
-                        <td className="px-4 py-2.5 font-medium" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                            {c.name}
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5 font-bold" style={{ color: "hsl(140 60% 50%)" }}>{fmt(c.revenue)}€</td>
-                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.orders}</td>
-                        <td className="px-4 py-2.5" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{c.tickets}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       <div className="h-8" />
     </div>
