@@ -230,7 +230,7 @@ export default function Termine() {
 
       const { data: events } = await supabase
         .from("events")
-        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag")
+        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight")
         .eq("status", "published")
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
