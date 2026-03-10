@@ -553,7 +553,7 @@ export default function Termine() {
                   <div className="flex items-center gap-2 mb-4">
                     <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                      {t.nextDate || "Nächstes Event"}
+                      {featured.hasHighlight ? "Highlight" : (t.nextDate || "Nächstes Event")}
                     </span>
                   </div>
                   <NeonGlowCard imageUrl={featured.imageUrl} index={0} className="rounded-2xl">
