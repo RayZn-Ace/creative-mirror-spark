@@ -253,7 +253,7 @@ export default function SupportChatbot() {
     }
 
     setIsTyping(true);
-    const reply = await askJames(userText, aiHistory);
+    const reply = await askAlfred(userText, aiHistory);
     setIsTyping(false);
 
     if (reply.trim() === "ESCALATE") {
