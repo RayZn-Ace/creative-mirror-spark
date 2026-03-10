@@ -15,7 +15,7 @@ const Datenschutz = () => (
           Verantwortlich für die Verarbeitung Ihrer personenbezogenen Daten auf dieser Website ist:<br />
           Swaye Event &amp; Gastro UG (haftungsbeschränkt)<br />
           Joshua Eiffinger<br />
-          Holzhofstraße 1<br />
+          Holzhofstraße 17<br />
           55116 Mainz<br />
           E-Mail: <a href="mailto:info@nightlifeticket.app" className="text-primary hover:underline">info@nightlifeticket.app</a>
         </p>
