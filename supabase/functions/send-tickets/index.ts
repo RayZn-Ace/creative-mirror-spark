@@ -247,9 +247,10 @@ async function generateTicketPDF(tickets: Array<{
         if (y < m + 10) break;
         // Inline label + value on same line (matching preview)
         const labelText = d.label + "  ";
+        const safeValue = stripEmojis(d.value).substring(0, 40);
         const labelW = fontRegular.widthOfTextAtSize(labelText, 6);
         page.drawText(labelText, { x: m, y, size: 6, font: fontRegular, color: txColor, opacity: 0.5 });
-        page.drawText(d.value.substring(0, 40), { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
+        page.drawText(safeValue, { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
         y -= 14;
       }
 
