@@ -560,16 +560,16 @@ const PagesAdmin = () => {
                   <div>
                     <p className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>Selbstständig lernen</p>
                     <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                      {jamesSelfLearn
-                        ? "James darf eigene Antworten generieren und über den FAQ-Inhalt hinausgehen"
-                        : "James antwortet ausschließlich mit Inhalten aus dem vorhandenen FAQ"}
+                       {alfredSelfLearn
+                        ? "Alfred darf eigene Antworten generieren und über den FAQ-Inhalt hinausgehen"
+                        : "Alfred antwortet ausschließlich mit Inhalten aus dem vorhandenen FAQ"}
                     </p>
                   </div>
                   <button
                     onClick={() => {
-                      const next = !jamesSelfLearn;
-                      setJamesSelfLearn(next);
-                      saveJamesSettings(jamesEnabled, next);
+                      const next = !alfredSelfLearn;
+                      setAlfredSelfLearn(next);
+                      saveAlfredSettings(alfredEnabled, next);
                       toast.success(next ? "Selbstständiges Lernen aktiviert" : "Nur FAQ-Modus aktiv");
                     }}
                     className="w-11 h-6 rounded-full relative transition-all cursor-pointer shrink-0 ml-4"
