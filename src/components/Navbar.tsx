@@ -19,6 +19,7 @@ function buildNav(gt: GlobalTranslations) {
   const directLinks = [
     { label: gt.navHome, path: "/" },
     { label: gt.navDatesTickets, path: "/termine" },
+    { label: gt.navMedia || "Partymomente", path: "/fotos" },
   ];
 
   const groups: NavGroup[] = [];
