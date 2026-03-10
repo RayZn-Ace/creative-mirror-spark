@@ -817,13 +817,6 @@ const CustomersAdmin = () => {
           <option value="pending" style={{ background: "hsl(220 50% 10%)" }}>Nur ausstehend</option>
           <option value="failed" style={{ background: "hsl(220 50% 10%)" }}>Nur fehlgeschlagen</option>
         </select>
-        {allCities.length > 0 && (
-          <CitySearchFilter
-            cities={allCities}
-            value={cityFilter}
-            onChange={setCityFilter}
-          />
-        )}
       </div>
 
       {/* Sort buttons */}
