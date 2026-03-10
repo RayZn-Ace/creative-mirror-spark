@@ -202,26 +202,29 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
 
     // Persist to template settings
     const { data } = await supabase.from("settings").select("id, value").eq("key", "ticket_template").maybeSingle();
+    const fullDesign = {
+      key,
+      label,
+      emoji: "🎫",
+      override: {
+        accent_color: "#8b5cf6",
+        gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" },
+        background_color: "#0f0020",
+        text_color: "#f3e8ff",
+      },
+    };
     if (data) {
       const tpl = data.value as any;
       const designs = tpl.category_designs || [];
-      // Don't add if already exists
       if (!designs.find((d: any) => d.key === key)) {
-        const fullDesign = {
-          key,
-          label,
-          emoji: "🎫",
-          override: {
-            accent_color: "#8b5cf6",
-            gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" },
-            background_color: "#0f0020",
-            text_color: "#f3e8ff",
-          },
-        };
         const updatedDesigns = [...designs, fullDesign];
         await supabase.from("settings").update({ value: { ...tpl, category_designs: updatedDesigns } }).eq("id", data.id);
         toast.success(`Kategorie "${label}" erstellt – Design unter Vorlagen anpassen!`, { duration: 5000 });
       }
+    } else {
+      // No template row exists yet – create one
+      await supabase.from("settings").insert({ key: "ticket_template", value: { category_designs: [fullDesign] } as any });
+      toast.success(`Kategorie "${label}" erstellt – Design unter Vorlagen anpassen!`, { duration: 5000 });
     }
   };
 
