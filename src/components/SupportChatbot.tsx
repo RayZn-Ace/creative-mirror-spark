@@ -77,7 +77,7 @@ export default function SupportChatbot() {
     { label: "💬 Live Chat", query: "Ich möchte mit einem Mitarbeiter chatten" },
   ];
 
-  const askJames = useCallback(async (userText: string, history: AIMessage[]): Promise<string> => {
+  const askAlfred = useCallback(async (userText: string, history: AIMessage[]): Promise<string> => {
     const newHistory = [...history, { role: "user" as const, content: userText }];
     setAiHistory(newHistory);
 
