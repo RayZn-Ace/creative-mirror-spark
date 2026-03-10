@@ -129,7 +129,7 @@ const SeriesAdmin = () => {
       ) : series.length === 0 ? (
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Serien vorhanden</p>
-          <button onClick={() => setEditing({ ...emptySeries })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>
+          <button onClick={() => setEditing({ ...emptySeries })} className="text-sm font-bold" style={{ color: "hsl(270 70% 55%)" }}>
             Jetzt erste Serie erstellen
           </button>
         </div>
