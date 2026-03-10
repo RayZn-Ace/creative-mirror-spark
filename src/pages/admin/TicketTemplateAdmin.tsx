@@ -793,31 +793,102 @@ const TicketTemplateAdmin = () => {
             </div>
           </div>
 
-          {/* Category Overrides */}
+          {/* Category Designs (dynamic) */}
           <div style={sectionStyle}>
-            <h3 className="text-sm font-bold mb-1" style={{ color: "hsl(0 0% 100%)" }}>Kategorie-Designs</h3>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Kategorie-Designs</h3>
+              <button
+                onClick={() => {
+                  const designs = [...(tpl.category_designs || [])];
+                  const newKey = `CUSTOM_${Date.now()}`;
+                  designs.push({
+                    key: newKey,
+                    label: "Neue Kategorie",
+                    emoji: "🎨",
+                    override: {
+                      accent_color: tpl.accent_color,
+                      gradient: { ...tpl.gradient },
+                      background_color: tpl.background_color,
+                      text_color: tpl.text_color,
+                    },
+                  });
+                  update("category_designs" as any, designs);
+                  // Also enable it immediately
+                  const overrides = { ...(tpl.category_overrides || {}) };
+                  overrides[newKey] = {
+                    accent_color: tpl.accent_color,
+                    gradient: { ...tpl.gradient },
+                    background_color: tpl.background_color,
+                    text_color: tpl.text_color,
+                  };
+                  update("category_overrides" as any, overrides);
+                }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:scale-105"
+                style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)", border: "1px solid hsl(230 80% 56% / 0.25)" }}
+              >
+                <Plus className="w-3 h-3" /> Neues Design
+              </button>
+            </div>
             <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Jede Ticket-Kategorie bekommt ihr eigenes Farbdesign. Deaktiviert = globales Design wird verwendet.</p>
             
             <div className="space-y-3">
-              {Object.entries(CATEGORY_PRESETS).map(([key, preset]) => {
+              {(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS).map((design, designIdx) => {
+                const key = design.key;
                 const override = tpl.category_overrides?.[key];
                 const isEnabled = !!override;
-                const currentOverride = override || preset.override;
+                const currentOverride = override || design.override;
+                const [isRenaming, setIsRenaming] = useState(false);
+                const [renameValue, setRenameValue] = useState(design.label);
                 
                 return (
                   <div key={key} className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isEnabled ? currentOverride.accent_color + "44" : "hsl(0 0% 100% / 0.06)"}` }}>
                     {/* Header */}
                     <div className="flex items-center justify-between px-3 py-2.5" style={{ background: isEnabled ? `${currentOverride.accent_color}11` : "hsl(0 0% 100% / 0.02)" }}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{preset.emoji}</span>
-                        <span className="text-xs font-bold" style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}>{preset.label}</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="text-sm">{design.emoji}</span>
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onBlur={() => {
+                              if (renameValue.trim()) {
+                                const designs = [...(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS)];
+                                const newKey = renameValue.trim().toUpperCase().replace(/\s+/g, "_");
+                                // Move override to new key if key changed
+                                if (newKey !== key && tpl.category_overrides?.[key]) {
+                                  const overrides = { ...(tpl.category_overrides || {}) };
+                                  overrides[newKey] = overrides[key];
+                                  delete overrides[key];
+                                  update("category_overrides" as any, overrides);
+                                }
+                                designs[designIdx] = { ...designs[designIdx], label: renameValue.trim(), key: newKey };
+                                update("category_designs" as any, designs);
+                              }
+                              setIsRenaming(false);
+                            }}
+                            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                            autoFocus
+                            className="text-xs font-bold px-2 py-0.5 rounded-lg flex-1"
+                            style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.4)", color: "hsl(0 0% 100%)", outline: "none" }}
+                          />
+                        ) : (
+                          <span
+                            className="text-xs font-bold cursor-pointer hover:underline"
+                            style={{ color: isEnabled ? currentOverride.accent_color : "hsl(0 0% 100% / 0.5)" }}
+                            onClick={() => { setRenameValue(design.label); setIsRenaming(true); }}
+                            title="Klicken zum Umbenennen"
+                          >
+                            {design.label}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {isEnabled && (
                           <button
                             onClick={() => {
                               const overrides = { ...(tpl.category_overrides || {}) };
-                              overrides[key] = preset.override;
+                              overrides[key] = design.override;
                               update("category_overrides" as any, overrides);
                             }}
                             className="px-2 py-0.5 rounded text-[9px] font-bold"
@@ -832,7 +903,7 @@ const TicketTemplateAdmin = () => {
                             if (isEnabled) {
                               delete overrides[key];
                             } else {
-                              overrides[key] = { ...preset.override };
+                              overrides[key] = { ...design.override };
                             }
                             update("category_overrides" as any, overrides);
                           }}
@@ -843,6 +914,20 @@ const TicketTemplateAdmin = () => {
                           }}
                         >
                           {isEnabled ? "AN" : "AUS"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!confirm(`"${design.label}" wirklich löschen?`)) return;
+                            const designs = [...(tpl.category_designs || DEFAULT_CATEGORY_DESIGNS)].filter((_, i) => i !== designIdx);
+                            update("category_designs" as any, designs);
+                            const overrides = { ...(tpl.category_overrides || {}) };
+                            delete overrides[key];
+                            update("category_overrides" as any, overrides);
+                          }}
+                          className="p-1 rounded-lg hover:bg-white/5"
+                          title="Löschen"
+                        >
+                          <X className="w-3 h-3" style={{ color: "hsl(0 70% 55%)" }} />
                         </button>
                       </div>
                     </div>
@@ -928,7 +1013,7 @@ const TicketTemplateAdmin = () => {
                           <div className="absolute top-0 left-0 right-0 h-1" style={{ background: currentOverride.accent_color }} />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: currentOverride.accent_color }}>
-                              {preset.label} TICKET
+                              {design.label} TICKET
                             </span>
                           </div>
                         </div>
