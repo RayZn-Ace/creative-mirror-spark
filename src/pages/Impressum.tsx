@@ -8,12 +8,11 @@ const Impressum = () => (
     <div className="space-y-6">
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Angaben gemäß § 5 TMG</h2>
-        <p>SMEA GmbH<br />Kothöferdamm 7<br />30177 Hannover</p>
-        <p className="mt-2">Handelsregister: HRB 218216<br />Registergericht: Amtsgericht Hannover</p>
+        <p>Swaye Event & Gastro UG (haftungsbeschränkt)<br />Joshua Eiffinger<br />Holzhofstraße 1<br />55116 Mainz</p>
       </div>
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Vertreten durch</h2>
-        <p>Dennis Pokorny</p>
+        <p>Joshua Eiffinger</p>
       </div>
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Kontakt</h2>
