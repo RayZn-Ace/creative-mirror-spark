@@ -200,7 +200,7 @@ const CustomersAdmin = () => {
   const [sortField, setSortField] = useState<SortField>("lastOrder");
   const [sortAsc, setSortAsc] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  
   const [showExportModal, setShowExportModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importPreview, setImportPreview] = useState<{ headers: string[]; rows: string[][] } | null>(null);

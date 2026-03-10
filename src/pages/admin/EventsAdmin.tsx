@@ -11,33 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import BulkEditDialog from "@/components/admin/BulkEditDialog";
 
-/* ─── City → Country mapping ─── */
-const CITY_COUNTRY: Record<string, string> = {
-  // Austria
-  Dornbirn: "Österreich", Gralla: "Österreich", Innsbruck: "Österreich", Kitzbühel: "Österreich",
-  Kollerschlag: "Österreich", Linz: "Österreich", Salzburg: "Österreich", "St. Martin": "Österreich",
-  Vöcklabruck: "Österreich", Wien: "Österreich",
-  // Switzerland
-  Lyss: "Schweiz", Olten: "Schweiz", "St. Gallen": "Schweiz", Winterthur: "Schweiz", Zürich: "Schweiz",
-  // Netherlands
-  Amsterdam: "Niederlande", Rotterdam: "Niederlande", Utrecht: "Niederlande",
-  // Belgium
-  Antwerpen: "Belgien",
-  // France
-  "Le Havre": "Frankreich", Mathay: "Frankreich", Paris: "Frankreich",
-  // Luxembourg
-  Luxembourg: "Luxemburg",
-  // Poland
-  Krakow: "Polen",
-  // Croatia
-  Zadar: "Kroatien",
-  // Brazil
-  "São Paulo": "Brasilien",
-};
-const getCountry = (city: string | null) => {
-  if (!city) return "Unbekannt";
-  return CITY_COUNTRY[city] || "Deutschland";
-};
 
 interface GalleryConfig {
   grid_cols?: number;

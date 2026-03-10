@@ -560,7 +560,7 @@ const AnalyticsAdmin = () => {
     { key: "tickets", label: "Tickets", icon: Ticket },
     { key: "customers", label: "Kunden", icon: Users },
     { key: "events", label: "Events", icon: Calendar },
-    { key: "geo", label: "Geografie", icon: Globe },
+    
   ] as const;
 
   return (
