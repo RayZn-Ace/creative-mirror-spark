@@ -199,9 +199,10 @@ interface CityGroup {
   slug: string;
   coords: [number, number] | null;
   km: number | null;
-  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean }[];
+  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean; highlight: boolean }[];
   imageUrl: string | null;
   category: string;
+  hasHighlight: boolean;
 }
 
 const RANGE_OPTIONS = [50, 100, 200, 500, 0]; // 0 = all
