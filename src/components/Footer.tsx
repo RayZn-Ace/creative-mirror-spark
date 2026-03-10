@@ -36,13 +36,8 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
             <h3 className="font-display text-lg text-foreground mb-4">Quick Links</h3>
             <div className="flex flex-col gap-2">
               <Link to="/termine" className="text-sm text-muted-foreground hover:text-primary transition-colors">Termine & Tickets</Link>
-              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">Uns Buchen!</Link>
-              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Location anmelden</Link>
-              <Link to="/promoter" className="text-sm text-muted-foreground hover:text-primary transition-colors">Partner werden</Link>
               <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ & Support</Link>
-              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors text-primary">Jobs</Link>
-              <Link to="/ticket-umbuchung" className="text-sm text-muted-foreground hover:text-primary transition-colors">Ticket Umbuchung</Link>
-              <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Rückerstattung</Link>
+              <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">Jobs</Link>
               <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontakt</Link>
             </div>
           </div>
