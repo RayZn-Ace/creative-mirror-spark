@@ -275,7 +275,7 @@ const WerbemanagerAdmin = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Megaphone className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
+          <Megaphone className="w-5 h-5" style={{ color: "hsl(270 70% 55%)" }} />
           <h1 className="text-xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Werbemanager</h1>
         </div>
         <button onClick={() => setEditing({ ...emptyAd })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
