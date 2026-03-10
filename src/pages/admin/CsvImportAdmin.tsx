@@ -125,7 +125,7 @@ const s = {
   } as React.CSSProperties,
   label: { color: "hsl(0 0% 100% / 0.6)", fontSize: 12, fontWeight: 600, marginBottom: 4, display: "block" } as React.CSSProperties,
   btn: {
-    background: "hsl(230 80% 56%)", color: "#fff", border: "none", borderRadius: 8,
+    background: "hsl(270 70% 55%)", color: "#fff", border: "none", borderRadius: 8,
     padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
   } as React.CSSProperties,
   btnOutline: {
@@ -134,7 +134,7 @@ const s = {
   } as React.CSSProperties,
   muted: { color: "hsl(0 0% 100% / 0.4)", fontSize: 13 },
   white: { color: "hsl(0 0% 100%)" },
-  accent: { color: "hsl(230 80% 56%)" },
+  accent: { color: "hsl(270 70% 55%)" },
 };
 
 export default function CsvImportAdmin() {
@@ -394,7 +394,7 @@ export default function CsvImportAdmin() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Filename detection banner */}
           {detectedFromFilename && (detectedFromFilename.title || detectedFromFilename.date || detectedFromFilename.city || detectedFromFilename.location) && (
-            <div style={{ ...s.card, background: "hsl(230 80% 56% / 0.1)", border: "1px solid hsl(230 80% 56% / 0.3)" }} className="p-4 flex items-start gap-3">
+            <div style={{ ...s.card, background: "hsl(270 70% 55% / 0.1)", border: "1px solid hsl(270 70% 55% / 0.3)" }} className="p-4 flex items-start gap-3">
               <CheckCircle className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(140 60% 50%)" }} />
               <div>
                 <div className="text-sm font-semibold mb-1" style={s.white}>📎 Aus Dateiname erkannt</div>
@@ -432,7 +432,7 @@ export default function CsvImportAdmin() {
                 { label: "Brutto-Umsatz", value: `${totalRevenue.toFixed(2)} €`, icon: <TrendingUp className="w-4 h-4" /> },
               ].map((s2) => (
                 <div key={s2.label} style={{ ...s.card, background: "hsl(220 40% 8%)" }} className="p-4">
-                  <div className="flex items-center gap-2 mb-2" style={{ color: "hsl(230 80% 56%)" }}>{s2.icon}</div>
+                  <div className="flex items-center gap-2 mb-2" style={{ color: "hsl(270 70% 55%)" }}>{s2.icon}</div>
                   <div className="text-lg font-bold" style={s.white}>{s2.value}</div>
                   <div style={s.muted} className="text-xs">{s2.label}</div>
                 </div>

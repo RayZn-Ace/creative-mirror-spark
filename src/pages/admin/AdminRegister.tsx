@@ -94,7 +94,7 @@ const AdminRegister = () => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(230 80% 56%)", borderTopColor: "transparent" }} />
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(270 70% 55%)", borderTopColor: "transparent" }} />
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Einladung wird verarbeitet...</p>
         </div>
       </div>
@@ -111,7 +111,7 @@ const AdminRegister = () => {
         <div className="text-center mb-8">
           <h1
             className="text-2xl font-black uppercase tracking-wider mb-2"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 56%)" }}
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(270 70% 55%)" }}
           >
             Willkommen!
           </h1>
@@ -215,9 +215,9 @@ const AdminRegister = () => {
             disabled={loading}
             className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.02] disabled:opacity-50"
             style={{
-              background: "hsl(230 80% 56%)",
+              background: "hsl(270 70% 55%)",
               color: "hsl(0 0% 100%)",
-              boxShadow: "0 4px 20px hsl(230 80% 56% / 0.3)",
+              boxShadow: "0 4px 20px hsl(270 70% 55% / 0.3)",
             }}
           >
             {loading ? "Wird registriert..." : "Registrierung abschließen"}

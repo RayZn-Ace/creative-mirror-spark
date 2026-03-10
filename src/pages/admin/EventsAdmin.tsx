@@ -164,7 +164,7 @@ const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any)
 const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
   <div className="rounded-2xl p-5 sm:p-6 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.07)" }}>
     <div className="flex items-center gap-2.5 pb-2" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
-      <Icon className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} />
+      <Icon className="w-4 h-4" style={{ color: "hsl(270 70% 55%)" }} />
       <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{title}</h3>
     </div>
     {children}
@@ -288,12 +288,12 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-          <Ticket className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} /> Tickets ({tickets.length})
+          <Ticket className="w-4 h-4" style={{ color: "hsl(270 70% 55%)" }} /> Tickets ({tickets.length})
         </h4>
         <button
           onClick={() => setEditingTicket({ ...emptyTicket })}
           className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all hover:scale-105"
-          style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 60%)" }}
+          style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 60%)" }}
         >
           <Plus className="w-3.5 h-3.5" /> Hinzufügen
         </button>
@@ -344,7 +344,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                     onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder="Neuer Name…"
                     className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(230 80% 56% / 0.4)" }}
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(270 70% 55% / 0.4)" }}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && newGroupName.trim()) {
@@ -365,7 +365,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                       setNewGroupName("");
                     }}
                     className="px-3 py-2 rounded-xl text-xs font-bold"
-                    style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 56%)" }}
+                    style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}
                   >OK</button>
                 </div>
               ) : (
@@ -393,7 +393,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                   </select>
                   {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
                     <p className="text-[10px] px-1" style={{ color: "hsl(45 80% 55%)" }}>
-                      ⚠️ Diese Gruppe existiert nicht mehr in den Vorlagen. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(230 80% 56%)" }}>Vorlagen → Kategorie-Designs</a> prüfen.
+                      ⚠️ Diese Gruppe existiert nicht mehr in den Vorlagen. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(270 70% 55%)" }}>Vorlagen → Kategorie-Designs</a> prüfen.
                     </p>
                   )}
                 </div>
@@ -477,7 +477,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             <button onClick={() => setEditingTicket(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>
               Abbrechen
             </button>
-            <button onClick={saveTicket} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
+            <button onClick={saveTicket} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>
               Speichern
             </button>
           </div>

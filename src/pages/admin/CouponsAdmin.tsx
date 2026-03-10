@@ -160,7 +160,7 @@ const CouponsAdmin = () => {
 
           <div className="flex gap-2 pt-3">
             <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>Abbrechen</button>
-            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
+            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
           </div>
         </div>
       </div>
@@ -171,10 +171,10 @@ const CouponsAdmin = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Tag className="w-5 h-5" style={{ color: "hsl(230 80% 56%)" }} />
+          <Tag className="w-5 h-5" style={{ color: "hsl(270 70% 55%)" }} />
           <h1 className="text-xl font-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(0 0% 100%)" }}>Coupons & Rabattcodes</h1>
         </div>
-        <button onClick={() => setEditing({ ...emptyCoupon })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
+        <button onClick={() => setEditing({ ...emptyCoupon })} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>
           <Plus className="w-4 h-4" /> Neuer Coupon
         </button>
       </div>
@@ -183,7 +183,7 @@ const CouponsAdmin = () => {
         <div className="rounded-2xl p-12 text-center" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <Tag className="w-10 h-10 mx-auto mb-3" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
           <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Noch keine Coupons vorhanden</p>
-          <button onClick={() => setEditing({ ...emptyCoupon })} className="text-sm font-bold" style={{ color: "hsl(230 80% 56%)" }}>Jetzt ersten Coupon erstellen</button>
+          <button onClick={() => setEditing({ ...emptyCoupon })} className="text-sm font-bold" style={{ color: "hsl(270 70% 55%)" }}>Jetzt ersten Coupon erstellen</button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -206,7 +206,7 @@ const CouponsAdmin = () => {
                     )}
                     {!c.active && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Inaktiv</span>}
                     {isExpired && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>Abgelaufen</span>}
-                    {eventName && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 56%)" }}>📅 {eventName}</span>}
+                    {eventName && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 70% 55% / 0.12)", color: "hsl(270 70% 55%)" }}>📅 {eventName}</span>}
                   </div>
                   {c.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{c.description}</p>}
                 </div>

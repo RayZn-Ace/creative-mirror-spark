@@ -169,7 +169,7 @@ const TicketsAdmin = () => {
         <button
           onClick={() => setEditing({ name: "", price: 0, event_id: events[0]?.id || "", sort_order: 0, sold_out: false, coming_soon: false, features: [], badge: null, category_group: null, group_size: 1, internal_only: false, sale_start: null, sale_end: null })}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}
+          style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}
         >
           <Plus className="w-4 h-4" /> Neue Kategorie
         </button>
@@ -210,7 +210,7 @@ const TicketsAdmin = () => {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(230 80% 56%)", borderTopColor: "transparent" }} />
+          <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(270 70% 55%)", borderTopColor: "transparent" }} />
         </div>
       ) : groupedTickets.size === 0 ? (
         <div className="rounded-2xl p-16 text-center" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px dashed hsl(0 0% 100% / 0.08)" }}>
@@ -230,8 +230,8 @@ const TicketsAdmin = () => {
                   onClick={() => toggleEvent(eventId)}
                   className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
                 >
-                   <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(230 80% 56% / 0.12)" }}>
-                    {isExpanded ? <ChevronDown className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: "hsl(230 80% 56%)" }} />}
+                   <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(270 70% 55% / 0.12)" }}>
+                    {isExpanded ? <ChevronDown className="w-3.5 h-3.5" style={{ color: "hsl(270 70% 55%)" }} /> : <ChevronRight className="w-3.5 h-3.5" style={{ color: "hsl(270 70% 55%)" }} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>
@@ -310,7 +310,7 @@ const TicketsAdmin = () => {
 
                               {/* Meta row */}
                               <div className="flex items-center gap-3 flex-wrap">
-                                <span className="text-sm font-semibold" style={{ color: "hsl(230 80% 56%)" }}>
+                                <span className="text-sm font-semibold" style={{ color: "hsl(270 70% 55%)" }}>
                                   {ticket.price === 0 ? "Kostenlos" : `${ticket.price.toFixed(2)} €`}
                                 </span>
                                 {ticket.category_group && (
@@ -457,7 +457,7 @@ const TicketsAdmin = () => {
                     {(editing.features || []).length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {(editing.features || []).map((f, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ background: "hsl(230 80% 56% / 0.12)", color: "hsl(230 80% 65%)" }}>
+                          <span key={i} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full" style={{ background: "hsl(270 70% 55% / 0.12)", color: "hsl(270 70% 65%)" }}>
                             {f}
                             <button onClick={() => removeFeature(i)} className="hover:text-white"><X className="w-3 h-3" /></button>
                           </span>
@@ -495,7 +495,7 @@ const TicketsAdmin = () => {
                   <button onClick={() => setEditing(null)} className="flex-1 py-3 rounded-xl text-sm font-bold transition-colors hover:bg-white/[0.06]" style={{ background: "hsl(0 0% 100% / 0.04)", color: "hsl(0 0% 100% / 0.5)" }}>
                     Abbrechen
                   </button>
-                  <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99]" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>
+                  <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.01] active:scale-[0.99]" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>
                     Speichern
                   </button>
                 </div>
@@ -523,13 +523,13 @@ const ToggleChip = ({ label, checked, onChange }: { label: string; checked: bool
     onClick={() => onChange(!checked)}
     className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-left transition-all"
     style={{
-      background: checked ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.03)",
-      color: checked ? "hsl(230 80% 65%)" : "hsl(0 0% 100% / 0.4)",
-      border: `1px solid ${checked ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
+      background: checked ? "hsl(270 70% 55% / 0.12)" : "hsl(0 0% 100% / 0.03)",
+      color: checked ? "hsl(270 70% 65%)" : "hsl(0 0% 100% / 0.4)",
+      border: `1px solid ${checked ? "hsl(270 70% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
     }}
   >
-    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.2)" }}>
-      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(230 80% 56%)" }} />}
+    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.2)" }}>
+      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(270 70% 55%)" }} />}
     </div>
     {label}
   </button>
