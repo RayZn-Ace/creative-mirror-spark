@@ -506,13 +506,21 @@ const TicketTemplateAdmin = () => {
       { key: "ticket_template", value: tpl as any, updated_at: new Date().toISOString() },
       { onConflict: "key" }
     );
-    setSaving(false);
-    if (error) { toast.error("Fehler beim Speichern"); console.error(error); }
-    else toast.success("Ticket-Vorlage gespeichert");
+  const update = <K extends keyof TicketTemplate>(key: K, val: TicketTemplate[K]) => {
+    setTpl((p) => {
+      const next = { ...p, [key]: val };
+      // Auto-save category_designs and category_overrides changes immediately
+      if (key === "category_designs" || key === "category_overrides") {
+        supabase.from("settings").upsert(
+          { key: "ticket_template", value: next as any, updated_at: new Date().toISOString() },
+          { onConflict: "key" }
+        ).then(({ error }) => {
+          if (error) { toast.error("Fehler beim automatischen Speichern"); console.error(error); }
+        });
+      }
+      return next;
+    });
   };
-
-  const update = <K extends keyof TicketTemplate>(key: K, val: TicketTemplate[K]) => setTpl((p) => ({ ...p, [key]: val }));
-
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
