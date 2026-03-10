@@ -111,7 +111,7 @@ const AdminRegister = () => {
         <div className="text-center mb-8">
           <h1
             className="text-2xl font-black uppercase tracking-wider mb-2"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 56%)" }}
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(270 70% 55%)" }}
           >
             Willkommen!
           </h1>
