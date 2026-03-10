@@ -7,6 +7,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Strip non-WinAnsi characters (emojis, special Unicode) to prevent encoding errors
+const sanitize = (text: string): string =>
+  text.replace(/[^\x00-\xFF\u0100-\u017F]/g, "").trim();
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
