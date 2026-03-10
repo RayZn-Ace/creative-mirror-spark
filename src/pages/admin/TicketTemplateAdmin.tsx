@@ -419,7 +419,7 @@ const TicketTemplateAdmin = () => {
           ...raw,
           gradient: { ...defaultGradient, ...(raw.gradient || {}) },
           content_blocks: raw.content_blocks || [],
-          category_designs: raw.category_designs || [...DEFAULT_CATEGORY_DESIGNS],
+          category_designs: raw.category_designs ?? [...DEFAULT_CATEGORY_DESIGNS],
         });
       }
 

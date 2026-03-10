@@ -184,12 +184,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
     const { data } = await supabase.from("settings").select("id, value").eq("key", "ticket_template").maybeSingle();
     if (data) {
       setTemplateSettingsId(data.id);
-      const designs = (data.value as any).category_designs || [
-        { key: "REGULAR", label: "Regular" },
-        { key: "DELUXE", label: "Deluxe" },
-        { key: "PREMIUM", label: "Premium" },
-        { key: "FAN", label: "Fan" },
-      ];
+      const designs = (data.value as any).category_designs || [];
       setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
     }
   };
