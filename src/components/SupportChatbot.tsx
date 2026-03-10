@@ -408,7 +408,7 @@ export default function SupportChatbot() {
               background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
               boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
             }}
-            aria-label="Alfred Support Chat öffnen"
+            aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
             <span className="relative z-10 text-2xl" role="img" aria-label="Butler">🤵</span>
