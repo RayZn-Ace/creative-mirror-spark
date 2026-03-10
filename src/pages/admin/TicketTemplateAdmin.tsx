@@ -1146,13 +1146,13 @@ const TicketTemplateAdmin = () => {
                 categoryName = design?.label || previewCategoryId;
                 // Use the design's default override if no custom override saved
                 const effectiveOverride = override || design?.override;
-                if (override) {
+                if (effectiveOverride) {
                   displayTpl = {
                     ...tpl,
-                    accent_color: override.accent_color,
-                    background_color: override.background_color || tpl.background_color,
-                    text_color: override.text_color || tpl.text_color,
-                    gradient: override.gradient,
+                    accent_color: effectiveOverride.accent_color,
+                    background_color: effectiveOverride.background_color || tpl.background_color,
+                    text_color: effectiveOverride.text_color || tpl.text_color,
+                    gradient: effectiveOverride.gradient,
                   };
                 }
               }
