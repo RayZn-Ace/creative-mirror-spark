@@ -849,7 +849,9 @@ Deno.serve(async (req) => {
     const [ticketsRes, orderRes, settingsRes] = await Promise.all([
       supabase.from("tickets").select(`
         qr_code, holder_name, holder_email,
-        events:event_id (title, date, time, location_name, location_address),
+        events:event_id (title, date, time, location_name, location_address, image_url, series_id,
+          event_series:series_id (image_url)
+        ),
         ticket_categories:ticket_category_id (name, category_group)
       `).eq("order_id", order_id),
       supabase.from("orders").select("*").eq("id", order_id).single(),
