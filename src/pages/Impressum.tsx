@@ -27,7 +27,7 @@ const Impressum = () => {
         ) : (
           sections.map((section, idx) => (
             <div key={idx}>
-              <h2 className="text-lg font-bold uppercase mb-2" style={headingStyle}>
+              <h2 className={`text-lg font-bold uppercase mb-2 ${headingClass}`}>
                 {section.title}
               </h2>
               {section.body.split("\n").map((line, lineIdx) => (
