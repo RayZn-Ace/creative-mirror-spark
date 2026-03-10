@@ -413,7 +413,7 @@ const TicketTemplateAdmin = () => {
         supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle(),
         supabase.from("ticket_categories").select("id, name, category_group, event_id"),
         supabase.from("event_series").select("id, title, image_url").eq("status", "published"),
-        supabase.from("events").select("id, image_url, title, series_id, date").eq("status", "published"),
+        supabase.from("events").select("id, image_url, title, series_id, date").eq("status", "published").gte("date", new Date().toISOString().split("T")[0]),
       ]);
 
       let resolvedTpl = { ...defaultTemplate };
