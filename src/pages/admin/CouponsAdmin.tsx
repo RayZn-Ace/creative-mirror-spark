@@ -160,7 +160,7 @@ const CouponsAdmin = () => {
 
           <div className="flex gap-2 pt-3">
             <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100% / 0.6)" }}>Abbrechen</button>
-            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(230 80% 56%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
+            <button onClick={save} className="px-6 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(270 70% 55%)", color: "hsl(0 0% 100%)" }}>Speichern</button>
           </div>
         </div>
       </div>
