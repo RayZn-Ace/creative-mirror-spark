@@ -256,7 +256,7 @@ export default function SupportAdmin() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] font-bold uppercase" style={{ color: msg.sender_type === "admin" ? "hsl(330 80% 55%)" : "hsl(200 80% 55%)" }}>
-                    {msg.sender_type === "admin" ? "Admin" : msg.sender_type === "bot" ? "James (Bot)" : msg.sender_name || "Kunde"}
+                    {msg.sender_type === "admin" ? "Admin" : msg.sender_type === "bot" ? "Alfred (Bot)" : msg.sender_name || "Kunde"}
                   </span>
                   {msg.is_internal && <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: "hsl(45 90% 55% / 0.2)", color: "hsl(45 90% 55%)" }}>Intern</span>}
                   <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{timeAgo(msg.created_at)}</span>

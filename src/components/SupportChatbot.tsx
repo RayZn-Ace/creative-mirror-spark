@@ -381,7 +381,7 @@ export default function SupportChatbot() {
             style={{ background: "hsl(220 50% 15%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
-              Fragen? James hilft! 💬
+              Fragen? Alfred hilft! 💬
             </p>
           </motion.div>
           <button

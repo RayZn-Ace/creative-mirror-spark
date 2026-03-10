@@ -515,7 +515,7 @@ const PagesAdmin = () => {
         </div>
       )}
 
-      {/* James der Butler */}
+      {/* Alfred der Butler */}
       <div className="mt-8 rounded-2xl p-5 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -523,31 +523,31 @@ const PagesAdmin = () => {
               <Bot className="w-5 h-5" style={{ color: "hsl(270 80% 56%)" }} />
             </div>
             <div>
-              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>James der Butler</h3>
+              <h3 className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>Alfred der Butler</h3>
               <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>KI-Support-Chatbot für deine Besucher</p>
             </div>
           </div>
           <button
             onClick={() => {
-              const next = !jamesEnabled;
-              setJamesEnabled(next);
-              if (!next) setJamesSelfLearn(false);
-              saveJamesSettings(next, next ? jamesSelfLearn : false);
-              toast.success(next ? "James aktiviert" : "James deaktiviert");
+              const next = !alfredEnabled;
+              setAlfredEnabled(next);
+              if (!next) setAlfredSelfLearn(false);
+              saveAlfredSettings(next, next ? alfredSelfLearn : false);
+              toast.success(next ? "Alfred aktiviert" : "Alfred deaktiviert");
             }}
-            disabled={jamesLoading}
+            disabled={alfredLoading}
             className="w-11 h-6 rounded-full relative transition-all cursor-pointer"
-            style={{ background: jamesEnabled ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.1)" }}
+            style={{ background: alfredEnabled ? "hsl(270 80% 56%)" : "hsl(0 0% 100% / 0.1)" }}
           >
             <div
               className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
-              style={{ background: "#fff", left: jamesEnabled ? "22px" : "2px" }}
+              style={{ background: "#fff", left: alfredEnabled ? "22px" : "2px" }}
             />
           </button>
         </div>
 
         <AnimatePresence>
-          {jamesEnabled && (
+          {alfredEnabled && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
