@@ -79,20 +79,30 @@ const Fotos = () => {
     },
   });
 
-  // Fetch photos for selected album
+  // Fetch all media (for "Alle") or media for selected album
   const { data: albumMedia = [] } = useQuery({
     queryKey: ["public-media-photos", selectedAlbumId],
     queryFn: async () => {
-      if (!selectedAlbumId) return [];
-      const { data, error } = await supabase
+      // Get album IDs to filter by
+      const publishedAlbumIds = albums.map((a: any) => a.id);
+      if (publishedAlbumIds.length === 0) return [];
+
+      let query = supabase
         .from("media_photos")
         .select("*")
-        .eq("album_id", selectedAlbumId)
         .order("sort_order", { ascending: true });
+
+      if (selectedAlbumId) {
+        query = query.eq("album_id", selectedAlbumId);
+      } else {
+        query = query.in("album_id", publishedAlbumIds);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
-    enabled: !!selectedAlbumId,
+    enabled: albums.length > 0,
   });
 
   // Separate photos and videos from album
@@ -113,9 +123,10 @@ const Fotos = () => {
     [albumMedia]
   );
 
-  // Use DB data if album selected, else fallback
-  const photos = selectedAlbumId && dbPhotos.length > 0 ? dbPhotos : fallbackPhotos;
-  const videos = selectedAlbumId ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
+  // Use DB data if we have albums, else fallback
+  const hasDbData = albums.length > 0;
+  const photos = hasDbData && dbPhotos.length > 0 ? dbPhotos : (!hasDbData ? fallbackPhotos : []);
+  const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
 
