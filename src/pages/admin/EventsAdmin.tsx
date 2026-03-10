@@ -1472,6 +1472,40 @@ const EventEditView = ({
             )}
           </Section>
 
+          <Section title="Ticketversicherung" icon={Ticket}>
+            <label className="flex items-center gap-3 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+              <div
+                className="relative w-10 h-5 rounded-full cursor-pointer transition-colors"
+                style={{ background: editing.insurance_enabled ? "hsl(210 80% 50%)" : "hsl(0 0% 100% / 0.15)" }}
+                onClick={() => setEditing({ ...editing, insurance_enabled: !editing.insurance_enabled })}
+              >
+                <div
+                  className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                  style={{
+                    background: "hsl(0 0% 100%)",
+                    left: editing.insurance_enabled ? "calc(100% - 18px)" : "2px",
+                  }}
+                />
+              </div>
+              Ticketversicherung aktivieren
+            </label>
+
+            {editing.insurance_enabled && (
+              <div className="space-y-3 pt-1">
+                <Field
+                  label="Versicherungsbeitrag (€)"
+                  value={editing.insurance_amount}
+                  onChange={(v: string) => setEditing({ ...editing, insurance_amount: parseFloat(v) || 0 })}
+                  type="number"
+                  placeholder="z.B. 2.50"
+                />
+                <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  Der Betrag wird pro Bestellung berechnet. Kunden sehen ein Popup vor dem Checkout.
+                </p>
+              </div>
+            )}
+          </Section>
+
           <Section title="MwSt." icon={Ticket}>
             <Field
               label="MwSt.-Satz (%)"
