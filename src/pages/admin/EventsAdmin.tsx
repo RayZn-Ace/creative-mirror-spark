@@ -344,7 +344,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                     onChange={(e) => setNewGroupName(e.target.value)}
                     placeholder="Neuer Name…"
                     className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(230 80% 56% / 0.4)" }}
+                    style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(270 70% 55% / 0.4)" }}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && newGroupName.trim()) {
