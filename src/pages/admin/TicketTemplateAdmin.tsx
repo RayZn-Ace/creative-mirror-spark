@@ -399,6 +399,8 @@ const TicketTemplateAdmin = () => {
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
   const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
   const [cleaningImage, setCleaningImage] = useState(false);
+  const [renamingDesignKey, setRenamingDesignKey] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     const load = async () => {
