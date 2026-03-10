@@ -46,6 +46,7 @@ const MediaAdmin = () => {
   const [newAlbum, setNewAlbum] = useState({ title: "", description: "", event_date: "", location: "" });
   const [newVideo, setNewVideo] = useState({ url: "", caption: "" });
   const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [mediaFilter, setMediaFilter] = useState<"all" | "photo" | "video">("all");
 
   // Fetch albums
