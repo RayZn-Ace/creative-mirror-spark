@@ -1141,9 +1141,11 @@ const TicketTemplateAdmin = () => {
               if (previewCategoryId) {
                 const overrideKey = previewCategoryId.toUpperCase();
                 const override = tpl.category_overrides?.[overrideKey];
-                // Find the category name from ticketCategories
-                const cat = ticketCategories.find(c => c.category_group === previewCategoryId);
-                categoryName = cat?.name;
+                const designs = tpl.category_designs || DEFAULT_CATEGORY_DESIGNS;
+                const design = designs.find(d => d.key === previewCategoryId);
+                categoryName = design?.label || previewCategoryId;
+                // Use the design's default override if no custom override saved
+                const effectiveOverride = override || design?.override;
                 if (override) {
                   displayTpl = {
                     ...tpl,
