@@ -23,7 +23,8 @@ function stripEmojis(text: string): string {
 
 /* ─── Helpers ─── */
 function wrapText(text: string, font: any, size: number, maxWidth: number): string[] {
-  const words = text.split(" ");
+  const safeText = stripEmojis(text);
+  const words = safeText.split(" ");
   const lines: string[] = [];
   let current = "";
   for (const word of words) {
