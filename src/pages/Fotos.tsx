@@ -116,7 +116,7 @@ const Fotos = () => {
   const dbPhotos = useMemo(() =>
     albumMedia
       .filter((m: any) => (m.media_type || "photo") === "photo")
-      .map((m: any) => ({ src: m.image_url, alt: m.caption || "Foto" })),
+      .map((m: any) => ({ src: m.image_url, thumb: getThumbUrl(m.image_url, 500), alt: m.caption || "Foto" })),
     [albumMedia]
   );
 
