@@ -178,20 +178,57 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
   const [categoryDesigns, setCategoryDesigns] = useState<Array<{ key: string; label: string }>>([]);
   const [showNewGroupInput, setShowNewGroupInput] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [templateSettingsId, setTemplateSettingsId] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle().then(({ data }) => {
-      if (data?.value) {
-        const designs = (data.value as any).category_designs || [
-          { key: "REGULAR", label: "Regular" },
-          { key: "DELUXE", label: "Deluxe" },
-          { key: "PREMIUM", label: "Premium" },
-          { key: "FAN", label: "Fan" },
-        ];
-        setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
+  const loadDesigns = async () => {
+    const { data } = await supabase.from("settings").select("id, value").eq("key", "ticket_template").maybeSingle();
+    if (data) {
+      setTemplateSettingsId(data.id);
+      const designs = (data.value as any).category_designs || [
+        { key: "REGULAR", label: "Regular" },
+        { key: "DELUXE", label: "Deluxe" },
+        { key: "PREMIUM", label: "Premium" },
+        { key: "FAN", label: "Fan" },
+      ];
+      setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
+    }
+  };
+
+  useEffect(() => { loadDesigns(); }, []);
+
+  /** Create a new category design in both local state AND the template settings */
+  const createNewDesign = async (key: string) => {
+    const label = key.charAt(0) + key.slice(1).toLowerCase();
+    const newDesign = { key, label };
+
+    // Update local state immediately
+    setCategoryDesigns(prev => [...prev, newDesign]);
+    setEditingTicket(prev => prev ? { ...prev, category_group: key } : prev);
+
+    // Persist to template settings
+    const { data } = await supabase.from("settings").select("id, value").eq("key", "ticket_template").maybeSingle();
+    if (data) {
+      const tpl = data.value as any;
+      const designs = tpl.category_designs || [];
+      // Don't add if already exists
+      if (!designs.find((d: any) => d.key === key)) {
+        const fullDesign = {
+          key,
+          label,
+          emoji: "🎫",
+          override: {
+            accent_color: "#8b5cf6",
+            gradient: { enabled: true, type: "linear", angle: 135, color_from: "#0f0020", color_to: "#1e1040" },
+            background_color: "#0f0020",
+            text_color: "#f3e8ff",
+          },
+        };
+        const updatedDesigns = [...designs, fullDesign];
+        await supabase.from("settings").update({ value: { ...tpl, category_designs: updatedDesigns } }).eq("id", data.id);
+        toast.success(`Kategorie "${label}" erstellt – Design unter Vorlagen anpassen!`, { duration: 5000 });
       }
-    });
-  }, []);
+    }
+  };
 
   const saveTicket = async () => {
     if (!editingTicket?.name) { toast.error("Ticketname ist Pflicht"); return; }
@@ -225,26 +262,36 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
     onReload();
   };
 
-  const removeTicket = async (id: string) => {
-    if (!confirm("Ticket-Variante löschen?")) return;
-    await supabase.from("ticket_categories").delete().eq("id", id);
+  const deleteTicket = async (id: string) => {
+    if (!confirm("Ticket wirklich löschen?")) return;
+    const { error } = await supabase.from("ticket_categories").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
     toast.success("Ticket gelöscht");
     onReload();
   };
 
-  const addFeature = () => {
-    if (!featuresInput.trim() || !editingTicket) return;
-    setEditingTicket({ ...editingTicket, features: [...(editingTicket.features || []), featuresInput.trim()] });
-    setFeaturesInput("");
-  };
-
   return (
     <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+          <Ticket className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} /> Tickets ({tickets.length})
+        </h4>
+        <button
+          onClick={() => setEditingTicket({ ...emptyTicket })}
+          className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all hover:scale-105"
+          style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 60%)" }}
+        >
+          <Plus className="w-3.5 h-3.5" /> Hinzufügen
+        </button>
+      </div>
+
+      {/* Existing Tickets */}
       {tickets.map((t) => (
         <div
           key={t.id}
-          className="rounded-xl p-4 flex items-center justify-between"
+          className="rounded-lg p-3 flex items-center gap-3 cursor-pointer hover:bg-white/[0.02] transition-all"
           style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}
+          onClick={() => { setEditingTicket(t); setFeaturesInput((t.features || []).join(", ")); }}
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -252,61 +299,13 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 {t.category_group || "REGULAR"}
               </span>
               <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
-              {t.badge && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
-                  {t.badge}
-                </span>
-              )}
-              {t.coming_soon && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>
-                  COMING SOON
-                </span>
-              )}
-              {t.sold_out && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>
-                  Ausverkauft
-                </span>
-              )}
-              {(t.sale_start || t.sale_end) && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(270 60% 55% / 0.15)", color: "hsl(270 60% 55%)" }}>
-                  {t.sale_start ? new Date(t.sale_start).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "∞"}
-                  {" → "}
-                  {t.sale_end ? new Date(t.sale_end).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "∞"}
-                </span>
-              )}
-              {t.internal_only && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 55% / 0.15)", color: "hsl(45 80% 55%)" }}>
-                  Nur intern
-                </span>
-              )}
-              {(t.group_size || 1) > 1 && (
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full" style={{ background: "hsl(180 60% 50% / 0.15)", color: "hsl(180 60% 50%)" }}>
-                  {t.group_size}er Gruppe
-                </span>
-              )}
+              {t.sold_out && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Ausverkauft</span>}
+              {t.coming_soon && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)" }}>Coming Soon</span>}
             </div>
-            {t.description && <p className="text-xs mt-1" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{t.description}</p>}
-            {t.features && t.features.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {t.features.map((f, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(142 70% 45% / 0.1)", color: "hsl(142 70% 55%)" }}>
-                    ✅ {f}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-            <div className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
-              {t.price.toFixed(2)} €
-            </div>
-            <button onClick={() => { setEditingTicket(t); setFeaturesInput(""); }} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => removeTicket(t.id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "hsl(0 70% 55%)" }}>
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            {(t.price || 0).toFixed(2)} €
+          </span>
         </div>
       ))}
 
@@ -335,7 +334,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && newGroupName.trim()) {
-                        setEditingTicket({ ...editingTicket, category_group: newGroupName.trim().toUpperCase().replace(/\s+/g, "_") });
+                        const key = newGroupName.trim().toUpperCase().replace(/\s+/g, "_");
+                        createNewDesign(key);
                         setShowNewGroupInput(false);
                         setNewGroupName("");
                       }
@@ -344,7 +344,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                   <button
                     onClick={() => {
                       if (newGroupName.trim()) {
-                        setEditingTicket({ ...editingTicket, category_group: newGroupName.trim().toUpperCase().replace(/\s+/g, "_") });
+                        const key = newGroupName.trim().toUpperCase().replace(/\s+/g, "_");
+                        createNewDesign(key);
                       }
                       setShowNewGroupInput(false);
                       setNewGroupName("");
@@ -370,15 +371,15 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                     {categoryDesigns.map(d => (
                       <option key={d.key} value={d.key}>{d.label} ({d.key})</option>
                     ))}
-                    {/* Show current value if not in list */}
+                    {/* Show current value if not in list (legacy) */}
                     {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
-                      <option value={editingTicket.category_group}>{editingTicket.category_group}</option>
+                      <option value={editingTicket.category_group}>{editingTicket.category_group} (unbekannt)</option>
                     )}
                     <option value="__NEW__">+ Neue Gruppe erstellen…</option>
                   </select>
                   {editingTicket.category_group && !categoryDesigns.find(d => d.key === editingTicket.category_group) && (
                     <p className="text-[10px] px-1" style={{ color: "hsl(45 80% 55%)" }}>
-                      ⚠️ Diese Gruppe hat noch kein Design. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(230 80% 56%)" }}>Vorlagen → Kategorie-Designs</a> anpassen.
+                      ⚠️ Diese Gruppe existiert nicht mehr in den Vorlagen. Bitte unter <a href="/admin/vorlagen" className="underline font-bold" style={{ color: "hsl(230 80% 56%)" }}>Vorlagen → Kategorie-Designs</a> prüfen.
                     </p>
                   )}
                 </div>
