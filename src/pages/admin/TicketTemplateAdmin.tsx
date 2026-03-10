@@ -1217,8 +1217,8 @@ const TicketTemplateAdmin = () => {
                 }
               }
 
-              // Force magic ticket enabled when a series is selected OR when magic_ticket is enabled
-              const previewTpl = { ...displayTpl, magic_ticket_enabled: previewSeriesId ? true : displayTpl.magic_ticket_enabled };
+              // Force magic ticket enabled when a series/event is selected OR when magic_ticket is enabled
+              const previewTpl = { ...displayTpl, magic_ticket_enabled: (previewSeriesId || previewEventId) ? true : displayTpl.magic_ticket_enabled };
 
               return (
                 <>
