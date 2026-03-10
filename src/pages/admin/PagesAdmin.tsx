@@ -342,13 +342,35 @@ const PagesAdmin = () => {
   const [subtitle, setSubtitle] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // James Butler settings
+  const [jamesEnabled, setJamesEnabled] = useState(false);
+  const [jamesSelfLearn, setJamesSelfLearn] = useState(false);
+  const [jamesLoading, setJamesLoading] = useState(true);
+
   const load = async () => {
     const { data } = await supabase.from("page_contents").select("*").order("page_key");
     setPages((data as PageRow[]) || []);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  const loadJamesSettings = async () => {
+    const { data } = await supabase.from("settings").select("value").eq("key", "james_butler").maybeSingle();
+    if (data?.value) {
+      const val = data.value as any;
+      setJamesEnabled(val.enabled ?? false);
+      setJamesSelfLearn(val.self_learn ?? false);
+    }
+    setJamesLoading(false);
+  };
+
+  const saveJamesSettings = async (enabled: boolean, selfLearn: boolean) => {
+    await supabase.from("settings").upsert(
+      { key: "james_butler", value: { enabled, self_learn: selfLearn } as any, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
+  };
+
+  useEffect(() => { load(); loadJamesSettings(); }, []);
 
   const detectType = (content: Record<string, any>): PageType => {
     if (content?.categories && Array.isArray(content.categories)) return "faq";
