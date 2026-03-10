@@ -321,6 +321,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 {t.category_group || "REGULAR"}
               </span>
               <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
+              {t.max_capacity && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>Max: {t.max_capacity}</span>}
+              {t.kvk_enabled && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}>🤖 KVK</span>}
               {t.sold_out && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Ausverkauft</span>}
               {t.coming_soon && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)" }}>Coming Soon</span>}
             </div>
