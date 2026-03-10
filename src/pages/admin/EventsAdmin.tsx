@@ -364,7 +364,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                         setEditingTicket({ ...editingTicket, category_group: e.target.value });
                       }
                     }}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none [&>option]:bg-[hsl(220,50%,10%)] [&>option]:text-white"
                     style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark" }}
                   >
                     {categoryDesigns.map(d => (
