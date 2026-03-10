@@ -1080,20 +1080,13 @@ const TicketTemplateAdmin = () => {
                 </div>
               )}
 
-              {/* Category selector */}
+              {/* Category Design selector (from template designs, not individual ticket names) */}
               {(() => {
-                // Deduplicate categories by category_group or name
-                const seen = new Set<string>();
-                const uniqueCats = ticketCategories.filter(c => {
-                  const key = c.category_group || c.name;
-                  if (seen.has(key)) return false;
-                  seen.add(key);
-                  return true;
-                });
-                if (uniqueCats.length === 0) return null;
+                const designs = tpl.category_designs || DEFAULT_CATEGORY_DESIGNS;
+                if (designs.length === 0) return null;
                 return (
                   <div>
-                    <label style={{ ...labelStyle, marginBottom: "6px" }}>Kategorie</label>
+                    <label style={{ ...labelStyle, marginBottom: "6px" }}>Kategorie-Design</label>
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         onClick={() => setPreviewCategoryId(null)}
@@ -1106,22 +1099,22 @@ const TicketTemplateAdmin = () => {
                       >
                         Standard
                       </button>
-                      {uniqueCats.map(c => {
-                        const group = c.category_group || c.name;
-                        const override = tpl.category_overrides?.[group.toUpperCase()];
-                        const accentCol = override?.accent_color || tpl.accent_color;
+                      {designs.map(d => {
+                        const override = tpl.category_overrides?.[d.key];
+                        const accentCol = override?.accent_color || d.override.accent_color;
+                        const isActive = previewCategoryId === d.key;
                         return (
                           <button
-                            key={c.id}
-                            onClick={() => setPreviewCategoryId(group)}
+                            key={d.key}
+                            onClick={() => setPreviewCategoryId(d.key)}
                             className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
                             style={{
-                              background: previewCategoryId === group ? `${accentCol}22` : "hsl(0 0% 100% / 0.04)",
-                              color: previewCategoryId === group ? accentCol : "hsl(0 0% 100% / 0.4)",
-                              border: `1px solid ${previewCategoryId === group ? `${accentCol}44` : "hsl(0 0% 100% / 0.08)"}`,
+                              background: isActive ? `${accentCol}22` : "hsl(0 0% 100% / 0.04)",
+                              color: isActive ? accentCol : "hsl(0 0% 100% / 0.4)",
+                              border: `1px solid ${isActive ? `${accentCol}44` : "hsl(0 0% 100% / 0.08)"}`,
                             }}
                           >
-                            {c.name}
+                            {d.emoji} {d.label}
                           </button>
                         );
                       })}
@@ -1148,16 +1141,18 @@ const TicketTemplateAdmin = () => {
               if (previewCategoryId) {
                 const overrideKey = previewCategoryId.toUpperCase();
                 const override = tpl.category_overrides?.[overrideKey];
-                // Find the category name from ticketCategories
-                const cat = ticketCategories.find(c => c.category_group === previewCategoryId);
-                categoryName = cat?.name;
-                if (override) {
+                const designs = tpl.category_designs || DEFAULT_CATEGORY_DESIGNS;
+                const design = designs.find(d => d.key === previewCategoryId);
+                categoryName = design?.label || previewCategoryId;
+                // Use the design's default override if no custom override saved
+                const effectiveOverride = override || design?.override;
+                if (effectiveOverride) {
                   displayTpl = {
                     ...tpl,
-                    accent_color: override.accent_color,
-                    background_color: override.background_color || tpl.background_color,
-                    text_color: override.text_color || tpl.text_color,
-                    gradient: override.gradient,
+                    accent_color: effectiveOverride.accent_color,
+                    background_color: effectiveOverride.background_color || tpl.background_color,
+                    text_color: effectiveOverride.text_color || tpl.text_color,
+                    gradient: effectiveOverride.gradient,
                   };
                 }
               }
