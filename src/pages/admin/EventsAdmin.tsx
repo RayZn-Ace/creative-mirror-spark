@@ -93,7 +93,7 @@ interface SeriesOption {
 const DEFAULT_INFO_SECTIONS: InfoBlock[] = [
   { id: "eventinfo", title: "Eventinformationen", content: "auto-eventinfo" },
   { id: "einlass", title: "Einlassinformationen", content: "Einlass ab 20:00 Uhr.\nDer Eintritt ist nur mit einem gültigen Ticket möglich.\nBitte halte deinen QR-Code bereit.\n\nMindestalter: 16 Jahre (mit Muttizettel ab 14 Jahre)." },
-  { id: "whatsapp", title: "Freikarten & mehr", content: "whatsapp" },
+  
   { id: "weitere-staedte", title: "Weitere Städte", content: "weitere-staedte" },
 ];
 
