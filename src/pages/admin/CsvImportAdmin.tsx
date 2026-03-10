@@ -125,7 +125,7 @@ const s = {
   } as React.CSSProperties,
   label: { color: "hsl(0 0% 100% / 0.6)", fontSize: 12, fontWeight: 600, marginBottom: 4, display: "block" } as React.CSSProperties,
   btn: {
-    background: "hsl(230 80% 56%)", color: "#fff", border: "none", borderRadius: 8,
+    background: "hsl(270 70% 55%)", color: "#fff", border: "none", borderRadius: 8,
     padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer",
   } as React.CSSProperties,
   btnOutline: {
