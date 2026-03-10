@@ -392,20 +392,23 @@ export default function SupportChatbot() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1.5, duration: 0.5 }}
             className="rounded-xl px-4 py-2 shadow-lg hidden sm:block"
-            style={{ background: "hsl(220 50% 15%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+            style={{ background: "hsl(270 80% 20%)", border: "1px solid hsl(270 80% 56% / 0.3)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
-              Fragen? Alfred hilft! 💬
+              Fragen? Alfred hilft! 🎩
             </p>
           </motion.div>
           <button
             onClick={() => setChatOpen(true)}
             className="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-            style={{ background: "linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 40%))", color: "hsl(0 0% 100%)" }}
-            aria-label="Support Chat öffnen"
+            style={{
+              background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
+              boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
+            }}
+            aria-label="Alfred Support Chat öffnen"
           >
-            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(217 91% 50% / 0.3)" }} />
-            <MessageCircle className="w-7 h-7 relative z-10" />
+            <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
+            <span className="relative z-10 text-2xl" role="img" aria-label="Butler">🤵</span>
           </button>
         </div>
       )}
