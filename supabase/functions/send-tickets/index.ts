@@ -138,6 +138,7 @@ async function generateTicketPDF(tickets: Array<{
   event_time: string | null;
   location_name: string | null;
   location_address: string | null;
+  magic_image_url: string | null;
 }>, tpl: TicketTemplate): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
