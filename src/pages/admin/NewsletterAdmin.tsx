@@ -868,6 +868,7 @@ const NewsletterAdmin = () => {
   const [showRecipients, setShowRecipients] = useState(true);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [showTemplates, setShowTemplates] = useState(true);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
 
