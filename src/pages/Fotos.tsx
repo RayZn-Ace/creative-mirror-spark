@@ -52,12 +52,6 @@ const getYoutubeId = (url: string) => {
   return m ? m[1] : null;
 };
 
-// Generate a resized thumbnail URL via Supabase Storage transform
-const getThumbUrl = (url: string, width = 400) => {
-  if (!url || !url.includes('/storage/v1/object/public/')) return url;
-  // Use Supabase image transformation: /render/image/public/...
-  return url.replace('/storage/v1/object/public/', `/storage/v1/render/image/public/`) + `?width=${width}&resize=contain&quality=60`;
-};
 
 const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -116,7 +110,7 @@ const Fotos = () => {
   const dbPhotos = useMemo(() =>
     albumMedia
       .filter((m: any) => (m.media_type || "photo") === "photo")
-      .map((m: any) => ({ src: m.image_url, thumb: getThumbUrl(m.image_url, 500), alt: m.caption || "Foto" })),
+      .map((m: any) => ({ src: m.image_url, alt: m.caption || "Foto" })),
     [albumMedia]
   );
 
@@ -373,7 +367,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.thumb || photo.src}
+                  src={photo.src}
                   alt={photo.alt}
                   className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110 bg-muted"
                   loading="lazy"
@@ -418,7 +412,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.thumb || photo.src}
+                  src={photo.src}
                   alt={photo.alt}
                   className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 bg-muted ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
                   loading="lazy"
