@@ -210,7 +210,7 @@ const TicketsAdmin = () => {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(230 80% 56%)", borderTopColor: "transparent" }} />
+          <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(270 70% 55%)", borderTopColor: "transparent" }} />
         </div>
       ) : groupedTickets.size === 0 ? (
         <div className="rounded-2xl p-16 text-center" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px dashed hsl(0 0% 100% / 0.08)" }}>
