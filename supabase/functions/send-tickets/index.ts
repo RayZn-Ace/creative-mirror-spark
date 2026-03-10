@@ -515,7 +515,7 @@ async function generateInvoicePDF(opts: {
   }
 
   // Company address line
-  const addressParts = [company.address, `${company.zip} ${company.city}`.trim(), company.country].filter(Boolean);
+  const addressParts = [company.address, [company.zip, company.city].filter(Boolean).join(" "), company.country].filter(Boolean);
   if (addressParts.length) {
     page.drawText(addressParts.join(" · "), { x: marginL, y, size: 8, font: fontRegular, color: grayColor });
     y -= 14;
