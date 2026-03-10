@@ -46,7 +46,7 @@ export const WIDGET_META: Record<WidgetType, { label: string; description: strin
   sales_chart: { label: "Verkaufs-Chart", description: "Ticket-Verkäufe der letzten 7 Tage als Diagramm", icon: "LineChart", defaultW: 4, defaultH: 5 },
   event_calendar: { label: "Event-Kalender", description: "Monatsübersicht aller geplanten Events", icon: "Calendar", defaultW: 2, defaultH: 5 },
   scanner_activity: { label: "Scanner-Aktivität", description: "Aktive Scanner-Links und deren Status", icon: "QrCode", defaultW: 2, defaultH: 4 },
-  city_breakdown: { label: "Städte-Verteilung", description: "Ticketverkäufe aufgeteilt nach Stadt", icon: "MapPin", defaultW: 2, defaultH: 5 },
+  
   avg_order_value: { label: "Ø Bestellwert", description: "Durchschnittlicher Warenkorbwert über Zeit", icon: "Receipt", defaultW: 2, defaultH: 4 },
   payment_status: { label: "Zahlungsstatus", description: "Verteilung der Bestellungen nach Status (bezahlt, ausstehend, abgelaufen)", icon: "CreditCard", defaultW: 2, defaultH: 4 },
   peak_hours: { label: "Peak-Zeiten", description: "Zu welchen Uhrzeiten werden die meisten Tickets gekauft?", icon: "Clock", defaultW: 2, defaultH: 5 },
