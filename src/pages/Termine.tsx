@@ -199,9 +199,10 @@ interface CityGroup {
   slug: string;
   coords: [number, number] | null;
   km: number | null;
-  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean }[];
+  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean; highlight: boolean }[];
   imageUrl: string | null;
   category: string;
+  hasHighlight: boolean;
 }
 
 const RANGE_OPTIONS = [50, 100, 200, 500, 0]; // 0 = all
@@ -229,7 +230,7 @@ export default function Termine() {
 
       const { data: events } = await supabase
         .from("events")
-        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag")
+        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight")
         .eq("status", "published")
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
@@ -275,9 +276,11 @@ export default function Termine() {
               locationName: e.location_name,
               soldOut: e.sold_out || false,
               openAir: e.open_air || false,
+              highlight: e.highlight || false,
             })),
             imageUrl: s.image_url || firstEvent?.image_url || null,
             category: deriveCategory(firstEvent?.title || s.slug),
+            hasHighlight: evts.some((e) => e.highlight),
           });
         });
       });
@@ -306,9 +309,11 @@ export default function Termine() {
             locationName: e.location_name,
             soldOut: e.sold_out || false,
             openAir: e.open_air || false,
+            highlight: e.highlight || false,
           })),
           imageUrl: first.image_url,
           category: deriveCategory(first.title || ""),
+          hasHighlight: evts.some((e) => e.highlight),
         });
       });
 
@@ -386,12 +391,21 @@ export default function Termine() {
       groups = groups.filter((g) => g.category === selectedCategory);
     }
 
-    // Sort by distance (if available), then alphabetically
+    // Sort: highlight first, then by distance (if available), then by next date
     groups.sort((a, b) => {
+      // Highlight events always first
+      if (a.hasHighlight && !b.hasHighlight) return -1;
+      if (!a.hasHighlight && b.hasHighlight) return 1;
+
+      // Then by distance if available
       if (a.km !== null && b.km !== null) return a.km - b.km;
       if (a.km !== null) return -1;
       if (b.km !== null) return 1;
-      return a.city.localeCompare(b.city);
+
+      // Then by nearest upcoming date
+      const aDate = a.events[0]?.date || "9999";
+      const bDate = b.events[0]?.date || "9999";
+      return aDate.localeCompare(bDate);
     });
 
     return groups;
