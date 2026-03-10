@@ -585,9 +585,9 @@ const PagesAdmin = () => {
                 {/* Info box */}
                 <div className="rounded-xl p-3" style={{ background: "hsl(270 80% 56% / 0.06)", border: "1px solid hsl(270 80% 56% / 0.12)" }}>
                   <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                    {jamesSelfLearn
-                      ? "⚡ James nutzt KI, um auch auf unbekannte Fragen intelligent zu antworten. Er greift zusätzlich auf allgemeines Wissen zurück."
-                      : "📋 James beantwortet nur Fragen, die im FAQ hinterlegt sind. Unbekannte Fragen werden höflich abgelehnt."}
+                    {alfredSelfLearn
+                      ? "⚡ Alfred nutzt KI, um auch auf unbekannte Fragen intelligent zu antworten. Er greift zusätzlich auf allgemeines Wissen zurück."
+                      : "📋 Alfred beantwortet nur Fragen, die im FAQ hinterlegt sind. Unbekannte Fragen werden höflich abgelehnt."}
                   </p>
                 </div>
               </div>
