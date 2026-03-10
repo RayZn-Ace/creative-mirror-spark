@@ -19,7 +19,7 @@ export type WidgetType =
   | "sales_chart"
   | "event_calendar"
   | "scanner_activity"
-  | "city_breakdown"
+  
   | "avg_order_value"
   | "payment_status"
   | "peak_hours"
