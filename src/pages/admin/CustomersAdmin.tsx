@@ -756,7 +756,7 @@ const CustomersAdmin = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Name, E-Mail oder Telefon suchen..."
+            placeholder="Name, E-Mail, Telefon, Bestell-ID oder Ticketnummer..."
             className="w-full pl-10 pr-3 py-2 rounded-lg text-sm"
             style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
           />
