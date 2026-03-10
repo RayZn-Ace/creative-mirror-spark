@@ -394,8 +394,10 @@ const TicketTemplateAdmin = () => {
   // Preview selectors
   const [previewCategoryId, setPreviewCategoryId] = useState<string | null>(null);
   const [previewSeriesId, setPreviewSeriesId] = useState<string | null>(null);
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
   const [ticketCategories, setTicketCategories] = useState<Array<{ id: string; name: string; category_group: string | null; event_id: string }>>([]);
   const [eventSeries, setEventSeries] = useState<Array<{ id: string; title: string; image_url: string | null }>>([]);
+  const [eventsList, setEventsList] = useState<Array<{ id: string; title: string; image_url: string | null; date: string | null }>>([]);
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
   const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
   const [cleaningImage, setCleaningImage] = useState(false);
