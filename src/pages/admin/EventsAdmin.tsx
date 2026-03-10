@@ -365,7 +365,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                       setNewGroupName("");
                     }}
                     className="px-3 py-2 rounded-xl text-xs font-bold"
-                    style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 56%)" }}
+                    style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}
                   >OK</button>
                 </div>
               ) : (
