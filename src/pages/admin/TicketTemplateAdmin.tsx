@@ -35,6 +35,13 @@ interface CategoryOverride {
   text_color?: string;
 }
 
+interface CategoryDesign {
+  key: string;
+  label: string;
+  emoji: string;
+  override: CategoryOverride;
+}
+
 interface TicketTemplate {
   format: "din_lang" | "a4";
   background_color: string;
