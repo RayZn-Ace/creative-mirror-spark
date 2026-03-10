@@ -427,10 +427,30 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
               </label>
             </div>
           </div>
-          {/* Group size */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Group size & Capacity */}
+          <div className="grid grid-cols-3 gap-3">
             <Field label="Gruppengröße (1 = Einzelticket)" value={editingTicket.group_size || 1} onChange={(v: string) => setEditingTicket({ ...editingTicket, group_size: parseInt(v) || 1 })} type="number" />
+            <Field label="Kapazität (max. Tickets)" value={editingTicket.max_capacity ?? ""} onChange={(v: string) => setEditingTicket({ ...editingTicket, max_capacity: v ? parseInt(v) : null })} type="number" placeholder="unbegrenzt" />
+            <div className="flex items-end pb-1">
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: editingTicket.kvk_enabled ? "hsl(270 70% 60%)" : "hsl(0 0% 100% / 0.7)" }}>
+                <input type="checkbox" checked={editingTicket.kvk_enabled || false} onChange={(e) => setEditingTicket({ ...editingTicket, kvk_enabled: e.target.checked })} className="rounded w-4 h-4" />
+                🤖 KVK (Künstliche Verknappung)
+              </label>
+            </div>
           </div>
+          {/* KVK Settings */}
+          {editingTicket.kvk_enabled && (
+            <div className="rounded-lg p-3 space-y-2" style={{ background: "hsl(270 70% 55% / 0.08)", border: "1px solid hsl(270 70% 55% / 0.2)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(270 70% 60%)" }}>🤖 Künstliche Verknappung per KI</p>
+              <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                Zeigt jedem Besucher eine realistische "Nur noch X verfügbar!"-Meldung an. Der Wert wird pro Session konsistent gehalten und bewegt sich zwischen den eingestellten Prozenten der Kapazität.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Min. angezeigte Restmenge (%)" value={editingTicket.kvk_min_percent ?? 5} onChange={(v: string) => setEditingTicket({ ...editingTicket, kvk_min_percent: parseInt(v) || 5 })} type="number" />
+                <Field label="Max. angezeigte Restmenge (%)" value={editingTicket.kvk_max_percent ?? 25} onChange={(v: string) => setEditingTicket({ ...editingTicket, kvk_max_percent: parseInt(v) || 25 })} type="number" />
+              </div>
+            </div>
+          )}
           {/* Sale Start / End */}
           <div className="grid grid-cols-2 gap-3">
             <div>
