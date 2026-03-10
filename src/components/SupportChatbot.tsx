@@ -389,7 +389,7 @@ export default function SupportChatbot() {
           </form>
         </motion.div>
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-20 lg:mb-0">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
