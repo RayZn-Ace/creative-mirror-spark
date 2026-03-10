@@ -88,6 +88,8 @@ interface EventRow {
   info_sections: InfoBlock[] | null;
   is_16plus: boolean | null;
   muttizettel: boolean | null;
+  insurance_enabled: boolean | null;
+  insurance_amount: number | null;
 }
 
 interface TicketRow {
