@@ -511,7 +511,7 @@ export default function Index() {
       </main>
       <Footer gt={gt} />
       <BottomNav />
-      <SupportChatbot />
+      
       
     </div>
   );

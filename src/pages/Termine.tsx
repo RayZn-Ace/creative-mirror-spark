@@ -796,7 +796,7 @@ export default function Termine() {
       </div>
 
       <Footer gt={gt} />
-      <SupportChatbot />
+      
     </div>
   );
 }
