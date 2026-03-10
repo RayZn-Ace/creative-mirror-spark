@@ -1185,6 +1185,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           currency,
           discountCode: discountApplied ? discountCode : null,
           redirectBase,
+          insuranceAccepted,
         },
       });
 
