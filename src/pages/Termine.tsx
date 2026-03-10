@@ -276,9 +276,11 @@ export default function Termine() {
               locationName: e.location_name,
               soldOut: e.sold_out || false,
               openAir: e.open_air || false,
+              highlight: e.highlight || false,
             })),
             imageUrl: s.image_url || firstEvent?.image_url || null,
             category: deriveCategory(firstEvent?.title || s.slug),
+            hasHighlight: evts.some((e) => e.highlight),
           });
         });
       });
