@@ -120,7 +120,7 @@ const BLOCK_TEMPLATES: BlockTemplate[] = [
   { id: "divider", label: "Visueller Trenner", icon: Minus, category: "Layout", block: { id: "", title: "───", content: "divider" } },
   { id: "spacer", label: "Abstand", icon: Space, category: "Layout", block: { id: "", title: "", content: "spacer" } },
   // Widgets
-  { id: "whatsapp", label: "WhatsApp Community", icon: MessageCircle, category: "Widgets", block: { id: "", title: "Freikarten & mehr", content: "whatsapp" } },
+  
   { id: "weitere-staedte", label: "Weitere Städte", icon: Map, category: "Widgets", block: { id: "", title: "Weitere Städte", content: "weitere-staedte" } },
   { id: "gallery-photos", label: "Mediengalerie – Fotos", icon: Image, category: "Widgets", block: { id: "", title: "Impressionen", content: "gallery-photos" } },
   { id: "gallery-videos", label: "Mediengalerie – Videos", icon: Video, category: "Widgets", block: { id: "", title: "Videos", content: "gallery-videos" } },
