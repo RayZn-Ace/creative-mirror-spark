@@ -1087,6 +1087,10 @@ export type Database = {
           group_size: number | null
           id: string
           internal_only: boolean | null
+          kvk_enabled: boolean | null
+          kvk_max_percent: number | null
+          kvk_min_percent: number | null
+          max_capacity: number | null
           name: string
           price: number
           sale_end: string | null
@@ -1107,6 +1111,10 @@ export type Database = {
           group_size?: number | null
           id?: string
           internal_only?: boolean | null
+          kvk_enabled?: boolean | null
+          kvk_max_percent?: number | null
+          kvk_min_percent?: number | null
+          max_capacity?: number | null
           name: string
           price?: number
           sale_end?: string | null
@@ -1127,6 +1135,10 @@ export type Database = {
           group_size?: number | null
           id?: string
           internal_only?: boolean | null
+          kvk_enabled?: boolean | null
+          kvk_max_percent?: number | null
+          kvk_min_percent?: number | null
+          max_capacity?: number | null
           name?: string
           price?: number
           sale_end?: string | null

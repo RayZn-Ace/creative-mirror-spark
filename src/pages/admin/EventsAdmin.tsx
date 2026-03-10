@@ -82,6 +82,10 @@ interface TicketRow {
   sale_end: string | null;
   internal_only: boolean | null;
   group_size: number | null;
+  max_capacity: number | null;
+  kvk_enabled: boolean | null;
+  kvk_min_percent: number | null;
+  kvk_max_percent: number | null;
 }
 
 interface SeriesOption {
@@ -140,7 +144,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   insurance_enabled: false, insurance_amount: 0,
 };
 
-const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1 };
+const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1, max_capacity: null as number | null, kvk_enabled: false, kvk_min_percent: 5, kvk_max_percent: 25 };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -254,6 +258,10 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       sale_end: editingTicket.sale_end || null,
       internal_only: editingTicket.internal_only || false,
       group_size: editingTicket.group_size || 1,
+      max_capacity: editingTicket.max_capacity || null,
+      kvk_enabled: editingTicket.kvk_enabled || false,
+      kvk_min_percent: editingTicket.kvk_min_percent ?? 5,
+      kvk_max_percent: editingTicket.kvk_max_percent ?? 25,
       event_id: eventId,
     };
     if (editingTicket.id) {
@@ -313,6 +321,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 {t.category_group || "REGULAR"}
               </span>
               <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
+              {t.max_capacity && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>Max: {t.max_capacity}</span>}
+              {t.kvk_enabled && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}>🤖 KVK</span>}
               {t.sold_out && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Ausverkauft</span>}
               {t.coming_soon && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)" }}>Coming Soon</span>}
             </div>
@@ -419,10 +429,30 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
               </label>
             </div>
           </div>
-          {/* Group size */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Group size & Capacity */}
+          <div className="grid grid-cols-3 gap-3">
             <Field label="Gruppengröße (1 = Einzelticket)" value={editingTicket.group_size || 1} onChange={(v: string) => setEditingTicket({ ...editingTicket, group_size: parseInt(v) || 1 })} type="number" />
+            <Field label="Kapazität (max. Tickets)" value={editingTicket.max_capacity ?? ""} onChange={(v: string) => setEditingTicket({ ...editingTicket, max_capacity: v ? parseInt(v) : null })} type="number" placeholder="unbegrenzt" />
+            <div className="flex items-end pb-1">
+              <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: editingTicket.kvk_enabled ? "hsl(270 70% 60%)" : "hsl(0 0% 100% / 0.7)" }}>
+                <input type="checkbox" checked={editingTicket.kvk_enabled || false} onChange={(e) => setEditingTicket({ ...editingTicket, kvk_enabled: e.target.checked })} className="rounded w-4 h-4" />
+                🤖 KVK (Künstliche Verknappung)
+              </label>
+            </div>
           </div>
+          {/* KVK Settings */}
+          {editingTicket.kvk_enabled && (
+            <div className="rounded-lg p-3 space-y-2" style={{ background: "hsl(270 70% 55% / 0.08)", border: "1px solid hsl(270 70% 55% / 0.2)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(270 70% 60%)" }}>🤖 Künstliche Verknappung per KI</p>
+              <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                Zeigt jedem Besucher eine realistische "Nur noch X verfügbar!"-Meldung an. Der Wert wird pro Session konsistent gehalten und bewegt sich zwischen den eingestellten Prozenten der Kapazität.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Min. angezeigte Restmenge (%)" value={editingTicket.kvk_min_percent ?? 5} onChange={(v: string) => setEditingTicket({ ...editingTicket, kvk_min_percent: parseInt(v) || 5 })} type="number" />
+                <Field label="Max. angezeigte Restmenge (%)" value={editingTicket.kvk_max_percent ?? 25} onChange={(v: string) => setEditingTicket({ ...editingTicket, kvk_max_percent: parseInt(v) || 25 })} type="number" />
+              </div>
+            </div>
+          )}
           {/* Sale Start / End */}
           <div className="grid grid-cols-2 gap-3">
             <div>

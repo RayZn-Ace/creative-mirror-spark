@@ -50,6 +50,7 @@ interface TicketItem {
   soldOut: boolean;
   badge?: string;
   comingSoon?: boolean;
+  scarcityCount?: number | null; // KVK: fake remaining count per session
 }
 
 interface TicketCategory {
@@ -222,9 +223,19 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
     <div className="pp-ticket-item">
       <div className="hidden sm:flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="pp-ticket-title text-base">{item.name}</h4>
             {item.badge && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{translateBadge(item.badge, t)}</span>}
+            {item.scarcityCount != null && (
+              <motion.span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: item.scarcityCount <= 10 ? "hsl(0 70% 50% / 0.2)" : "hsl(35 90% 50% / 0.2)", color: item.scarcityCount <= 10 ? "hsl(0 70% 60%)" : "hsl(35 90% 55%)" }}
+                animate={{ opacity: [0.8, 1, 0.8] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                🔥 Nur noch {item.scarcityCount} verfügbar!
+              </motion.span>
+            )}
           </div>
           <p className="pp-ticket-desc mt-0.5 text-sm">{translateTicketDesc(item.name, item.description, t)}</p>
         </div>
@@ -238,10 +249,20 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
       </div>
       <div className="sm:hidden space-y-2">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="pp-ticket-title text-sm">{item.name}</h4>
             {item.badge && <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ background: "hsl(0 0% 100% / 0.2)", color: "hsl(0 0% 100%)" }}>{translateBadge(item.badge, t)}</span>}
           </div>
+          {item.scarcityCount != null && (
+            <motion.span
+              className="inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+              style={{ background: item.scarcityCount <= 10 ? "hsl(0 70% 50% / 0.2)" : "hsl(35 90% 50% / 0.2)", color: item.scarcityCount <= 10 ? "hsl(0 70% 60%)" : "hsl(35 90% 55%)" }}
+              animate={{ opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              🔥 Nur noch {item.scarcityCount} verfügbar!
+            </motion.span>
+          )}
           <p className="pp-ticket-desc mt-0.5 text-xs">{translateTicketDesc(item.name, item.description, t)}</p>
         </div>
         <div className="flex items-center justify-between">
@@ -1100,6 +1121,14 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
         const groups: Record<string, TicketItem[]> = {};
         const now = new Date();
+        // Get or create a session seed for consistent KVK values
+        let sessionSeed = sessionStorage.getItem("kvk_seed");
+        if (!sessionSeed) {
+          sessionSeed = String(Math.random());
+          sessionStorage.setItem("kvk_seed", sessionSeed);
+        }
+        const seedNum = parseFloat(sessionSeed);
+
         for (const row of data) {
           // Skip internal-only tickets (free tickets for admin use)
           if (row.internal_only) continue;
@@ -1111,6 +1140,20 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           if (!groups[group]) groups[group] = [];
           const currency = getCurrencyForCity(event.city);
           const lang = getLangForCity(event.city);
+
+          // KVK: compute a consistent fake remaining count per ticket per session
+          let scarcityCount: number | null = null;
+          if (row.kvk_enabled && row.max_capacity) {
+            const minPct = row.kvk_min_percent ?? 5;
+            const maxPct = row.kvk_max_percent ?? 25;
+            // Use a hash-like approach: combine seed with ticket id for per-ticket consistency
+            const ticketHash = row.id.split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+            const factor = ((seedNum * 1000 + ticketHash) % 100) / 100; // 0-1
+            const minCount = Math.max(1, Math.round(row.max_capacity * minPct / 100));
+            const maxCount = Math.max(minCount + 1, Math.round(row.max_capacity * maxPct / 100));
+            scarcityCount = Math.round(minCount + factor * (maxCount - minCount));
+          }
+
           groups[group].push({
             id: row.id,
             name: row.name,
@@ -1120,6 +1163,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
             soldOut: row.sold_out || false,
             badge: row.badge || undefined,
             comingSoon: row.coming_soon || false,
+            scarcityCount,
           });
         }
         setTicketCategories(Object.entries(groups).map(([title, items]) => ({ title, items })));
