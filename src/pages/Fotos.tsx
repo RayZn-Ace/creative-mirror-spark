@@ -129,11 +129,13 @@ const Fotos = () => {
   const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   useEffect(() => {
     setDisplayPhotos(photos);
     setShuffled(false);
     setSlideshowIndex(0);
+    setVisibleCount(20);
   }, [selectedAlbumId, albumMedia]);
 
   // Shuffle
@@ -351,59 +353,89 @@ const Fotos = () => {
 
       {/* Grid View */}
       {viewMode === "grid" && displayPhotos.length > 0 && (
-        <div className={`grid ${gridColsClass} gap-3 mb-16`}>
-          {displayPhotos.map((photo, i) => (
-            <motion.div
-              key={`${photo.src}-${i}`}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="overflow-hidden rounded-xl cursor-pointer group relative"
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setLightbox(i)}
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <span className="text-white text-sm font-medium">{photo.alt}</span>
-              </div>
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Maximize2 className="w-5 h-5 text-white drop-shadow-lg" />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <>
+          <div className={`grid ${gridColsClass} gap-3`}>
+            {displayPhotos.slice(0, visibleCount).map((photo, i) => (
+              <motion.div
+                key={`${photo.src}-${i}`}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: Math.min(i, 20) * 0.05 }}
+                className="overflow-hidden rounded-xl cursor-pointer group relative"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setLightbox(i)}
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                  <span className="text-white text-sm font-medium">{photo.alt}</span>
+                </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Maximize2 className="w-5 h-5 text-white drop-shadow-lg" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {visibleCount < displayPhotos.length && (
+            <div className="flex justify-center mt-6 mb-16">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="gap-2"
+              >
+                Mehr anzeigen ({displayPhotos.length - visibleCount} weitere)
+              </Button>
+            </div>
+          )}
+          {visibleCount >= displayPhotos.length && <div className="mb-16" />}
+        </>
       )}
 
       {/* Masonry View */}
       {viewMode === "masonry" && displayPhotos.length > 0 && (
-        <div className={`columns-1 ${gridCols >= 2 ? "sm:columns-2" : ""} ${gridCols >= 3 ? "lg:columns-3" : ""} ${gridCols >= 4 ? "xl:columns-4" : ""} gap-3 mb-16`}>
-          {displayPhotos.map((photo, i) => (
-            <motion.div
-              key={`${photo.src}-${i}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="break-inside-avoid mb-3 overflow-hidden rounded-xl cursor-pointer group relative"
-              onClick={() => setLightbox(i)}
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
-                loading="lazy"
-              />
+        <>
+          <div className={`columns-1 ${gridCols >= 2 ? "sm:columns-2" : ""} ${gridCols >= 3 ? "lg:columns-3" : ""} ${gridCols >= 4 ? "xl:columns-4" : ""} gap-3`}>
+            {displayPhotos.slice(0, visibleCount).map((photo, i) => (
+              <motion.div
+                key={`${photo.src}-${i}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: Math.min(i, 20) * 0.06 }}
+                className="break-inside-avoid mb-3 overflow-hidden rounded-xl cursor-pointer group relative"
+                onClick={() => setLightbox(i)}
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
+                  loading="lazy"
+                />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <span className="text-white text-sm font-medium">{photo.alt}</span>
               </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+          {visibleCount < displayPhotos.length && (
+            <div className="flex justify-center mt-6 mb-16">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="gap-2"
+              >
+                Mehr anzeigen ({displayPhotos.length - visibleCount} weitere)
+              </Button>
+            </div>
+          )}
+          {visibleCount >= displayPhotos.length && <div className="mb-16" />}
+        </>
       )}
 
       {/* Slideshow View */}
