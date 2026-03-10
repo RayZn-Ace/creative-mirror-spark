@@ -17,6 +17,7 @@ type ChatMode = "bot" | "live" | "offline-form";
 type FormStep = "issue" | "email" | "phone" | "done";
 
 export default function SupportChatbot() {
+  const [alfredEnabled, setAlfredEnabled] = useState<boolean | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,19 @@ export default function SupportChatbot() {
   const [supportOnline, setSupportOnline] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [customerLang, setCustomerLang] = useState<string>("de");
+
+  // Check if Alfred is enabled
+  useEffect(() => {
+    const checkAlfred = async () => {
+      const { data } = await supabase.from("settings").select("value").eq("key", "alfred_butler").maybeSingle();
+      if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
+        setAlfredEnabled(!!(data.value as Record<string, unknown>).enabled);
+      } else {
+        setAlfredEnabled(false);
+      }
+    };
+    checkAlfred();
+  }, []);
 
   // Check support online status
   useEffect(() => {
