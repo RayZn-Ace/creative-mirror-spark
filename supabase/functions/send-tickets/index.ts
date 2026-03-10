@@ -419,7 +419,7 @@ async function generateTicketPDF(tickets: Array<{
         }
         if (block.type === "info_list") {
           if (block.list_title) {
-            page.drawText(block.list_title.toUpperCase(), { x: m, y, size: 8, font: fontBold, color: acColor });
+            page.drawText(stripEmojis(block.list_title.toUpperCase()), { x: m, y, size: 8, font: fontBold, color: acColor });
             y -= 14;
           }
           for (const item of (block.items || [])) {
