@@ -15,9 +15,16 @@ async function fetchQRCode(data: string): Promise<Uint8Array> {
   return new Uint8Array(await res.arrayBuffer());
 }
 
+/* ─── Strip non-WinAnsi characters (emojis etc.) ─── */
+function stripEmojis(text: string): string {
+  // Remove characters outside the basic Latin/Latin-1 range that WinAnsi can't encode
+  return text.replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]/gu, "").replace(/\s{2,}/g, " ").trim();
+}
+
 /* ─── Helpers ─── */
 function wrapText(text: string, font: any, size: number, maxWidth: number): string[] {
-  const words = text.split(" ");
+  const safeText = stripEmojis(text);
+  const words = safeText.split(" ");
   const lines: string[] = [];
   let current = "";
   for (const word of words) {
@@ -240,9 +247,10 @@ async function generateTicketPDF(tickets: Array<{
         if (y < m + 10) break;
         // Inline label + value on same line (matching preview)
         const labelText = d.label + "  ";
+        const safeValue = stripEmojis(d.value).substring(0, 40);
         const labelW = fontRegular.widthOfTextAtSize(labelText, 6);
         page.drawText(labelText, { x: m, y, size: 6, font: fontRegular, color: txColor, opacity: 0.5 });
-        page.drawText(d.value.substring(0, 40), { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
+        page.drawText(safeValue, { x: m + labelW, y, size: 8, font: fontBold, color: txColor });
         y -= 14;
       }
 
@@ -277,12 +285,12 @@ async function generateTicketPDF(tickets: Array<{
         }
         if (block.type === "info_list") {
           if (block.list_title) {
-            page.drawText(block.list_title.toUpperCase(), { x: m, y, size: 6, font: fontBold, color: acColor });
+            page.drawText(stripEmojis(block.list_title.toUpperCase()), { x: m, y, size: 6, font: fontBold, color: acColor });
             y -= 10;
           }
           for (const item of (block.items || [])) {
             if (!item || y < m + 10) break;
-            page.drawText(`• ${item}`, { x: m + 4, y, size: 7, font: fontRegular, color: txColor });
+            page.drawText(stripEmojis(`• ${item}`), { x: m + 4, y, size: 7, font: fontRegular, color: txColor });
             y -= 10;
           }
           y -= 4;
@@ -295,8 +303,8 @@ async function generateTicketPDF(tickets: Array<{
         const sy = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: sy, size: 6, font: fontRegular, color: txColor, opacity: 0.4 });
-            sx += fontRegular.widthOfTextAtSize(s.value, 6) + 12;
+            page.drawText(stripEmojis(s.value), { x: sx, y: sy, size: 6, font: fontRegular, color: txColor, opacity: 0.4 });
+            sx += fontRegular.widthOfTextAtSize(stripEmojis(s.value), 6) + 12;
           }
         }
       }
@@ -372,9 +380,10 @@ async function generateTicketPDF(tickets: Array<{
 
       for (const d of details) {
         const labelText = d.label + "  ";
+        const safeValue = stripEmojis(d.value);
         const labelW = fontRegular.widthOfTextAtSize(labelText, 8);
         page.drawText(labelText, { x: m, y, size: 8, font: fontRegular, color: txColor, opacity: 0.5 });
-        page.drawText(d.value, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
+        page.drawText(safeValue, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
         y -= 18;
       }
 
@@ -410,12 +419,12 @@ async function generateTicketPDF(tickets: Array<{
         }
         if (block.type === "info_list") {
           if (block.list_title) {
-            page.drawText(block.list_title.toUpperCase(), { x: m, y, size: 8, font: fontBold, color: acColor });
+            page.drawText(stripEmojis(block.list_title.toUpperCase()), { x: m, y, size: 8, font: fontBold, color: acColor });
             y -= 14;
           }
           for (const item of (block.items || [])) {
             if (!item || y < 250) break;
-            page.drawText(`• ${item}`, { x: m + 6, y, size: 9, font: fontRegular, color: txColor });
+            page.drawText(stripEmojis(`• ${item}`), { x: m + 6, y, size: 9, font: fontRegular, color: txColor });
             y -= 14;
           }
           y -= 6;
@@ -431,7 +440,7 @@ async function generateTicketPDF(tickets: Array<{
           const qrY = 60;
           // Category label above QR
           if (tpl.show_category) {
-            const catLabel = `${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`;
+            const catLabel = stripEmojis(`${ticket.category_group ? ticket.category_group + " – " : ""}${ticket.category_name}`);
             const catW = fontBold.widthOfTextAtSize(catLabel.toUpperCase(), 10);
             page.drawText(catLabel.toUpperCase(), { x: (width - catW) / 2, y: qrY + qrSize + 24, size: 10, font: fontBold, color: acColor });
           }
@@ -450,8 +459,8 @@ async function generateTicketPDF(tickets: Array<{
         let sx = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: m, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
-            sx += fontRegular.widthOfTextAtSize(s.value, 7) + 16;
+            page.drawText(stripEmojis(s.value), { x: sx, y: m, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
+            sx += fontRegular.widthOfTextAtSize(stripEmojis(s.value), 7) + 16;
           }
         }
       }
