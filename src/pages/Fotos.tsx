@@ -367,7 +367,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.thumb || photo.src}
+                  src={photo.src}
                   alt={photo.alt}
                   className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110 bg-muted"
                   loading="lazy"
