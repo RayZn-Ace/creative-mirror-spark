@@ -6,7 +6,6 @@ import {
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
   Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check, Send, Loader2,
 } from "lucide-react";
-import { CitySearchFilter } from "@/components/admin/CitySearchFilter";
 import { toast } from "sonner";
 
 type Order = {
