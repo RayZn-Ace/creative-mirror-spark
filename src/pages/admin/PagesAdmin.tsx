@@ -577,7 +577,7 @@ const PagesAdmin = () => {
                   >
                     <div
                       className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
-                      style={{ background: "#fff", left: jamesSelfLearn ? "22px" : "2px" }}
+                      style={{ background: "#fff", left: alfredSelfLearn ? "22px" : "2px" }}
                     />
                   </button>
                 </div>
