@@ -115,7 +115,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
         <div className="flex items-center gap-2 mb-6">
           <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            {gt.countdownNext} {gt.countdownEvent}
+            {isHighlight ? "⭐ Unser Highlight" : `${gt.countdownNext} ${gt.countdownEvent}`}
           </span>
         </div>
 
