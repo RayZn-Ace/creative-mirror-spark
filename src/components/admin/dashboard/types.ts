@@ -57,7 +57,7 @@ export const WIDGET_META: Record<WidgetType, { label: string; description: strin
   welcome_greeting: { label: "Begrüßung", description: "Personalisierte Begrüßung mit Uhrzeit und Datum", icon: "Sparkles", defaultW: 2, defaultH: 3 },
   capacity_overview: { label: "Kapazitäts-Check", description: "Wie viele Tickets sind pro Event noch verfügbar", icon: "Gauge", defaultW: 2, defaultH: 5 },
   revenue_by_event: { label: "Umsatz pro Event", description: "Umsatz-Ranking der Events", icon: "PiggyBank", defaultW: 2, defaultH: 5 },
-  geo_heatmap: { label: "Geo-Heatmap", description: "Interaktive Heatmap der Umsätze nach Stadt", icon: "MapPin", defaultW: 4, defaultH: 6 },
+  
 };
 
 export const DEFAULT_LAYOUT: DashboardWidget[] = [
