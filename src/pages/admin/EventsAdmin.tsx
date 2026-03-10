@@ -262,6 +262,13 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
     onReload();
   };
 
+  const addFeature = () => {
+    if (featuresInput.trim() && editingTicket) {
+      setEditingTicket({ ...editingTicket, features: [...(editingTicket.features || []), featuresInput.trim()] });
+      setFeaturesInput("");
+    }
+  };
+
   const deleteTicket = async (id: string) => {
     if (!confirm("Ticket wirklich löschen?")) return;
     const { error } = await supabase.from("ticket_categories").delete().eq("id", id);
