@@ -293,7 +293,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
         <button
           onClick={() => setEditingTicket({ ...emptyTicket })}
           className="text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all hover:scale-105"
-          style={{ background: "hsl(230 80% 56% / 0.15)", color: "hsl(230 80% 60%)" }}
+          style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 60%)" }}
         >
           <Plus className="w-3.5 h-3.5" /> Hinzufügen
         </button>
