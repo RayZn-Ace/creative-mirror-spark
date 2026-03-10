@@ -164,7 +164,7 @@ const Field = ({ label, value, onChange, type = "text", placeholder = "" }: any)
 const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
   <div className="rounded-2xl p-5 sm:p-6 space-y-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.07)" }}>
     <div className="flex items-center gap-2.5 pb-2" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
-      <Icon className="w-4 h-4" style={{ color: "hsl(230 80% 56%)" }} />
+      <Icon className="w-4 h-4" style={{ color: "hsl(270 70% 55%)" }} />
       <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{title}</h3>
     </div>
     {children}
