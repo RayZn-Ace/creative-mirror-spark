@@ -1,7 +1,7 @@
 import { PageLayout } from "@/components/PageLayout";
 import { usePageContent } from "@/hooks/usePageContent";
 
-const headingStyle = { color: "hsl(220 20% 15%)", fontFamily: "'Orbitron', sans-serif" };
+const headingClass = "text-foreground font-display";
 
 const fallbackSections = [
   { title: "Angaben gemäß § 5 TMG", body: "Swaye Event & Gastro UG (haftungsbeschränkt)\nJoshua Eiffinger\nHolzhofstraße 17\n55116 Mainz" },
