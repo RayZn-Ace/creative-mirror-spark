@@ -58,13 +58,21 @@ interface TicketTemplate {
   show_qr_code: boolean;
   logo_url: string;
   magic_ticket_enabled: boolean;
-  magic_ticket_blur: number; // px blur amount
-  magic_ticket_opacity: number; // 0-100
-  background_image_opacity: number; // 0-100
+  magic_ticket_blur: number;
+  magic_ticket_opacity: number;
+  background_image_opacity: number;
   sponsors: Array<{ type: "image" | "text"; value: string }>;
   content_blocks: ContentBlock[];
   category_overrides?: Record<string, CategoryOverride>;
+  category_designs?: CategoryDesign[];
 }
+
+const DEFAULT_CATEGORY_DESIGNS: CategoryDesign[] = [
+  { key: "REGULAR", label: "Regular", emoji: "🟢", override: { accent_color: "#22c55e", gradient: { enabled: true, type: "linear", angle: 150, color_from: "#020d02", color_to: "#052e16" }, background_color: "#020d02", text_color: "#dcfce7" } },
+  { key: "DELUXE", label: "Deluxe", emoji: "🔵", override: { accent_color: "#38bdf8", gradient: { enabled: true, type: "linear", angle: 160, color_from: "#0a1628", color_to: "#164e63" }, background_color: "#0a1628", text_color: "#e0f2fe" } },
+  { key: "PREMIUM", label: "Premium", emoji: "👑", override: { accent_color: "#d4a030", gradient: { enabled: true, type: "radial", angle: 0, color_from: "#1a1610", color_to: "#2a2010" }, background_color: "#1a1610", text_color: "#f5f0e0" } },
+  { key: "FAN", label: "Fan", emoji: "💖", override: { accent_color: "#d9338a", gradient: { enabled: true, type: "linear", angle: 135, color_from: "#14041a", color_to: "#2a0a20" }, background_color: "#14041a", text_color: "#fce7f3" } },
+];
 
 const defaultGradient: GradientConfig = { enabled: false, type: "linear", angle: 135, color_from: "#14141e", color_to: "#2a1a3e" };
 
