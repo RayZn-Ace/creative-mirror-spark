@@ -180,21 +180,78 @@ async function generateTicketPDF(tickets: Array<{
     const { width, height } = page.getSize();
     const m = isDinLang ? 20 : 30; // margin
 
-    // Background with gradient simulation using multiple strips
+    // Background with gradient simulation
     if (effectiveTpl.gradient?.enabled) {
       const [fromR, fromG, fromB] = hexToRgb(effectiveTpl.gradient!.color_from);
       const [toR, toG, toB] = hexToRgb(effectiveTpl.gradient!.color_to);
-      const strips = 40;
+      const strips = 120; // More strips for smoother gradient
       const isRadial = effectiveTpl.gradient!.type === "radial";
-      for (let i = 0; i < strips; i++) {
-        const t = i / (strips - 1);
-        // For radial: center is "from", edges are "to"
-        const factor = isRadial ? (t < 0.5 ? t * 2 : (1 - t) * 2) : t;
-        const r = fromR + (toR - fromR) * (isRadial ? 1 - factor : t);
-        const g = fromG + (toG - fromG) * (isRadial ? 1 - factor : t);
-        const b = fromB + (toB - fromB) * (isRadial ? 1 - factor : t);
-        const stripW = width / strips;
-        page.drawRectangle({ x: stripW * i, y: 0, width: stripW + 1, height, color: rgb(r, g, b) });
+      const angle = (effectiveTpl.gradient as any).angle || 135;
+      const rad = (angle * Math.PI) / 180;
+      // For linear gradients: compute direction vector
+      const dx = Math.cos(rad);
+      const dy = Math.sin(rad);
+      
+      if (isRadial) {
+        // Radial: draw from edges to center using concentric rectangles
+        const cx = width / 2;
+        const cy = height / 2;
+        const maxR = Math.sqrt(cx * cx + cy * cy);
+        for (let i = strips - 1; i >= 0; i--) {
+          const t = i / (strips - 1);
+          const r = toR + (fromR - toR) * (1 - t);
+          const g = toG + (fromG - toG) * (1 - t);
+          const b = toB + (fromB - toB) * (1 - t);
+          const radius = maxR * (1 - t);
+          page.drawRectangle({
+            x: cx - radius, y: cy - radius,
+            width: radius * 2, height: radius * 2,
+            color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
+          });
+        }
+      } else {
+        // Linear: draw strips perpendicular to the gradient angle
+        // Project corners onto the gradient direction to find the full span
+        const corners = [[0, 0], [width, 0], [width, height], [0, height]];
+        const projections = corners.map(([cx, cy]) => cx * dx + cy * dy);
+        const minProj = Math.min(...projections);
+        const maxProj = Math.max(...projections);
+        const span = maxProj - minProj;
+        
+        // Perpendicular direction
+        const px = -dy;
+        const py = dx;
+        const perpSpan = Math.sqrt(width * width + height * height) * 2;
+        
+        for (let i = 0; i < strips; i++) {
+          const t = i / (strips - 1);
+          const r = fromR + (toR - fromR) * t;
+          const g = fromG + (toG - fromG) * t;
+          const b = fromB + (toB - fromB) * t;
+          
+          // Center of this strip along gradient direction
+          const proj = minProj + span * t;
+          const stripThickness = span / strips + 1;
+          
+          // Draw a rotated rectangle as a thin strip
+          // Use many small rects along the perpendicular to approximate rotation
+          const cx = dx * proj;
+          const cy = dy * proj;
+          const halfPerp = perpSpan / 2;
+          const halfThick = stripThickness / 2;
+          
+          // Approximate with axis-aligned rectangle covering the strip
+          const x1 = cx - halfPerp * Math.abs(px) - halfThick * Math.abs(dx);
+          const y1 = cy - halfPerp * Math.abs(py) - halfThick * Math.abs(dy);
+          const w = halfPerp * 2 * Math.abs(px) + stripThickness * Math.abs(dx) + halfPerp * 2 * Math.abs(dx);
+          const h = halfPerp * 2 * Math.abs(py) + stripThickness * Math.abs(dy) + halfPerp * 2 * Math.abs(dy);
+          
+          page.drawRectangle({
+            x: Math.max(-width, x1), y: Math.max(-height, y1),
+            width: Math.min(width * 3, w), height: Math.min(height * 3, h),
+            color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
+          });
+        }
       }
     } else {
       page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
