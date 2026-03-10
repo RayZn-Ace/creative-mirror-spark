@@ -22,7 +22,7 @@ const RecentCheckinsWidget = lazy(() => import("@/components/admin/dashboard/wid
 const SalesChartWidget = lazy(() => import("@/components/admin/dashboard/widgets/SalesChartWidget"));
 const EventCalendarWidget = lazy(() => import("@/components/admin/dashboard/widgets/EventCalendarWidget"));
 const ScannerActivityWidget = lazy(() => import("@/components/admin/dashboard/widgets/ScannerActivityWidget"));
-const CityBreakdownWidget = lazy(() => import("@/components/admin/dashboard/widgets/CityBreakdownWidget"));
+
 const AvgOrderValueWidget = lazy(() => import("@/components/admin/dashboard/widgets/AvgOrderValueWidget"));
 const PaymentStatusWidget = lazy(() => import("@/components/admin/dashboard/widgets/PaymentStatusWidget"));
 const PeakHoursWidget = lazy(() => import("@/components/admin/dashboard/widgets/PeakHoursWidget"));
