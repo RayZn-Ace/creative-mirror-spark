@@ -42,6 +42,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Sanitize all string fields in the form to prevent WinAnsi encoding errors
+    for (const key of Object.keys(form)) {
+      if (typeof form[key] === "string") {
+        form[key] = sanitize(form[key]);
+      }
+    }
+
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
     const { width, height } = page.getSize();
