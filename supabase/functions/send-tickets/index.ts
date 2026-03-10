@@ -248,6 +248,38 @@ async function generateTicketPDF(tickets: Array<{
     } else {
       page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
     }
+    
+    // Magic Ticket: embed blurred event/series image as background overlay
+    if (tpl.magic_ticket_enabled && ticket.magic_image_url) {
+      try {
+        const imgRes = await fetch(ticket.magic_image_url);
+        if (imgRes.ok) {
+          const imgBytes = new Uint8Array(await imgRes.arrayBuffer());
+          const ct = imgRes.headers.get("content-type") || "";
+          const bgImg = ct.includes("png") ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+          const opacity = (tpl.magic_ticket_opacity ?? 40) / 100;
+          // Cover the info area (not QR section for DIN Lang)
+          const imgAreaW = isDinLang && tpl.show_qr_code ? width - 160 : width;
+          // Scale to cover
+          const imgRatio = bgImg.width / bgImg.height;
+          const areaRatio = imgAreaW / height;
+          let drawW: number, drawH: number, drawX: number, drawY: number;
+          if (imgRatio > areaRatio) {
+            drawH = height;
+            drawW = height * imgRatio;
+            drawX = (imgAreaW - drawW) / 2;
+            drawY = 0;
+          } else {
+            drawW = imgAreaW;
+            drawH = imgAreaW / imgRatio;
+            drawX = 0;
+            drawY = (height - drawH) / 2;
+          }
+          page.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH, opacity });
+        }
+      } catch (e) { console.error("Magic ticket image failed:", e); }
+    }
+
     // Accent bar
     page.drawRectangle({ x: 0, y: height - (isDinLang ? 4 : 6), width, height: isDinLang ? 4 : 6, color: acColor });
 
