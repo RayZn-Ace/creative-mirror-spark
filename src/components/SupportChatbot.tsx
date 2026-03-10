@@ -283,7 +283,7 @@ export default function SupportChatbot() {
           >
             {mode === "live" ? <User className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
             <div>
-              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "James"}</p>
+              <p className="font-semibold text-white text-sm">{mode === "live" ? "Live Support" : "Alfred"}</p>
               <p className="text-xs text-white/70">
                 {mode === "live" ? "Verbunden mit Mitarbeiter" : "partyticket Support"}
               </p>
