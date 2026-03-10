@@ -1548,11 +1548,6 @@ ${bodyContent}
                             </div>
                           </div>
 
-                          {/* City Filter */}
-                          <div>
-                            <label className={labelCls} style={labelStyle}>Stadt</label>
-                            <CitySearchFilter cities={allCities} value={cityFilter} onChange={setCityFilter} compact />
-                          </div>
 
                           {/* Age Filter */}
                           <div>
