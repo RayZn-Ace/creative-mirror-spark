@@ -464,10 +464,17 @@ const TicketTemplateAdmin = () => {
     load();
   }, []);
 
-  // Resolve the current preview image URL (series image or demo)
-  const currentPreviewSrcUrl = previewSeriesId
-    ? resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap) || DEMO_EVENT_IMAGE
-    : DEMO_EVENT_IMAGE;
+  // Resolve the current preview image URL (event, series, or demo)
+  const currentPreviewSrcUrl = (() => {
+    if (previewEventId) {
+      const ev = eventsMap[previewEventId];
+      return ev?.image_url || DEMO_EVENT_IMAGE;
+    }
+    if (previewSeriesId) {
+      return resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap) || DEMO_EVENT_IMAGE;
+    }
+    return DEMO_EVENT_IMAGE;
+  })();
 
   // Clean image via AI when the source image changes
   useEffect(() => {
