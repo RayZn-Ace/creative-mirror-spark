@@ -411,7 +411,7 @@ const PagesAdmin = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+      {/* Edit Full-Screen Side-by-Side */}
       <AnimatePresence>
         {editing && (
           <>
@@ -423,13 +423,14 @@ const PagesAdmin = () => {
               onClick={() => setEditing(null)}
             />
             <motion.div
-              className="fixed inset-2 sm:inset-y-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl z-50 rounded-2xl overflow-y-auto"
+              className="fixed inset-2 sm:inset-4 z-50 rounded-2xl overflow-hidden flex flex-col lg:flex-row"
               style={{ background: "hsl(220 50% 10%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
             >
-              <div className="p-6 space-y-5">
+              {/* ── Left: Editor ── */}
+              <div className="flex-1 min-w-0 overflow-y-auto p-6 space-y-5 lg:max-w-[50%]">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>
                     {editing.title || editing.page_key} bearbeiten
@@ -483,7 +484,7 @@ const PagesAdmin = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2 sticky bottom-0 pb-2">
+                <div className="flex gap-3 pt-2 sticky bottom-0 pb-2" style={{ background: "hsl(220 50% 10%)" }}>
                   <button
                     onClick={() => setEditing(null)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-bold"
@@ -498,6 +499,28 @@ const PagesAdmin = () => {
                   >
                     <Save className="w-4 h-4" /> Speichern
                   </button>
+                </div>
+              </div>
+
+              {/* ── Right: Live Preview ── */}
+              <div
+                className="hidden lg:flex flex-col flex-1 min-w-0 border-l"
+                style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}
+              >
+                <div className="flex items-center gap-2 px-4 py-3" style={{ background: "hsl(0 0% 100% / 0.03)", borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
+                  <Eye className="w-4 h-4" style={{ color: "hsl(230 80% 65%)" }} />
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                    Live-Vorschau
+                  </span>
+                </div>
+                <div className="flex-1 overflow-y-auto bg-white rounded-br-2xl">
+                  <div className="p-6 sm:p-10 max-w-3xl mx-auto">
+                    {pageType === "faq" ? (
+                      <FAQPreview subtitle={subtitle} categories={categories} />
+                    ) : (
+                      <SectionsPreview title={editing.title || ""} subtitle={subtitle} sections={sections} />
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
