@@ -308,6 +308,18 @@ const MediaAdmin = () => {
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2">
+            {/* Cover image upload */}
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0], selectedAlbum.id)}
+              />
+              <Button asChild variant="outline" disabled={uploadingCover} size="sm">
+                <span><Star className="w-4 h-4 mr-1" />{uploadingCover ? "Lädt..." : "Titelbild ändern"}</span>
+              </Button>
+            </label>
             <label className="cursor-pointer">
               <input
                 type="file"
