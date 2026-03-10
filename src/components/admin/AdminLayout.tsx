@@ -72,7 +72,7 @@ const AdminLayout = () => {
         <Link to="/admin" onClick={() => setSidebarOpen(false)}>
           <span
             className="text-sm font-black uppercase tracking-wider"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(230 80% 56%)" }}
+            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(270 70% 55%)" }}
           >
             Admin
           </span>
