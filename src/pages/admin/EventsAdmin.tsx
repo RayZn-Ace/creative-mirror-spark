@@ -82,6 +82,10 @@ interface TicketRow {
   sale_end: string | null;
   internal_only: boolean | null;
   group_size: number | null;
+  max_capacity: number | null;
+  kvk_enabled: boolean | null;
+  kvk_min_percent: number | null;
+  kvk_max_percent: number | null;
 }
 
 interface SeriesOption {
