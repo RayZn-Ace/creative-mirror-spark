@@ -10,7 +10,7 @@ import {
   ChevronLeft, ChevronRight, Download, Filter, Sun, Moon, Eye, Target,
   Percent, Repeat, UserCheck, Globe, Zap, ArrowRight,
 } from "lucide-react";
-import { CityHeatmap } from "@/components/admin/CityHeatmap";
+
 
 /* ─── Helpers ─── */
 const fmt = (n: number) => n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
