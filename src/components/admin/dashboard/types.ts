@@ -30,7 +30,7 @@ export type WidgetType =
   | "welcome_greeting"
   | "capacity_overview"
   | "revenue_by_event"
-  | "geo_heatmap";
+  | "revenue_by_event";
 
 export const WIDGET_META: Record<WidgetType, { label: string; description: string; icon: string; defaultW: number; defaultH: number }> = {
   stats: { label: "Statistiken", description: "Übersicht über Serien, Events, Tickets & Seiten", icon: "BarChart3", defaultW: 4, defaultH: 4 },
