@@ -1085,6 +1085,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   const [saveInfo, setSaveInfo] = useState(!!savedInfo.email);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [showInsurancePopup, setShowInsurancePopup] = useState(false);
+  const [insuranceAccepted, setInsuranceAccepted] = useState(false);
   const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
   const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
 
