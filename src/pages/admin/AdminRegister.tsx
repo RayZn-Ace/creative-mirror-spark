@@ -215,9 +215,9 @@ const AdminRegister = () => {
             disabled={loading}
             className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.02] disabled:opacity-50"
             style={{
-              background: "hsl(230 80% 56%)",
+              background: "hsl(270 70% 55%)",
               color: "hsl(0 0% 100%)",
-              boxShadow: "0 4px 20px hsl(230 80% 56% / 0.3)",
+              boxShadow: "0 4px 20px hsl(270 70% 55% / 0.3)",
             }}
           >
             {loading ? "Wird registriert..." : "Registrierung abschließen"}
