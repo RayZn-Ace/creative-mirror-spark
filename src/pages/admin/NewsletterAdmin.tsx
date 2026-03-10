@@ -966,11 +966,6 @@ const NewsletterAdmin = () => {
       if (orderFilter === "cancelled" && o.status !== "cancelled") return;
       if (orderFilter === "unpaid" && o.status === "paid") return;
 
-      // City filter
-      if (cityFilter !== "all") {
-        const eventCity = o.event_id ? eventMap.get(o.event_id)?.city : null;
-        if (eventCity !== cityFilter) return;
-      }
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
