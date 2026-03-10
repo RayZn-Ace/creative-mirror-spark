@@ -52,6 +52,13 @@ const getYoutubeId = (url: string) => {
   return m ? m[1] : null;
 };
 
+// Generate a resized thumbnail URL via Supabase Storage transform
+const getThumbUrl = (url: string, width = 400) => {
+  if (!url || !url.includes('/storage/v1/object/public/')) return url;
+  // Use Supabase image transformation: /render/image/public/...
+  return url.replace('/storage/v1/object/public/', `/storage/v1/render/image/public/`) + `?width=${width}&resize=contain&quality=60`;
+};
+
 const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
