@@ -394,8 +394,10 @@ const TicketTemplateAdmin = () => {
   // Preview selectors
   const [previewCategoryId, setPreviewCategoryId] = useState<string | null>(null);
   const [previewSeriesId, setPreviewSeriesId] = useState<string | null>(null);
+  const [previewEventId, setPreviewEventId] = useState<string | null>(null);
   const [ticketCategories, setTicketCategories] = useState<Array<{ id: string; name: string; category_group: string | null; event_id: string }>>([]);
   const [eventSeries, setEventSeries] = useState<Array<{ id: string; title: string; image_url: string | null }>>([]);
+  const [eventsList, setEventsList] = useState<Array<{ id: string; title: string; image_url: string | null; date: string | null }>>([]);
   const [eventsMap, setEventsMap] = useState<Record<string, { image_url: string | null; title: string; series_id: string | null }>>({});
   const [cleanedImages, setCleanedImages] = useState<Record<string, string>>({});
   const [cleaningImage, setCleaningImage] = useState(false);
@@ -411,7 +413,7 @@ const TicketTemplateAdmin = () => {
         supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle(),
         supabase.from("ticket_categories").select("id, name, category_group, event_id"),
         supabase.from("event_series").select("id, title, image_url").eq("status", "published"),
-        supabase.from("events").select("id, image_url, title, series_id").eq("status", "published"),
+        supabase.from("events").select("id, image_url, title, series_id, date").eq("status", "published"),
       ]);
 
       let resolvedTpl = { ...defaultTemplate };
@@ -445,6 +447,15 @@ const TicketTemplateAdmin = () => {
         const map: Record<string, { image_url: string | null; title: string; series_id: string | null }> = {};
         eventsRes.data.forEach(e => { map[e.id] = { image_url: e.image_url, title: e.title, series_id: e.series_id }; });
         setEventsMap(map);
+        // Build deduplicated events list for preview selector (unique titles, pick most recent)
+        const titleMap = new Map<string, { id: string; title: string; image_url: string | null; date: string | null }>();
+        eventsRes.data.forEach(e => {
+          const existing = titleMap.get(e.title);
+          if (!existing || (e.date && (!existing.date || e.date > existing.date))) {
+            titleMap.set(e.title, { id: e.id, title: e.title, image_url: e.image_url, date: e.date });
+          }
+        });
+        setEventsList(Array.from(titleMap.values()).sort((a, b) => (b.date || "").localeCompare(a.date || "")));
       }
 
       setLoading(false);
@@ -453,14 +464,21 @@ const TicketTemplateAdmin = () => {
     load();
   }, []);
 
-  // Resolve the current preview image URL (series image or demo)
-  const currentPreviewSrcUrl = previewSeriesId
-    ? resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap) || DEMO_EVENT_IMAGE
-    : DEMO_EVENT_IMAGE;
+  // Resolve the current preview image URL (event, series, or demo)
+  const currentPreviewSrcUrl = (() => {
+    if (previewEventId) {
+      const ev = eventsMap[previewEventId];
+      return ev?.image_url || DEMO_EVENT_IMAGE;
+    }
+    if (previewSeriesId) {
+      return resolveSeriesPreviewImage(previewSeriesId, eventSeries, eventsMap) || DEMO_EVENT_IMAGE;
+    }
+    return DEMO_EVENT_IMAGE;
+  })();
 
   // Clean image via AI when the source image changes
   useEffect(() => {
-    if (!tpl.magic_ticket_enabled && !previewSeriesId) return;
+    if (!tpl.magic_ticket_enabled && !previewSeriesId && !previewEventId) return;
 
     const srcUrl = currentPreviewSrcUrl;
     if (!srcUrl) return;
@@ -1080,39 +1098,51 @@ const TicketTemplateAdmin = () => {
 
             {/* Preview mode selectors */}
             <div className="space-y-3">
-              {/* Event Series selector */}
-              {eventSeries.length > 0 && (
-                <div>
-                  <label style={{ ...labelStyle, marginBottom: "6px" }}>Eventreihe</label>
-                  <div className="flex flex-wrap gap-1.5">
+              {/* Event / Series selector */}
+              <div>
+                <label style={{ ...labelStyle, marginBottom: "6px" }}>{eventSeries.length > 0 ? "Eventreihe" : "Event-Vorschau"}</label>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => { setPreviewSeriesId(null); setPreviewEventId(null); }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+                    style={{
+                      background: !previewSeriesId && !previewEventId ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                      color: !previewSeriesId && !previewEventId ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                      border: `1px solid ${!previewSeriesId && !previewEventId ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                    }}
+                  >
+                    Demo
+                  </button>
+                  {eventSeries.length > 0 ? eventSeries.map(s => (
                     <button
-                      onClick={() => setPreviewSeriesId(null)}
+                      key={s.id}
+                      onClick={() => { setPreviewSeriesId(s.id); setPreviewEventId(null); }}
                       className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
                       style={{
-                        background: !previewSeriesId ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                        color: !previewSeriesId ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
-                        border: `1px solid ${!previewSeriesId ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                        background: previewSeriesId === s.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                        color: previewSeriesId === s.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                        border: `1px solid ${previewSeriesId === s.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
                       }}
                     >
-                      Demo
+                      {s.title}
                     </button>
-                    {eventSeries.map(s => (
-                      <button
-                        key={s.id}
-                        onClick={() => setPreviewSeriesId(s.id)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
-                        style={{
-                          background: previewSeriesId === s.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                          color: previewSeriesId === s.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
-                          border: `1px solid ${previewSeriesId === s.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
-                        }}
-                      >
-                        {s.title}
-                      </button>
-                    ))}
-                  </div>
+                  )) : eventsList.map(ev => (
+                    <button
+                      key={ev.id}
+                      onClick={() => { setPreviewEventId(ev.id); setPreviewSeriesId(null); }}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all max-w-[160px] truncate"
+                      style={{
+                        background: previewEventId === ev.id ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                        color: previewEventId === ev.id ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                        border: `1px solid ${previewEventId === ev.id ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                      }}
+                      title={ev.title}
+                    >
+                      {ev.title}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
 
               {/* Category Design selector (from template designs, not individual ticket names) */}
               {(() => {
@@ -1187,8 +1217,8 @@ const TicketTemplateAdmin = () => {
                 }
               }
 
-              // Force magic ticket enabled when a series is selected OR when magic_ticket is enabled
-              const previewTpl = { ...displayTpl, magic_ticket_enabled: previewSeriesId ? true : displayTpl.magic_ticket_enabled };
+              // Force magic ticket enabled when a series/event is selected OR when magic_ticket is enabled
+              const previewTpl = { ...displayTpl, magic_ticket_enabled: (previewSeriesId || previewEventId) ? true : displayTpl.magic_ticket_enabled };
 
               return (
                 <>
@@ -1205,6 +1235,10 @@ const TicketTemplateAdmin = () => {
                     {previewSeriesId && (() => {
                       const s = eventSeries.find(x => x.id === previewSeriesId);
                       return s ? ` · ${s.title}` : "";
+                    })()}
+                    {previewEventId && (() => {
+                      const ev = eventsMap[previewEventId];
+                      return ev ? ` · ${ev.title}` : "";
                     })()}
                     {previewCategoryId ? ` · ${previewCategoryId}` : ""}
                   </p>
