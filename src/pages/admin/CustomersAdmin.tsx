@@ -232,16 +232,30 @@ const CustomersAdmin = () => {
     return Array.from(cities).sort();
   }, [customers, eventMap]);
 
+  const ticketsByOrderId = useMemo(() => {
+    const map = new Map<string, TicketRow[]>();
+    allTickets.forEach(t => {
+      const arr = map.get(t.order_id) || [];
+      arr.push(t);
+      map.set(t.order_id, arr);
+    });
+    return map;
+  }, [allTickets]);
+
   const filteredCustomers = useMemo(() => {
     let result = customers;
     if (search.trim()) {
       const q = search.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.email.includes(q) ||
-          c.name?.toLowerCase().includes(q) ||
-          c.phone?.includes(q)
-      );
+      result = result.filter((c) => {
+        // Match email, name, phone
+        if (c.email.includes(q) || c.name?.toLowerCase().includes(q) || c.phone?.includes(q)) return true;
+        // Match order IDs
+        if (c.orders.some(o => o.id.toLowerCase().includes(q))) return true;
+        // Match ticket QR codes / IDs
+        const customerTickets = c.orders.flatMap(o => ticketsByOrderId.get(o.id) || []);
+        if (customerTickets.some(t => t.qr_code.toLowerCase().includes(q) || t.id.toLowerCase().includes(q))) return true;
+        return false;
+      });
     }
     if (statusFilter !== "all") {
       result = result.filter((c) =>
@@ -262,7 +276,7 @@ const CustomersAdmin = () => {
       return sortAsc ? cmp : -cmp;
     });
     return result;
-  }, [customers, search, sortField, sortAsc, statusFilter, cityFilter, eventMap]);
+  }, [customers, search, sortField, sortAsc, statusFilter, cityFilter, eventMap, ticketsByOrderId]);
 
   const getEventTitle = (eventId: string | null) => {
     if (!eventId) return "–";
@@ -742,7 +756,7 @@ const CustomersAdmin = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Name, E-Mail oder Telefon suchen..."
+            placeholder="Name, E-Mail, Telefon, Bestell-ID oder Ticketnummer..."
             className="w-full pl-10 pr-3 py-2 rounded-lg text-sm"
             style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
           />
