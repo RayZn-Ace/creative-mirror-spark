@@ -16,11 +16,7 @@ const Impressum = () => (
       </div>
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>Kontakt</h2>
-        <p>Telefon: +49 511 12282957<br />E-Mail: <a href="mailto:dennis@smea.info" className="text-primary hover:underline">dennis@smea.info</a></p>
-      </div>
-      <div>
-        <h2 className={sectionHeading} style={sectionStyle}>Umsatzsteuer-ID</h2>
-        <p>Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />DE323622049</p>
+        <p>E-Mail: <a href="mailto:info@nightlifeticket.app" className="text-primary hover:underline">info@nightlifeticket.app</a></p>
       </div>
       <div>
         <h2 className={sectionHeading} style={sectionStyle}>EU-Streitschlichtung</h2>
