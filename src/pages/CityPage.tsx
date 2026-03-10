@@ -1261,7 +1261,15 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
             <motion.button 
               className="pp-cart-btn mt-1 text-sm sm:text-base py-3.5 sm:py-4 flex items-center justify-center gap-2"
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-              onClick={() => { if (totalItems > 0) setShowCheckout(true); }}
+              onClick={() => {
+                if (totalItems > 0) {
+                  if (event.insuranceEnabled && event.insuranceAmount > 0) {
+                    setShowInsurancePopup(true);
+                  } else {
+                    setShowCheckout(true);
+                  }
+                }
+              }}
               style={{ opacity: totalItems > 0 ? 1 : 0.5, cursor: totalItems > 0 ? "pointer" : "not-allowed" }}
             >
               {t.continueBtn} {totalItems > 0 && `(${totalItems})`} <ArrowRight className="w-5 h-5" />
