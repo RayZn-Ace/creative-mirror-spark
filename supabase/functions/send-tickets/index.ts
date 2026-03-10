@@ -459,8 +459,8 @@ async function generateTicketPDF(tickets: Array<{
         let sx = m;
         for (const s of tpl.sponsors) {
           if (s.type === "text") {
-            page.drawText(s.value, { x: sx, y: m, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
-            sx += fontRegular.widthOfTextAtSize(s.value, 7) + 16;
+            page.drawText(stripEmojis(s.value), { x: sx, y: m, size: 7, font: fontRegular, color: txColor, opacity: 0.4 });
+            sx += fontRegular.widthOfTextAtSize(stripEmojis(s.value), 7) + 16;
           }
         }
       }
