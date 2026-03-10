@@ -380,9 +380,10 @@ async function generateTicketPDF(tickets: Array<{
 
       for (const d of details) {
         const labelText = d.label + "  ";
+        const safeValue = stripEmojis(d.value);
         const labelW = fontRegular.widthOfTextAtSize(labelText, 8);
         page.drawText(labelText, { x: m, y, size: 8, font: fontRegular, color: txColor, opacity: 0.5 });
-        page.drawText(d.value, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
+        page.drawText(safeValue, { x: m + labelW, y, size: 10, font: fontBold, color: txColor });
         y -= 18;
       }
 
