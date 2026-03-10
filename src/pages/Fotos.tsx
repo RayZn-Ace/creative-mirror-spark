@@ -52,6 +52,13 @@ const getYoutubeId = (url: string) => {
   return m ? m[1] : null;
 };
 
+// Generate a resized thumbnail URL via Supabase Storage transform
+const getThumbUrl = (url: string, width = 400) => {
+  if (!url || !url.includes('/storage/v1/object/public/')) return url;
+  // Use Supabase image transformation: /render/image/public/...
+  return url.replace('/storage/v1/object/public/', `/storage/v1/render/image/public/`) + `?width=${width}&resize=contain&quality=60`;
+};
+
 const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
@@ -109,7 +116,7 @@ const Fotos = () => {
   const dbPhotos = useMemo(() =>
     albumMedia
       .filter((m: any) => (m.media_type || "photo") === "photo")
-      .map((m: any) => ({ src: m.image_url, alt: m.caption || "Foto" })),
+      .map((m: any) => ({ src: m.image_url, thumb: getThumbUrl(m.image_url, 500), alt: m.caption || "Foto" })),
     [albumMedia]
   );
 
@@ -358,19 +365,19 @@ const Fotos = () => {
             {displayPhotos.slice(0, visibleCount).map((photo, i) => (
               <motion.div
                 key={`${photo.src}-${i}`}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: Math.min(i, 20) * 0.05 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: Math.min(i % 20, 8) * 0.03 }}
                 className="overflow-hidden rounded-xl cursor-pointer group relative"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={photo.thumb || photo.src}
                   alt={photo.alt}
-                  className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110 bg-muted"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                   <span className="text-white text-sm font-medium">{photo.alt}</span>
@@ -404,17 +411,18 @@ const Fotos = () => {
             {displayPhotos.slice(0, visibleCount).map((photo, i) => (
               <motion.div
                 key={`${photo.src}-${i}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: Math.min(i, 20) * 0.06 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: Math.min(i % 20, 8) * 0.03 }}
                 className="break-inside-avoid mb-3 overflow-hidden rounded-xl cursor-pointer group relative"
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={photo.thumb || photo.src}
                   alt={photo.alt}
-                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
+                  className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 bg-muted ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
                   loading="lazy"
+                  decoding="async"
                 />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <span className="text-white text-sm font-medium">{photo.alt}</span>
