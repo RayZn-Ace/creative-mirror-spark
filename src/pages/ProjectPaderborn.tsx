@@ -64,11 +64,6 @@ const makeInfoSections = (event: EventData) => [
 
 ✅ Dein Ticket brauchst du nicht auszudrucken – es reicht digital auf deinem Handy.`,
   },
-  {
-    id: "whatsapp",
-    title: "Freikarten & mehr?",
-    content: "whatsapp",
-  },
 ];
 
 const events: EventData[] = [
