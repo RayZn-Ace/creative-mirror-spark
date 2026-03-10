@@ -314,9 +314,6 @@ const CustomersAdmin = () => {
         c.orders.some((o) => o.status === statusFilter)
       );
     }
-    if (cityFilter !== "all") {
-      result = result.filter((c) => getCustomerCitiesSet(c).has(cityFilter));
-    }
     result.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
