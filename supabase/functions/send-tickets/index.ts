@@ -181,78 +181,66 @@ async function generateTicketPDF(tickets: Array<{
     const m = isDinLang ? 20 : 30; // margin
 
     // Background with gradient simulation
-    if (effectiveTpl.gradient?.enabled) {
-      const [fromR, fromG, fromB] = hexToRgb(effectiveTpl.gradient!.color_from);
-      const [toR, toG, toB] = hexToRgb(effectiveTpl.gradient!.color_to);
-      const strips = 120; // More strips for smoother gradient
-      const isRadial = effectiveTpl.gradient!.type === "radial";
-      const angle = (effectiveTpl.gradient as any).angle || 135;
-      const rad = (angle * Math.PI) / 180;
-      // For linear gradients: compute direction vector
-      const dx = Math.cos(rad);
-      const dy = Math.sin(rad);
-      
+    const drawGradientBg = (page: any, x0: number, y0: number, w: number, h: number, grad: GradientConfig) => {
+      const [fromR, fromG, fromB] = hexToRgb(grad.color_from);
+      const [toR, toG, toB] = hexToRgb(grad.color_to);
+      const strips = 100;
+      const isRadial = grad.type === "radial";
+      const angle = (grad as any).angle || 135;
+
       if (isRadial) {
-        // Radial: draw from edges to center using concentric rectangles
-        const cx = width / 2;
-        const cy = height / 2;
-        const maxR = Math.sqrt(cx * cx + cy * cy);
+        // Radial: draw from outside-in with concentric rectangles
+        const cx = x0 + w / 2;
+        const cy = y0 + h / 2;
         for (let i = strips - 1; i >= 0; i--) {
           const t = i / (strips - 1);
           const r = toR + (fromR - toR) * (1 - t);
           const g = toG + (fromG - toG) * (1 - t);
           const b = toB + (fromB - toB) * (1 - t);
-          const radius = maxR * (1 - t);
+          const scaleX = (1 - t) * w / 2 + 1;
+          const scaleY = (1 - t) * h / 2 + 1;
           page.drawRectangle({
-            x: cx - radius, y: cy - radius,
-            width: radius * 2, height: radius * 2,
+            x: cx - scaleX, y: cy - scaleY,
+            width: scaleX * 2, height: scaleY * 2,
             color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
           });
         }
       } else {
-        // Linear: draw strips perpendicular to the gradient angle
-        // Project corners onto the gradient direction to find the full span
-        const corners = [[0, 0], [width, 0], [width, height], [0, height]];
+        // Linear: use horizontal strips, compute gradient position based on angle
+        const rad = (angle * Math.PI) / 180;
+        const dx = Math.cos(rad);
+        const dy = Math.sin(rad);
+        // Project all corners to find min/max along gradient direction
+        const corners = [[0, 0], [w, 0], [w, h], [0, h]];
         const projections = corners.map(([cx, cy]) => cx * dx + cy * dy);
         const minProj = Math.min(...projections);
         const maxProj = Math.max(...projections);
-        const span = maxProj - minProj;
-        
-        // Perpendicular direction
-        const px = -dy;
-        const py = dx;
-        const perpSpan = Math.sqrt(width * width + height * height) * 2;
-        
+        const span = maxProj - minProj || 1;
+
+        const stripH = h / strips;
         for (let i = 0; i < strips; i++) {
-          const t = i / (strips - 1);
+          // For each horizontal strip, compute the center y position
+          const sy = i * stripH;
+          // Calculate the average gradient position for this strip
+          // Use center-x and center-y of the strip
+          const centerX = w / 2;
+          const centerY = sy + stripH / 2;
+          const proj = centerX * dx + centerY * dy;
+          const t = Math.max(0, Math.min(1, (proj - minProj) / span));
           const r = fromR + (toR - fromR) * t;
           const g = fromG + (toG - fromG) * t;
           const b = fromB + (toB - fromB) * t;
-          
-          // Center of this strip along gradient direction
-          const proj = minProj + span * t;
-          const stripThickness = span / strips + 1;
-          
-          // Draw a rotated rectangle as a thin strip
-          // Use many small rects along the perpendicular to approximate rotation
-          const cx = dx * proj;
-          const cy = dy * proj;
-          const halfPerp = perpSpan / 2;
-          const halfThick = stripThickness / 2;
-          
-          // Approximate with axis-aligned rectangle covering the strip
-          const x1 = cx - halfPerp * Math.abs(px) - halfThick * Math.abs(dx);
-          const y1 = cy - halfPerp * Math.abs(py) - halfThick * Math.abs(dy);
-          const w = halfPerp * 2 * Math.abs(px) + stripThickness * Math.abs(dx) + halfPerp * 2 * Math.abs(dx);
-          const h = halfPerp * 2 * Math.abs(py) + stripThickness * Math.abs(dy) + halfPerp * 2 * Math.abs(dy);
-          
           page.drawRectangle({
-            x: Math.max(-width, x1), y: Math.max(-height, y1),
-            width: Math.min(width * 3, w), height: Math.min(height * 3, h),
+            x: x0, y: y0 + sy,
+            width: w, height: stripH + 0.5,
             color: rgb(Math.max(0, Math.min(1, r)), Math.max(0, Math.min(1, g)), Math.max(0, Math.min(1, b))),
           });
         }
       }
+    };
+
+    if (effectiveTpl.gradient?.enabled) {
+      drawGradientBg(page, 0, 0, width, height, effectiveTpl.gradient!);
     } else {
       page.drawRectangle({ x: 0, y: 0, width, height, color: bgColor });
     }
