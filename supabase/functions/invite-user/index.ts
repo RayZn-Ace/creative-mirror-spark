@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
 <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="font-size:24px;color:#1a1a1a;margin:0;">GIMME GIMME PARTY</h1>
+      <h1 style="font-size:24px;color:#1a1a1a;margin:0;">NIGHTLIFE GENERATION</h1>
     </div>
     <div style="background:#f9f9f9;border-radius:12px;padding:32px;">
       <h2 style="font-size:20px;color:#1a1a1a;margin:0 0 16px;">Du wurdest eingeladen! 🎉</h2>
