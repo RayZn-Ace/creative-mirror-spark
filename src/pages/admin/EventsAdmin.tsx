@@ -186,6 +186,15 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
       setTemplateSettingsId(data.id);
       const designs = (data.value as any).category_designs || [];
       setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
+    } else {
+      // No template row yet – show default designs so dropdown matches TicketTemplateAdmin
+      const defaults = [
+        { key: "REGULAR", label: "Regular" },
+        { key: "DELUXE", label: "Deluxe" },
+        { key: "PREMIUM", label: "Premium" },
+        { key: "FAN", label: "Fan" },
+      ];
+      setCategoryDesigns(defaults);
     }
   };
 
