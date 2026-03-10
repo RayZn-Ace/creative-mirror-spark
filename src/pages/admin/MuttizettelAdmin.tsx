@@ -1,26 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Search, Trash2, Eye, RefreshCw } from "lucide-react";
+import { FileText, Search, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface MuttizettelEntry {
   id: string;
   created_at: string;
-  child_name: string;
-  child_birthdate: string;
+  minor_name: string;
+  minor_birthday: string;
   parent_name: string;
   parent_phone: string;
-  parent_email: string | null;
-  event_name: string | null;
-  companion_name: string | null;
-  status: string;
+  email: string;
+  event_title: string;
+  event_date: string | null;
+  supervisor_name: string | null;
+  has_signature: boolean;
+  has_supervisor_signature: boolean;
 }
-
-const statusColors: Record<string, { bg: string; text: string }> = {
-  pending: { bg: "hsl(45 90% 50% / 0.15)", text: "hsl(45 80% 45%)" },
-  approved: { bg: "hsl(142 60% 50% / 0.15)", text: "hsl(142 50% 40%)" },
-  rejected: { bg: "hsl(0 70% 50% / 0.15)", text: "hsl(0 60% 50%)" },
-};
 
 const MuttizettelAdmin = () => {
   const [search, setSearch] = useState("");
@@ -30,33 +26,27 @@ const MuttizettelAdmin = () => {
   const fetchEntries = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("muttizettel_submissions")
-      .select("id, created_at, child_name, child_birthdate, parent_name, parent_phone, parent_email, event_name, companion_name, status")
-      .order("created_at", { ascending: false }) as any;
+      .from("u18_forms")
+      .select("id, created_at, minor_name, minor_birthday, parent_name, parent_phone, email, event_title, event_date, supervisor_name, has_signature, has_supervisor_signature")
+      .order("created_at", { ascending: false });
     if (data) setEntries(data);
-    if (error) console.error(error);
+    if (error) console.error("Muttizettel fetch error:", error);
     setLoading(false);
   };
 
   useEffect(() => { fetchEntries(); }, []);
 
-  const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("muttizettel_submissions").update({ status } as any).eq("id", id) as any;
-    if (error) { toast.error("Fehler"); return; }
-    toast.success(`Status auf „${status}" gesetzt`);
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, status } : e)));
-  };
-
   const deleteEntry = async (id: string) => {
-    if (!confirm("Muttizettel wirklich löschen?")) return;
-    await supabase.from("muttizettel_submissions").delete().eq("id", id) as any;
+    if (!confirm("Clubzettel wirklich löschen?")) return;
+    const { error } = await supabase.from("u18_forms").delete().eq("id", id);
+    if (error) { toast.error("Fehler beim Löschen"); return; }
     setEntries((prev) => prev.filter((e) => e.id !== id));
     toast.success("Gelöscht");
   };
 
   const filtered = entries.filter((e) => {
     const q = search.toLowerCase();
-    return !q || e.child_name?.toLowerCase().includes(q) || e.parent_name?.toLowerCase().includes(q) || e.event_name?.toLowerCase().includes(q);
+    return !q || e.minor_name?.toLowerCase().includes(q) || e.parent_name?.toLowerCase().includes(q) || e.event_title?.toLowerCase().includes(q);
   });
 
   return (
@@ -65,10 +55,10 @@ const MuttizettelAdmin = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: "hsl(0 0% 100%)" }}>
             <FileText className="w-6 h-6" style={{ color: "hsl(230 80% 56%)" }} />
-            Muttizettel
+            Muttizettel / Clubzettel
           </h1>
           <p className="text-sm mt-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-            {entries.length} eingereichte Muttizettel
+            {entries.length} eingereichte Clubzettel
           </p>
         </div>
         <button onClick={fetchEntries} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ background: "hsl(220 30% 12%)", border: "1px solid hsl(220 20% 22%)", color: "hsl(0 0% 100% / 0.7)" }}>
@@ -87,7 +77,7 @@ const MuttizettelAdmin = () => {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid hsl(220 20% 18%)" }}>
-                {["Datum", "Kind", "Geb.", "Elternteil", "Telefon", "Event", "Begleitperson", "Status", ""].map((h) => (
+                {["Datum", "Kind", "Geb.", "Elternteil", "Telefon", "Event", "Aufsichtsperson", "Unterschriften", ""].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{h}</th>
                 ))}
               </tr>
@@ -96,39 +86,40 @@ const MuttizettelAdmin = () => {
               {loading ? (
                 <tr><td colSpan={9} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Laden...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Muttizettel gefunden.</td></tr>
+                <tr><td colSpan={9} className="text-center py-16 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Keine Clubzettel gefunden.</td></tr>
               ) : (
-                filtered.map((entry) => {
-                  const sc = statusColors[entry.status] || statusColors.pending;
-                  return (
-                    <tr key={entry.id} style={{ borderBottom: "1px solid hsl(220 20% 15%)" }} className="hover:bg-[hsl(220_30%_12%)] transition-colors">
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{new Date(entry.created_at).toLocaleDateString("de-DE")}</td>
-                      <td className="px-4 py-3 font-medium" style={{ color: "hsl(0 0% 100%)" }}>{entry.child_name}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.child_birthdate ? new Date(entry.child_birthdate).toLocaleDateString("de-DE") : "–"}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_name}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_phone}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.event_name || "–"}</td>
-                      <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.companion_name || "–"}</td>
-                      <td className="px-4 py-3">
-                        <select
-                          value={entry.status}
-                          onChange={(e) => updateStatus(entry.id, e.target.value)}
-                          className="px-2 py-0.5 rounded-full text-xs font-medium border-0 cursor-pointer"
-                          style={{ background: sc.bg, color: sc.text }}
-                        >
-                          <option value="pending">Ausstehend</option>
-                          <option value="approved">Genehmigt</option>
-                          <option value="rejected">Abgelehnt</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => deleteEntry(entry.id)} className="p-1.5 rounded-lg hover:bg-[hsl(0_70%_50%/0.15)] transition-colors" title="Löschen">
-                          <Trash2 className="w-4 h-4" style={{ color: "hsl(0 70% 50%)" }} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                filtered.map((entry) => (
+                  <tr key={entry.id} style={{ borderBottom: "1px solid hsl(220 20% 15%)" }} className="hover:bg-[hsl(220_30%_12%)] transition-colors">
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{new Date(entry.created_at).toLocaleDateString("de-DE")}</td>
+                    <td className="px-4 py-3 font-medium" style={{ color: "hsl(0 0% 100%)" }}>{entry.minor_name}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{new Date(entry.minor_birthday).toLocaleDateString("de-DE")}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_name}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.parent_phone}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.event_title || "–"}</td>
+                    <td className="px-4 py-3" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{entry.supervisor_name || "–"}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{
+                          background: entry.has_signature ? "hsl(142 60% 50% / 0.15)" : "hsl(45 90% 50% / 0.15)",
+                          color: entry.has_signature ? "hsl(142 50% 40%)" : "hsl(45 80% 45%)"
+                        }}>
+                          {entry.has_signature ? "✓ Eltern" : "○ Eltern"}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{
+                          background: entry.has_supervisor_signature ? "hsl(142 60% 50% / 0.15)" : "hsl(45 90% 50% / 0.15)",
+                          color: entry.has_supervisor_signature ? "hsl(142 50% 40%)" : "hsl(45 80% 45%)"
+                        }}>
+                          {entry.has_supervisor_signature ? "✓ Aufsicht" : "○ Aufsicht"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => deleteEntry(entry.id)} className="p-1.5 rounded-lg hover:bg-[hsl(0_70%_50%/0.15)] transition-colors" title="Löschen">
+                        <Trash2 className="w-4 h-4" style={{ color: "hsl(0 70% 50%)" }} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
