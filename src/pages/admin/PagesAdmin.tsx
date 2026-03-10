@@ -573,7 +573,7 @@ const PagesAdmin = () => {
                       toast.success(next ? "Selbstständiges Lernen aktiviert" : "Nur FAQ-Modus aktiv");
                     }}
                     className="w-11 h-6 rounded-full relative transition-all cursor-pointer shrink-0 ml-4"
-                    style={{ background: jamesSelfLearn ? "hsl(150 70% 45%)" : "hsl(0 0% 100% / 0.1)" }}
+                    style={{ background: alfredSelfLearn ? "hsl(150 70% 45%)" : "hsl(0 0% 100% / 0.1)" }}
                   >
                     <div
                       className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
