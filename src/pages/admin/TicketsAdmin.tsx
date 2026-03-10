@@ -523,13 +523,13 @@ const ToggleChip = ({ label, checked, onChange }: { label: string; checked: bool
     onClick={() => onChange(!checked)}
     className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-left transition-all"
     style={{
-      background: checked ? "hsl(230 80% 56% / 0.12)" : "hsl(0 0% 100% / 0.03)",
-      color: checked ? "hsl(230 80% 65%)" : "hsl(0 0% 100% / 0.4)",
-      border: `1px solid ${checked ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
+      background: checked ? "hsl(270 70% 55% / 0.12)" : "hsl(0 0% 100% / 0.03)",
+      color: checked ? "hsl(270 70% 65%)" : "hsl(0 0% 100% / 0.4)",
+      border: `1px solid ${checked ? "hsl(270 70% 55% / 0.2)" : "hsl(0 0% 100% / 0.06)"}`,
     }}
   >
-    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.2)" }}>
-      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(230 80% 56%)" }} />}
+    <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{ borderColor: checked ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.2)" }}>
+      {checked && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(270 70% 55%)" }} />}
     </div>
     {label}
   </button>
