@@ -353,33 +353,48 @@ const Fotos = () => {
 
       {/* Grid View */}
       {viewMode === "grid" && displayPhotos.length > 0 && (
-        <div className={`grid ${gridColsClass} gap-3 mb-16`}>
-          {displayPhotos.map((photo, i) => (
-            <motion.div
-              key={`${photo.src}-${i}`}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="overflow-hidden rounded-xl cursor-pointer group relative"
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setLightbox(i)}
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <span className="text-white text-sm font-medium">{photo.alt}</span>
-              </div>
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Maximize2 className="w-5 h-5 text-white drop-shadow-lg" />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <>
+          <div className={`grid ${gridColsClass} gap-3`}>
+            {displayPhotos.slice(0, visibleCount).map((photo, i) => (
+              <motion.div
+                key={`${photo.src}-${i}`}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: Math.min(i, 20) * 0.05 }}
+                className="overflow-hidden rounded-xl cursor-pointer group relative"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setLightbox(i)}
+              >
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                  <span className="text-white text-sm font-medium">{photo.alt}</span>
+                </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Maximize2 className="w-5 h-5 text-white drop-shadow-lg" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {visibleCount < displayPhotos.length && (
+            <div className="flex justify-center mt-6 mb-16">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="gap-2"
+              >
+                Mehr anzeigen ({displayPhotos.length - visibleCount} weitere)
+              </Button>
+            </div>
+          )}
+          {visibleCount >= displayPhotos.length && <div className="mb-16" />}
+        </>
       )}
 
       {/* Masonry View */}
