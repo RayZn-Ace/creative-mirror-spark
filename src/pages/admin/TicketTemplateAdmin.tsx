@@ -447,6 +447,15 @@ const TicketTemplateAdmin = () => {
         const map: Record<string, { image_url: string | null; title: string; series_id: string | null }> = {};
         eventsRes.data.forEach(e => { map[e.id] = { image_url: e.image_url, title: e.title, series_id: e.series_id }; });
         setEventsMap(map);
+        // Build deduplicated events list for preview selector (unique titles, pick most recent)
+        const titleMap = new Map<string, { id: string; title: string; image_url: string | null; date: string | null }>();
+        eventsRes.data.forEach(e => {
+          const existing = titleMap.get(e.title);
+          if (!existing || (e.date && (!existing.date || e.date > existing.date))) {
+            titleMap.set(e.title, { id: e.id, title: e.title, image_url: e.image_url, date: e.date });
+          }
+        });
+        setEventsList(Array.from(titleMap.values()).sort((a, b) => (b.date || "").localeCompare(a.date || "")));
       }
 
       setLoading(false);
