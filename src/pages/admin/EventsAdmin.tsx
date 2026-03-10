@@ -175,6 +175,23 @@ const Section = ({ title, icon: Icon, children }: { title: string; icon: any; ch
 const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets: TicketRow[]; onReload: () => void }) => {
   const [editingTicket, setEditingTicket] = useState<Partial<TicketRow> | null>(null);
   const [featuresInput, setFeaturesInput] = useState("");
+  const [categoryDesigns, setCategoryDesigns] = useState<Array<{ key: string; label: string }>>([]);
+  const [showNewGroupInput, setShowNewGroupInput] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+
+  useEffect(() => {
+    supabase.from("settings").select("value").eq("key", "ticket_template").maybeSingle().then(({ data }) => {
+      if (data?.value) {
+        const designs = (data.value as any).category_designs || [
+          { key: "REGULAR", label: "Regular" },
+          { key: "DELUXE", label: "Deluxe" },
+          { key: "PREMIUM", label: "Premium" },
+          { key: "FAN", label: "Fan" },
+        ];
+        setCategoryDesigns(designs.map((d: any) => ({ key: d.key, label: d.label })));
+      }
+    });
+  }, []);
 
   const saveTicket = async () => {
     if (!editingTicket?.name) { toast.error("Ticketname ist Pflicht"); return; }
