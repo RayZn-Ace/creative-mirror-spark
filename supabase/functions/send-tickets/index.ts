@@ -773,19 +773,20 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const { order_id } = await req.json();
+    const body = await req.json();
+    const { order_id, download_only } = body;
     if (!order_id) {
       return new Response(JSON.stringify({ error: "Missing order_id" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!download_only && !RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // ─── Fetch data in parallel ───
     const [ticketsRes, orderRes, settingsRes] = await Promise.all([
@@ -882,6 +883,13 @@ Deno.serve(async (req) => {
 
     const ticketPdfBase64 = btoa(String.fromCharCode(...ticketPdfBytes));
     const invoicePdfBase64 = btoa(String.fromCharCode(...invoicePdfBytes));
+
+    // ─── Download only mode: return PDFs as base64 ───
+    if (download_only) {
+      return new Response(JSON.stringify({ ticket_pdf: ticketPdfBase64, invoice_pdf: invoicePdfBase64 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // ─── Build email ───
     const htmlEmail = buildEmailHTML({
