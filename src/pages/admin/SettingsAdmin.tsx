@@ -248,7 +248,10 @@ const SettingsAdmin = () => {
 
   const save = async (key: string, value: any, setSaving: (v: boolean) => void) => {
     setSaving(true);
-    const { error } = await supabase.from("settings").update({ value, updated_at: new Date().toISOString() }).eq("key", key);
+    const { error } = await supabase.from("settings").upsert(
+      { key, value, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
     setSaving(false);
     if (error) toast.error("Fehler beim Speichern");
     else toast.success("Einstellungen gespeichert");
