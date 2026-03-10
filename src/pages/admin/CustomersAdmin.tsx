@@ -384,10 +384,6 @@ const CustomersAdmin = () => {
     const rows = orders.filter(o => {
       const d = new Date(o.created_at);
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
-      if (cityFilter !== "all") {
-        const city = o.event_id ? eventMap.get(o.event_id)?.city : null;
-        if (city !== cityFilter) return false;
-      }
       return true;
     }).map(o => {
       const ev = o.event_id ? eventMap.get(o.event_id) : null;
