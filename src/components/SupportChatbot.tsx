@@ -186,7 +186,7 @@ export default function SupportChatbot() {
     }
 
     setIsTyping(true);
-    const reply = await askJames(query, aiHistory);
+    const reply = await askAlfred(query, aiHistory);
     setIsTyping(false);
 
     if (reply.trim() === "ESCALATE") {
