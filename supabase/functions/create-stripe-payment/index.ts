@@ -136,6 +136,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Add insurance fee as separate line item if applicable
+    if (insuranceFeeEur > 0) {
+      lineItems.push({
+        price_data: {
+          currency: targetCurrency.toLowerCase(),
+          product_data: {
+            name: "Ticketversicherung",
+          },
+          unit_amount: ZERO_DECIMAL_CURRENCIES.includes(targetCurrency)
+            ? Math.round(insuranceFeeEur * rate)
+            : Math.round(insuranceFeeEur * rate * 100),
+        },
+        quantity: 1,
+      });
+    }
+
     // Create Stripe Checkout Session
     const params = new URLSearchParams();
     params.append("mode", "payment");
