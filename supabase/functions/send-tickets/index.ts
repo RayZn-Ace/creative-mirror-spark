@@ -515,7 +515,7 @@ async function generateInvoicePDF(opts: {
   }
 
   // Company address line
-  const addressParts = [company.address, `${company.zip} ${company.city}`.trim(), company.country].filter(Boolean);
+  const addressParts = [company.address, [company.zip, company.city].filter(Boolean).join(" "), company.country].filter(Boolean);
   if (addressParts.length) {
     page.drawText(addressParts.join(" · "), { x: marginL, y, size: 8, font: fontRegular, color: grayColor });
     y -= 14;
@@ -623,7 +623,8 @@ async function generateInvoicePDF(opts: {
     const valW = font.widthOfTextAtSize(t.value, size);
     
     if (t.bold) {
-      page.drawRectangle({ x: marginR - 200, y: y - 5, width: 200, height: 24, color: lightBg });
+      y -= 8; // extra spacing before Gesamtbetrag
+      page.drawRectangle({ x: marginR - 200, y: y - 6, width: 200, height: 26, color: lightBg });
     }
     page.drawText(t.label, { x: marginR - 8 - valW - 20 - labelW, y, size, font, color: t.bold ? darkColor : grayColor });
     page.drawText(t.value, { x: marginR - 8 - valW, y, size, font, color: darkColor });
