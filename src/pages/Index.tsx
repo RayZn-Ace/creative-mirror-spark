@@ -366,7 +366,6 @@ const FALLBACK_URLS = [
 
 const InstagramFeed = () => {
   const [postUrls, setPostUrls] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -381,22 +380,21 @@ const InstagramFeed = () => {
           ? settingsData.value as string[]
           : FALLBACK_URLS;
         setPostUrls(urls);
-      } catch (e) {
-        console.warn('Instagram load error:', e);
+      } catch {
         setPostUrls(FALLBACK_URLS);
-      } finally {
-        setLoading(false);
       }
     };
     load();
   }, []);
 
-  // Convert Instagram URL to embed URL
-  const toEmbedUrl = (url: string) => {
-    // Ensure trailing slash, then append "embed"
-    const clean = url.endsWith('/') ? url : url + '/';
-    return clean + 'embed/';
-  };
+  // Use existing party images as visual thumbnails for the reels
+  const reelImages = [
+    "/images/gimme-gallery-1.jpg",
+    "/images/gimme-gallery-2.jpg",
+    "/images/gimme-gallery-3.jpg",
+    "/images/pp-background.png",
+    "/images/gimme-gallery-1.jpg",
+  ];
 
   return (
     <section className="py-16 md:py-24 bg-card/50">
@@ -412,38 +410,36 @@ const InstagramFeed = () => {
         <p className="text-center text-muted-foreground mb-2">@nightlifegeneration_de</p>
         <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Posts von unserem Instagram</p>
 
-        {loading && (
-          <div className="flex gap-4 overflow-hidden">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="min-w-[280px] h-[480px] rounded-xl bg-muted animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {!loading && postUrls.length > 0 && (
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 scrollbar-hide">
-            {postUrls.map((url, i) => (
-              <motion.div
-                key={url}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.08 }}
-                className="min-w-[280px] sm:min-w-[320px] snap-center flex-shrink-0"
-              >
-                <div className="rounded-xl overflow-hidden border border-border bg-muted" style={{ height: 480 }}>
-                  <iframe
-                    src={toEmbedUrl(url)}
-                    className="w-full h-full border-0"
-                    allowFullScreen
-                    loading="lazy"
-                    allow="autoplay; encrypted-media"
-                    title={`Instagram Reel ${i + 1}`}
-                  />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {postUrls.slice(0, 6).map((url, i) => (
+            <motion.a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: i * 0.06 }}
+              className="group relative aspect-square rounded-xl overflow-hidden border border-border"
+            >
+              <img
+                src={reelImages[i % reelImages.length]}
+                alt={`Instagram Reel ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-300 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-1">
+                  <Instagram className="w-6 h-6 text-white" />
+                  <span className="text-white text-xs font-medium">Ansehen</span>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+              </div>
+              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1.5">
+                <Play className="w-3 h-3 text-white fill-white" />
+              </div>
+            </motion.a>
+          ))}
+        </div>
 
         <div className="text-center mt-8">
           <a
