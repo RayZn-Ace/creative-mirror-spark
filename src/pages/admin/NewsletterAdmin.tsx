@@ -25,7 +25,7 @@ interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
 interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; magicMode?: boolean }
 interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string; magicMode?: boolean; magicLimit?: number }
 interface VoucherBlock extends BaseBlock { type: "voucher"; code: string; title: string; description: string; discount: string; validUntil: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; borderStyle: "dashed" | "solid" | "dotted" }
-interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
+interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; targetTime: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
 
 type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock | VoucherBlock | TimerBlock;
 
@@ -57,7 +57,7 @@ const createBlock = (type: BlockType, overrides?: Partial<any>): Block => {
       case "event-highlight": return { id, type, eventTitle: "Beispiel Event", eventDate: "21. März 2026", eventTime: "19:00 Uhr", eventLocation: "Stadthalle", eventCity: "Paderborn", eventImage: "", ctaText: "🎟 Tickets sichern", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", magicMode: false };
       case "event-list": return { id, type, title: "Alle Termine", events: [{ date: "21.03.", city: "Pforzheim", location: "Stadthalle", url: "https://" }, { date: "27.03.", city: "Rostock", location: "Stadthalle", url: "https://" }, { date: "28.03.", city: "Paderborn", location: "Stadthalle", url: "https://" }], accentColor: "#e91e8c", textColor: "#333333", bgColor: "#fafafa", magicMode: false, magicLimit: 5 };
       case "voucher": return { id, type, code: "PARTY2026", title: "🎁 Dein Gutschein", description: "Spare bei deinem nächsten Ticket-Kauf!", discount: "15% Rabatt", validUntil: "31.03.2026", ctaText: "Jetzt einlösen", ctaUrl: "https://", accentColor: "#e91e8c", bgColor: "#fff5f9", textColor: "#1a1a1a", borderStyle: "dashed" as const };
-      case "timer": return { id, type, title: "⏰ Nur noch wenige Tage!", targetDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0], expiredText: "Das Angebot ist abgelaufen!", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", style: "boxes" as const };
+      case "timer": return { id, type, title: "⏰ Nur noch wenige Tage!", targetDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0], targetTime: "23:59", expiredText: "Das Angebot ist abgelaufen!", accentColor: "#e91e8c", bgColor: "#f8f4ff", textColor: "#1a1a1a", style: "boxes" as const };
     }
   })();
   return overrides ? { ...base, ...overrides, id } as Block : base as Block;
@@ -395,7 +395,7 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
 </div></div>`;
     case "timer": {
       const now = new Date();
-      const target = new Date(block.targetDate + "T23:59:59");
+      const target = new Date(block.targetDate + "T" + (block.targetTime || "23:59") + ":00");
       const diff = Math.max(0, target.getTime() - now.getTime());
       const days = Math.floor(diff / 86400000);
       const hours = Math.floor((diff % 86400000) / 3600000);
@@ -417,7 +417,7 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
 <div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
 ${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
 ${timerHtml}
-<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate}</p>
+<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>
 </div>`;
     }
     default:
@@ -760,6 +760,8 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
           <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Zieldatum</label>
           <input type="date" value={block.targetDate} onChange={(e) => upd({ targetDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Zielzeit</label>
+          <input type="time" value={block.targetTime || "23:59"} onChange={(e) => upd({ targetTime: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Text nach Ablauf</label>
           <input value={block.expiredText} onChange={(e) => upd({ expiredText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Darstellung</label>
