@@ -395,7 +395,7 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
 </div></div>`;
     case "timer": {
       const now = new Date();
-      const target = new Date(block.targetDate + "T23:59:59");
+      const target = new Date(block.targetDate + "T" + (block.targetTime || "23:59") + ":00");
       const diff = Math.max(0, target.getTime() - now.getTime());
       const days = Math.floor(diff / 86400000);
       const hours = Math.floor((diff % 86400000) / 3600000);
