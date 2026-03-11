@@ -52,7 +52,9 @@ export default function SupportChatbot() {
     const check = async () => {
       const { data } = await supabase.from("settings").select("value").eq("key", "support_online").maybeSingle();
       if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
-        setSupportOnline(!!(data.value as Record<string, unknown>).online);
+        const val = data.value as Record<string, unknown>;
+        setSupportOnline(!!val.online);
+        setStaffCount(typeof val.staff_count === "number" ? val.staff_count : 0);
       }
     };
     check();
@@ -84,10 +86,9 @@ export default function SupportChatbot() {
     return () => { supabase.removeChannel(ch); };
   }, [ticketId, mode, customerLang]);
 
+  const [staffCount, setStaffCount] = useState(0);
+
   const quickReplies = [
-    { label: "🎫 Tickets", query: "Wo kann ich Tickets kaufen?" },
-    { label: "📅 Termine", query: "Wann und wo findet die Party statt?" },
-    { label: "👯 Gruppen/JGA", query: "Kann ich als Gruppe kommen?" },
     { label: "💬 Live Chat", query: "Ich möchte mit einem Mitarbeiter chatten" },
   ];
 
@@ -111,6 +112,10 @@ export default function SupportChatbot() {
 
   const startLiveChat = useCallback(async (initialMessage?: string) => {
     if (supportOnline) {
+      setChatMessages(prev => [
+        ...prev,
+        { from: "system", text: `Es sind gerade ${staffCount} Mitarbeiter für dich da! 🟢` },
+      ]);
       const { data } = await supabase.from("support_tickets").insert([{
         subject: initialMessage?.substring(0, 100) || "Live-Chat Anfrage",
         customer_email: "chat@visitor.local",
@@ -139,10 +144,10 @@ export default function SupportChatbot() {
       setFormStep("issue");
       setChatMessages(prev => [
         ...prev,
-        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Schildere bitte kurz dein Anliegen, damit wir uns schnellstmöglich bei dir melden können:" },
+        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und gib uns deine E-Mail-Adresse – wir melden uns dann schnellstmöglich per Mail bei dir!" },
       ]);
     }
-  }, [supportOnline, customerLang]);
+  }, [supportOnline, staffCount, customerLang]);
 
   const handleOfflineForm = useCallback(async (input: string) => {
     if (formStep === "issue") {
@@ -150,27 +155,18 @@ export default function SupportChatbot() {
       setChatMessages(prev => [
         ...prev,
         { from: "user", text: input },
-        { from: "bot", text: "Danke! Bitte gib uns deine E-Mail-Adresse: 📧" },
+        { from: "bot", text: "Danke! Bitte gib uns noch deine E-Mail-Adresse, damit wir uns bei dir melden können: 📧" },
       ]);
       setFormStep("email");
     } else if (formStep === "email") {
       setFormData(prev => ({ ...prev, email: input }));
-      setChatMessages(prev => [
-        ...prev,
-        { from: "user", text: input },
-        { from: "bot", text: "Und deine Telefonnummer? (oder 'weiter' zum Überspringen) 📱" },
-      ]);
-      setFormStep("phone");
-    } else if (formStep === "phone") {
-      const phone = input.toLowerCase() === "weiter" || input.toLowerCase() === "skip" ? "" : input;
-      setFormData(prev => ({ ...prev, phone }));
 
       const { error } = await supabase.from("support_tickets").insert([{
         subject: formData.issue.substring(0, 100),
-        customer_email: formData.email,
+        customer_email: input,
         category: "support" as const,
         source: "chat",
-        metadata: { phone, full_issue: formData.issue, language: customerLang },
+        metadata: { full_issue: formData.issue, language: customerLang },
       }]);
 
       setChatMessages(prev => [
@@ -178,7 +174,7 @@ export default function SupportChatbot() {
         { from: "user", text: input },
         { from: "bot", text: error
           ? "Entschuldigung, es gab einen Fehler. Bitte versuche es später erneut. 😔"
-          : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns zeitnah bei dir. Schönen Tag noch! 🎉"
+          : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns schnellstmöglich per Mail bei dir. Schönen Tag noch! 🎉"
         },
       ]);
       setFormStep("done");
