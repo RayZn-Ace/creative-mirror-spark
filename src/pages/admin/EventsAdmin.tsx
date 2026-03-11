@@ -2201,7 +2201,7 @@ const EventsAdmin = () => {
                   setNewFilterInput("");
                 }
               }}
-              placeholder="z.B. Mamma Mia, Paderborn, Party..."
+              placeholder="z.B. 16+ Events, Ausverkauft, Open Airs..."
               className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
               style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
             />
