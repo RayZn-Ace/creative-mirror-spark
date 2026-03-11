@@ -1408,7 +1408,7 @@ ${bodyContent}
                     {isSelected && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="px-3 pb-3 pt-1" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                          <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} />
+                          <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} colorScheme={colorScheme} />
                         </div>
                       </motion.div>
                     )}
