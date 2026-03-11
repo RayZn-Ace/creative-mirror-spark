@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS service_fee_mode text DEFAULT 'per_order';

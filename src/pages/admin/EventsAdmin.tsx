@@ -58,6 +58,7 @@ interface EventRow {
   service_fee_type: string | null;
   service_fee_value: number | null;
   service_fee_vat: number | null;
+  service_fee_mode: string | null;
   info_sections: InfoBlock[] | null;
   is_16plus: boolean | null;
   muttizettel: boolean | null;
@@ -138,7 +139,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
   status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
-  service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19,
+  service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19, service_fee_mode: "per_order",
   info_sections: [...DEFAULT_INFO_SECTIONS],
   is_16plus: true, muttizettel: true,
   insurance_enabled: false, insurance_amount: 0,
@@ -1573,6 +1574,39 @@ const EventEditView = ({
                   type="number"
                   placeholder={editing.service_fee_type === "percent" ? "z.B. 10" : "z.B. 2.50"}
                 />
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Berechnung</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_mode: "per_order" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: (editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: (editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${(editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Pro Bestellung
+                    </button>
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_mode: "per_ticket" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Pro Ticket
+                    </button>
+                  </div>
+                  <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                    {(editing.service_fee_mode || "per_order") === "per_order"
+                      ? "Gebühr wird einmalig pro Bestellung berechnet"
+                      : "Gebühr wird für jedes Ticket in der Bestellung berechnet"}
+                  </p>
+                </div>
               </div>
             )}
           </Section>

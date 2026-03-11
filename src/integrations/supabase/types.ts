@@ -299,6 +299,7 @@ export type Database = {
           open_air: boolean | null
           series_id: string | null
           service_fee_enabled: boolean | null
+          service_fee_mode: string | null
           service_fee_type: string | null
           service_fee_value: number | null
           service_fee_vat: number | null
@@ -332,6 +333,7 @@ export type Database = {
           open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
+          service_fee_mode?: string | null
           service_fee_type?: string | null
           service_fee_value?: number | null
           service_fee_vat?: number | null
@@ -365,6 +367,7 @@ export type Database = {
           open_air?: boolean | null
           series_id?: string | null
           service_fee_enabled?: boolean | null
+          service_fee_mode?: string | null
           service_fee_type?: string | null
           service_fee_value?: number | null
           service_fee_vat?: number | null
