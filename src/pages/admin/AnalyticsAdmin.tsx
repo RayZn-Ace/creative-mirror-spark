@@ -1357,7 +1357,7 @@ const AnalyticsAdmin = () => {
                                 </div>
                               </div>
                               <span className="text-[11px] font-bold shrink-0" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                {cat.sold}{cat.capacity > 0 ? ` / ${cat.capacity}` : ""} Tickets
+                                {fmtInt(cat.sold)} / {fmtInt(cat.capacity)} Tickets
                               </span>
                               {(cat.capacity > 0 || cat.soldOut) && (
                                 <div className="w-16 h-1.5 rounded-full overflow-hidden shrink-0" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
