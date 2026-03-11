@@ -159,29 +159,8 @@ export default function SupportChatbot() {
         { from: "bot", text: "Danke! Bitte gib uns noch deine E-Mail-Adresse, damit wir uns bei dir melden können: 📧" },
       ]);
       setFormStep("email");
-    } else if (formStep === "email") {
-      setFormData(prev => ({ ...prev, email: input }));
-
-      const { error } = await supabase.from("support_tickets").insert([{
-        subject: formData.issue.substring(0, 100),
-        customer_email: input,
-        category: "support" as const,
-        source: "chat",
-        metadata: { full_issue: formData.issue, language: customerLang },
-      }]);
-
-      setChatMessages(prev => [
-        ...prev,
-        { from: "user", text: input },
-        { from: "bot", text: error
-          ? "Entschuldigung, es gab einen Fehler. Bitte versuche es später erneut. 😔"
-          : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns schnellstmöglich per Mail bei dir. Schönen Tag noch! 🎉"
-        },
-      ]);
-      setFormStep("done");
-      setMode("bot");
     }
-  }, [formStep, formData, customerLang]);
+  }, [formStep]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
