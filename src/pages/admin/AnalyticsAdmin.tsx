@@ -144,7 +144,7 @@ const AnalyticsAdmin = () => {
       fetchAll(supabase.from("tickets").select("id, event_id, status, checked_in_at, created_at, order_id, ticket_category_id, holder_email")),
       supabase.from("events").select("id, title, date, city, status, slug, location_name, sold_out, open_air").then(r => r.data ?? []),
       fetchAll(supabase.from("newsletter_subscribers").select("id, created_at, unsubscribed, city, source")),
-      supabase.from("ticket_categories").select("id, name, price, category_group, group_size, event_id, sold_out, badge").then(r => r.data ?? []),
+      supabase.from("ticket_categories").select("id, name, price, category_group, group_size, event_id, sold_out, badge, max_capacity").then(r => r.data ?? []),
     ]).then(([o, t, e, s, c]) => {
       setOrders(o); setTickets(t); setEvents(e); setSubscribers(s); setCategories(c);
       setLoading(false);
@@ -1305,7 +1305,7 @@ const AnalyticsAdmin = () => {
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                          {fmtInt(ev.totalSold)}{ev.totalCapacity > 0 ? ` / ${fmtInt(ev.totalCapacity)}` : ""} Tickets
+                          {fmtInt(ev.totalSold)} / {fmtInt(ev.totalCapacity)} Tickets
                         </span>
                         {ev.totalCapacity > 0 && (
                           <span className="text-xs font-black" style={{ color: pctColor }}>{pct.toFixed(0)}%</span>
@@ -1357,7 +1357,7 @@ const AnalyticsAdmin = () => {
                                 </div>
                               </div>
                               <span className="text-[11px] font-bold shrink-0" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                {cat.sold}{cat.capacity > 0 ? ` / ${cat.capacity}` : ""} Tickets
+                                {fmtInt(cat.sold)} / {fmtInt(cat.capacity)} Tickets
                               </span>
                               {(cat.capacity > 0 || cat.soldOut) && (
                                 <div className="w-16 h-1.5 rounded-full overflow-hidden shrink-0" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
