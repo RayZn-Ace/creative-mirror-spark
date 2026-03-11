@@ -51,9 +51,35 @@ const getYoutubeId = (url: string) => {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 };
+// Generate a smaller thumbnail URL by appending width/quality params for Supabase storage
+const getThumbUrl = (url: string, width = 400) => {
+  if (!url) return url;
+  // For Supabase storage URLs, use transform query params
+  if (url.includes('/storage/v1/object/public/')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}&quality=60`;
+  }
+  return url;
+};
+
+const handleDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'foto.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, '_blank');
+  }
+};
 
 
-const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
