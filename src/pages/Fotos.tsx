@@ -443,7 +443,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={getThumbUrl(photo.src)}
                   alt={photo.alt}
                   className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 bg-muted ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
                   loading="lazy"
