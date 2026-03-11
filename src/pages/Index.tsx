@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   MapPin, ArrowRight, Ticket, Music, Sparkles,
-  Users, Heart, Star, Gift, Mic, Quote,
+  Users, Heart, Star, Gift, Mic, Quote, Play,
   ChevronLeft, ChevronRight, Sun, Instagram
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
