@@ -402,9 +402,18 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
       const mins = Math.floor((diff % 3600000) / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
       const pad = (n: number) => String(n).padStart(2, "0");
-      // If external GIF URL is set, use it for the email (live countdown on every open)
-      const timerHtml = block.timerImageUrl
-        ? `<img src="${block.timerImageUrl}" alt="Countdown Timer" style="display:block;margin:0 auto;max-width:100%;height:auto;" />`
+
+      // Build the live countdown image URL (edge function or external)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+      const autoImageUrl = supabaseUrl
+        ? `${supabaseUrl}/functions/v1/countdown-image?d=${encodeURIComponent(block.targetDate)}&t=${encodeURIComponent(block.targetTime || "23:59")}&accent=${encodeURIComponent(block.accentColor)}&bg=${encodeURIComponent(block.bgColor)}&text=${encodeURIComponent(block.textColor)}&title=${encodeURIComponent(block.title || "")}&expired=${encodeURIComponent(block.expiredText || "Abgelaufen!")}`
+        : "";
+      const imageUrl = block.timerImageUrl || autoImageUrl;
+
+      // For email: always use the image URL (live on every open)
+      // For preview: show the static computed countdown (ticks via previewTick)
+      const emailTimerHtml = imageUrl
+        ? `<img src="${imageUrl}" alt="Countdown: ${pad(days)}T ${pad(hours)}H ${pad(mins)}M" style="display:block;margin:0 auto;max-width:100%;height:auto;border-radius:12px;" />`
         : block.style === "boxes"
         ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
 ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: "Min" }, { v: pad(secs), l: "Sek" }].map(({ v, l }) => `<td style="padding:0 6px;text-align:center;">
@@ -416,11 +425,10 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
         ? `<p style="font-size:32px;font-weight:900;color:${block.accentColor};text-align:center;margin:0;letter-spacing:2px;">${pad(days)} : ${pad(hours)} : ${pad(mins)} : ${pad(secs)}</p>
 <p style="font-size:10px;color:${block.textColor}88;text-align:center;margin:4px 0 0;">Tage : Stunden : Minuten : Sekunden</p>`
         : `<p style="font-size:24px;font-weight:800;color:${block.accentColor};text-align:center;margin:0;">⏱ Noch ${days} Tage übrig</p>`;
+
       return `<!--TIMER:${JSON.stringify({ targetDate: block.targetDate, expiredText: block.expiredText, style: block.style, accentColor: block.accentColor, textColor: block.textColor, bgColor: block.bgColor })}-->
-<div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
-${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
-${timerHtml}
-${!block.timerImageUrl ? `<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>` : ""}
+<div style="margin:0 0 16px;text-align:center;">
+${emailTimerHtml}
 </div>`;
     }
     default:
