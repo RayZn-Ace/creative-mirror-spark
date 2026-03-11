@@ -178,13 +178,16 @@ const EventDateTiles = ({ events, selectedId, onSelect, t }: { events: CityEvent
 );
 
 /* ─── Quantity Selector ─── */
-const QuantitySelector = ({ qty, onQtyChange }: { qty: number; onQtyChange: (v: number) => void }) => (
-  <div className="flex items-center gap-1.5">
-    <button className="pp-qty-btn" onClick={() => onQtyChange(Math.max(0, qty - 1))} aria-label="Menge reduzieren">−</button>
-    <input type="number" className="pp-qty-input" value={qty} readOnly min={0} max={10} />
-    <button className="pp-qty-btn" onClick={() => onQtyChange(Math.min(10, qty + 1))} aria-label="Menge erhöhen">+</button>
-  </div>
-);
+const QuantitySelector = ({ qty, onQtyChange, max }: { qty: number; onQtyChange: (v: number) => void; max?: number }) => {
+  const limit = max != null ? max : 99;
+  return (
+    <div className="flex items-center gap-1.5">
+      <button className="pp-qty-btn" onClick={() => onQtyChange(Math.max(0, qty - 1))} aria-label="Menge reduzieren">−</button>
+      <input type="number" className="pp-qty-input" value={qty} readOnly min={0} max={limit} />
+      <button className="pp-qty-btn" onClick={() => onQtyChange(Math.min(limit, qty + 1))} aria-label="Menge erhöhen" disabled={qty >= limit}>+</button>
+    </div>
+  );
+};
 
 /* ─── Ticket Row ─── */
 const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; qty: number; onQtyChange: (v: number) => void; t: Translations; currency: string }) => {
