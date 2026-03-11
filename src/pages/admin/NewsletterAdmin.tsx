@@ -402,7 +402,10 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
       const mins = Math.floor((diff % 3600000) / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
       const pad = (n: number) => String(n).padStart(2, "0");
-      const timerHtml = block.style === "boxes"
+      // If external GIF URL is set, use it for the email (live countdown on every open)
+      const timerHtml = block.timerImageUrl
+        ? `<img src="${block.timerImageUrl}" alt="Countdown Timer" style="display:block;margin:0 auto;max-width:100%;height:auto;" />`
+        : block.style === "boxes"
         ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
 ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: "Min" }, { v: pad(secs), l: "Sek" }].map(({ v, l }) => `<td style="padding:0 6px;text-align:center;">
 <div style="background:${block.accentColor};color:#ffffff;font-size:28px;font-weight:900;padding:12px 16px;border-radius:8px;min-width:50px;">${v}</div>
@@ -417,7 +420,7 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
 <div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
 ${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
 ${timerHtml}
-<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>
+${!block.timerImageUrl ? `<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>` : ""}
 </div>`;
     }
     default:
