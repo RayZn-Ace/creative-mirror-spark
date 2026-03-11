@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   MapPin, ArrowRight, Ticket, Music, Sparkles,
-  Users, Heart, Star, Gift, Mic, Quote,
+  Users, Heart, Star, Gift, Mic, Quote, Play,
   ChevronLeft, ChevronRight, Sun, Instagram
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -355,44 +355,70 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
 };
 
 
-/* ─── Instagram Reels ─── */
-const REEL_URLS = [
-  "https://www.instagram.com/reel/DG5hMXlIzxd/",
-  "https://www.instagram.com/reel/DGy1x3vIlWl/",
-  "https://www.instagram.com/reel/DGtVVR1oGPv/",
-  "https://www.instagram.com/reel/DGl9u3OIBj8/",
-  "https://www.instagram.com/reel/DGgWMCIInWK/",
-];
+/* ─── Instagram Feed ─── */
+type InstaPost = { shortcode: string; url: string; imageUrl: string | null; type: string };
 
-const InstagramReels = () => {
-  const [activeReel, setActiveReel] = useState(0);
+const InstagramFeed = () => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [posts, setPosts] = useState<InstaPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const scrollTo = useCallback((idx: number) => {
-    setActiveReel(idx);
-    scrollRef.current?.children[idx]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, []);
+  // Fallback: hardcoded reel URLs in case scraping fails
+  const FALLBACK_REELS = [
+    "https://www.instagram.com/reel/DG5hMXlIzxd/",
+    "https://www.instagram.com/reel/DGy1x3vIlWl/",
+    "https://www.instagram.com/reel/DGtVVR1oGPv/",
+    "https://www.instagram.com/reel/DGl9u3OIBj8/",
+    "https://www.instagram.com/reel/DGgWMCIInWK/",
+  ];
 
   useEffect(() => {
-    // Load Instagram embed script
-    const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
-    if (!existing) {
-      const script = document.createElement("script");
-      script.src = "https://www.instagram.com/embed.js";
-      script.async = true;
-      document.body.appendChild(script);
-    } else if ((window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
+    const fetchPosts = async () => {
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('scrape-instagram', {
+          body: { username: 'nightlifegeneration_de', limit: 12 },
+        });
+        if (fnError || !data?.success || !data.posts?.length) {
+          console.warn('Instagram scrape failed, using fallback', fnError);
+          setError(true);
+        } else {
+          setPosts(data.posts);
+        }
+      } catch (e) {
+        console.warn('Instagram fetch error:', e);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  // Load Instagram embed script for fallback embeds
+  useEffect(() => {
+    if (error) {
+      const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
+      if (!existing) {
+        const script = document.createElement("script");
+        script.src = "https://www.instagram.com/embed.js";
+        script.async = true;
+        document.body.appendChild(script);
+      } else if ((window as any).instgrm) {
+        (window as any).instgrm.Embeds.process();
+      }
     }
-  }, []);
+  }, [error]);
 
-  // Re-process embeds when active reel changes
+  // Re-process embeds when error fallback renders
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [activeReel]);
+    if (error) {
+      const timer = setTimeout(() => {
+        if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   return (
     <section className="py-16 md:py-24 bg-card/50">
@@ -406,52 +432,88 @@ const InstagramReels = () => {
           </h2>
         </div>
         <p className="text-center text-muted-foreground mb-2">@nightlifegeneration_de</p>
-        <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Reels von unserem Instagram</p>
+        <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Posts von unserem Instagram</p>
 
-        {/* Horizontal scroll carousel */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {REEL_URLS.map((url, i) => (
-            <div
-              key={i}
-              className="snap-center shrink-0 w-[320px] md:w-[360px]"
-            >
-              <blockquote
-                className="instagram-media"
-                data-instgrm-permalink={url}
-                data-instgrm-version="14"
-                style={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "12px",
-                  maxWidth: "360px",
-                  minWidth: "280px",
-                  width: "100%",
-                  margin: "0",
-                }}
+        {/* Loading state */}
+        {loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {/* Scraped posts grid */}
+        {!loading && !error && posts.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {posts.map((post, i) => (
+              <motion.a
+                key={post.shortcode}
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="group relative aspect-square rounded-xl overflow-hidden bg-muted"
               >
-                <div className="flex items-center justify-center h-[480px]">
-                  <div className="animate-pulse text-muted-foreground text-sm">Reel lädt...</div>
+                {post.imageUrl ? (
+                  <img
+                    src={post.imageUrl}
+                    alt={`Instagram Post ${i + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <Instagram className="w-8 h-8 text-muted-foreground/40" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                  <Instagram className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-              </blockquote>
-            </div>
-          ))}
-        </div>
+                {post.type === 'reel' && (
+                  <div className="absolute top-2 right-2">
+                    <Play className="w-4 h-4 text-white drop-shadow-lg" />
+                  </div>
+                )}
+              </motion.a>
+            ))}
+          </div>
+        )}
 
-        {/* Dots */}
-        <div className="flex justify-center gap-2 mt-4">
-          {REEL_URLS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${i === activeReel ? "bg-primary w-6" : "bg-foreground/20 hover:bg-foreground/40"}`}
-              aria-label={`Reel ${i + 1}`}
-            />
-          ))}
-        </div>
+        {/* Fallback: embed reels like before */}
+        {!loading && error && (
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {FALLBACK_REELS.map((url, i) => (
+              <div key={i} className="snap-center shrink-0 w-[320px] md:w-[360px]">
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-permalink={url}
+                  data-instgrm-version="14"
+                  style={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "12px",
+                    maxWidth: "360px",
+                    minWidth: "280px",
+                    width: "100%",
+                    margin: "0",
+                  }}
+                >
+                  <div className="flex items-center justify-center h-[480px]">
+                    <div className="animate-pulse text-muted-foreground text-sm">Reel lädt...</div>
+                  </div>
+                </blockquote>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* CTA to Instagram */}
         <div className="text-center mt-8">
@@ -522,7 +584,7 @@ export default function Index() {
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
         <CrowdSlideshow gt={gt} />
-        <InstagramReels />
+        <InstagramFeed />
         <Reviews gt={gt} />
       </main>
       <Footer gt={gt} />
