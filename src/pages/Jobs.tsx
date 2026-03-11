@@ -2,38 +2,20 @@ import { useState } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Briefcase, Star, Users, Music, Camera, Mic, Video, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const bereiche = [
-  "Crew Auf-/Abbau",
-  "Tänzer",
-  "DJ",
-  "Sänger",
-  "Videograf",
-  "Fotograf",
-  "Sonstiges",
+  { label: "Promoter", icon: Megaphone },
+  { label: "Crew Auf-/Abbau", icon: Users },
+  { label: "Tänzer", icon: Star },
+  { label: "DJ", icon: Music },
+  { label: "Sänger", icon: Mic },
+  { label: "Videograf", icon: Video },
+  { label: "Fotograf", icon: Camera },
+  { label: "Sonstiges", icon: Briefcase },
 ];
-
-const inputStyle: React.CSSProperties = {
-  background: "hsl(220 15% 93%)",
-  border: "1px solid hsl(220 15% 85%)",
-  color: "hsl(220 20% 15%)",
-  borderRadius: "12px",
-  padding: "12px 16px",
-  fontSize: "14px",
-  width: "100%",
-  outline: "none",
-  transition: "border-color 0.2s",
-};
-
-const labelStyle: React.CSSProperties = {
-  color: "hsl(220 10% 35%)",
-  fontSize: "14px",
-  fontWeight: 600,
-  marginBottom: "6px",
-  display: "block",
-};
 
 const Jobs = () => {
   const [form, setForm] = useState({
@@ -74,73 +56,137 @@ const Jobs = () => {
 
   if (submitted) {
     return (
-      <PageLayout title="Jobs & Karriere" subtitle="Wir suchen europaweit Leute in allen Bereichen. Bewirb dich jetzt!">
-        <div className="max-w-lg mx-auto text-center py-16">
-          <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center" style={{ background: "hsl(140 60% 45% / 0.12)" }}>
-            <Send className="w-7 h-7" style={{ color: "hsl(140 60% 40%)" }} />
+      <PageLayout title="" subtitle="">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-lg mx-auto text-center py-20"
+        >
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 mx-auto mb-6 flex items-center justify-center">
+            <Send className="w-9 h-9 text-primary" />
           </div>
-          <h2 className="text-xl font-bold mb-2" style={{ color: "hsl(220 20% 15%)" }}>Bewerbung gesendet!</h2>
-          <p className="text-sm" style={{ color: "hsl(220 10% 45%)" }}>Vielen Dank für dein Interesse! Wir melden uns so schnell wie möglich bei dir.</p>
-        </div>
+          <h2 className="text-2xl font-bold text-foreground mb-3">Bewerbung gesendet!</h2>
+          <p className="text-muted-foreground">Vielen Dank für dein Interesse! Wir melden uns so schnell wie möglich bei dir.</p>
+        </motion.div>
       </PageLayout>
     );
   }
 
+  const inputClasses = "w-full px-4 py-3 rounded-xl text-sm bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all";
+
   return (
-    <PageLayout title="Jobs & Karriere" subtitle="Wir suchen europaweit Leute in allen Bereichen. Bewirb dich jetzt!">
-      <form onSubmit={handleSubmit} className="max-w-xl mx-auto space-y-5">
-        <div>
-          <label style={labelStyle}>Name</label>
-          <input value={form.name} onChange={set("name")} required style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Alter</label>
-          <input value={form.alter} onChange={set("alter")} type="number" style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Instagram</label>
-          <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Stadt</label>
-          <input value={form.stadt} onChange={set("stadt")} style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>E-Mail</label>
-          <input value={form.email} onChange={set("email")} type="email" required style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Handynummer</label>
-          <input value={form.telefon} onChange={set("telefon")} type="tel" style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Bereich</label>
-          <select value={form.bereich} onChange={set("bereich")} required style={inputStyle}>
-            <option value="">Bitte wählen...</option>
-            {bereiche.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </div>
-        <div>
-          <label style={labelStyle}>Kommentar</label>
-          <textarea value={form.kommentar} onChange={set("kommentar")} rows={4} style={{ ...inputStyle, resize: "vertical" as const }} />
-        </div>
-        <label className="flex items-start gap-3 cursor-pointer select-none">
-          <input type="checkbox" checked={agb} onChange={(e) => setAgb(e.target.checked)} className="mt-1 accent-blue-500" style={{ width: "16px", height: "16px" }} />
-          <span className="text-xs leading-relaxed" style={{ color: "hsl(220 10% 45%)" }}>
-            Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-            <Link to="/datenschutz" className="underline" style={{ color: "hsl(220 60% 50%)" }}>Datenschutzerklärung</Link>
-            {" & "}
-            <Link to="/agb" className="underline" style={{ color: "hsl(220 60% 50%)" }}>AGB</Link> zu.
-          </span>
-        </label>
-        <button type="submit" disabled={submitting || !agb}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: "hsl(220 60% 50%)", color: "hsl(0 0% 100%)" }}
+    <PageLayout title="" subtitle="">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
         >
-          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          Absenden
-        </button>
-      </form>
+          <h1
+            className="text-4xl md:text-6xl font-black uppercase mb-4 text-foreground"
+            style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.04em" }}
+          >
+            Jobs & <span className="text-primary">Karriere</span>
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base max-w-md mx-auto">
+            Wir suchen europaweit Leute in allen Bereichen. Bewirb dich jetzt und werde Teil unseres Teams!
+          </p>
+        </motion.div>
+
+        {/* Bereich Selection as Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-10"
+        >
+          <label className="block text-sm font-semibold text-foreground mb-3">Bereich auswählen *</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {bereiche.map(({ label, icon: Icon }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, bereich: label }))}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-sm font-medium ${
+                  form.bereich === label
+                    ? "bg-primary/15 border-primary text-primary ring-1 ring-primary/30"
+                    : "bg-muted/50 border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs">{label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Form */}
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-5"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Name *</label>
+              <input value={form.name} onChange={set("name")} required className={inputClasses} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Alter</label>
+              <input value={form.alter} onChange={set("alter")} type="number" className={inputClasses} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Instagram</label>
+              <input value={form.instagram} onChange={set("instagram")} placeholder="@deinprofil" className={inputClasses} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Stadt</label>
+              <input value={form.stadt} onChange={set("stadt")} className={inputClasses} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">E-Mail *</label>
+              <input value={form.email} onChange={set("email")} type="email" required className={inputClasses} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Handynummer</label>
+              <input value={form.telefon} onChange={set("telefon")} type="tel" className={inputClasses} />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Kommentar</label>
+            <textarea value={form.kommentar} onChange={set("kommentar")} rows={4} className={`${inputClasses} resize-none`} />
+          </div>
+
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input type="checkbox" checked={agb} onChange={(e) => setAgb(e.target.checked)} className="mt-1 accent-primary w-4 h-4" />
+            <span className="text-xs leading-relaxed text-muted-foreground">
+              Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
+              <Link to="/datenschutz" className="text-primary hover:underline">Datenschutzerklärung</Link>
+              {" & "}
+              <Link to="/agb" className="text-primary hover:underline">AGB</Link> zu.
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            disabled={submitting || !agb || !form.bereich}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:scale-[1.02] disabled:opacity-50 bg-primary text-primary-foreground"
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            Bewerbung absenden
+          </button>
+        </motion.form>
+      </div>
     </PageLayout>
   );
 };
