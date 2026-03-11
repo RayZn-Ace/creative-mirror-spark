@@ -84,10 +84,9 @@ export default function SupportChatbot() {
     return () => { supabase.removeChannel(ch); };
   }, [ticketId, mode, customerLang]);
 
+  const [staffCount, setStaffCount] = useState(0);
+
   const quickReplies = [
-    { label: "🎫 Tickets", query: "Wo kann ich Tickets kaufen?" },
-    { label: "📅 Termine", query: "Wann und wo findet die Party statt?" },
-    { label: "👯 Gruppen/JGA", query: "Kann ich als Gruppe kommen?" },
     { label: "💬 Live Chat", query: "Ich möchte mit einem Mitarbeiter chatten" },
   ];
 
