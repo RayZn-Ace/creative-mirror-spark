@@ -10,7 +10,7 @@ const Kontakt = () => (
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a
-          href="mailto:mail@gimmegimmeparty.com"
+          href="mailto:support@swayeagency.de"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(220 15% 95%)", border: "1px solid hsl(220 15% 88%)" }}
         >
@@ -19,12 +19,12 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>E-Mail</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>mail@gimmegimmeparty.com</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>support@swayeagency.de</div>
           </div>
         </a>
 
         <a
-          href="https://wa.me/491622537300"
+          href="https://wa.me/491725614558"
           target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(142 40% 95%)", border: "1px solid hsl(142 40% 85%)" }}
@@ -34,7 +34,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>WhatsApp</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>Schreib uns direkt</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>0172 5614558</div>
           </div>
         </a>
 
@@ -54,7 +54,7 @@ const Kontakt = () => (
         </a>
 
         <a
-          href="tel:+491622537300"
+          href="tel:+491725614558"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(220 15% 95%)", border: "1px solid hsl(220 15% 88%)" }}
         >
@@ -63,7 +63,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>Telefon</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>+49 (0) 1622 537 300</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>0172 5614558</div>
           </div>
         </a>
       </div>
