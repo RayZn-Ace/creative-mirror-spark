@@ -155,27 +155,18 @@ export default function SupportChatbot() {
       setChatMessages(prev => [
         ...prev,
         { from: "user", text: input },
-        { from: "bot", text: "Danke! Bitte gib uns deine E-Mail-Adresse: 📧" },
+        { from: "bot", text: "Danke! Bitte gib uns noch deine E-Mail-Adresse, damit wir uns bei dir melden können: 📧" },
       ]);
       setFormStep("email");
     } else if (formStep === "email") {
       setFormData(prev => ({ ...prev, email: input }));
-      setChatMessages(prev => [
-        ...prev,
-        { from: "user", text: input },
-        { from: "bot", text: "Und deine Telefonnummer? (oder 'weiter' zum Überspringen) 📱" },
-      ]);
-      setFormStep("phone");
-    } else if (formStep === "phone") {
-      const phone = input.toLowerCase() === "weiter" || input.toLowerCase() === "skip" ? "" : input;
-      setFormData(prev => ({ ...prev, phone }));
 
       const { error } = await supabase.from("support_tickets").insert([{
         subject: formData.issue.substring(0, 100),
-        customer_email: formData.email,
+        customer_email: input,
         category: "support" as const,
         source: "chat",
-        metadata: { phone, full_issue: formData.issue, language: customerLang },
+        metadata: { full_issue: formData.issue, language: customerLang },
       }]);
 
       setChatMessages(prev => [
@@ -183,7 +174,7 @@ export default function SupportChatbot() {
         { from: "user", text: input },
         { from: "bot", text: error
           ? "Entschuldigung, es gab einen Fehler. Bitte versuche es später erneut. 😔"
-          : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns zeitnah bei dir. Schönen Tag noch! 🎉"
+          : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns schnellstmöglich per Mail bei dir. Schönen Tag noch! 🎉"
         },
       ]);
       setFormStep("done");
