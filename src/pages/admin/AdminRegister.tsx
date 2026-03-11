@@ -12,39 +12,58 @@ const AdminRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // The invite link triggers a SIGNED_IN event with type=invite
-    // We listen for the session to extract the user's email
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setEmail(session.user.email || "");
-          setReady(true);
+    let mounted = true;
 
-          // Check if user already has a password set (i.e. already registered)
-          // If they have user_metadata with display_name, they already completed registration
-          if (session.user.user_metadata?.display_name) {
-            navigate("/admin", { replace: true });
-          }
-        }
+    // Timeout: if session isn't established after 8s, show error
+    const timeout = setTimeout(() => {
+      if (mounted && !ready) setTimedOut(true);
+    }, 8000);
+
+    const handleSession = (session: any) => {
+      if (!mounted || !session?.user) return;
+      setEmail(session.user.email || "");
+      setReady(true);
+      // Already completed registration? Redirect.
+      if (session.user.user_metadata?.display_name) {
+        navigate("/admin", { replace: true });
+      }
+    };
+
+    // 1) Listen for auth state changes (invite token exchange triggers this)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        console.log("[Register] Auth event:", _event);
+        handleSession(session);
       }
     );
 
-    // Also check current session
+    // 2) Check if there's already a session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setEmail(session.user.email || "");
-        setReady(true);
-        if (session.user.user_metadata?.display_name) {
-          navigate("/admin", { replace: true });
-        }
-      }
+      handleSession(session);
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    // 3) If URL has hash with access_token, try to exchange it manually
+    const hash = window.location.hash;
+    if (hash && hash.includes("access_token")) {
+      console.log("[Register] Detected token in URL hash, exchanging...");
+      // The supabase client should auto-detect this, but let's ensure
+      // by triggering a session refresh after a short delay
+      setTimeout(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        handleSession(session);
+      }, 2000);
+    }
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
+  }, [navigate, ready]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +84,6 @@ const AdminRegister = () => {
 
     setLoading(true);
     try {
-      // Update password and user metadata
       const { error: updateError } = await supabase.auth.updateUser({
         password,
         data: { display_name: displayName.trim() },
@@ -73,7 +91,6 @@ const AdminRegister = () => {
 
       if (updateError) throw updateError;
 
-      // Also update profile display_name
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("profiles")
@@ -93,9 +110,32 @@ const AdminRegister = () => {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 50% 8%)" }}>
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(270 70% 55%)", borderTopColor: "transparent" }} />
-          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Einladung wird verarbeitet...</p>
+        <div className="text-center max-w-sm px-4">
+          {timedOut ? (
+            <>
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: "hsl(0 70% 50% / 0.15)" }}>
+                <span className="text-xl">⚠️</span>
+              </div>
+              <h2 className="text-sm font-bold mb-2" style={{ color: "hsl(0 0% 100%)" }}>
+                Einladungslink ungültig oder abgelaufen
+              </h2>
+              <p className="text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                Der Link konnte nicht verarbeitet werden. Bitte fordere eine neue Einladung an oder logge dich direkt ein.
+              </p>
+              <button
+                onClick={() => navigate("/admin/login", { replace: true })}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105"
+                style={{ background: "hsl(270 70% 55%)", color: "white" }}
+              >
+                Zum Login
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "hsl(270 70% 55%)", borderTopColor: "transparent" }} />
+              <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Einladung wird verarbeitet...</p>
+            </>
+          )}
         </div>
       </div>
     );
