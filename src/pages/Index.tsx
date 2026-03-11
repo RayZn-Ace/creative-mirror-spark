@@ -13,7 +13,7 @@ import SupportChatbot from "@/components/SupportChatbot";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
-import heroBg from "@/assets/hero-crowd.jpg";
+import heroBg from "@/assets/hero-club-clean.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdAerial from "@/assets/crowd-aerial.jpg";
 import crowdWide from "@/assets/crowd-wide.jpg";
