@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import {
   MapPin, ArrowRight, Ticket, Music, Sparkles,
   Users, Heart, Star, Gift, Mic, Quote, Play,
-  ChevronLeft, ChevronRight, Sun, Instagram
+  ChevronLeft, ChevronRight, Sun
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -355,109 +355,6 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
 };
 
 
-/* ─── Instagram Feed ─── */
-const FALLBACK_URLS = [
-  "https://www.instagram.com/reel/DG5hMXlIzxd/",
-  "https://www.instagram.com/reel/DGy1x3vIlWl/",
-  "https://www.instagram.com/reel/DGtVVR1oGPv/",
-  "https://www.instagram.com/reel/DGl9u3OIBj8/",
-  "https://www.instagram.com/reel/DGgWMCIInWK/",
-];
-
-const InstagramFeed = () => {
-  const [postUrls, setPostUrls] = useState<string[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { data: settingsData } = await supabase
-          .from('settings')
-          .select('value')
-          .eq('key', 'instagram_posts')
-          .maybeSingle();
-        
-        const urls = (settingsData?.value && Array.isArray(settingsData.value) && settingsData.value.length > 0)
-          ? settingsData.value as string[]
-          : FALLBACK_URLS;
-        setPostUrls(urls);
-      } catch {
-        setPostUrls(FALLBACK_URLS);
-      }
-    };
-    load();
-  }, []);
-
-  // Use existing party images as visual thumbnails for the reels
-  const reelImages = [
-    "/images/gimme-gallery-1.jpg",
-    "/images/gimme-gallery-2.jpg",
-    "/images/gimme-gallery-3.jpg",
-    "/images/pp-background.png",
-    "/images/gimme-gallery-1.jpg",
-  ];
-
-  return (
-    <section className="py-16 md:py-24 bg-card/50">
-      <div className="container px-4">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)" }}>
-            <Instagram className="w-5 h-5 text-white" />
-          </div>
-          <h2 className="font-display text-4xl md:text-5xl text-foreground">
-            Folge <span className="text-gradient-primary">uns</span>
-          </h2>
-        </div>
-        <p className="text-center text-muted-foreground mb-2">@nightlifegeneration_de</p>
-        <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Posts von unserem Instagram</p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {postUrls.slice(0, 6).map((url, i) => (
-            <motion.a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: i * 0.06 }}
-              className="group relative aspect-square rounded-xl overflow-hidden border border-border"
-            >
-              <img
-                src={reelImages[i % reelImages.length]}
-                alt={`Instagram Reel ${i + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-300 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-1">
-                  <Instagram className="w-6 h-6 text-white" />
-                  <span className="text-white text-xs font-medium">Ansehen</span>
-                </div>
-              </div>
-              <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1.5">
-                <Play className="w-3 h-3 text-white fill-white" />
-              </div>
-            </motion.a>
-          ))}
-        </div>
-
-        <div className="text-center mt-8">
-          <a
-            href="https://www.instagram.com/nightlifegeneration_de/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)", color: "white" }}
-          >
-            <Instagram className="w-4 h-4" />
-            Auf Instagram folgen
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 /* ─── Reviews ─── */
 const reviews = [
   { name: "Lena M., 17", text: "Omg die Party war SO sick 🔥 Hab noch nie so krass gefeiert, die Musik war on point und die Vibes einfach unreal. Nächstes Mal bin ich 100% wieder da!!", rating: 5 },
@@ -509,7 +406,7 @@ export default function Index() {
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
         <CrowdSlideshow gt={gt} />
-        <InstagramFeed />
+        
         <Reviews gt={gt} />
       </main>
       <Footer gt={gt} />
