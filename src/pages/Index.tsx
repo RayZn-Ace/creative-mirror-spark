@@ -290,13 +290,10 @@ const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
-  { src: crowdWide, alt: "Full Venue Panorama" },
-  { src: crowdAerial, alt: "Aerial crowd shot" },
-  { src: crowdGlowsticks, alt: "Glowsticks in the crowd" },
-  { src: crowdHands, alt: "Hands up at the show" },
-  { src: dancerHappy, alt: "Happy fans dancing" },
-  { src: crowdParty, alt: "Party atmosphere" },
-  { src: crowdGlowsticks2, alt: "Sea of glowsticks" },
+  { src: crowdWide, alt: "Club-Atmosphäre mit Nebel" },
+  { src: crowdAerial, alt: "Crowd mit CO2-Effekten" },
+  { src: crowdGlowsticks, alt: "Volle Tanzfläche von oben" },
+  { src: crowdHands, alt: "Fans mit Schildern beim Feiern" },
 ];
 
 const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
