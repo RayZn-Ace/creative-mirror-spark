@@ -327,7 +327,7 @@ export default function SupportChatbot() {
             )}
 
             {/* Inline email field for offline form */}
-            {mode === "offline-form" && formStep === "email" && (
+            {mode === "offline-form" && formStep === "issue" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
