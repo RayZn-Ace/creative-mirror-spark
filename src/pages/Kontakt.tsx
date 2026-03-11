@@ -54,7 +54,7 @@ const Kontakt = () => (
         </a>
 
         <a
-          href="tel:+491622537300"
+          href="tel:+491725614558"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(220 15% 95%)", border: "1px solid hsl(220 15% 88%)" }}
         >
@@ -63,7 +63,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>Telefon</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>+49 (0) 1622 537 300</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>0172 5614558</div>
           </div>
         </a>
       </div>
