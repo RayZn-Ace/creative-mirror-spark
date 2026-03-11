@@ -1122,7 +1122,7 @@ const CustomersAdmin = () => {
                                           {Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}
                                         </td>
                                         <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                                          {formatCurrency(order.total_amount + order.service_fee)}
+                                          {formatCurrency(order.total_amount)}
                                         </td>
                                         <td className="px-3 py-2 text-center">
                                           {order.status === "paid" && (
