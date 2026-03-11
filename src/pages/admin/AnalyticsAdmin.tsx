@@ -1204,10 +1204,181 @@ const AnalyticsAdmin = () => {
       )}
 
 
-      {detailTab === "events" && (
+      {detailTab === "events" && (() => {
+        const today = new Date().toISOString().split("T")[0];
+        const upcomingEvents = events
+          .filter(e => e.date && e.date >= today && e.status === "published")
+          .sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+        const upcomingStats = upcomingEvents.map(ev => {
+          const evTickets = tickets.filter(t => t.event_id === ev.id);
+          const evOrders = orders.filter(o => o.event_id === ev.id && o.status === "paid");
+          const evCats = categories.filter(c => c.event_id === ev.id);
+          const totalCapacity = evCats.reduce((s: number, c: any) => s + (c.max_capacity ?? 0), 0);
+          const totalSold = evTickets.length;
+          const totalRevenue = evOrders.reduce((s: number, o: any) => s + Number(o.total_amount), 0);
+          const totalFees = evOrders.reduce((s: number, o: any) => s + Number(o.service_fee), 0);
+          const checkedIn = evTickets.filter(t => t.checked_in_at).length;
+          const avgOrder = evOrders.length > 0 ? totalRevenue / evOrders.length : 0;
+
+          // Per-category breakdown
+          const catStats = evCats.map((c: any) => {
+            const catTickets = evTickets.filter(t => t.ticket_category_id === c.id);
+            return {
+              name: c.name,
+              badge: c.badge,
+              sold: catTickets.length,
+              capacity: c.max_capacity ?? 0,
+              soldOut: c.sold_out,
+              price: c.price,
+            };
+          }).sort((a: any, b: any) => (b.sold / (b.capacity || 1)) - (a.sold / (a.capacity || 1)));
+
+          return {
+            id: ev.id,
+            title: ev.title,
+            date: ev.date,
+            city: ev.city,
+            locationName: ev.location_name,
+            soldOut: ev.sold_out,
+            totalSold,
+            totalCapacity,
+            totalRevenue,
+            totalFees,
+            orderCount: evOrders.length,
+            checkedIn,
+            avgOrder,
+            catStats,
+          };
+        });
+
+        return (
         <>
+          {/* Kommende Events */}
+          <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{upcomingStats.length} kommende Events</span>}>
+            Kommende Events – Ticketverkauf
+          </SectionHeader>
+
+          {upcomingStats.length === 0 ? (
+            <div style={cardStyle} className="p-8 text-center">
+              <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
+              <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Keine kommenden Events</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {upcomingStats.map(ev => {
+                const pct = ev.totalCapacity > 0 ? Math.min((ev.totalSold / ev.totalCapacity) * 100, 100) : 0;
+                const pctColor = pct >= 90 ? "hsl(0 70% 55%)" : pct >= 60 ? "hsl(40 90% 55%)" : "hsl(140 60% 50%)";
+                return (
+                  <div key={ev.id} style={cardStyle} className="p-4 sm:p-5">
+                    {/* Header row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>{ev.title}</h3>
+                          {ev.soldOut && (
+                            <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 70% 55% / 0.2)", color: "hsl(0 70% 55%)" }}>
+                              Ausverkauft
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                          {new Date(ev.date + "T00:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "long", year: "numeric" })}
+                          {ev.locationName && ` · ${ev.locationName}`}
+                          {ev.city && `, ${ev.city}`}
+                        </p>
+                      </div>
+                      <button onClick={() => setSelectedEvent(selectedEvent === ev.id ? null : ev.id)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all shrink-0"
+                        style={{
+                          background: selectedEvent === ev.id ? "hsl(330 80% 55% / 0.2)" : "hsl(0 0% 100% / 0.05)",
+                          color: selectedEvent === ev.id ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+                          border: `1px solid ${selectedEvent === ev.id ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
+                        }}
+                      >
+                        <Filter className="w-3 h-3" />
+                        {selectedEvent === ev.id ? "Filter aktiv" : "Filtern"}
+                      </button>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
+                          {fmtInt(ev.totalSold)}{ev.totalCapacity > 0 ? ` / ${fmtInt(ev.totalCapacity)}` : ""} Tickets
+                        </span>
+                        {ev.totalCapacity > 0 && (
+                          <span className="text-xs font-black" style={{ color: pctColor }}>{pct.toFixed(0)}%</span>
+                        )}
+                      </div>
+                      {ev.totalCapacity > 0 && (
+                        <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: pctColor }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* KPI row */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                      <div className="p-2.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                        <span className="text-[9px] uppercase font-bold tracking-wider block" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Umsatz</span>
+                        <span className="text-sm font-black" style={{ color: "hsl(140 60% 50%)" }}>{fmt(ev.totalRevenue)}€</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                        <span className="text-[9px] uppercase font-bold tracking-wider block" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Gebühren</span>
+                        <span className="text-sm font-black" style={{ color: "hsl(40 90% 55%)" }}>{fmt(ev.totalFees)}€</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                        <span className="text-[9px] uppercase font-bold tracking-wider block" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Bestellungen</span>
+                        <span className="text-sm font-black" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{fmtInt(ev.orderCount)}</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                        <span className="text-[9px] uppercase font-bold tracking-wider block" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Ø Bestellung</span>
+                        <span className="text-sm font-black" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{fmt(ev.avgOrder)}€</span>
+                      </div>
+                    </div>
+
+                    {/* Category breakdown */}
+                    {ev.catStats.length > 0 && (
+                      <div className="space-y-1">
+                        {ev.catStats.map((cat, i) => {
+                          const catPct = cat.capacity > 0 ? Math.min((cat.sold / cat.capacity) * 100, 100) : 0;
+                          return (
+                            <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.02)" }}>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] font-medium truncate" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{cat.name}</span>
+                                  {cat.badge && (
+                                    <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 55%)" }}>{cat.badge}</span>
+                                  )}
+                                  {cat.soldOut && (
+                                    <span className="text-[8px] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(0 70% 55% / 0.2)", color: "hsl(0 70% 55%)" }}>SOLD OUT</span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[11px] font-bold shrink-0" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                                {cat.sold}{cat.capacity > 0 ? `/${cat.capacity}` : ""}
+                              </span>
+                              {cat.capacity > 0 && (
+                                <div className="w-16 h-1.5 rounded-full overflow-hidden shrink-0" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                                  <div className="h-full rounded-full" style={{ width: `${catPct}%`, background: catPct >= 90 ? "hsl(0 70% 55%)" : "hsl(270 70% 55%)" }} />
+                                </div>
+                              )}
+                              <span className="text-[10px] shrink-0" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{fmt(cat.price)}€</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Existing: Revenue per event table */}
           <SectionHeader right={<span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{revenueByEvent.length} Events</span>}>
-            Umsatz pro Event
+            Umsatz pro Event (Zeitraum)
           </SectionHeader>
           <div style={cardStyle} className="overflow-hidden">
             <div className="max-h-[500px] overflow-auto">
@@ -1259,7 +1430,8 @@ const AnalyticsAdmin = () => {
             </ResponsiveContainer>
           </div>
         </>
-      )}
+        );
+      })()}
 
 
       <div className="h-8" />
