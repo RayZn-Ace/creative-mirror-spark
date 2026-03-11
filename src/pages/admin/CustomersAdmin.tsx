@@ -979,6 +979,85 @@ const CustomersAdmin = () => {
                           </div>
                         </div>
 
+                        {/* Revenue summary */}
+                        {(() => {
+                          const paidOrders = customer.orders.filter(o => o.status === "paid");
+                          const totalTicketRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+                          const totalServiceFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
+                          const totalInsurance = paidOrders.reduce((s, o) => s + Number((o as any).insurance_fee || 0), 0);
+                          const totalRevenue = totalTicketRevenue + totalServiceFees + totalInsurance;
+
+                          // Ticket category breakdown
+                          const catMap = new Map<string, { name: string; count: number; revenue: number }>();
+                          paidOrders.forEach(o => {
+                            const orderTickets = allTickets.filter(t => t.order_id === o.id);
+                            orderTickets.forEach(t => {
+                              const cat = ticketCategories.find(c => c.id === t.ticket_category_id);
+                              const catName = cat?.name || "Standard";
+                              const catPrice = cat?.price || 0;
+                              const key = cat?.id || "unknown";
+                              if (!catMap.has(key)) catMap.set(key, { name: catName, count: 0, revenue: 0 });
+                              const entry = catMap.get(key)!;
+                              entry.count++;
+                              entry.revenue += catPrice;
+                            });
+                          });
+                          const catBreakdown = Array.from(catMap.values()).sort((a, b) => b.revenue - a.revenue);
+
+                          return (
+                            <>
+                              {/* Revenue KPIs */}
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(150 60% 40% / 0.08)", border: "1px solid hsl(150 60% 40% / 0.15)" }}>
+                                  <span className="text-sm font-black block" style={{ color: "hsl(150 60% 40%)" }}>{formatCurrency(totalRevenue)}</span>
+                                  <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Gesamtumsatz</span>
+                                </div>
+                                <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(215 90% 55% / 0.08)", border: "1px solid hsl(215 90% 55% / 0.15)" }}>
+                                  <span className="text-sm font-black block" style={{ color: "hsl(215 90% 55%)" }}>{formatCurrency(totalTicketRevenue)}</span>
+                                  <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Ticketumsatz</span>
+                                </div>
+                                <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(45 80% 55% / 0.08)", border: "1px solid hsl(45 80% 55% / 0.15)" }}>
+                                  <span className="text-sm font-black block" style={{ color: "hsl(45 80% 55%)" }}>{formatCurrency(totalServiceFees)}</span>
+                                  <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Servicegebühren</span>
+                                </div>
+                                <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(270 60% 55% / 0.08)", border: "1px solid hsl(270 60% 55% / 0.15)" }}>
+                                  <span className="text-sm font-black block" style={{ color: "hsl(270 60% 55%)" }}>
+                                    {paidOrders.length > 0 ? formatCurrency(totalRevenue / paidOrders.length) : "–"}
+                                  </span>
+                                  <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Ø Bestellwert</span>
+                                </div>
+                              </div>
+
+                              {/* Ticket categories breakdown */}
+                              {catBreakdown.length > 0 && (
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                                    Ticketkategorien
+                                  </span>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {catBreakdown.map((cat, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-center justify-between px-3 py-2 rounded-lg"
+                                        style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <Ticket className="w-3 h-3" style={{ color: "hsl(330 80% 55%)" }} />
+                                          <span className="text-xs font-semibold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{cat.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-[10px] font-bold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{cat.count}×</span>
+                                          <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{formatCurrency(cat.revenue)}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+
                         {/* Orders table */}
                         <div>
                           <span className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
@@ -992,13 +1071,25 @@ const CustomersAdmin = () => {
                                     <th className="text-left px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Datum</th>
                                     <th className="text-left px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Event</th>
                                     <th className="text-left px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Status</th>
-                                    <th className="text-right px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Betrag</th>
-                                    <th className="text-center px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Tickets</th>
+                                    <th className="text-right px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Tickets</th>
+                                    <th className="text-right px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Gebühren</th>
+                                    <th className="text-right px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Gesamt</th>
+                                    <th className="text-center px-3 py-2 text-[10px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Aktionen</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {customer.orders.map((order) => {
                                     const st = getStatus(order.status);
+                                    const orderTickets = allTickets.filter(t => t.order_id === order.id);
+                                    const ticketDetails = orderTickets.map(t => {
+                                      const cat = ticketCategories.find(c => c.id === t.ticket_category_id);
+                                      return cat?.name || "Standard";
+                                    });
+                                    const ticketSummary = ticketDetails.reduce((acc, name) => {
+                                      acc[name] = (acc[name] || 0) + 1;
+                                      return acc;
+                                    }, {} as Record<string, number>);
+
                                     return (
                                       <tr key={order.id} style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.04)" }}>
                                         <td className="px-3 py-2 text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
@@ -1011,6 +1102,24 @@ const CustomersAdmin = () => {
                                           <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>
                                             {st.label}
                                           </span>
+                                        </td>
+                                        <td className="px-3 py-2 text-right">
+                                          <div className="flex flex-col items-end gap-0.5">
+                                            {Object.entries(ticketSummary).map(([name, count]) => (
+                                              <span key={name} className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                                                {count}× {name}
+                                              </span>
+                                            ))}
+                                            {orderTickets.length === 0 && (
+                                              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>
+                                            )}
+                                            <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                                              {formatCurrency(order.total_amount)}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td className="px-3 py-2 text-xs text-right" style={{ color: "hsl(45 80% 55% / 0.7)" }}>
+                                          {Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}
                                         </td>
                                         <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
                                           {formatCurrency(order.total_amount + order.service_fee)}
@@ -1031,6 +1140,7 @@ const CustomersAdmin = () => {
                             </div>
                           </div>
                         </div>
+                      </div>
                       </div>
                     </motion.div>
                   )}
