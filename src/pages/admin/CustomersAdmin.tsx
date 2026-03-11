@@ -1114,7 +1114,7 @@ const CustomersAdmin = () => {
                                               <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>
                                             )}
                                             <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                              {formatCurrency(order.total_amount)}
+                                              {formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}
                                             </span>
                                           </div>
                                         </td>
