@@ -1,6 +1,6 @@
 import { PageLayout } from "@/components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3, Video } from "lucide-react";
+import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3, Video, Download } from "lucide-react";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
