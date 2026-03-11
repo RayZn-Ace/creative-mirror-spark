@@ -7,6 +7,7 @@ import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
 import VisitorTracker from "@/components/VisitorTracker";
+import SocialProofToast from "@/components/SocialProofToast";
 import Index from "./pages/Index";
 const CityPage = lazy(() => import("./pages/CityPage"));
 import NotFound from "./pages/NotFound";
@@ -72,6 +73,7 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
+            <SocialProofToast />
             <Routes>
               <Route path="/" element={<Index />} />
               
