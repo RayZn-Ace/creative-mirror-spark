@@ -652,6 +652,55 @@ const MediaAdmin = () => {
           ))}
         </div>
       )}
+
+      {/* Edit Album Dialog */}
+      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) setEditAlbum(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Album bearbeiten</DialogTitle>
+          </DialogHeader>
+          {editAlbum && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titel *</Label>
+                <Input
+                  value={editAlbum.title}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Event-Datum</Label>
+                <Input
+                  type="date"
+                  value={editAlbum.event_date}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, event_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Location</Label>
+                <Input
+                  value={editAlbum.location}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Beschreibung</Label>
+                <Textarea
+                  value={editAlbum.description}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, description: e.target.value })}
+                />
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => updateAlbumMutation.mutate()}
+                disabled={!editAlbum.title || updateAlbumMutation.isPending}
+              >
+                Speichern
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
