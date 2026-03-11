@@ -52,7 +52,9 @@ export default function SupportChatbot() {
     const check = async () => {
       const { data } = await supabase.from("settings").select("value").eq("key", "support_online").maybeSingle();
       if (data?.value && typeof data.value === "object" && !Array.isArray(data.value)) {
-        setSupportOnline(!!(data.value as Record<string, unknown>).online);
+        const val = data.value as Record<string, unknown>;
+        setSupportOnline(!!val.online);
+        setStaffCount(typeof val.staff_count === "number" ? val.staff_count : 0);
       }
     };
     check();
