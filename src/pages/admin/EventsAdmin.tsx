@@ -1790,9 +1790,7 @@ const EventsAdmin = () => {
   const [search, setSearch] = useState("");
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
-  const [filter16Plus, setFilter16Plus] = useState(false);
-  const [filterMammaMia, setFilterMammaMia] = useState(false);
-   const [filterActs, setFilterActs] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
