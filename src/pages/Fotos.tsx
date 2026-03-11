@@ -1,6 +1,6 @@
 import { PageLayout } from "@/components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3, Video } from "lucide-react";
+import { Play, Grid2X2, Grid3X3, LayoutGrid, Columns2, Image, SlidersHorizontal, Pause, ChevronLeft, ChevronRight, Shuffle, Maximize2, X, Rows3, Video, Download } from "lucide-react";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -51,7 +51,33 @@ const getYoutubeId = (url: string) => {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 };
+// Generate a smaller thumbnail URL by appending width/quality params for Supabase storage
+const getThumbUrl = (url: string, width = 400) => {
+  if (!url) return url;
+  // For Supabase storage URLs, use transform query params
+  if (url.includes('/storage/v1/object/public/')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}&quality=60`;
+  }
+  return url;
+};
 
+const handleDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'foto.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, '_blank');
+  }
+};
 
 const Fotos = () => {
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -211,6 +237,12 @@ const Fotos = () => {
               <X className="w-5 h-5 text-white" />
             </button>
             <button
+              className="absolute top-4 right-16 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors"
+              onClick={(e) => { e.stopPropagation(); handleDownload(displayPhotos[lightbox].src, `foto-${lightbox + 1}.jpg`); }}
+            >
+              <Download className="w-5 h-5 text-white" />
+            </button>
+            <button
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors"
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + displayPhotos.length) % displayPhotos.length); }}
             >
@@ -218,10 +250,9 @@ const Fotos = () => {
             </button>
             <motion.img
               key={lightbox}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
               src={displayPhotos[lightbox].src}
               alt={displayPhotos[lightbox].alt}
               className="max-w-full max-h-[90vh] rounded-xl object-contain"
@@ -367,7 +398,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={getThumbUrl(photo.src)}
                   alt={photo.alt}
                   className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-110 bg-muted"
                   loading="lazy"
@@ -412,7 +443,7 @@ const Fotos = () => {
                 onClick={() => setLightbox(i)}
               >
                 <img
-                  src={photo.src}
+                  src={getThumbUrl(photo.src)}
                   alt={photo.alt}
                   className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 bg-muted ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/3]"}`}
                   loading="lazy"
