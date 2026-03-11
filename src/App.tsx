@@ -73,6 +73,7 @@ const App = () => (
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
+            <SocialProofToast />
             <Routes>
               <Route path="/" element={<Index />} />
               
