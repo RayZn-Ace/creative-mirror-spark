@@ -1116,16 +1116,22 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
     setDiscountApplied(false);
     setLoadingTickets(true);
 
-    supabase
-      .from("ticket_categories")
-      .select("*")
-      .eq("event_id", event.id)
-      .order("sort_order")
-      .then(({ data }) => {
+    Promise.all([
+      supabase.from("ticket_categories").select("*").eq("event_id", event.id).order("sort_order"),
+      supabase.from("tickets").select("ticket_category_id").eq("event_id", event.id).in("status", ["valid", "checked_in"]),
+    ]).then(([{ data }, { data: soldTickets }]) => {
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
+
+        // Count sold tickets per category
+        const soldMap = new Map<string, number>();
+        (soldTickets || []).forEach((t: any) => {
+          if (t.ticket_category_id) {
+            soldMap.set(t.ticket_category_id, (soldMap.get(t.ticket_category_id) || 0) + 1);
+          }
+        });
+
         const groups: Record<string, TicketItem[]> = {};
         const now = new Date();
-        // Get or create a session seed for consistent KVK values
         let sessionSeed = sessionStorage.getItem("kvk_seed");
         if (!sessionSeed) {
           sessionSeed = String(Math.random());
@@ -1134,9 +1140,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         const seedNum = parseFloat(sessionSeed);
 
         for (const row of data) {
-          // Skip internal-only tickets (free tickets for admin use)
           if (row.internal_only) continue;
-          // Skip tickets outside sale window
           if (row.sale_start && new Date(row.sale_start) > now) continue;
           if (row.sale_end && new Date(row.sale_end) < now) continue;
 
@@ -1145,18 +1149,27 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           const currency = getCurrencyForCity(event.city);
           const lang = getLangForCity(event.city);
 
-          // KVK: compute a consistent fake remaining count per ticket per session
+          // Compute real remaining capacity
+          let remaining: number | null = null;
+          if (row.max_capacity != null && row.max_capacity > 0) {
+            const sold = soldMap.get(row.id) || 0;
+            remaining = Math.max(0, row.max_capacity - sold);
+          }
+
+          // KVK scarcity (fake display only)
           let scarcityCount: number | null = null;
           if (row.kvk_enabled && row.max_capacity) {
             const minPct = row.kvk_min_percent ?? 5;
             const maxPct = row.kvk_max_percent ?? 25;
-            // Use a hash-like approach: combine seed with ticket id for per-ticket consistency
             const ticketHash = row.id.split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
-            const factor = ((seedNum * 1000 + ticketHash) % 100) / 100; // 0-1
+            const factor = ((seedNum * 1000 + ticketHash) % 100) / 100;
             const minCount = Math.max(1, Math.round(row.max_capacity * minPct / 100));
             const maxCount = Math.max(minCount + 1, Math.round(row.max_capacity * maxPct / 100));
             scarcityCount = Math.round(minCount + factor * (maxCount - minCount));
           }
+
+          // If remaining is 0, mark as sold out
+          const isSoldOut = row.sold_out || (remaining !== null && remaining <= 0);
 
           groups[group].push({
             id: row.id,
@@ -1164,10 +1177,11 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
             description: row.description || "",
             priceEur: row.price,
             price: row.price > 0 ? convertPrice(row.price, currency, lang) : "",
-            soldOut: row.sold_out || false,
+            soldOut: isSoldOut,
             badge: row.badge || undefined,
             comingSoon: row.coming_soon || false,
-            scarcityCount,
+            scarcityCount: isSoldOut ? null : scarcityCount,
+            remaining: isSoldOut ? 0 : remaining,
           });
         }
         setTicketCategories(Object.entries(groups).map(([title, items]) => ({ title, items })));
