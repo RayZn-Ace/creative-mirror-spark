@@ -790,6 +790,26 @@ const BlockEditor = ({ block, onChange, colorScheme }: { block: Block; onChange:
           >
             <Wand2 className="w-3 h-3" /> An Style anpassen
           </button>
+          <div className="mt-2 p-2 rounded-lg" style={{ background: "hsl(200 80% 50% / 0.08)", border: "1px solid hsl(200 80% 50% / 0.15)" }}>
+            <label className={labelCls} style={{ ...labelStyle, color: "hsl(200 80% 60%)" }}>
+              🎞️ Live-Countdown GIF (für E-Mail)
+            </label>
+            <p className="text-[9px] mb-1.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+              Erstelle einen kostenlosen Timer auf <a href="https://countdownmail.com" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>countdownmail.com</a> oder <a href="https://clevertimer.org" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>clevertimer.org</a> und füge die Bild-URL hier ein.
+            </p>
+            <input
+              value={block.timerImageUrl || ""}
+              onChange={(e) => upd({ timerImageUrl: e.target.value || undefined })}
+              placeholder="https://i.countdownmail.com/xxxx.gif"
+              className="w-full px-3 py-2 rounded-lg text-sm"
+              style={inputStyle}
+            />
+            {block.timerImageUrl && (
+              <p className="text-[9px] mt-1 flex items-center gap-1" style={{ color: "hsl(140 60% 50%)" }}>
+                <CheckCircle className="w-3 h-3" /> GIF wird in der E-Mail verwendet (live bei jedem Öffnen)
+              </p>
+            )}
+          </div>
         </div>
       );
   }
