@@ -145,7 +145,7 @@ export default function SupportChatbot() {
       setFormStep("issue");
       setChatMessages(prev => [
         ...prev,
-        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und gib uns deine E-Mail-Adresse – wir melden uns dann schnellstmöglich per Mail bei dir!" },
+        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und hinterlasse deine E-Mail – wir melden uns per Mail bei dir!" },
       ]);
     }
   }, [supportOnline, staffCount, customerLang]);
