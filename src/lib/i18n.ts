@@ -1230,7 +1230,7 @@ const globalDe: GlobalTranslations = {
   vibesTitle1: "PARTY", vibesTitle2: "VIBES", videoTitle1: "PARTY", videoTitle2: "VIBES", videoDesc: "Erlebe die Stimmung unserer Events in diesen Highlights.",
   reviewsTitle1: "DAS SAGEN UNSERE", reviewsTitle2: "GÄSTE",
   newsletterTitle1: "BLEIB", newsletterTitle2: "UPGEDATED", newsletterDesc: "Neue Termine, exklusive Angebote und Behind-the-Scenes direkt in dein Postfach.", newsletterPlaceholder: "Deine E-Mail Adresse", newsletterSubmit: "Anmelden", newsletterThanks: "🎉 Danke! Du bist dabei.", whatsappJoinGroup: "WhatsApp Gruppe beitreten",
-  footerAbout: "Über uns", footerAboutDesc: "Dein Ticketshop für die besten 16+ Schülerpartys im Rhein-Main-Gebiet.", footerLinks: "Links", footerLegal: "Rechtliches", footerSocial: "Social Media",
+  footerAbout: "Über uns", footerAboutDesc: "Dein Ticketshop für die besten Schüler- und Abipartys ab 16 Jahren in ganz Deutschland.", footerLinks: "Links", footerLegal: "Rechtliches", footerSocial: "Social Media",
   footerImprint: "Impressum", footerPrivacy: "Datenschutz", footerTerms: "AGB", footerContact: "Kontakt", footerAboutUs: "Über uns", footerFaq: "FAQ",
   myTicketsTitle: "Meine Tickets", myTicketsSubtitle: "Finde deine gekauften Tickets", myTicketsSearch: "Deine E-Mail-Adresse eingeben...", myTicketsSearchBtn: "Suchen", myTicketsNone: "Keine Tickets für diese E-Mail gefunden.", myTicketsNoneHint: "Stelle sicher, dass du die gleiche E-Mail wie bei der Bestellung verwendest.", myTicketsEnterEmail: "Gib deine E-Mail-Adresse ein, um deine Tickets zu finden.", myTicketsValid: "Gültig", myTicketsCheckedIn: "Eingecheckt", myTicketsPaid: "Bezahlt", myTicketsOrderedAt: "Bestellt am",
   saveInfoLabel: "Kontoinfos speichern",
