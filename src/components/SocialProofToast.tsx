@@ -48,10 +48,12 @@ export default function SocialProofToast() {
   // Fetch published events that have ticket categories
   useEffect(() => {
     if (isAdmin) return;
+    const today = new Date().toISOString().split("T")[0];
     supabase
       .from("events")
       .select("id, title, ticket_categories!inner(id)")
       .eq("status", "published")
+      .gte("date", today)
       .then(({ data }) => {
         if (data) {
           setEvents(data.map((e: any) => ({ id: e.id, title: e.title })));
