@@ -1342,7 +1342,7 @@ const AnalyticsAdmin = () => {
                     {ev.catStats.length > 0 && (
                       <div className="space-y-1">
                         {ev.catStats.map((cat, i) => {
-                          const catPct = cat.capacity > 0 ? Math.min((cat.sold / cat.capacity) * 100, 100) : 0;
+                          const catPct = cat.soldOut ? 100 : (cat.capacity > 0 ? Math.min((cat.sold / cat.capacity) * 100, 100) : 0);
                           return (
                             <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.02)" }}>
                               <div className="min-w-0 flex-1">
