@@ -153,6 +153,41 @@ const MediaAdmin = () => {
     },
   });
 
+  // Update album
+  const updateAlbumMutation = useMutation({
+    mutationFn: async () => {
+      if (!editAlbum) throw new Error("Kein Album");
+      const { error } = await supabase.from("media_albums").update({
+        title: editAlbum.title,
+        event_date: editAlbum.event_date || null,
+        location: editAlbum.location || null,
+        description: editAlbum.description || null,
+      }).eq("id", editAlbum.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-media-albums"] });
+      if (selectedAlbum && editAlbum && selectedAlbum.id === editAlbum.id) {
+        setSelectedAlbum({ ...selectedAlbum, title: editAlbum.title, event_date: editAlbum.event_date || null, location: editAlbum.location || null, description: editAlbum.description || null });
+      }
+      setEditOpen(false);
+      setEditAlbum(null);
+      toast.success("Album aktualisiert");
+    },
+    onError: () => toast.error("Fehler beim Aktualisieren"),
+  });
+
+  const openEditDialog = (album: Album) => {
+    setEditAlbum({
+      id: album.id,
+      title: album.title,
+      event_date: album.event_date || "",
+      location: album.location || "",
+      description: album.description || "",
+    });
+    setEditOpen(true);
+  };
+
   // Upload photos
   const handleUpload = useCallback(async (files: FileList) => {
     if (!selectedAlbum) return;
