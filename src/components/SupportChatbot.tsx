@@ -145,22 +145,12 @@ export default function SupportChatbot() {
       setFormStep("issue");
       setChatMessages(prev => [
         ...prev,
-        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und gib uns deine E-Mail-Adresse – wir melden uns dann schnellstmöglich per Mail bei dir!" },
+        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und hinterlasse deine E-Mail – wir melden uns per Mail bei dir!" },
       ]);
     }
   }, [supportOnline, staffCount, customerLang]);
 
-  const handleOfflineForm = useCallback(async (input: string) => {
-    if (formStep === "issue") {
-      setFormData(prev => ({ ...prev, issue: input }));
-      setChatMessages(prev => [
-        ...prev,
-        { from: "user", text: input },
-        { from: "bot", text: "Danke! Bitte gib uns noch deine E-Mail-Adresse, damit wir uns bei dir melden können: 📧" },
-      ]);
-      setFormStep("email");
-    }
-  }, [formStep]);
+  const [issueInput, setIssueInput] = useState("");
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -205,9 +195,8 @@ export default function SupportChatbot() {
     const userText = chatInput.trim();
     setChatInput("");
 
-    // Offline form mode
+    // Offline form mode - input handled by inline form
     if (mode === "offline-form") {
-      await handleOfflineForm(userText);
       return;
     }
 
@@ -338,7 +327,7 @@ export default function SupportChatbot() {
             )}
 
             {/* Inline email field for offline form */}
-            {mode === "offline-form" && formStep === "email" && (
+            {mode === "offline-form" && formStep === "issue" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -399,7 +388,7 @@ export default function SupportChatbot() {
           </div>
 
           {/* Input - hide when inline email field is showing */}
-          {!(mode === "offline-form" && formStep === "email") && (
+          {!(mode === "offline-form" && formStep === "issue") && (
             <form onSubmit={handleChat} className="p-3 flex gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
               <input
                 value={chatInput}
