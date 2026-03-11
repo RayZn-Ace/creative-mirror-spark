@@ -1791,6 +1791,11 @@ const EventsAdmin = () => {
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [customFilters, setCustomFilters] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("admin_event_filters") || "[]"); } catch { return []; }
+  });
+  const [newFilterInput, setNewFilterInput] = useState("");
+  const [showFilterManager, setShowFilterManager] = useState(false);
   const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
