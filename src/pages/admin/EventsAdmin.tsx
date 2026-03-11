@@ -1790,9 +1790,7 @@ const EventsAdmin = () => {
   const [search, setSearch] = useState("");
   const [eventStats, setEventStats] = useState<Record<string, { ticketsSold: number; revenue: number }>>({});
   const [activeTab, setActiveTab] = useState<"published" | "draft" | "past">("published");
-  const [filter16Plus, setFilter16Plus] = useState(false);
-  const [filterMammaMia, setFilterMammaMia] = useState(false);
-   const [filterActs, setFilterActs] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
@@ -1993,16 +1991,17 @@ const EventsAdmin = () => {
     past: events.filter((e) => e.status === "published" && e.date && e.date < today).length,
   };
 
+  // Build dynamic filter tags from events
+  const allTags = Array.from(new Set(events.map(e => e.tag).filter(Boolean) as string[])).sort();
+  const allSeries = Array.from(new Set(events.filter(e => e.series_id).map(e => seriesMap[e.series_id!]).filter(Boolean))).sort();
+  const filterOptions = [...allTags, ...allSeries.filter(s => !allTags.includes(s))];
+
   // Apply extra filters
   const extraFiltered = tabFiltered.filter((e) => {
-    if (filter16Plus && (e.title.toLowerCase().includes("mamma mia") || e.title.toLowerCase().includes("mädelsabend") || e.title.toLowerCase().includes("madelsabend"))) return false;
-    if (filterMammaMia && !e.title.toLowerCase().includes("mamma mia")) return false;
-    if (filterActs) {
-      const seriesTitle = e.series_id ? (seriesMap[e.series_id] || "") : "";
-      const combined = (e.title + " " + seriesTitle).toLowerCase();
-      if (!combined.includes("act") && !combined.includes("acts")) return false;
-    }
-    return true;
+    if (activeFilters.length === 0) return true;
+    const eventTag = e.tag || "";
+    const eventSeries = e.series_id ? (seriesMap[e.series_id] || "") : "";
+    return activeFilters.some(f => f === eventTag || f === eventSeries);
   });
 
   const filteredEvents = isSearching
@@ -2136,36 +2135,37 @@ const EventsAdmin = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
-        {[
-          { label: "16+ Events", active: filter16Plus, toggle: () => setFilter16Plus(!filter16Plus) },
-          { label: "Mamma Mia Events", active: filterMammaMia, toggle: () => setFilterMammaMia(!filterMammaMia) },
-          { label: "Acts", active: filterActs, toggle: () => setFilterActs(!filterActs) },
-        ].map((f) => (
-          <button
-            key={f.label}
-            onClick={f.toggle}
-            className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
-            style={{
-              background: f.active ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)",
-              color: f.active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
-              border: `1px solid ${f.active ? "hsl(230 80% 56% / 0.4)" : "hsl(0 0% 100% / 0.1)"}`,
-            }}
-          >
-            {f.label}
-          </button>
-        ))}
-        {(filter16Plus || filterMammaMia || filterActs) && (
-          <button
-            onClick={() => { setFilter16Plus(false); setFilterMammaMia(false); setFilterActs(false); }}
-            className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
-            style={{ color: "hsl(230 80% 56%)" }}
-          >
-            Filter zurücksetzen
-          </button>
-        )}
-      </div>
+      {filterOptions.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <Filter className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+          {filterOptions.map((tag) => {
+            const active = activeFilters.includes(tag);
+            return (
+              <button
+                key={tag}
+                onClick={() => setActiveFilters(prev => active ? prev.filter(f => f !== tag) : [...prev, tag])}
+                className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+                style={{
+                  background: active ? "hsl(230 80% 56% / 0.15)" : "hsl(0 0% 100% / 0.06)",
+                  color: active ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.4)",
+                  border: `1px solid ${active ? "hsl(230 80% 56% / 0.4)" : "hsl(0 0% 100% / 0.1)"}`,
+                }}
+              >
+                {tag}
+              </button>
+            );
+          })}
+          {activeFilters.length > 0 && (
+            <button
+              onClick={() => setActiveFilters([])}
+              className="text-[10px] font-bold uppercase px-2 py-1 rounded-lg transition-all hover:bg-white/10"
+              style={{ color: "hsl(230 80% 56%)" }}
+            >
+              Filter zurücksetzen
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Sold Out Overview */}
       {(() => {
