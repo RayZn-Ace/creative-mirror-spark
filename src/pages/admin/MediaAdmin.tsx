@@ -607,7 +607,15 @@ const MediaAdmin = () => {
                     {album.photo_count}
                   </span>
                 </div>
-                <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-2 mt-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => openEditDialog(album)}
+                  >
+                    <Pencil className="w-3 h-3 mr-1" />Bearbeiten
+                  </Button>
                   <label className="cursor-pointer">
                     <input
                       type="file"
