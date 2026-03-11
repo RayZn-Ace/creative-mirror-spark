@@ -195,9 +195,8 @@ export default function SupportChatbot() {
     const userText = chatInput.trim();
     setChatInput("");
 
-    // Offline form mode
+    // Offline form mode - input handled by inline form
     if (mode === "offline-form") {
-      await handleOfflineForm(userText);
       return;
     }
 
