@@ -1132,7 +1132,7 @@ ${bodyContent}
 </td></tr>
 </table>
 </body></html>`;
-  }, [blocks, subject, colorScheme]);
+  }, [blocks, subject, colorScheme, previewTick]);
 
   const handleSend = async () => {
     if (!subject.trim()) { toast.error("Bitte Betreff ausfüllen"); return; }
