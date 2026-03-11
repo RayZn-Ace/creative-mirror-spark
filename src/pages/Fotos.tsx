@@ -296,7 +296,14 @@ const Fotos = () => {
                 {album.cover_image_url && (
                   <img src={album.cover_image_url} alt="" className="w-6 h-6 rounded-md object-cover" />
                 )}
-                {album.title}
+                <div className="flex flex-col items-start leading-tight">
+                  <span>{album.title}</span>
+                  {album.event_date && (
+                    <span className="text-[10px] opacity-70">
+                      {new Date(album.event_date + "T00:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                    </span>
+                  )}
+                </div>
               </button>
             ))}
           </div>
