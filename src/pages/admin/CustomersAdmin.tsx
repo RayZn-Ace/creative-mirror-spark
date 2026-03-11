@@ -207,17 +207,33 @@ const CustomersAdmin = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const fetchAll = async (table: string, select: string, orderCol?: string) => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        let q = supabase.from(table).select(select).range(from, from + PAGE - 1);
+        if (orderCol) q = q.order(orderCol, { ascending: false });
+        const { data } = await q;
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
     const load = async () => {
-      const [ordersRes, eventsRes, ticketsRes, categoriesRes] = await Promise.all([
-        supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("events").select("id, title, date, city"),
-        supabase.from("tickets").select("id, event_id, order_id, status, checked_in_at, holder_name, holder_email, qr_code, created_at, ticket_category_id"),
-        supabase.from("ticket_categories").select("id, name, event_id, price"),
+      const [ordersData, eventsData, ticketsData, categoriesData] = await Promise.all([
+        fetchAll("orders", "*", "created_at"),
+        fetchAll("events", "id, title, date, city"),
+        fetchAll("tickets", "id, event_id, order_id, status, checked_in_at, holder_name, holder_email, qr_code, created_at, ticket_category_id"),
+        fetchAll("ticket_categories", "id, name, event_id, price"),
       ]);
-      if (ordersRes.data) setOrders(ordersRes.data as unknown as Order[]);
-      if (eventsRes.data) setEvents(eventsRes.data as unknown as EventInfo[]);
-      if (ticketsRes.data) setAllTickets(ticketsRes.data as unknown as TicketRow[]);
-      if (categoriesRes.data) setTicketCategories(categoriesRes.data as unknown as TicketCategory[]);
+      setOrders(ordersData as unknown as Order[]);
+      setEvents(eventsData as unknown as EventInfo[]);
+      setAllTickets(ticketsData as unknown as TicketRow[]);
+      setTicketCategories(categoriesData as unknown as TicketCategory[]);
       setLoading(false);
     };
     load();
