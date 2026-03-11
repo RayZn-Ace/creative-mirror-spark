@@ -982,10 +982,10 @@ const CustomersAdmin = () => {
                         {/* Revenue summary */}
                         {(() => {
                           const paidOrders = customer.orders.filter(o => o.status === "paid");
-                          const totalTicketRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+                          const totalRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
                           const totalServiceFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
                           const totalInsurance = paidOrders.reduce((s, o) => s + Number((o as any).insurance_fee || 0), 0);
-                          const totalRevenue = totalTicketRevenue + totalServiceFees + totalInsurance;
+                          const totalTicketRevenue = totalRevenue - totalServiceFees - totalInsurance;
 
                           // Ticket category breakdown
                           const catMap = new Map<string, { name: string; count: number; revenue: number }>();
