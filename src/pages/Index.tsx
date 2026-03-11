@@ -406,7 +406,7 @@ export default function Index() {
         <UpcomingEvents gt={gt} />
         <WhatToExpect gt={gt} />
         <CrowdSlideshow gt={gt} />
-        <InstagramFeed />
+        
         <Reviews gt={gt} />
       </main>
       <Footer gt={gt} />
