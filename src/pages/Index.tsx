@@ -401,8 +401,8 @@ export default function Index() {
         <Hero gt={gt} />
         <EventCountdown gt={gt} />
         <UpcomingEvents gt={gt} />
-        <WhatToExpect gt={gt} />
         <CrowdSlideshow gt={gt} />
+        <WhatToExpect gt={gt} />
         
         <Reviews gt={gt} />
       </main>
