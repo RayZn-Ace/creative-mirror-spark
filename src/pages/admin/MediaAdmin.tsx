@@ -42,6 +42,8 @@ const MediaAdmin = () => {
   const queryClient = useQueryClient();
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editAlbum, setEditAlbum] = useState<{ id: string; title: string; event_date: string; location: string; description: string } | null>(null);
   const [addVideoOpen, setAddVideoOpen] = useState(false);
   const [newAlbum, setNewAlbum] = useState({ title: "", description: "", event_date: "", location: "" });
   const [newVideo, setNewVideo] = useState({ url: "", caption: "" });
