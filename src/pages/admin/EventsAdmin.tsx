@@ -58,6 +58,7 @@ interface EventRow {
   service_fee_type: string | null;
   service_fee_value: number | null;
   service_fee_vat: number | null;
+  service_fee_mode: string | null;
   info_sections: InfoBlock[] | null;
   is_16plus: boolean | null;
   muttizettel: boolean | null;
