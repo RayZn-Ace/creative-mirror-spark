@@ -112,6 +112,10 @@ export default function SupportChatbot() {
 
   const startLiveChat = useCallback(async (initialMessage?: string) => {
     if (supportOnline) {
+      setChatMessages(prev => [
+        ...prev,
+        { from: "system", text: `Es sind gerade ${staffCount} Mitarbeiter für dich da! 🟢` },
+      ]);
       const { data } = await supabase.from("support_tickets").insert([{
         subject: initialMessage?.substring(0, 100) || "Live-Chat Anfrage",
         customer_email: "chat@visitor.local",
@@ -140,10 +144,10 @@ export default function SupportChatbot() {
       setFormStep("issue");
       setChatMessages(prev => [
         ...prev,
-        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Schildere bitte kurz dein Anliegen, damit wir uns schnellstmöglich bei dir melden können:" },
+        { from: "bot", text: "Aktuell sind leider alle Mitarbeiter im Gespräch. 😊 Bitte schildere kurz dein Anliegen und gib uns deine E-Mail-Adresse – wir melden uns dann schnellstmöglich per Mail bei dir!" },
       ]);
     }
-  }, [supportOnline, customerLang]);
+  }, [supportOnline, staffCount, customerLang]);
 
   const handleOfflineForm = useCallback(async (input: string) => {
     if (formStep === "issue") {
