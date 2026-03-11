@@ -1143,7 +1143,7 @@ const InvoiceTab = () => {
                   {tpl.footer_note && <div style={{ fontSize: "7px", color: "#666", marginBottom: "4px" }}>{tpl.footer_note}</div>}
                   {tpl.show_bank_details && (
                     <div style={{ fontSize: "6px", color: "#999" }}>
-                      {tpl.bank_override || "GIMME GIMME GmbH · IBAN: DE89... · BIC: ..."}
+                      {tpl.bank_override || `${company.name || "Firmenname"} · IBAN: ${company.iban || "DE89..."} · BIC: ${company.bic || "..."}`}
                     </div>
                   )}
                 </div>
