@@ -1305,7 +1305,7 @@ const AnalyticsAdmin = () => {
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                          {fmtInt(ev.totalSold)}{ev.totalCapacity > 0 ? ` / ${fmtInt(ev.totalCapacity)}` : ""} Tickets
+                          {fmtInt(ev.totalSold)} / {fmtInt(ev.totalCapacity)} Tickets
                         </span>
                         {ev.totalCapacity > 0 && (
                           <span className="text-xs font-black" style={{ color: pctColor }}>{pct.toFixed(0)}%</span>
