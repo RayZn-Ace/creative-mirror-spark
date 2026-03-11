@@ -345,6 +345,9 @@ const MediaAdmin = () => {
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => openEditDialog(selectedAlbum)}>
+              <Pencil className="w-4 h-4 mr-1" />Bearbeiten
+            </Button>
             {/* Cover image upload */}
             <label className="cursor-pointer">
               <input
