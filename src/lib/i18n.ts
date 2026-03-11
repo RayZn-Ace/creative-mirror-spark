@@ -1213,7 +1213,7 @@ const globalDe: GlobalTranslations = {
   navHome: "Startseite", navDatesTickets: "Events", navExperience: "Erleben", navCollaboration: "Zusammenarbeit", navFaqSupport: "FAQ & Support", navTicketRebooking: "Ticket Umbuchung", navMyTickets: "Meine Tickets", navTickets: "Tickets",
   navForWho: "Für wen?", navMedia: "Partymomente", navBlog: "Blog",
   navBookUs: "Uns Buchen!", navRegisterLocation: "Location anmelden", navPartner: "Partner werden", navInfluencer: "Influencer", navJobs: "Jobs",
-  heroTitle: "nightlife", heroSubtitle: " generation", heroDesc: "Dein Ticketshop für die besten Schülerpartys ab 16 Jahren in Deutschland.", heroTicketBtn: "Tickets sichern",
+  heroTitle: "nightlife", heroSubtitle: " generation", heroDesc: "Dein Ticketshop für die besten Schüler- und Abipartys ab 16 Jahren in ganz Deutschland.", heroTicketBtn: "Tickets sichern",
   trustCities: "STÄDTE", trustCountries: "LÄNDER", trustFollowers: "FOLLOWER", trustFans: "FANS",
   whatIsTitle1: "Was ist", whatIsTitle2: "Nightlife Generation?", whatIsDesc: "Die Plattform für unvergessliche Events! Finde Partys, Konzerte und Shows in deiner Nähe – von verschiedenen Veranstaltern, alles an einem Ort.",
   feat3hParty: "Events in 150+ Städten", featLiveDj: "Verschiedene Veranstalter", featGlitter: "Einfach & sicher buchen", featFans: "250.000+ zufriedene Gäste",
