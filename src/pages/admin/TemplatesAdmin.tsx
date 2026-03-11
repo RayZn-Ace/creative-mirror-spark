@@ -945,11 +945,19 @@ const InvoiceTab = () => {
   const [tpl, setTpl] = useState<InvoiceTemplate>(defaultInvoiceTemplate);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [company, setCompany] = useState<{ name: string; address: string; zip: string; city: string; iban: string; bic: string; bank_name: string }>({ name: "", address: "", zip: "", city: "", iban: "", bic: "", bank_name: "" });
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("settings").select("value").eq("key", "invoice_template").maybeSingle();
-      if (data?.value) setTpl({ ...defaultInvoiceTemplate, ...(data.value as any) });
+      const [invoiceRes, companyRes] = await Promise.all([
+        supabase.from("settings").select("value").eq("key", "invoice_template").maybeSingle(),
+        supabase.from("settings").select("value").eq("key", "company").maybeSingle(),
+      ]);
+      if (invoiceRes.data?.value) setTpl({ ...defaultInvoiceTemplate, ...(invoiceRes.data.value as any) });
+      if (companyRes.data?.value) {
+        const c = companyRes.data.value as any;
+        setCompany({ name: c.name || "", address: c.address || "", zip: c.zip || "", city: c.city || "", iban: c.iban || "", bic: c.bic || "", bank_name: c.bank_name || "" });
+      }
       setLoading(false);
     })();
   }, []);
@@ -1101,7 +1109,7 @@ const InvoiceTab = () => {
             <div className="rounded-xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid hsl(0 0% 100% / 0.1)", aspectRatio: "210/297" }}>
               <div style={{ padding: "20px", fontFamily: "-apple-system, sans-serif", height: "100%", display: "flex", flexDirection: "column" }}>
                 {tpl.logo_url && <img src={tpl.logo_url} alt="" style={{ height: "24px", marginBottom: "8px", objectFit: "contain", alignSelf: "flex-start" }} />}
-                <div style={{ fontSize: "8px", color: "#999", marginBottom: "4px" }}>GIMME GIMME GmbH · Musterstr. 1 · 33098 Paderborn</div>
+                <div style={{ fontSize: "8px", color: "#999", marginBottom: "4px" }}>{company.name || "Firmenname"}{company.address ? ` · ${company.address}` : ""}{company.zip || company.city ? ` · ${[company.zip, company.city].filter(Boolean).join(" ")}` : ""}</div>
                 <div style={{ height: "2px", background: tpl.accent_color, marginBottom: "12px" }} />
                 <div style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", marginBottom: "12px" }}>RECHNUNG</div>
                 <div style={{ fontSize: "8px", color: "#666", marginBottom: "4px" }}>Rechnungsempfänger</div>
@@ -1135,7 +1143,7 @@ const InvoiceTab = () => {
                   {tpl.footer_note && <div style={{ fontSize: "7px", color: "#666", marginBottom: "4px" }}>{tpl.footer_note}</div>}
                   {tpl.show_bank_details && (
                     <div style={{ fontSize: "6px", color: "#999" }}>
-                      {tpl.bank_override || "GIMME GIMME GmbH · IBAN: DE89... · BIC: ..."}
+                      {tpl.bank_override || `${company.name || "Firmenname"} · IBAN: ${company.iban || "DE89..."} · BIC: ${company.bic || "..."}`}
                     </div>
                   )}
                 </div>
