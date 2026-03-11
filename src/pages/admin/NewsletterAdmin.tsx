@@ -25,7 +25,7 @@ interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
 interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; magicMode?: boolean }
 interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string; magicMode?: boolean; magicLimit?: number }
 interface VoucherBlock extends BaseBlock { type: "voucher"; code: string; title: string; description: string; discount: string; validUntil: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; borderStyle: "dashed" | "solid" | "dotted" }
-interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
+interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; targetTime: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
 
 type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock | VoucherBlock | TimerBlock;
 
