@@ -792,7 +792,7 @@ export default function Termine() {
         {/* Count */}
         {!loading && sortedGroups.length > 0 && (
           <p className="text-center text-sm text-muted-foreground mt-8">
-            {sortedGroups.length} {sortedGroups.length === 1 ? "Stadt" : t.dates === "Termine" ? "Städte" : "cities"}
+            {sortedGroups.length} {sortedGroups.length === 1 ? "Veranstaltung" : t.dates === "Termine" ? "Veranstaltungen" : "events"}
           </p>
         )}
       </div>
