@@ -30,6 +30,7 @@ export default function SupportChatbot() {
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [formStep, setFormStep] = useState<FormStep>("issue");
   const [formData, setFormData] = useState({ issue: "", email: "", phone: "" });
+  const [emailInput, setEmailInput] = useState("");
   const [supportOnline, setSupportOnline] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [customerLang, setCustomerLang] = useState<string>("de");
