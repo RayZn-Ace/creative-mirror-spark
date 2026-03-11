@@ -248,7 +248,7 @@ const TicketRow = ({ item, qty, onQtyChange, t, currency }: { item: TicketItem; 
             <div className="pp-ticket-price text-base"><span className="text-xs font-normal mr-1">{currency}</span>{item.price}</div>
             <div className="pp-ticket-tax text-xs">{t.inclVat}</div>
           </div>
-          <QuantitySelector qty={qty} onQtyChange={onQtyChange} />
+          <QuantitySelector qty={qty} onQtyChange={onQtyChange} max={item.remaining != null ? item.remaining : undefined} />
         </div>
       </div>
       <div className="sm:hidden space-y-2">
