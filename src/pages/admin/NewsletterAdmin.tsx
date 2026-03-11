@@ -477,7 +477,7 @@ const PlaceholderPills = ({ onInsert }: { onInsert: (tag: string) => void }) => 
 );
 
 // ─── Block Editor Panel ────────────────────────────────────────
-const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) => void }) => {
+const BlockEditor = ({ block, onChange, colorScheme }: { block: Block; onChange: (b: Block) => void; colorScheme?: ColorScheme }) => {
   const upd = (patch: Partial<Block>) => onChange({ ...block, ...patch } as Block);
 
   const insertPlaceholder = (field: "text", tag: string) => {
@@ -775,6 +775,18 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
             <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>BG</label><input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
             <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Text</label><input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
           </div>
+          <button
+            onClick={() => {
+              if (!colorScheme) return;
+              const accent = colorScheme.headerGradient?.match(/#[0-9a-fA-F]{6}/g)?.[0] || "#e91e8c";
+              const isDark = colorScheme.bodyBg?.startsWith("#0") || colorScheme.bodyBg?.startsWith("#1");
+              upd({ accentColor: accent, bgColor: isDark ? colorScheme.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" });
+            }}
+            className="w-full mt-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+            style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}
+          >
+            <Wand2 className="w-3 h-3" /> An Style anpassen
+          </button>
         </div>
       );
   }
@@ -881,6 +893,15 @@ const NewsletterAdmin = () => {
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
+  const [previewTick, setPreviewTick] = useState(0);
+
+  // Tick every second so countdown in preview stays live
+  useEffect(() => {
+    const hasTimer = blocks.some((b) => b.type === "timer");
+    if (!hasTimer) return;
+    const iv = setInterval(() => setPreviewTick((t) => t + 1), 1000);
+    return () => clearInterval(iv);
+  }, [blocks]);
 
   // List/subscriber management
   const [showListManager, setShowListManager] = useState(false);
@@ -1123,7 +1144,7 @@ ${bodyContent}
 </td></tr>
 </table>
 </body></html>`;
-  }, [blocks, subject, colorScheme]);
+  }, [blocks, subject, colorScheme, previewTick]);
 
   const handleSend = async () => {
     if (!subject.trim()) { toast.error("Bitte Betreff ausfüllen"); return; }
@@ -1387,7 +1408,7 @@ ${bodyContent}
                     {isSelected && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="px-3 pb-3 pt-1" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
-                          <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} />
+                          <BlockEditor block={block} onChange={(b) => updateBlock(block.id, b)} colorScheme={colorScheme} />
                         </div>
                       </motion.div>
                     )}
