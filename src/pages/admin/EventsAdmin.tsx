@@ -1800,16 +1800,31 @@ const EventsAdmin = () => {
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
-    const [ticketsRes, ordersRes] = await Promise.all([
-      supabase.from("tickets").select("event_id").in("event_id", eventIds),
-      supabase.from("orders").select("event_id, total_amount, status").in("event_id", eventIds).eq("status", "paid"),
+
+    const fetchAll = async (query: any) => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await query.range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
+    const [ticketsData, ordersData] = await Promise.all([
+      fetchAll(supabase.from("tickets").select("event_id").in("event_id", eventIds)),
+      fetchAll(supabase.from("orders").select("event_id, total_amount, status").in("event_id", eventIds).eq("status", "paid")),
     ]);
     const stats: Record<string, { ticketsSold: number; revenue: number }> = {};
     eventIds.forEach(id => { stats[id] = { ticketsSold: 0, revenue: 0 }; });
-    (ticketsRes.data || []).forEach(t => {
+    ticketsData.forEach((t: any) => {
       if (stats[t.event_id]) stats[t.event_id].ticketsSold++;
     });
-    (ordersRes.data || []).forEach(o => {
+    ordersData.forEach((o: any) => {
       if (o.event_id && stats[o.event_id]) stats[o.event_id].revenue += Number(o.total_amount);
     });
     setEventStats(stats);
