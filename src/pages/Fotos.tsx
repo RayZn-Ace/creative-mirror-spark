@@ -79,8 +79,8 @@ const handleDownload = async (url: string, filename: string) => {
   }
 };
 
+const Fotos = () => {
 
-  const [lightbox, setLightbox] = useState<number | null>(null);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [gridCols, setGridCols] = useState(3);
