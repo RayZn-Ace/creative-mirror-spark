@@ -1991,16 +1991,17 @@ const EventsAdmin = () => {
     past: events.filter((e) => e.status === "published" && e.date && e.date < today).length,
   };
 
+  // Build dynamic filter tags from events
+  const allTags = Array.from(new Set(events.map(e => e.tag).filter(Boolean) as string[])).sort();
+  const allSeries = Array.from(new Set(events.filter(e => e.series_id).map(e => seriesMap[e.series_id!]).filter(Boolean))).sort();
+  const filterOptions = [...allTags, ...allSeries.filter(s => !allTags.includes(s))];
+
   // Apply extra filters
   const extraFiltered = tabFiltered.filter((e) => {
-    if (filter16Plus && (e.title.toLowerCase().includes("mamma mia") || e.title.toLowerCase().includes("mädelsabend") || e.title.toLowerCase().includes("madelsabend"))) return false;
-    if (filterMammaMia && !e.title.toLowerCase().includes("mamma mia")) return false;
-    if (filterActs) {
-      const seriesTitle = e.series_id ? (seriesMap[e.series_id] || "") : "";
-      const combined = (e.title + " " + seriesTitle).toLowerCase();
-      if (!combined.includes("act") && !combined.includes("acts")) return false;
-    }
-    return true;
+    if (activeFilters.length === 0) return true;
+    const eventTag = e.tag || "";
+    const eventSeries = e.series_id ? (seriesMap[e.series_id] || "") : "";
+    return activeFilters.some(f => f === eventTag || f === eventSeries);
   });
 
   const filteredEvents = isSearching
