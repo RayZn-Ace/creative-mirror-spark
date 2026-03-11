@@ -68,11 +68,13 @@ Deno.serve(async (req) => {
       throw new Error(`Einladung konnte nicht gespeichert werden: ${invError.message}`);
     }
 
-    // Build redirect URL
+    // Build redirect URL – use the origin from the request (admin panel URL)
     const origin = req.headers.get("origin") 
       || req.headers.get("referer")?.replace(/\/[^/]*$/, "")
       || "https://nightlifeticket.app";
     const redirectTo = `${origin}/admin/register`;
+
+    console.log("Invite redirect URL:", redirectTo);
 
     // Generate invite link (does NOT send email when using generateLink)
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
@@ -86,9 +88,20 @@ Deno.serve(async (req) => {
       throw new Error(`Einladungslink konnte nicht erstellt werden: ${linkError.message}`);
     }
 
-    const inviteLink = linkData?.properties?.action_link;
+    // The action_link from generateLink may use the Supabase site_url.
+    // We need to rewrite it to use our actual app origin as redirect_to.
+    let inviteLink = linkData?.properties?.action_link;
     if (!inviteLink) {
       throw new Error("Kein Einladungslink generiert");
+    }
+
+    // Ensure the redirect_to in the link points to our app
+    try {
+      const linkUrl = new URL(inviteLink);
+      linkUrl.searchParams.set("redirect_to", redirectTo);
+      inviteLink = linkUrl.toString();
+    } catch (e) {
+      console.error("Failed to rewrite invite link URL:", e);
     }
 
     console.log("Generated invite link for:", email);
