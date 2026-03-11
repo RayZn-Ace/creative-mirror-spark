@@ -258,7 +258,7 @@ const CustomersAdmin = () => {
       }
       const c = map.get(email)!;
       c.orders.push(order);
-      if (order.status === "paid") c.totalSpent += order.total_amount + order.service_fee;
+      if (order.status === "paid") c.totalSpent += order.total_amount;
       c.orderCount++;
       if (!c.name && order.name) c.name = order.name;
       if (!c.phone && order.phone) c.phone = order.phone;
@@ -409,7 +409,7 @@ const CustomersAdmin = () => {
         escapeCsv(ev?.title), escapeCsv(ev?.city), o.status,
         Number(o.total_amount).toFixed(2).replace(".", ","),
         Number(o.service_fee).toFixed(2).replace(".", ","),
-        (Number(o.total_amount) + Number(o.service_fee)).toFixed(2).replace(".", ","),
+        Number(o.total_amount).toFixed(2).replace(".", ","),
         o.currency, escapeCsv((o as any).mollie_payment_id),
       ];
     });
@@ -982,10 +982,10 @@ const CustomersAdmin = () => {
                         {/* Revenue summary */}
                         {(() => {
                           const paidOrders = customer.orders.filter(o => o.status === "paid");
-                          const totalTicketRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
+                          const totalRevenue = paidOrders.reduce((s, o) => s + Number(o.total_amount), 0);
                           const totalServiceFees = paidOrders.reduce((s, o) => s + Number(o.service_fee), 0);
                           const totalInsurance = paidOrders.reduce((s, o) => s + Number((o as any).insurance_fee || 0), 0);
-                          const totalRevenue = totalTicketRevenue + totalServiceFees + totalInsurance;
+                          const totalTicketRevenue = totalRevenue - totalServiceFees - totalInsurance;
 
                           // Ticket category breakdown
                           const catMap = new Map<string, { name: string; count: number; revenue: number }>();
@@ -1114,7 +1114,7 @@ const CustomersAdmin = () => {
                                               <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>
                                             )}
                                             <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                              {formatCurrency(order.total_amount)}
+                                              {formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}
                                             </span>
                                           </div>
                                         </td>
@@ -1122,7 +1122,7 @@ const CustomersAdmin = () => {
                                           {Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}
                                         </td>
                                         <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                                          {formatCurrency(order.total_amount + order.service_fee)}
+                                          {formatCurrency(order.total_amount)}
                                         </td>
                                         <td className="px-3 py-2 text-center">
                                           {order.status === "paid" && (
