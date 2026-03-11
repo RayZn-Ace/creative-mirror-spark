@@ -1996,17 +1996,17 @@ const EventsAdmin = () => {
     past: events.filter((e) => e.status === "published" && e.date && e.date < today).length,
   };
 
-  // Build dynamic filter tags from events
-  const allTags = Array.from(new Set(events.map(e => e.tag).filter(Boolean) as string[])).sort();
-  const allSeries = Array.from(new Set(events.filter(e => e.series_id).map(e => seriesMap[e.series_id!]).filter(Boolean))).sort();
-  const filterOptions = [...allTags, ...allSeries.filter(s => !allTags.includes(s))];
-
-  // Apply extra filters
+  // Apply custom filters – match against title, tag, series name (case-insensitive contains)
   const extraFiltered = tabFiltered.filter((e) => {
     if (activeFilters.length === 0) return true;
-    const eventTag = e.tag || "";
-    const eventSeries = e.series_id ? (seriesMap[e.series_id] || "") : "";
-    return activeFilters.some(f => f === eventTag || f === eventSeries);
+    const eventTag = (e.tag || "").toLowerCase();
+    const eventTitle = (e.title || "").toLowerCase();
+    const eventSeries = e.series_id ? (seriesMap[e.series_id] || "").toLowerCase() : "";
+    const eventCity = (e.city || "").toLowerCase();
+    return activeFilters.some(f => {
+      const fl = f.toLowerCase();
+      return eventTag.includes(fl) || eventTitle.includes(fl) || eventSeries.includes(fl) || eventCity.includes(fl);
+    });
   });
 
   const filteredEvents = isSearching
