@@ -409,7 +409,7 @@ const CustomersAdmin = () => {
         escapeCsv(ev?.title), escapeCsv(ev?.city), o.status,
         Number(o.total_amount).toFixed(2).replace(".", ","),
         Number(o.service_fee).toFixed(2).replace(".", ","),
-        (Number(o.total_amount) + Number(o.service_fee)).toFixed(2).replace(".", ","),
+        Number(o.total_amount).toFixed(2).replace(".", ","),
         o.currency, escapeCsv((o as any).mollie_payment_id),
       ];
     });
