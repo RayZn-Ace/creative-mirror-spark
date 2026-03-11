@@ -24,7 +24,7 @@ const Kontakt = () => (
         </a>
 
         <a
-          href="https://wa.me/491622537300"
+          href="https://wa.me/491725614558"
           target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-4 p-5 rounded-2xl transition-all hover:scale-[1.02]"
           style={{ background: "hsl(142 40% 95%)", border: "1px solid hsl(142 40% 85%)" }}
@@ -34,7 +34,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>WhatsApp</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>Schreib uns direkt</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>0172 5614558</div>
           </div>
         </a>
 
