@@ -289,7 +289,10 @@ const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
 
 
 /* ─── Crowd Slideshow ─── */
+import heroCrowdOld from "@/assets/hero-crowd.jpg";
+
 const slides = [
+  { src: heroCrowdOld, alt: "Crowd bei der Party" },
   { src: crowdWide, alt: "Club-Atmosphäre mit Nebel" },
   { src: crowdAerial, alt: "Crowd mit CO2-Effekten" },
   { src: crowdGlowsticks, alt: "Volle Tanzfläche von oben" },
