@@ -1,36 +1,150 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ticket } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "react-router-dom";
 
-const NAMES = [
-  "Sophie", "Lena", "Emma", "Mia", "Hannah", "Laura", "Anna", "Lea",
-  "Marie", "Lisa", "Julia", "Sarah", "Lara", "Nina", "Jana", "Alina",
-  "Amelie", "Clara", "Johanna", "Katharina", "Elena", "Luisa", "Nele",
-  "Paulina", "Chiara", "Franziska", "Emilia", "Charlotte", "Victoria",
+// 80% female, 20% male — age-appropriate names (16-20)
+const FEMALE_NAMES = [
+  "Sophie", "Lena", "Emma", "Mia", "Hannah", "Laura", "Lea", "Marie",
+  "Lisa", "Julia", "Lara", "Nina", "Jana", "Alina", "Amelie", "Clara",
+  "Emilia", "Charlotte", "Nele", "Paulina", "Chiara", "Luisa", "Zoe",
+  "Leonie", "Ella", "Mila", "Ida", "Lina", "Maja", "Frieda", "Lia",
+  "Stella", "Jule", "Finja", "Romy", "Greta", "Tessa", "Pia", "Leni",
 ];
 
-const CITIES = [
-  "Hamburg", "Berlin", "Köln", "München", "Frankfurt", "Düsseldorf",
-  "Stuttgart", "Dortmund", "Essen", "Leipzig", "Dresden", "Hannover",
-  "Nürnberg", "Bonn", "Augsburg", "Braunschweig", "Bielefeld", "Bochum",
+const MALE_NAMES = [
+  "Leon", "Finn", "Paul", "Noah", "Luis", "Ben", "Elias", "Jonas",
+  "Luca", "Felix", "Niklas", "Moritz", "Tim", "Jan", "Max", "Tom",
 ];
 
-const rand = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-const randCount = () => Math.random() < 0.5 ? 2 : Math.random() < 0.7 ? 3 : 4;
+const randFrom = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+const randCount = () => (Math.random() < 0.5 ? 2 : Math.random() < 0.7 ? 3 : 4);
+
+const pickName = () => (Math.random() < 0.8 ? randFrom(FEMALE_NAMES) : randFrom(MALE_NAMES));
+
+interface ToastMsg {
+  name: string;
+  count: number;
+  eventTitle: string;
+  id: number;
+  isReal: boolean;
+}
+
+interface PublishedEvent {
+  id: string;
+  title: string;
+}
 
 export default function SocialProofToast() {
-  const [msg, setMsg] = useState<{ name: string; count: number; city: string; id: number } | null>(null);
+  const [msg, setMsg] = useState<ToastMsg | null>(null);
+  const [events, setEvents] = useState<PublishedEvent[]>([]);
+  const realOrdersQueue = useRef<ToastMsg[]>([]);
+  const location = useLocation();
+
+  // Don't show on admin pages
+  const isAdmin = location.pathname.startsWith("/admin");
+
+  // Fetch published events that have ticket categories
+  useEffect(() => {
+    if (isAdmin) return;
+    supabase
+      .from("events")
+      .select("id, title, ticket_categories!inner(id)")
+      .eq("status", "published")
+      .then(({ data }) => {
+        if (data) {
+          setEvents(data.map((e: any) => ({ id: e.id, title: e.title })));
+        }
+      });
+  }, [isAdmin]);
+
+  // Subscribe to real orders (paid)
+  useEffect(() => {
+    if (isAdmin) return;
+    const channel = supabase
+      .channel("social-proof-orders")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        (payload) => {
+          const order = payload.new as any;
+          if (order.status === "paid" && order.name) {
+            const items = Array.isArray(order.items) ? order.items : [];
+            const count = items.reduce((sum: number, i: any) => sum + (i.quantity || 1), 0) || 1;
+            // Find event title
+            const ev = events.find((e) => e.id === order.event_id);
+            if (ev) {
+              realOrdersQueue.current.push({
+                name: order.name.split(" ")[0],
+                count,
+                eventTitle: ev.title,
+                id: Date.now(),
+                isReal: true,
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin, events]);
+
+  // Also fetch recent real orders on mount
+  useEffect(() => {
+    if (isAdmin || events.length === 0) return;
+    supabase
+      .from("orders")
+      .select("name, items, event_id")
+      .eq("status", "paid")
+      .order("created_at", { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (data) {
+          data.forEach((order: any) => {
+            const ev = events.find((e) => e.id === order.event_id);
+            if (ev && order.name) {
+              const items = Array.isArray(order.items) ? order.items : [];
+              const count = items.reduce((sum: number, i: any) => sum + (i.quantity || 1), 0) || 1;
+              realOrdersQueue.current.push({
+                name: order.name.split(" ")[0],
+                count,
+                eventTitle: ev.title,
+                id: Date.now() + Math.random(),
+                isReal: true,
+              });
+            }
+          });
+        }
+      });
+  }, [isAdmin, events]);
+
+  const showToast = useCallback(() => {
+    // 40% chance to show real order if available
+    if (realOrdersQueue.current.length > 0 && Math.random() < 0.4) {
+      const real = realOrdersQueue.current.shift()!;
+      setMsg({ ...real, id: Date.now() });
+    } else if (events.length > 0) {
+      setMsg({
+        name: pickName(),
+        count: randCount(),
+        eventTitle: randFrom(events).title,
+        id: Date.now(),
+        isReal: false,
+      });
+    }
+    setTimeout(() => setMsg(null), 4000);
+  }, [events]);
 
   useEffect(() => {
-    const show = () => {
-      setMsg({ name: rand(NAMES), count: randCount(), city: rand(CITIES), id: Date.now() });
-      setTimeout(() => setMsg(null), 4000);
-    };
-    // initial delay
-    const first = setTimeout(show, 5000);
-    const interval = setInterval(show, (15 + Math.random() * 15) * 1000);
+    if (isAdmin || events.length === 0) return;
+    const first = setTimeout(showToast, 5000);
+    const interval = setInterval(showToast, (15 + Math.random() * 15) * 1000);
     return () => { clearTimeout(first); clearInterval(interval); };
-  }, []);
+  }, [isAdmin, events, showToast]);
+
+  if (isAdmin) return null;
 
   return (
     <div className="fixed top-20 right-4 z-50 pointer-events-none">
@@ -59,7 +173,7 @@ export default function SocialProofToast() {
                 {msg.name} hat gerade {msg.count} Tickets gekauft
               </p>
               <p className="text-[11px] mt-0.5 font-medium" style={{ color: "hsl(230 80% 65%)" }}>
-                📍 {msg.city} · partyticket
+                🎉 {msg.eventTitle}
               </p>
             </div>
           </motion.div>
