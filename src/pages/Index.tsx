@@ -295,7 +295,6 @@ const slides = [
   { src: crowdWide, alt: "Club-Atmosphäre mit Nebel" },
   { src: crowdAerial, alt: "Crowd mit CO2-Effekten" },
   { src: crowdGlowsticks, alt: "Volle Tanzfläche von oben" },
-  { src: crowdHands, alt: "Fans mit Schildern beim Feiern" },
 ];
 
 const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
