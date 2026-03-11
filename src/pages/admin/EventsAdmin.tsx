@@ -5,7 +5,7 @@ import {
   ArrowLeft, ImageIcon, MapPin, Clock, Ticket, Upload, X, Globe, Search, Copy,
   Sun, XCircle, Filter, Send, Type, Minus, Space, MessageCircle, Map, Image,
   FileText, HelpCircle, Gift, Music, Video, LayoutGrid, RefreshCw, AlertTriangle,
-  Check, Calendar, Import, ExternalLink,
+  Check, Calendar, Import, ExternalLink, Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
