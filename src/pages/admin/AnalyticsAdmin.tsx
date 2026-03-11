@@ -1359,7 +1359,7 @@ const AnalyticsAdmin = () => {
                               <span className="text-[11px] font-bold shrink-0" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
                                 {cat.sold}{cat.capacity > 0 ? `/${cat.capacity}` : ""}
                               </span>
-                              {cat.capacity > 0 && (
+                              {(cat.capacity > 0 || cat.soldOut) && (
                                 <div className="w-16 h-1.5 rounded-full overflow-hidden shrink-0" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
                                   <div className="h-full rounded-full" style={{ width: `${catPct}%`, background: catPct >= 90 ? "hsl(0 70% 55%)" : "hsl(270 70% 55%)" }} />
                                 </div>
