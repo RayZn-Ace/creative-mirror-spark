@@ -945,11 +945,19 @@ const InvoiceTab = () => {
   const [tpl, setTpl] = useState<InvoiceTemplate>(defaultInvoiceTemplate);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [company, setCompany] = useState<{ name: string; address: string; zip: string; city: string; iban: string; bic: string; bank_name: string }>({ name: "", address: "", zip: "", city: "", iban: "", bic: "", bank_name: "" });
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("settings").select("value").eq("key", "invoice_template").maybeSingle();
-      if (data?.value) setTpl({ ...defaultInvoiceTemplate, ...(data.value as any) });
+      const [invoiceRes, companyRes] = await Promise.all([
+        supabase.from("settings").select("value").eq("key", "invoice_template").maybeSingle(),
+        supabase.from("settings").select("value").eq("key", "company").maybeSingle(),
+      ]);
+      if (invoiceRes.data?.value) setTpl({ ...defaultInvoiceTemplate, ...(invoiceRes.data.value as any) });
+      if (companyRes.data?.value) {
+        const c = companyRes.data.value as any;
+        setCompany({ name: c.name || "", address: c.address || "", zip: c.zip || "", city: c.city || "", iban: c.iban || "", bic: c.bic || "", bank_name: c.bank_name || "" });
+      }
       setLoading(false);
     })();
   }, []);
