@@ -330,6 +330,14 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
           <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
             {(t.price || 0).toFixed(2)} €
           </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); deleteTicket(t.id); }}
+            className="p-1.5 rounded-lg hover:bg-red-500/20 transition-colors"
+            style={{ color: "hsl(0 70% 55%)" }}
+            title="Ticket löschen"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ))}
 
