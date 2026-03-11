@@ -881,6 +881,15 @@ const NewsletterAdmin = () => {
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
+  const [previewTick, setPreviewTick] = useState(0);
+
+  // Tick every second so countdown in preview stays live
+  useEffect(() => {
+    const hasTimer = blocks.some((b) => b.type === "timer");
+    if (!hasTimer) return;
+    const iv = setInterval(() => setPreviewTick((t) => t + 1), 1000);
+    return () => clearInterval(iv);
+  }, [blocks]);
 
   // List/subscriber management
   const [showListManager, setShowListManager] = useState(false);
