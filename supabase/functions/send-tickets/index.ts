@@ -979,8 +979,18 @@ Deno.serve(async (req) => {
       }),
     ]);
 
-    const ticketPdfBase64 = btoa(String.fromCharCode(...ticketPdfBytes));
-    const invoicePdfBase64 = btoa(String.fromCharCode(...invoicePdfBytes));
+    // Convert Uint8Array to base64 in chunks to avoid stack overflow
+    function uint8ToBase64(bytes: Uint8Array): string {
+      let binary = "";
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode(...chunk);
+      }
+      return btoa(binary);
+    }
+    const ticketPdfBase64 = uint8ToBase64(ticketPdfBytes);
+    const invoicePdfBase64 = uint8ToBase64(invoicePdfBytes);
 
     // ─── Download only mode: return PDFs as base64 ───
     if (download_only) {
