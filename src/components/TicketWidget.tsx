@@ -44,8 +44,8 @@ const QuantitySelector = ({ id }: { id: string }) => {
   return (
     <div className="flex items-center gap-1.5">
       <button className="quantity-btn" onClick={() => setQty(Math.max(0, qty - 1))} aria-label="Menge reduzieren">-</button>
-      <input type="number" className="quantity-input" value={qty} readOnly min={0} max={10} />
-      <button className="quantity-btn" onClick={() => setQty(Math.min(10, qty + 1))} aria-label="Menge erhöhen">+</button>
+      <input type="number" className="quantity-input" value={qty} readOnly min={0} max={99} />
+      <button className="quantity-btn" onClick={() => setQty(Math.min(99, qty + 1))} aria-label="Menge erhöhen">+</button>
     </div>
   );
 };
