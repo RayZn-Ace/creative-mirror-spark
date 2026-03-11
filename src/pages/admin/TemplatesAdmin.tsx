@@ -1109,7 +1109,7 @@ const InvoiceTab = () => {
             <div className="rounded-xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid hsl(0 0% 100% / 0.1)", aspectRatio: "210/297" }}>
               <div style={{ padding: "20px", fontFamily: "-apple-system, sans-serif", height: "100%", display: "flex", flexDirection: "column" }}>
                 {tpl.logo_url && <img src={tpl.logo_url} alt="" style={{ height: "24px", marginBottom: "8px", objectFit: "contain", alignSelf: "flex-start" }} />}
-                <div style={{ fontSize: "8px", color: "#999", marginBottom: "4px" }}>GIMME GIMME GmbH · Musterstr. 1 · 33098 Paderborn</div>
+                <div style={{ fontSize: "8px", color: "#999", marginBottom: "4px" }}>{company.name || "Firmenname"}{company.address ? ` · ${company.address}` : ""}{company.zip || company.city ? ` · ${[company.zip, company.city].filter(Boolean).join(" ")}` : ""}</div>
                 <div style={{ height: "2px", background: tpl.accent_color, marginBottom: "12px" }} />
                 <div style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", marginBottom: "12px" }}>RECHNUNG</div>
                 <div style={{ fontSize: "8px", color: "#666", marginBottom: "4px" }}>Rechnungsempfänger</div>
