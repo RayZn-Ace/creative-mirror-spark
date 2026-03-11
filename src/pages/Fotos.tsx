@@ -237,6 +237,12 @@ const handleDownload = async (url: string, filename: string) => {
               <X className="w-5 h-5 text-white" />
             </button>
             <button
+              className="absolute top-4 right-16 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors"
+              onClick={(e) => { e.stopPropagation(); handleDownload(displayPhotos[lightbox].src, `foto-${lightbox + 1}.jpg`); }}
+            >
+              <Download className="w-5 h-5 text-white" />
+            </button>
+            <button
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-colors"
               onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + displayPhotos.length) % displayPhotos.length); }}
             >
@@ -244,10 +250,9 @@ const handleDownload = async (url: string, filename: string) => {
             </button>
             <motion.img
               key={lightbox}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
               src={displayPhotos[lightbox].src}
               alt={displayPhotos[lightbox].alt}
               className="max-w-full max-h-[90vh] rounded-xl object-contain"
