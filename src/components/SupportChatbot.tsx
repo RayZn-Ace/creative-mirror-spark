@@ -150,17 +150,7 @@ export default function SupportChatbot() {
     }
   }, [supportOnline, staffCount, customerLang]);
 
-  const handleOfflineForm = useCallback(async (input: string) => {
-    if (formStep === "issue") {
-      setFormData(prev => ({ ...prev, issue: input }));
-      setChatMessages(prev => [
-        ...prev,
-        { from: "user", text: input },
-        { from: "bot", text: "Danke! Bitte gib uns noch deine E-Mail-Adresse, damit wir uns bei dir melden können: 📧" },
-      ]);
-      setFormStep("email");
-    }
-  }, [formStep]);
+  const [issueInput, setIssueInput] = useState("");
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
