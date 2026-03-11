@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import headerImg from "@/assets/header.png";
+import headerImg from "@/assets/header.jpg";
 
 const HeroSection = () => {
   return (
