@@ -58,6 +58,52 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Capacity check: ensure no category is oversold ──
+    const ticketIds = items.map((i: any) => i.ticketId).filter(Boolean);
+    if (ticketIds.length > 0) {
+      const { data: categories } = await supabase
+        .from("ticket_categories")
+        .select("id, name, max_capacity, sold_out")
+        .in("id", ticketIds);
+
+      if (categories) {
+        // Count already sold tickets for these categories
+        const { data: soldTickets } = await supabase
+          .from("tickets")
+          .select("ticket_category_id")
+          .eq("event_id", eventId)
+          .in("ticket_category_id", ticketIds)
+          .in("status", ["valid", "checked_in"]);
+
+        const soldMap = new Map<string, number>();
+        (soldTickets || []).forEach((t: any) => {
+          if (t.ticket_category_id) {
+            soldMap.set(t.ticket_category_id, (soldMap.get(t.ticket_category_id) || 0) + 1);
+          }
+        });
+
+        for (const item of items) {
+          if (!item.ticketId) continue;
+          const cat = categories.find((c: any) => c.id === item.ticketId);
+          if (!cat) continue;
+          if (cat.sold_out) {
+            return new Response(JSON.stringify({ error: `"${cat.name}" ist ausverkauft.` }), {
+              status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          if (cat.max_capacity != null && cat.max_capacity > 0) {
+            const sold = soldMap.get(cat.id) || 0;
+            const remaining = cat.max_capacity - sold;
+            if (item.quantity > remaining) {
+              return new Response(JSON.stringify({ error: `"${cat.name}": nur noch ${remaining} Tickets verfügbar.` }), {
+                status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+              });
+            }
+          }
+        }
+      }
+    }
+
     // Calculate total in EUR (base)
     let totalEur = 0;
     for (const item of items) {
