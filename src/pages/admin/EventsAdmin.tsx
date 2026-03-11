@@ -1574,6 +1574,39 @@ const EventEditView = ({
                   type="number"
                   placeholder={editing.service_fee_type === "percent" ? "z.B. 10" : "z.B. 2.50"}
                 />
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Berechnung</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_mode: "per_order" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: (editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: (editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${(editing.service_fee_mode || "per_order") === "per_order" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Pro Bestellung
+                    </button>
+                    <button
+                      onClick={() => setEditing({ ...editing, service_fee_mode: "per_ticket" })}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                      style={{
+                        background: editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56% / 0.2)" : "hsl(0 0% 100% / 0.06)",
+                        color: editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56%)" : "hsl(0 0% 100% / 0.5)",
+                        border: `1px solid ${editing.service_fee_mode === "per_ticket" ? "hsl(230 80% 56% / 0.3)" : "hsl(0 0% 100% / 0.1)"}`,
+                      }}
+                    >
+                      Pro Ticket
+                    </button>
+                  </div>
+                  <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                    {(editing.service_fee_mode || "per_order") === "per_order"
+                      ? "Gebühr wird einmalig pro Bestellung berechnet"
+                      : "Gebühr wird für jedes Ticket in der Bestellung berechnet"}
+                  </p>
+                </div>
               </div>
             )}
           </Section>
