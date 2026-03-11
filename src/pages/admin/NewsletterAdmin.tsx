@@ -417,7 +417,7 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
 <div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
 ${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
 ${timerHtml}
-<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate}</p>
+<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>
 </div>`;
     }
     default:
