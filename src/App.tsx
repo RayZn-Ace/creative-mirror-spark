@@ -58,6 +58,7 @@ const MuttizettelAdmin = lazy(() => import("./pages/admin/MuttizettelAdmin"));
 const MediaAdmin = lazy(() => import("./pages/admin/MediaAdmin"));
 const CsvImportAdmin = lazy(() => import("./pages/admin/CsvImportAdmin"));
 const WaitlistAdmin = lazy(() => import("./pages/admin/WaitlistAdmin"));
+const ApplicantsAdmin = lazy(() => import("./pages/admin/ApplicantsAdmin"));
 
 const queryClient = new QueryClient();
 
