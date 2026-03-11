@@ -388,7 +388,7 @@ export default function SupportChatbot() {
           </div>
 
           {/* Input - hide when inline email field is showing */}
-          {!(mode === "offline-form" && formStep === "email") && (
+          {!(mode === "offline-form" && formStep === "issue") && (
             <form onSubmit={handleChat} className="p-3 flex gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
               <input
                 value={chatInput}
