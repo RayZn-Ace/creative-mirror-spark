@@ -27,7 +27,7 @@ import dancerHappy from "@/assets/dancer-happy.jpg";
 const Hero = ({ gt }: { gt: GlobalTranslations }) => (
   <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
     <div className="absolute inset-0">
-      <img src={heroBg} alt="Nightlife Generation – Dein Ticketshop für Events und Partys" className="w-full h-full object-cover" loading="eager" />
+      <img src={heroBg} alt="Nightlife Generation – Dein Ticketshop für Events und Partys" className="w-full h-full object-cover object-top scale-105" loading="eager" />
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute inset-0 bg-background/40" />
     </div>
@@ -329,7 +329,7 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <img src={slides[current].src} alt={slides[current].alt} className="w-full h-full object-cover" />
+              <img src={slides[current].src} alt={slides[current].alt} className="w-full h-full object-cover object-top scale-105" />
             </motion.div>
           </AnimatePresence>
           <button onClick={() => go(-1)} aria-label="Previous"
