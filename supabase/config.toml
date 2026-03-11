@@ -1,1 +1,4 @@
 project_id = "tgoudlmcoftlpcwmhhfn"
+
+[functions.countdown-image]
+verify_jwt = false
