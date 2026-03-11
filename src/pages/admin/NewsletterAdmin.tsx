@@ -402,9 +402,18 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
       const mins = Math.floor((diff % 3600000) / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
       const pad = (n: number) => String(n).padStart(2, "0");
-      // If external GIF URL is set, use it for the email (live countdown on every open)
-      const timerHtml = block.timerImageUrl
-        ? `<img src="${block.timerImageUrl}" alt="Countdown Timer" style="display:block;margin:0 auto;max-width:100%;height:auto;" />`
+
+      // Build the live countdown image URL (edge function or external)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+      const autoImageUrl = supabaseUrl
+        ? `${supabaseUrl}/functions/v1/countdown-image?d=${encodeURIComponent(block.targetDate)}&t=${encodeURIComponent(block.targetTime || "23:59")}&accent=${encodeURIComponent(block.accentColor)}&bg=${encodeURIComponent(block.bgColor)}&text=${encodeURIComponent(block.textColor)}&title=${encodeURIComponent(block.title || "")}&expired=${encodeURIComponent(block.expiredText || "Abgelaufen!")}`
+        : "";
+      const imageUrl = block.timerImageUrl || autoImageUrl;
+
+      // For email: always use the image URL (live on every open)
+      // For preview: show the static computed countdown (ticks via previewTick)
+      const emailTimerHtml = imageUrl
+        ? `<img src="${imageUrl}" alt="Countdown: ${pad(days)}T ${pad(hours)}H ${pad(mins)}M" style="display:block;margin:0 auto;max-width:100%;height:auto;border-radius:12px;" />`
         : block.style === "boxes"
         ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
 ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: "Min" }, { v: pad(secs), l: "Sek" }].map(({ v, l }) => `<td style="padding:0 6px;text-align:center;">
@@ -416,11 +425,10 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
         ? `<p style="font-size:32px;font-weight:900;color:${block.accentColor};text-align:center;margin:0;letter-spacing:2px;">${pad(days)} : ${pad(hours)} : ${pad(mins)} : ${pad(secs)}</p>
 <p style="font-size:10px;color:${block.textColor}88;text-align:center;margin:4px 0 0;">Tage : Stunden : Minuten : Sekunden</p>`
         : `<p style="font-size:24px;font-weight:800;color:${block.accentColor};text-align:center;margin:0;">⏱ Noch ${days} Tage übrig</p>`;
+
       return `<!--TIMER:${JSON.stringify({ targetDate: block.targetDate, expiredText: block.expiredText, style: block.style, accentColor: block.accentColor, textColor: block.textColor, bgColor: block.bgColor })}-->
-<div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
-${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
-${timerHtml}
-${!block.timerImageUrl ? `<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>` : ""}
+<div style="margin:0 0 16px;text-align:center;">
+${emailTimerHtml}
 </div>`;
     }
     default:
@@ -790,25 +798,31 @@ const BlockEditor = ({ block, onChange, colorScheme }: { block: Block; onChange:
           >
             <Wand2 className="w-3 h-3" /> An Style anpassen
           </button>
-          <div className="mt-2 p-2 rounded-lg" style={{ background: "hsl(200 80% 50% / 0.08)", border: "1px solid hsl(200 80% 50% / 0.15)" }}>
-            <label className={labelCls} style={{ ...labelStyle, color: "hsl(200 80% 60%)" }}>
-              🎞️ Live-Countdown GIF (für E-Mail)
-            </label>
-            <p className="text-[9px] mb-1.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-              Erstelle einen kostenlosen Timer auf <a href="https://countdownmail.com" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>countdownmail.com</a> oder <a href="https://clevertimer.org" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>clevertimer.org</a> und füge die Bild-URL hier ein.
+          <div className="mt-2 p-2 rounded-lg" style={{ background: "hsl(140 60% 40% / 0.08)", border: "1px solid hsl(140 60% 40% / 0.15)" }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <CheckCircle className="w-3 h-3" style={{ color: "hsl(140 60% 50%)" }} />
+              <label className={labelCls} style={{ ...labelStyle, color: "hsl(140 60% 50%)", margin: 0 }}>
+                Live-Countdown in E-Mail
+              </label>
+            </div>
+            <p className="text-[9px] mb-1.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+              Das Countdown-Bild wird bei jedem Öffnen der E-Mail automatisch neu generiert und zeigt die aktuelle verbleibende Zeit.
             </p>
-            <input
-              value={block.timerImageUrl || ""}
-              onChange={(e) => upd({ timerImageUrl: e.target.value || undefined })}
-              placeholder="https://i.countdownmail.com/xxxx.gif"
-              className="w-full px-3 py-2 rounded-lg text-sm"
-              style={inputStyle}
-            />
-            {block.timerImageUrl && (
-              <p className="text-[9px] mt-1 flex items-center gap-1" style={{ color: "hsl(140 60% 50%)" }}>
-                <CheckCircle className="w-3 h-3" /> GIF wird in der E-Mail verwendet (live bei jedem Öffnen)
+            <details className="mt-1">
+              <summary className="text-[9px] cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                Eigene Bild-URL verwenden (optional)
+              </summary>
+              <input
+                value={block.timerImageUrl || ""}
+                onChange={(e) => upd({ timerImageUrl: e.target.value || undefined })}
+                placeholder="https://i.countdownmail.com/xxxx.gif"
+                className="w-full px-3 py-2 rounded-lg text-sm mt-1"
+                style={inputStyle}
+              />
+              <p className="text-[8px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                Leer lassen = automatisch generiert
               </p>
-            )}
+            </details>
           </div>
         </div>
       );
