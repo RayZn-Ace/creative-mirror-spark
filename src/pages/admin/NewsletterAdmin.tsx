@@ -394,17 +394,25 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
 <a href="${block.ctaUrl}" style="display:inline-block;padding:14px 40px;background:${block.accentColor};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;border-radius:50px;">${block.ctaText}</a>
 </div></div>`;
     case "timer": {
+      const now = new Date();
+      const target = new Date(block.targetDate + "T23:59:59");
+      const diff = Math.max(0, target.getTime() - now.getTime());
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      const pad = (n: number) => String(n).padStart(2, "0");
       const timerHtml = block.style === "boxes"
         ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
-${["Tage", "Std", "Min", "Sek"].map((label) => `<td style="padding:0 6px;text-align:center;">
-<div style="background:${block.accentColor};color:#ffffff;font-size:28px;font-weight:900;padding:12px 16px;border-radius:8px;min-width:50px;">00</div>
-<p style="margin:4px 0 0;font-size:10px;font-weight:700;color:${block.textColor}88;text-transform:uppercase;">${label}</p>
+${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: "Min" }, { v: pad(secs), l: "Sek" }].map(({ v, l }) => `<td style="padding:0 6px;text-align:center;">
+<div style="background:${block.accentColor};color:#ffffff;font-size:28px;font-weight:900;padding:12px 16px;border-radius:8px;min-width:50px;">${v}</div>
+<p style="margin:4px 0 0;font-size:10px;font-weight:700;color:${block.textColor}88;text-transform:uppercase;">${l}</p>
 </td>`).join("")}
 </tr></tbody></table>`
         : block.style === "inline"
-        ? `<p style="font-size:32px;font-weight:900;color:${block.accentColor};text-align:center;margin:0;letter-spacing:2px;">00 : 00 : 00 : 00</p>
+        ? `<p style="font-size:32px;font-weight:900;color:${block.accentColor};text-align:center;margin:0;letter-spacing:2px;">${pad(days)} : ${pad(hours)} : ${pad(mins)} : ${pad(secs)}</p>
 <p style="font-size:10px;color:${block.textColor}88;text-align:center;margin:4px 0 0;">Tage : Stunden : Minuten : Sekunden</p>`
-        : `<p style="font-size:24px;font-weight:800;color:${block.accentColor};text-align:center;margin:0;">⏱ Noch 7 Tage übrig</p>`;
+        : `<p style="font-size:24px;font-weight:800;color:${block.accentColor};text-align:center;margin:0;">⏱ Noch ${days} Tage übrig</p>`;
       return `<!--TIMER:${JSON.stringify({ targetDate: block.targetDate, expiredText: block.expiredText, style: block.style, accentColor: block.accentColor, textColor: block.textColor, bgColor: block.bgColor })}-->
 <div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
 ${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
