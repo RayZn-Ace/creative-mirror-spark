@@ -13,7 +13,8 @@ import SupportChatbot from "@/components/SupportChatbot";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
-import heroBg from "@/assets/hero-crowd.jpg";
+import heroBg from "@/assets/hero-club.jpg";
+import heroCrowdOld from "@/assets/hero-crowd.jpg";
 import crowdParty from "@/assets/crowd-party.jpg";
 import crowdAerial from "@/assets/crowd-aerial.jpg";
 import crowdWide from "@/assets/crowd-wide.jpg";
@@ -290,6 +291,7 @@ const WhatToExpect = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Crowd Slideshow ─── */
 const slides = [
+  { src: heroCrowdOld, alt: "Crowd bei der Party" },
   { src: crowdWide, alt: "Club-Atmosphäre mit Nebel" },
   { src: crowdAerial, alt: "Crowd mit CO2-Effekten" },
   { src: crowdGlowsticks, alt: "Volle Tanzfläche von oben" },
