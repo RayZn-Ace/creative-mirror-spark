@@ -53,7 +53,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Fetch upcoming events from DB to give Alfred real data
+    // Fetch upcoming events from DB to give Sophia real data
     let eventsContext = "";
     try {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
