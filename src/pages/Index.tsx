@@ -364,55 +364,46 @@ const FALLBACK_URLS = [
   "https://www.instagram.com/reel/DGgWMCIInWK/",
 ];
 
+type InstaPostData = { url: string; thumbnail: string | null; title: string; author: string };
+
 const InstagramFeed = () => {
-  const [activeReel, setActiveReel] = useState(0);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const [postUrls, setPostUrls] = useState<string[]>(FALLBACK_URLS);
+  const [posts, setPosts] = useState<InstaPostData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const scrollTo = useCallback((idx: number) => {
-    setActiveReel(idx);
-    scrollRef.current?.children[idx]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, []);
-
-  // Load post URLs from DB settings
   useEffect(() => {
     const load = async () => {
       try {
-        const { data } = await supabase
+        // 1. Get URLs from DB
+        const { data: settingsData } = await supabase
           .from('settings')
           .select('value')
           .eq('key', 'instagram_posts')
           .maybeSingle();
-        if (data?.value && Array.isArray(data.value) && data.value.length > 0) {
-          setPostUrls(data.value as string[]);
+        
+        const urls = (settingsData?.value && Array.isArray(settingsData.value) && settingsData.value.length > 0)
+          ? settingsData.value as string[]
+          : FALLBACK_URLS;
+
+        // 2. Get thumbnails via oEmbed edge function
+        const { data: oembedData, error: fnError } = await supabase.functions.invoke('instagram-oembed', {
+          body: { urls },
+        });
+
+        if (!fnError && oembedData?.success && oembedData.posts?.length) {
+          setPosts(oembedData.posts);
+        } else {
+          // Fallback: show URLs without thumbnails
+          setPosts(urls.map(url => ({ url, thumbnail: null, title: '', author: '@nightlifegeneration_de' })));
         }
       } catch (e) {
-        console.warn('Could not load instagram posts from settings', e);
+        console.warn('Instagram load error:', e);
+        setPosts(FALLBACK_URLS.map(url => ({ url, thumbnail: null, title: '', author: '@nightlifegeneration_de' })));
+      } finally {
+        setLoading(false);
       }
     };
     load();
   }, []);
-
-  // Load Instagram embed script
-  useEffect(() => {
-    const existing = document.querySelector('script[src*="instagram.com/embed.js"]');
-    if (!existing) {
-      const script = document.createElement("script");
-      script.src = "https://www.instagram.com/embed.js";
-      script.async = true;
-      document.body.appendChild(script);
-    } else if ((window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
-    }
-  }, []);
-
-  // Re-process embeds when URLs change
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [postUrls]);
 
   return (
     <section className="py-16 md:py-24 bg-card/50">
@@ -428,47 +419,58 @@ const InstagramFeed = () => {
         <p className="text-center text-muted-foreground mb-2">@nightlifegeneration_de</p>
         <p className="text-center text-sm text-muted-foreground/60 mb-10">Die neuesten Posts von unserem Instagram</p>
 
-        {/* Horizontal scroll carousel */}
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {postUrls.map((url, i) => (
-            <div key={i} className="snap-center shrink-0 w-[320px] md:w-[360px]">
-              <blockquote
-                className="instagram-media"
-                data-instgrm-permalink={url}
-                data-instgrm-version="14"
-                style={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "12px",
-                  maxWidth: "360px",
-                  minWidth: "280px",
-                  width: "100%",
-                  margin: "0",
-                }}
-              >
-                <div className="flex items-center justify-center h-[480px]">
-                  <div className="animate-pulse text-muted-foreground text-sm">Lädt...</div>
-                </div>
-              </blockquote>
-            </div>
-          ))}
-        </div>
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="aspect-square rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        )}
 
-        {/* Dots */}
-        <div className="flex justify-center gap-2 mt-4">
-          {postUrls.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollTo(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${i === activeReel ? "bg-primary w-6" : "bg-foreground/20 hover:bg-foreground/40"}`}
-              aria-label={`Post ${i + 1}`}
-            />
-          ))}
-        </div>
+        {/* Posts grid */}
+        {!loading && posts.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {posts.map((post, i) => (
+              <motion.a
+                key={post.url}
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06 }}
+                className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border"
+              >
+                {post.thumbnail ? (
+                  <img
+                    src={post.thumbnail}
+                    alt={post.title || `Instagram Post ${i + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted">
+                    <Instagram className="w-8 h-8 text-muted-foreground/40" />
+                    <span className="text-xs text-muted-foreground/40">Post {i + 1}</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-1">
+                    <Instagram className="w-6 h-6 text-white" />
+                    <span className="text-white text-xs font-medium">Auf Instagram ansehen</span>
+                  </div>
+                </div>
+                {post.url.includes('/reel/') && (
+                  <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
+                    <Play className="w-3 h-3 text-white fill-white" />
+                  </div>
+                )}
+              </motion.a>
+            ))}
+          </div>
+        )}
 
         {/* CTA to Instagram */}
         <div className="text-center mt-8">
