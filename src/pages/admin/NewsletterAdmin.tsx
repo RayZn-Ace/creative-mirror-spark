@@ -477,7 +477,7 @@ const PlaceholderPills = ({ onInsert }: { onInsert: (tag: string) => void }) => 
 );
 
 // ─── Block Editor Panel ────────────────────────────────────────
-const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) => void }) => {
+const BlockEditor = ({ block, onChange, colorScheme }: { block: Block; onChange: (b: Block) => void; colorScheme?: ColorScheme }) => {
   const upd = (patch: Partial<Block>) => onChange({ ...block, ...patch } as Block);
 
   const insertPlaceholder = (field: "text", tag: string) => {
