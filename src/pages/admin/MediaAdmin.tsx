@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Image, Upload, Eye, EyeOff, Calendar, MapPin, Video, Star, Link } from "lucide-react";
+import { Plus, Trash2, Image, Upload, Eye, EyeOff, Calendar, MapPin, Video, Star, Link, Pencil } from "lucide-react";
 
 type Album = {
   id: string;
@@ -42,6 +42,8 @@ const MediaAdmin = () => {
   const queryClient = useQueryClient();
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editAlbum, setEditAlbum] = useState<{ id: string; title: string; event_date: string; location: string; description: string } | null>(null);
   const [addVideoOpen, setAddVideoOpen] = useState(false);
   const [newAlbum, setNewAlbum] = useState({ title: "", description: "", event_date: "", location: "" });
   const [newVideo, setNewVideo] = useState({ url: "", caption: "" });
@@ -150,6 +152,41 @@ const MediaAdmin = () => {
       toast.success("Status geändert");
     },
   });
+
+  // Update album
+  const updateAlbumMutation = useMutation({
+    mutationFn: async () => {
+      if (!editAlbum) throw new Error("Kein Album");
+      const { error } = await supabase.from("media_albums").update({
+        title: editAlbum.title,
+        event_date: editAlbum.event_date || null,
+        location: editAlbum.location || null,
+        description: editAlbum.description || null,
+      }).eq("id", editAlbum.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-media-albums"] });
+      if (selectedAlbum && editAlbum && selectedAlbum.id === editAlbum.id) {
+        setSelectedAlbum({ ...selectedAlbum, title: editAlbum.title, event_date: editAlbum.event_date || null, location: editAlbum.location || null, description: editAlbum.description || null });
+      }
+      setEditOpen(false);
+      setEditAlbum(null);
+      toast.success("Album aktualisiert");
+    },
+    onError: () => toast.error("Fehler beim Aktualisieren"),
+  });
+
+  const openEditDialog = (album: Album) => {
+    setEditAlbum({
+      id: album.id,
+      title: album.title,
+      event_date: album.event_date || "",
+      location: album.location || "",
+      description: album.description || "",
+    });
+    setEditOpen(true);
+  };
 
   // Upload photos
   const handleUpload = useCallback(async (files: FileList) => {
@@ -308,6 +345,9 @@ const MediaAdmin = () => {
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => openEditDialog(selectedAlbum)}>
+              <Pencil className="w-4 h-4 mr-1" />Bearbeiten
+            </Button>
             {/* Cover image upload */}
             <label className="cursor-pointer">
               <input
@@ -567,7 +607,15 @@ const MediaAdmin = () => {
                     {album.photo_count}
                   </span>
                 </div>
-                <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-2 mt-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => openEditDialog(album)}
+                  >
+                    <Pencil className="w-3 h-3 mr-1" />Bearbeiten
+                  </Button>
                   <label className="cursor-pointer">
                     <input
                       type="file"
@@ -604,6 +652,55 @@ const MediaAdmin = () => {
           ))}
         </div>
       )}
+
+      {/* Edit Album Dialog */}
+      <Dialog open={editOpen} onOpenChange={(open) => { setEditOpen(open); if (!open) setEditAlbum(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Album bearbeiten</DialogTitle>
+          </DialogHeader>
+          {editAlbum && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titel *</Label>
+                <Input
+                  value={editAlbum.title}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Event-Datum</Label>
+                <Input
+                  type="date"
+                  value={editAlbum.event_date}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, event_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Location</Label>
+                <Input
+                  value={editAlbum.location}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Beschreibung</Label>
+                <Textarea
+                  value={editAlbum.description}
+                  onChange={(e) => setEditAlbum({ ...editAlbum, description: e.target.value })}
+                />
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => updateAlbumMutation.mutate()}
+                disabled={!editAlbum.title || updateAlbumMutation.isPending}
+              >
+                Speichern
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
