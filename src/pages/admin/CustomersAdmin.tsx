@@ -1141,7 +1141,6 @@ const CustomersAdmin = () => {
                           </div>
                         </div>
                       </div>
-                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
