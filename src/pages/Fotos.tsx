@@ -219,7 +219,7 @@ const Fotos = () => {
   }[gridCols];
 
   return (
-    <PageLayout title="Partymomente" subtitle="Wir posten alles auf Social Media – oft auch Location-Fotografen/Videografen.">
+    <PageLayout title="Partymomente">
       {/* Lightbox */}
       <AnimatePresence>
         {lightbox !== null && (
