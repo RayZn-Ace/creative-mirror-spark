@@ -21,6 +21,7 @@ const navItems = [
   { label: "Coupons", href: "/admin/coupons", icon: Tag },
   { label: "Werbemanager", href: "/admin/werbemanager", icon: Megaphone },
   { label: "Support", href: "/admin/support", icon: Headphones },
+  { label: "Bewerber", href: "/admin/bewerber", icon: Briefcase },
   { label: "Muttizettel", href: "/admin/muttizettel", icon: ClipboardList },
   { label: "Warteliste", href: "/admin/waitlist", icon: UserPlus },
   { label: "CSV-Import", href: "/admin/csv-import", icon: Upload },
