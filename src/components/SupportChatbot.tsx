@@ -357,6 +357,65 @@ export default function SupportChatbot() {
                 ))}
               </div>
             )}
+
+            {/* Inline email field for offline form */}
+            {mode === "offline-form" && formStep === "email" && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl p-3 space-y-2"
+                style={{ background: "hsl(270 30% 15%)", border: "1px solid hsl(270 60% 40% / 0.25)" }}
+              >
+                <p className="text-xs font-medium" style={{ color: "hsl(0 0% 100% / 0.6)" }}>📧 Deine E-Mail-Adresse</p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const email = emailInput.trim();
+                    if (!email || !email.includes("@")) return;
+                    setEmailInput("");
+                    setFormData(prev => ({ ...prev, email }));
+
+                    const { error } = await supabase.from("support_tickets").insert([{
+                      subject: formData.issue.substring(0, 100),
+                      customer_email: email,
+                      category: "support" as const,
+                      source: "chat",
+                      metadata: { full_issue: formData.issue, language: customerLang },
+                    }]);
+
+                    setChatMessages(prev => [
+                      ...prev,
+                      { from: "user", text: email },
+                      { from: "bot", text: error
+                        ? "Entschuldigung, es gab einen Fehler. Bitte versuche es später erneut. 😔"
+                        : "Vielen Dank! ✅ Wir haben dein Anliegen erhalten und melden uns schnellstmöglich per Mail bei dir. Schönen Tag noch! 🎉"
+                      },
+                    ]);
+                    setFormStep("done");
+                    setMode("bot");
+                  }}
+                  className="flex gap-2"
+                >
+                  <input
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="name@beispiel.de"
+                    type="email"
+                    className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1"
+                    style={{ background: "hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.15)" }}
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    className="px-3 py-2 rounded-lg text-sm font-semibold"
+                    style={{ background: "hsl(270 90% 55%)", color: "hsl(0 0% 100%)" }}
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </motion.div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
