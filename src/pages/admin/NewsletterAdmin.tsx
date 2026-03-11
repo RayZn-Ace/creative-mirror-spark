@@ -775,6 +775,19 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
             <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>BG</label><input type="color" value={block.bgColor} onChange={(e) => upd({ bgColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
             <div className="flex items-center gap-1"><label className="text-[9px]" style={labelStyle}>Text</label><input type="color" value={block.textColor} onChange={(e) => upd({ textColor: e.target.value })} className="w-5 h-5 rounded cursor-pointer" style={{ border: "none", padding: 0 }} /></div>
           </div>
+          <button
+            onClick={() => {
+              const cs = (window as any).__nlColorScheme;
+              if (!cs) return;
+              const accent = cs.headerGradient?.match(/#[0-9a-fA-F]{6}/g)?.[0] || "#e91e8c";
+              const isDark = cs.bodyBg?.startsWith("#0") || cs.bodyBg?.startsWith("#1");
+              upd({ accentColor: accent, bgColor: isDark ? cs.contentBg : "#f8f4ff", textColor: isDark ? "#eeeeee" : "#1a1a1a" });
+            }}
+            className="w-full mt-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+            style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}
+          >
+            <Wand2 className="w-3 h-3" /> An Style anpassen
+          </button>
         </div>
       );
   }
