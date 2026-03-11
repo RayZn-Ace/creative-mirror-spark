@@ -398,30 +398,30 @@ export default function SupportChatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <form onSubmit={handleChat} className="p-3 flex gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder={
-                mode === "live" ? "Nachricht an Mitarbeiter..." :
-                mode === "offline-form" && formStep === "email" ? "Deine E-Mail-Adresse..." :
-                mode === "offline-form" && formStep === "phone" ? "Deine Telefonnummer..." :
-                "Frag mich etwas..."
-              }
-              className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1"
-              style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
-              disabled={isTyping}
-            />
-            <button
-              type="submit"
-              disabled={isTyping}
-              className="px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(270 90% 55%)", color: "hsl(0 0% 100%)" }}
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+          {/* Input - hide when inline email field is showing */}
+          {!(mode === "offline-form" && formStep === "email") && (
+            <form onSubmit={handleChat} className="p-3 flex gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder={
+                  mode === "live" ? "Nachricht an Mitarbeiter..." :
+                  "Frag mich etwas..."
+                }
+                className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-1"
+                style={{ background: "hsl(0 0% 100% / 0.08)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                disabled={isTyping}
+              />
+              <button
+                type="submit"
+                disabled={isTyping}
+                className="px-3 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+                style={{ background: mode === "live" ? "hsl(142 70% 40%)" : "hsl(270 90% 55%)", color: "hsl(0 0% 100%)" }}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          )}
         </motion.div>
       ) : (
         <div className="flex items-center gap-3 mb-20 lg:mb-0">
