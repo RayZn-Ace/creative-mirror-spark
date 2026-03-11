@@ -25,7 +25,7 @@ interface SpacerBlock extends BaseBlock { type: "spacer"; height: number }
 interface EventHighlightBlock extends BaseBlock { type: "event-highlight"; eventTitle: string; eventDate: string; eventTime: string; eventLocation: string; eventCity: string; eventImage: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; magicMode?: boolean }
 interface EventListBlock extends BaseBlock { type: "event-list"; title: string; events: { date: string; city: string; location: string; url: string }[]; accentColor: string; textColor: string; bgColor: string; magicMode?: boolean; magicLimit?: number }
 interface VoucherBlock extends BaseBlock { type: "voucher"; code: string; title: string; description: string; discount: string; validUntil: string; ctaText: string; ctaUrl: string; accentColor: string; bgColor: string; textColor: string; borderStyle: "dashed" | "solid" | "dotted" }
-interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; targetTime: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal" }
+interface TimerBlock extends BaseBlock { type: "timer"; title: string; targetDate: string; targetTime: string; expiredText: string; accentColor: string; bgColor: string; textColor: string; style: "boxes" | "inline" | "minimal"; timerImageUrl?: string }
 
 type Block = HeadingBlock | TextBlock | ImageBlock | ButtonBlock | DividerBlock | SpacerBlock | EventHighlightBlock | EventListBlock | VoucherBlock | TimerBlock;
 
@@ -402,7 +402,10 @@ ${block.title ? `<h3 style="margin:0 0 12px;font-size:18px;font-weight:800;color
       const mins = Math.floor((diff % 3600000) / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
       const pad = (n: number) => String(n).padStart(2, "0");
-      const timerHtml = block.style === "boxes"
+      // If external GIF URL is set, use it for the email (live countdown on every open)
+      const timerHtml = block.timerImageUrl
+        ? `<img src="${block.timerImageUrl}" alt="Countdown Timer" style="display:block;margin:0 auto;max-width:100%;height:auto;" />`
+        : block.style === "boxes"
         ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tbody><tr>
 ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: "Min" }, { v: pad(secs), l: "Sek" }].map(({ v, l }) => `<td style="padding:0 6px;text-align:center;">
 <div style="background:${block.accentColor};color:#ffffff;font-size:28px;font-weight:900;padding:12px 16px;border-radius:8px;min-width:50px;">${v}</div>
@@ -417,7 +420,7 @@ ${[{ v: pad(days), l: "Tage" }, { v: pad(hours), l: "Std" }, { v: pad(mins), l: 
 <div style="margin:0 0 16px;background:${block.bgColor};border-radius:12px;padding:24px;text-align:center;">
 ${block.title ? `<p style="margin:0 0 12px;font-size:16px;font-weight:700;color:${block.textColor};">${block.title}</p>` : ""}
 ${timerHtml}
-<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>
+${!block.timerImageUrl ? `<p style="margin:12px 0 0;font-size:11px;color:${block.textColor}66;">Zieldatum: ${block.targetDate} ${block.targetTime || "23:59"} Uhr</p>` : ""}
 </div>`;
     }
     default:
@@ -787,6 +790,26 @@ const BlockEditor = ({ block, onChange, colorScheme }: { block: Block; onChange:
           >
             <Wand2 className="w-3 h-3" /> An Style anpassen
           </button>
+          <div className="mt-2 p-2 rounded-lg" style={{ background: "hsl(200 80% 50% / 0.08)", border: "1px solid hsl(200 80% 50% / 0.15)" }}>
+            <label className={labelCls} style={{ ...labelStyle, color: "hsl(200 80% 60%)" }}>
+              🎞️ Live-Countdown GIF (für E-Mail)
+            </label>
+            <p className="text-[9px] mb-1.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+              Erstelle einen kostenlosen Timer auf <a href="https://countdownmail.com" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>countdownmail.com</a> oder <a href="https://clevertimer.org" target="_blank" rel="noopener" className="underline" style={{ color: "hsl(200 80% 60%)" }}>clevertimer.org</a> und füge die Bild-URL hier ein.
+            </p>
+            <input
+              value={block.timerImageUrl || ""}
+              onChange={(e) => upd({ timerImageUrl: e.target.value || undefined })}
+              placeholder="https://i.countdownmail.com/xxxx.gif"
+              className="w-full px-3 py-2 rounded-lg text-sm"
+              style={inputStyle}
+            />
+            {block.timerImageUrl && (
+              <p className="text-[9px] mt-1 flex items-center gap-1" style={{ color: "hsl(140 60% 50%)" }}>
+                <CheckCircle className="w-3 h-3" /> GIF wird in der E-Mail verwendet (live bei jedem Öffnen)
+              </p>
+            )}
+          </div>
         </div>
       );
   }
