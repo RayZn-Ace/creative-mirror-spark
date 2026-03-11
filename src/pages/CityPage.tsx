@@ -51,6 +51,7 @@ interface TicketItem {
   badge?: string;
   comingSoon?: boolean;
   scarcityCount?: number | null; // KVK: fake remaining count per session
+  remaining?: number | null; // real remaining capacity (null = unlimited)
 }
 
 interface TicketCategory {
