@@ -212,7 +212,7 @@ const CustomersAdmin = () => {
       let all: any[] = [];
       let from = 0;
       while (true) {
-        let q = supabase.from(table).select(select).range(from, from + PAGE - 1);
+        let q = (supabase.from as any)(table).select(select).range(from, from + PAGE - 1);
         if (orderCol) q = q.order(orderCol, { ascending: false });
         const { data } = await q;
         if (!data || data.length === 0) break;
