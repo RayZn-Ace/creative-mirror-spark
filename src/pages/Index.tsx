@@ -329,7 +329,7 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              <img src={slides[current].src} alt={slides[current].alt} className="w-full h-full object-cover" />
+              <img src={slides[current].src} alt={slides[current].alt} className="w-full h-full object-cover object-top scale-105" />
             </motion.div>
           </AnimatePresence>
           <button onClick={() => go(-1)} aria-label="Previous"
