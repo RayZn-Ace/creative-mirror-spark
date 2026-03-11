@@ -34,7 +34,7 @@ const Kontakt = () => (
           </div>
           <div>
             <div className="text-sm font-bold" style={{ color: "hsl(220 20% 15%)" }}>WhatsApp</div>
-            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>0172 5614558</div>
+            <div className="text-xs" style={{ color: "hsl(220 10% 45%)" }}>Schreib uns direkt</div>
           </div>
         </a>
 
