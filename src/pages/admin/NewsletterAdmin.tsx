@@ -760,6 +760,8 @@ const BlockEditor = ({ block, onChange }: { block: Block; onChange: (b: Block) =
           <input value={block.title} onChange={(e) => upd({ title: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Zieldatum</label>
           <input type="date" value={block.targetDate} onChange={(e) => upd({ targetDate: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
+          <label className={labelCls} style={labelStyle}>Zielzeit</label>
+          <input type="time" value={block.targetTime || "23:59"} onChange={(e) => upd({ targetTime: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Text nach Ablauf</label>
           <input value={block.expiredText} onChange={(e) => upd({ expiredText: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm" style={inputStyle} />
           <label className={labelCls} style={labelStyle}>Darstellung</label>
