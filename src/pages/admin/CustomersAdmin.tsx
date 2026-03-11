@@ -258,7 +258,7 @@ const CustomersAdmin = () => {
       }
       const c = map.get(email)!;
       c.orders.push(order);
-      if (order.status === "paid") c.totalSpent += order.total_amount + order.service_fee;
+      if (order.status === "paid") c.totalSpent += order.total_amount;
       c.orderCount++;
       if (!c.name && order.name) c.name = order.name;
       if (!c.phone && order.phone) c.phone = order.phone;
