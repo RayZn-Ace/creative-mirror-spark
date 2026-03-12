@@ -954,7 +954,7 @@ const CustomersAdmin = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 sm:px-5 pb-4 pt-1 space-y-4" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                      <div className="px-3 sm:px-5 pb-4 pt-1 space-y-4" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
                         {/* Contact info */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
