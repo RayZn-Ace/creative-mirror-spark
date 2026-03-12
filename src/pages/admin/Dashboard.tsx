@@ -78,6 +78,16 @@ const DEFAULT_GRID: Layout = [
   { i: "quick_actions", x: 0, y: 19, w: 4, h: 4, minW: 2, minH: 3 },
 ];
 
+const MOBILE_DEFAULT_GRID: Layout = [
+  { i: "stats", x: 0, y: 0, w: 2, h: 5, minW: 2, minH: 2 },
+  { i: "live_events", x: 0, y: 5, w: 2, h: 6, minW: 2, minH: 3 },
+  { i: "recent_orders", x: 0, y: 11, w: 2, h: 6, minW: 2, minH: 3 },
+  { i: "revenue", x: 0, y: 17, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "upcoming_events", x: 0, y: 22, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "newsletter_stats", x: 0, y: 27, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "quick_actions", x: 0, y: 32, w: 2, h: 5, minW: 2, minH: 3 },
+];
+
 const ALL_WIDGET_TYPES: WidgetType[] = Object.keys(WIDGET_META) as WidgetType[];
 
 interface SavedLayout { grid: Layout; hidden: string[]; }
