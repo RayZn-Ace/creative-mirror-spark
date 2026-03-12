@@ -90,6 +90,8 @@ const Dashboard = () => {
   const [loaded, setLoaded] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const { width, containerRef, mounted } = useContainerWidth();
+  const isMobile = width > 0 && width < 640;
+  const cols = isMobile ? 2 : 4;
 
   useEffect(() => {
     if (!user) return;
