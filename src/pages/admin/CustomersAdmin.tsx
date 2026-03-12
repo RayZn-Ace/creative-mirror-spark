@@ -883,8 +883,9 @@ const CustomersAdmin = () => {
                 }}
               >
                 {/* Row header */}
-                <div
-                  className="flex items-center gap-3 px-4 sm:px-5 py-3.5 cursor-pointer hover:bg-white/[0.02] transition-all"
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-3 px-3 sm:px-5 py-4 text-left active:bg-white/[0.04] hover:bg-white/[0.02] transition-all"
                   onClick={() => setExpandedCustomer(isExpanded ? null : customer.email)}
                 >
                   <div
@@ -904,20 +905,17 @@ const CustomersAdmin = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs truncate" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                        {customer.email}
+                    <span className="text-xs truncate block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      {customer.email}
+                    </span>
+                    {/* Mobile: show key stats inline */}
+                    <div className="flex items-center gap-3 mt-1 sm:hidden">
+                      <span className="text-[10px] font-bold" style={{ color: "hsl(150 60% 40%)" }}>
+                        {formatCurrency(customer.totalSpent)}
                       </span>
-                      {getCustomerCities(customer).map((city) => (
-                        <span
-                          key={city}
-                          className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
-                          style={{ background: "hsl(215 90% 55% / 0.12)", color: "hsl(215 90% 55%)" }}
-                        >
-                          <MapPin className="w-2.5 h-2.5" />
-                          {city}
-                        </span>
-                      ))}
+                      <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        {customer.orderCount} Bestellungen
+                      </span>
                     </div>
                   </div>
                   <div className="hidden sm:flex items-center gap-4 shrink-0">
@@ -944,7 +942,7 @@ const CustomersAdmin = () => {
                     className="w-4 h-4 shrink-0 transition-transform"
                     style={{ color: "hsl(0 0% 100% / 0.3)", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
                   />
-                </div>
+                </button>
 
                 {/* Expanded detail */}
                 <AnimatePresence>
