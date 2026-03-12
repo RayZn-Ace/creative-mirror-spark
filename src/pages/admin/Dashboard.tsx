@@ -78,6 +78,16 @@ const DEFAULT_GRID: Layout = [
   { i: "quick_actions", x: 0, y: 19, w: 4, h: 4, minW: 2, minH: 3 },
 ];
 
+const MOBILE_DEFAULT_GRID: Layout = [
+  { i: "stats", x: 0, y: 0, w: 2, h: 5, minW: 2, minH: 2 },
+  { i: "live_events", x: 0, y: 5, w: 2, h: 6, minW: 2, minH: 3 },
+  { i: "recent_orders", x: 0, y: 11, w: 2, h: 6, minW: 2, minH: 3 },
+  { i: "revenue", x: 0, y: 17, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "upcoming_events", x: 0, y: 22, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "newsletter_stats", x: 0, y: 27, w: 2, h: 5, minW: 2, minH: 3 },
+  { i: "quick_actions", x: 0, y: 32, w: 2, h: 5, minW: 2, minH: 3 },
+];
+
 const ALL_WIDGET_TYPES: WidgetType[] = Object.keys(WIDGET_META) as WidgetType[];
 
 interface SavedLayout { grid: Layout; hidden: string[]; }
@@ -90,6 +100,8 @@ const Dashboard = () => {
   const [loaded, setLoaded] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const { width, containerRef, mounted } = useContainerWidth();
+  const isMobile = width > 0 && width < 640;
+  const cols = isMobile ? 2 : 4;
 
   useEffect(() => {
     if (!user) return;
@@ -138,6 +150,10 @@ const Dashboard = () => {
   };
 
   const visibleGrid = gridLayout.filter(g => !hiddenWidgets.includes(g.i));
+  // On mobile, clamp all widgets to full width and stack vertically
+  const mobileAdjustedGrid = isMobile
+    ? visibleGrid.map((g, idx) => ({ ...g, x: 0, w: 2, y: idx * (g.h || 5) }))
+    : visibleGrid;
   const availableWidgets = ALL_WIDGET_TYPES.filter(t => !visibleGrid.find(g => g.i === t));
 
   if (!loaded) {
@@ -244,15 +260,15 @@ const Dashboard = () => {
       <div ref={containerRef} className="dashboard-grid-container">
         {mounted && (
           <GridLayout
-            layout={visibleGrid}
+            layout={mobileAdjustedGrid}
             width={width}
-            gridConfig={{ cols: 4, rowHeight: 40 }}
-            dragConfig={{ enabled: editing, bounded: false, threshold: 3 }}
-            resizeConfig={{ enabled: editing, handles: ["se"] }}
+            gridConfig={{ cols, rowHeight: isMobile ? 36 : 40 }}
+            dragConfig={{ enabled: editing && !isMobile, bounded: false, threshold: 3 }}
+            resizeConfig={{ enabled: editing && !isMobile, handles: ["se"] }}
             onLayoutChange={handleLayoutChange}
             compactor={verticalCompactor}
           >
-            {visibleGrid.map((item) => {
+            {mobileAdjustedGrid.map((item) => {
               const type = item.i as WidgetType;
               const Comp = WIDGET_COMPONENTS[type];
               if (!Comp) return null;
