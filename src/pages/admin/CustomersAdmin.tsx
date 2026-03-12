@@ -1056,12 +1056,53 @@ const CustomersAdmin = () => {
                           );
                         })()}
 
-                        {/* Orders table */}
+                        {/* Orders */}
                         <div>
                           <span className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                             Bestellungen ({customer.orderCount})
                           </span>
-                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                          
+                          {/* Mobile: card layout */}
+                          <div className="space-y-2 sm:hidden">
+                            {customer.orders.map((order) => {
+                              const st = getStatus(order.status);
+                              const orderTickets = allTickets.filter(t => t.order_id === order.id);
+                              const ticketDetails = orderTickets.map(t => {
+                                const cat = ticketCategories.find(c => c.id === t.ticket_category_id);
+                                return cat?.name || "Standard";
+                              });
+                              const ticketSummary = ticketDetails.reduce((acc, name) => {
+                                acc[name] = (acc[name] || 0) + 1;
+                                return acc;
+                              }, {} as Record<string, number>);
+                              return (
+                                <div key={order.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{formatDate(order.created_at)}</span>
+                                    <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>{st.label}</span>
+                                  </div>
+                                  <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{getEventTitle(order.event_id)}</div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-wrap gap-1">
+                                      {Object.entries(ticketSummary).map(([name, count]) => (
+                                        <span key={name} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "hsl(0 0% 100% / 0.05)", color: "hsl(0 0% 100% / 0.5)" }}>{count}× {name}</span>
+                                      ))}
+                                    </div>
+                                    <span className="text-sm font-bold shrink-0 ml-2" style={{ color: "hsl(0 0% 100%)" }}>{formatCurrency(order.total_amount)}</span>
+                                  </div>
+                                  {order.status === "paid" && (
+                                    <div className="flex items-center gap-2 pt-1">
+                                      <ResendTicketsButton orderId={order.id} />
+                                      <DownloadTicketsButton orderId={order.id} />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Desktop: table layout */}
+                          <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                             <div className="overflow-x-auto">
                               <table className="w-full text-sm">
                                 <thead>
@@ -1087,41 +1128,24 @@ const CustomersAdmin = () => {
                                       acc[name] = (acc[name] || 0) + 1;
                                       return acc;
                                     }, {} as Record<string, number>);
-
                                     return (
                                       <tr key={order.id} style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.04)" }}>
-                                        <td className="px-3 py-2 text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                          {formatDate(order.created_at)}
-                                        </td>
-                                        <td className="px-3 py-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                          {getEventTitle(order.event_id)}
-                                        </td>
+                                        <td className="px-3 py-2 text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{formatDate(order.created_at)}</td>
+                                        <td className="px-3 py-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{getEventTitle(order.event_id)}</td>
                                         <td className="px-3 py-2">
-                                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>
-                                            {st.label}
-                                          </span>
+                                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>{st.label}</span>
                                         </td>
                                         <td className="px-3 py-2 text-right">
                                           <div className="flex flex-col items-end gap-0.5">
                                             {Object.entries(ticketSummary).map(([name, count]) => (
-                                              <span key={name} className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                                {count}× {name}
-                                              </span>
+                                              <span key={name} className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{count}× {name}</span>
                                             ))}
-                                            {orderTickets.length === 0 && (
-                                              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>
-                                            )}
-                                            <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                              {formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}
-                                            </span>
+                                            {orderTickets.length === 0 && <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>}
+                                            <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}</span>
                                           </div>
                                         </td>
-                                        <td className="px-3 py-2 text-xs text-right" style={{ color: "hsl(45 80% 55% / 0.7)" }}>
-                                          {Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}
-                                        </td>
-                                        <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                                          {formatCurrency(order.total_amount)}
-                                        </td>
+                                        <td className="px-3 py-2 text-xs text-right" style={{ color: "hsl(45 80% 55% / 0.7)" }}>{Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}</td>
+                                        <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{formatCurrency(order.total_amount)}</td>
                                         <td className="px-3 py-2 text-center">
                                           {order.status === "paid" && (
                                             <div className="flex items-center gap-1.5 justify-center">
