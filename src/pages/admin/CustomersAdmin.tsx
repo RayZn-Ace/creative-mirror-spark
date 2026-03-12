@@ -1005,7 +1005,7 @@ const CustomersAdmin = () => {
                           return (
                             <>
                               {/* Revenue KPIs */}
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
                                 <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(150 60% 40% / 0.08)", border: "1px solid hsl(150 60% 40% / 0.15)" }}>
                                   <span className="text-sm font-black block" style={{ color: "hsl(150 60% 40%)" }}>{formatCurrency(totalRevenue)}</span>
                                   <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Gesamtumsatz</span>
@@ -1017,6 +1017,10 @@ const CustomersAdmin = () => {
                                 <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(45 80% 55% / 0.08)", border: "1px solid hsl(45 80% 55% / 0.15)" }}>
                                   <span className="text-sm font-black block" style={{ color: "hsl(45 80% 55%)" }}>{formatCurrency(totalServiceFees)}</span>
                                   <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Servicegebühren</span>
+                                </div>
+                                <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(330 80% 55% / 0.08)", border: "1px solid hsl(330 80% 55% / 0.15)" }}>
+                                  <span className="text-sm font-black block" style={{ color: "hsl(330 80% 55%)" }}>{formatCurrency(totalInsurance)}</span>
+                                  <span className="text-[9px] font-bold uppercase" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Versicherung</span>
                                 </div>
                                 <div className="px-3 py-2.5 rounded-xl text-center" style={{ background: "hsl(270 60% 55% / 0.08)", border: "1px solid hsl(270 60% 55% / 0.15)" }}>
                                   <span className="text-sm font-black block" style={{ color: "hsl(270 60% 55%)" }}>
