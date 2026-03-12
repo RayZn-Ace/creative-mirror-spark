@@ -260,15 +260,15 @@ const Dashboard = () => {
       <div ref={containerRef} className="dashboard-grid-container">
         {mounted && (
           <GridLayout
-            layout={visibleGrid}
+            layout={mobileAdjustedGrid}
             width={width}
-            gridConfig={{ cols: 4, rowHeight: 40 }}
-            dragConfig={{ enabled: editing, bounded: false, threshold: 3 }}
-            resizeConfig={{ enabled: editing, handles: ["se"] }}
+            gridConfig={{ cols, rowHeight: isMobile ? 36 : 40 }}
+            dragConfig={{ enabled: editing && !isMobile, bounded: false, threshold: 3 }}
+            resizeConfig={{ enabled: editing && !isMobile, handles: ["se"] }}
             onLayoutChange={handleLayoutChange}
             compactor={verticalCompactor}
           >
-            {visibleGrid.map((item) => {
+            {mobileAdjustedGrid.map((item) => {
               const type = item.i as WidgetType;
               const Comp = WIDGET_COMPONENTS[type];
               if (!Comp) return null;
