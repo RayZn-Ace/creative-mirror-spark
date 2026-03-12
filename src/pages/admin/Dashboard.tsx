@@ -149,7 +149,10 @@ const Dashboard = () => {
     setShowAddPanel(false);
   };
 
-  const visibleGrid = gridLayout.filter(g => !hiddenWidgets.includes(g.i));
+  // On mobile, clamp all widgets to full width (w=2) and stack vertically
+  const mobileAdjustedGrid = isMobile
+    ? visibleGrid.map((g, idx) => ({ ...g, x: 0, w: 2, y: idx * (g.h || 5) }))
+    : visibleGrid;
   const availableWidgets = ALL_WIDGET_TYPES.filter(t => !visibleGrid.find(g => g.i === t));
 
   if (!loaded) {
