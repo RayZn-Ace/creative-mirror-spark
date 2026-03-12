@@ -883,8 +883,9 @@ const CustomersAdmin = () => {
                 }}
               >
                 {/* Row header */}
-                <div
-                  className="flex items-center gap-3 px-4 sm:px-5 py-3.5 cursor-pointer hover:bg-white/[0.02] transition-all"
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-3 px-3 sm:px-5 py-4 text-left active:bg-white/[0.04] hover:bg-white/[0.02] transition-all"
                   onClick={() => setExpandedCustomer(isExpanded ? null : customer.email)}
                 >
                   <div
@@ -904,20 +905,17 @@ const CustomersAdmin = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs truncate" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                        {customer.email}
+                    <span className="text-xs truncate block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      {customer.email}
+                    </span>
+                    {/* Mobile: show key stats inline */}
+                    <div className="flex items-center gap-3 mt-1 sm:hidden">
+                      <span className="text-[10px] font-bold" style={{ color: "hsl(150 60% 40%)" }}>
+                        {formatCurrency(customer.totalSpent)}
                       </span>
-                      {getCustomerCities(customer).map((city) => (
-                        <span
-                          key={city}
-                          className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
-                          style={{ background: "hsl(215 90% 55% / 0.12)", color: "hsl(215 90% 55%)" }}
-                        >
-                          <MapPin className="w-2.5 h-2.5" />
-                          {city}
-                        </span>
-                      ))}
+                      <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                        {customer.orderCount} Bestellungen
+                      </span>
                     </div>
                   </div>
                   <div className="hidden sm:flex items-center gap-4 shrink-0">
@@ -944,7 +942,7 @@ const CustomersAdmin = () => {
                     className="w-4 h-4 shrink-0 transition-transform"
                     style={{ color: "hsl(0 0% 100% / 0.3)", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
                   />
-                </div>
+                </button>
 
                 {/* Expanded detail */}
                 <AnimatePresence>
@@ -956,7 +954,7 @@ const CustomersAdmin = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 sm:px-5 pb-4 pt-1 space-y-4" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                      <div className="px-3 sm:px-5 pb-4 pt-1 space-y-4" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
                         {/* Contact info */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
@@ -1058,12 +1056,53 @@ const CustomersAdmin = () => {
                           );
                         })()}
 
-                        {/* Orders table */}
+                        {/* Orders */}
                         <div>
                           <span className="text-[10px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                             Bestellungen ({customer.orderCount})
                           </span>
-                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                          
+                          {/* Mobile: card layout */}
+                          <div className="space-y-2 sm:hidden">
+                            {customer.orders.map((order) => {
+                              const st = getStatus(order.status);
+                              const orderTickets = allTickets.filter(t => t.order_id === order.id);
+                              const ticketDetails = orderTickets.map(t => {
+                                const cat = ticketCategories.find(c => c.id === t.ticket_category_id);
+                                return cat?.name || "Standard";
+                              });
+                              const ticketSummary = ticketDetails.reduce((acc, name) => {
+                                acc[name] = (acc[name] || 0) + 1;
+                                return acc;
+                              }, {} as Record<string, number>);
+                              return (
+                                <div key={order.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{formatDate(order.created_at)}</span>
+                                    <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>{st.label}</span>
+                                  </div>
+                                  <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{getEventTitle(order.event_id)}</div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-wrap gap-1">
+                                      {Object.entries(ticketSummary).map(([name, count]) => (
+                                        <span key={name} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "hsl(0 0% 100% / 0.05)", color: "hsl(0 0% 100% / 0.5)" }}>{count}× {name}</span>
+                                      ))}
+                                    </div>
+                                    <span className="text-sm font-bold shrink-0 ml-2" style={{ color: "hsl(0 0% 100%)" }}>{formatCurrency(order.total_amount)}</span>
+                                  </div>
+                                  {order.status === "paid" && (
+                                    <div className="flex items-center gap-2 pt-1">
+                                      <ResendTicketsButton orderId={order.id} />
+                                      <DownloadTicketsButton orderId={order.id} />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Desktop: table layout */}
+                          <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: "1px solid hsl(0 0% 100% / 0.06)" }}>
                             <div className="overflow-x-auto">
                               <table className="w-full text-sm">
                                 <thead>
@@ -1089,41 +1128,24 @@ const CustomersAdmin = () => {
                                       acc[name] = (acc[name] || 0) + 1;
                                       return acc;
                                     }, {} as Record<string, number>);
-
                                     return (
                                       <tr key={order.id} style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.04)" }}>
-                                        <td className="px-3 py-2 text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                          {formatDate(order.created_at)}
-                                        </td>
-                                        <td className="px-3 py-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                          {getEventTitle(order.event_id)}
-                                        </td>
+                                        <td className="px-3 py-2 text-xs font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{formatDate(order.created_at)}</td>
+                                        <td className="px-3 py-2 text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{getEventTitle(order.event_id)}</td>
                                         <td className="px-3 py-2">
-                                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>
-                                            {st.label}
-                                          </span>
+                                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: st.bg, color: st.text }}>{st.label}</span>
                                         </td>
                                         <td className="px-3 py-2 text-right">
                                           <div className="flex flex-col items-end gap-0.5">
                                             {Object.entries(ticketSummary).map(([name, count]) => (
-                                              <span key={name} className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                                                {count}× {name}
-                                              </span>
+                                              <span key={name} className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{count}× {name}</span>
                                             ))}
-                                            {orderTickets.length === 0 && (
-                                              <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>
-                                            )}
-                                            <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                                              {formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}
-                                            </span>
+                                            {orderTickets.length === 0 && <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>–</span>}
+                                            <span className="text-xs font-bold" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{formatCurrency(order.total_amount - order.service_fee - Number((order as any).insurance_fee || 0))}</span>
                                           </div>
                                         </td>
-                                        <td className="px-3 py-2 text-xs text-right" style={{ color: "hsl(45 80% 55% / 0.7)" }}>
-                                          {Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}
-                                        </td>
-                                        <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>
-                                          {formatCurrency(order.total_amount)}
-                                        </td>
+                                        <td className="px-3 py-2 text-xs text-right" style={{ color: "hsl(45 80% 55% / 0.7)" }}>{Number(order.service_fee) > 0 ? formatCurrency(order.service_fee) : "–"}</td>
+                                        <td className="px-3 py-2 text-xs font-bold text-right" style={{ color: "hsl(0 0% 100% / 0.8)" }}>{formatCurrency(order.total_amount)}</td>
                                         <td className="px-3 py-2 text-center">
                                           {order.status === "paid" && (
                                             <div className="flex items-center gap-1.5 justify-center">
