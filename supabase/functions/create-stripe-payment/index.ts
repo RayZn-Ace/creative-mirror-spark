@@ -83,16 +83,20 @@ Deno.serve(async (req) => {
     // Fetch event service fee config + insurance config
     const { data: eventData } = await supabase
       .from("events")
-      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat, title, insurance_enabled, insurance_amount")
+      .select("service_fee_enabled, service_fee_type, service_fee_value, service_fee_vat, service_fee_mode, title, insurance_enabled, insurance_amount")
       .eq("id", eventId)
       .single();
 
     let serviceFeeEur = 0;
     if (eventData?.service_fee_enabled && eventData.service_fee_value) {
+      const totalTickets = items.reduce((sum: number, i: any) => sum + (i.quantity || 0), 0);
+      const feeMode = eventData.service_fee_mode || "per_order";
       if (eventData.service_fee_type === "percentage") {
         serviceFeeEur = totalEur * (eventData.service_fee_value / 100);
       } else {
-        serviceFeeEur = eventData.service_fee_value;
+        serviceFeeEur = feeMode === "per_ticket"
+          ? eventData.service_fee_value * totalTickets
+          : eventData.service_fee_value;
       }
     }
 
