@@ -930,6 +930,12 @@ const NewsletterAdmin = () => {
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
+
+  // Custom templates
+  interface CustomTemplate { id: string; name: string; blocks: Block[]; colorSchemeId: string; colorScheme: ColorScheme; createdAt: string }
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
+  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
+  const [saveTemplateName, setSaveTemplateName] = useState("");
   const [previewTick, setPreviewTick] = useState(0);
 
   // Tick every second so countdown in preview stays live
