@@ -935,7 +935,9 @@ const NewsletterAdmin = () => {
   interface CustomTemplate { id: string; name: string; blocks: Block[]; colorSchemeId: string; colorScheme: ColorScheme; createdAt: string }
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
-  const [saveTemplateName, setSaveTemplateName] = useState("");
+  const [saveTemplateName, setSaveTemplateName] = "";
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editingTemplateName, setEditingTemplateName] = useState("");
   const [previewTick, setPreviewTick] = useState(0);
 
   // Tick every second so countdown in preview stays live
