@@ -51,6 +51,10 @@ const Jobs = () => {
       toast.error("Fehler beim Senden. Bitte versuche es erneut.");
     } else {
       setSubmitted(true);
+      // Send email copy to support (fire & forget)
+      supabase.functions.invoke("send-job-application-email", {
+        body: form,
+      }).catch((err) => console.error("Email notification failed:", err));
     }
   };
 
