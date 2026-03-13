@@ -935,7 +935,7 @@ const NewsletterAdmin = () => {
   interface CustomTemplate { id: string; name: string; blocks: Block[]; colorSchemeId: string; colorScheme: ColorScheme; createdAt: string }
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
-  const [saveTemplateName, setSaveTemplateName] = "";
+  const [saveTemplateName, setSaveTemplateName] = useState("");
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [editingTemplateName, setEditingTemplateName] = useState("");
   const [previewTick, setPreviewTick] = useState(0);
