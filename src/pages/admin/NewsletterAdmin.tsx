@@ -7,7 +7,7 @@ import {
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
   Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
-  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor,
+  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -930,6 +930,12 @@ const NewsletterAdmin = () => {
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
   const [colorScheme, setColorScheme] = useState<ColorScheme>(COLOR_SCHEMES[0]);
   const [showColorSchemes, setShowColorSchemes] = useState(false);
+
+  // Custom templates
+  interface CustomTemplate { id: string; name: string; blocks: Block[]; colorSchemeId: string; colorScheme: ColorScheme; createdAt: string }
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
+  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
+  const [saveTemplateName, setSaveTemplateName] = useState("");
   const [previewTick, setPreviewTick] = useState(0);
 
   // Tick every second so countdown in preview stays live
@@ -974,9 +980,49 @@ const NewsletterAdmin = () => {
     if (subsRes.data) setSubscribers(subsRes.data as Subscriber[]);
     if (listsRes.data) setNlLists(listsRes.data as NLList[]);
     setLoading(false);
+
+    // Load custom templates
+    const { data: tplData } = await supabase.from("settings").select("value").eq("key", "newsletter_custom_templates").maybeSingle();
+    if (tplData?.value && Array.isArray(tplData.value)) {
+      setCustomTemplates(tplData.value as unknown as CustomTemplate[]);
+    }
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  const saveCustomTemplate = useCallback(async (name: string) => {
+    const newTpl: CustomTemplate = {
+      id: uid(),
+      name,
+      blocks: blocks.map(({ ...b }) => b),
+      colorSchemeId: colorScheme.id,
+      colorScheme,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [...customTemplates, newTpl];
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success(`Vorlage "${name}" gespeichert`);
+    setShowSaveTemplateDialog(false);
+    setSaveTemplateName("");
+  }, [blocks, colorScheme, customTemplates]);
+
+  const deleteCustomTemplate = useCallback(async (id: string) => {
+    const updated = customTemplates.filter((t) => t.id !== id);
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success("Vorlage gelöscht");
+  }, [customTemplates]);
+
+  const loadCustomTemplate = useCallback((tpl: CustomTemplate) => {
+    setBlocks(tpl.blocks.map((b) => ({ ...b, id: uid() })));
+    setActiveTemplateId(`custom-${tpl.id}`);
+    setShowTemplates(false);
+    setSelectedBlock(null);
+    const cs = tpl.colorScheme || COLOR_SCHEMES.find((c) => c.id === tpl.colorSchemeId);
+    if (cs) applyColorScheme(cs);
+    toast.success(`Vorlage "${tpl.name}" geladen`);
+  }, [applyColorScheme]);
 
   const eventMap = useMemo(() => {
     const m = new Map<string, EventInfo>();
@@ -1265,7 +1311,89 @@ ${bodyContent}
             <AnimatePresence>
               {showTemplates && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                  <div className="px-4 pb-4 pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                  <div className="px-4 pb-2 pt-1" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                    {/* Save current design as template */}
+                    <div className="mb-3">
+                      {showSaveTemplateDialog ? (
+                        <div className="flex gap-2 items-center">
+                          <input
+                            value={saveTemplateName}
+                            onChange={(e) => setSaveTemplateName(e.target.value)}
+                            placeholder="Vorlagenname..."
+                            className="flex-1 px-3 py-2 rounded-lg text-xs"
+                            style={{ ...inputStyle, background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)" }}
+                            autoFocus
+                            onKeyDown={(e) => e.key === "Enter" && saveTemplateName.trim() && saveCustomTemplate(saveTemplateName.trim())}
+                          />
+                          <button
+                            onClick={() => saveTemplateName.trim() && saveCustomTemplate(saveTemplateName.trim())}
+                            className="px-3 py-2 rounded-lg text-[11px] font-bold transition-all"
+                            style={{ background: "hsl(140 60% 40%)", color: "#fff" }}
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => { setShowSaveTemplateDialog(false); setSaveTemplateName(""); }} className="px-2 py-2 rounded-lg" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowSaveTemplateDialog(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-bold transition-all hover:scale-[1.01]"
+                          style={{ background: "hsl(270 60% 50% / 0.12)", color: "hsl(270 60% 55%)", border: "1px dashed hsl(270 60% 50% / 0.3)" }}
+                        >
+                          <Save className="w-3.5 h-3.5" /> Aktuelles Design als Vorlage speichern
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Custom templates */}
+                    {customTemplates.length > 0 && (
+                      <div className="mb-3">
+                        <span className="text-[9px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(270 60% 55% / 0.6)" }}>
+                          Eigene Vorlagen ({customTemplates.length})
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {customTemplates.map((ct) => {
+                            const isActive = activeTemplateId === `custom-${ct.id}`;
+                            return (
+                              <div key={ct.id} className="relative group">
+                                <motion.button
+                                  onClick={() => loadCustomTemplate(ct)}
+                                  className="w-full relative flex flex-col items-center gap-2 py-4 px-3 rounded-xl text-center transition-all overflow-hidden"
+                                  style={{
+                                    background: isActive ? "hsl(270 60% 50% / 0.15)" : "hsl(0 0% 100% / 0.03)",
+                                    border: `1px solid ${isActive ? "hsl(270 60% 55% / 0.4)" : "hsl(0 0% 100% / 0.06)"}`,
+                                  }}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                >
+                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: ct.colorScheme?.headerGradient || "linear-gradient(135deg, hsl(270 60% 50%), hsl(330 80% 55%))" }}>
+                                    <Paintbrush className="w-4 h-4 text-white" />
+                                  </div>
+                                  <span className="text-[11px] font-bold" style={{ color: isActive ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.7)" }}>{ct.name}</span>
+                                  <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{ct.blocks.length} Blöcke</span>
+                                  {isActive && <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "hsl(270 60% 55%)" }} />}
+                                </motion.button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); deleteCustomTemplate(ct.id); }}
+                                  className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  style={{ background: "hsl(0 60% 50% / 0.8)", color: "#fff" }}
+                                >
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* System templates */}
+                    <span className="text-[9px] font-bold uppercase tracking-wider block mb-2" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                      System-Vorlagen
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
                     {TEMPLATES.map((tpl) => {
                       const Icon = tpl.icon;
                       const isActive = activeTemplateId === tpl.id;
@@ -1292,6 +1420,7 @@ ${bodyContent}
                         </motion.button>
                       );
                     })}
+                    </div>
                   </div>
                 </motion.div>
               )}
