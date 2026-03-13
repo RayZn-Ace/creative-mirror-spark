@@ -7,7 +7,7 @@ import {
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
   Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
-  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save,
+  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save, Pencil, RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -936,6 +936,8 @@ const NewsletterAdmin = () => {
   const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
   const [saveTemplateName, setSaveTemplateName] = useState("");
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editingTemplateName, setEditingTemplateName] = useState("");
   const [previewTick, setPreviewTick] = useState(0);
 
   // Tick every second so countdown in preview stays live
@@ -1012,6 +1014,24 @@ const NewsletterAdmin = () => {
     setCustomTemplates(updated);
     await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
     toast.success("Vorlage gelöscht");
+  }, [customTemplates]);
+
+  const updateCustomTemplate = useCallback(async (id: string) => {
+    const updated = customTemplates.map((t) =>
+      t.id === id ? { ...t, blocks: blocks.map(({ ...b }) => b), colorSchemeId: colorScheme.id, colorScheme, createdAt: new Date().toISOString() } : t
+    );
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success("Vorlage aktualisiert");
+  }, [blocks, colorScheme, customTemplates]);
+
+  const renameCustomTemplate = useCallback(async (id: string, newName: string) => {
+    const updated = customTemplates.map((t) => t.id === id ? { ...t, name: newName } : t);
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    setEditingTemplateId(null);
+    setEditingTemplateName("");
+    toast.success("Vorlage umbenannt");
   }, [customTemplates]);
 
   const loadCustomTemplate = useCallback((tpl: CustomTemplate) => {
@@ -1356,6 +1376,7 @@ ${bodyContent}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {customTemplates.map((ct) => {
                             const isActive = activeTemplateId === `custom-${ct.id}`;
+                            const isEditing = editingTemplateId === ct.id;
                             return (
                               <div key={ct.id} className="relative group">
                                 <motion.button
@@ -1371,17 +1392,54 @@ ${bodyContent}
                                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: ct.colorScheme?.headerGradient || "linear-gradient(135deg, hsl(270 60% 50%), hsl(330 80% 55%))" }}>
                                     <Paintbrush className="w-4 h-4 text-white" />
                                   </div>
-                                  <span className="text-[11px] font-bold" style={{ color: isActive ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.7)" }}>{ct.name}</span>
+                                  {isEditing ? (
+                                    <input
+                                      value={editingTemplateName}
+                                      onChange={(e) => setEditingTemplateName(e.target.value)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onKeyDown={(e) => {
+                                        e.stopPropagation();
+                                        if (e.key === "Enter" && editingTemplateName.trim()) renameCustomTemplate(ct.id, editingTemplateName.trim());
+                                        if (e.key === "Escape") { setEditingTemplateId(null); setEditingTemplateName(""); }
+                                      }}
+                                      onBlur={() => { if (editingTemplateName.trim()) renameCustomTemplate(ct.id, editingTemplateName.trim()); }}
+                                      className="w-full px-2 py-0.5 rounded text-[11px] font-bold text-center"
+                                      style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(270 60% 55% / 0.4)", color: "hsl(0 0% 100%)", outline: "none" }}
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <span className="text-[11px] font-bold" style={{ color: isActive ? "hsl(270 60% 55%)" : "hsl(0 0% 100% / 0.7)" }}>{ct.name}</span>
+                                  )}
                                   <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{ct.blocks.length} Blöcke</span>
                                   {isActive && <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "hsl(270 60% 55%)" }} />}
                                 </motion.button>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); deleteCustomTemplate(ct.id); }}
-                                  className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ background: "hsl(0 60% 50% / 0.8)", color: "#fff" }}
-                                >
-                                  <Trash2 className="w-2.5 h-2.5" />
-                                </button>
+                                {/* Action buttons on hover */}
+                                <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); deleteCustomTemplate(ct.id); }}
+                                    className="w-5 h-5 rounded-full flex items-center justify-center"
+                                    style={{ background: "hsl(0 60% 50% / 0.8)", color: "#fff" }}
+                                    title="Löschen"
+                                  >
+                                    <Trash2 className="w-2.5 h-2.5" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setEditingTemplateId(ct.id); setEditingTemplateName(ct.name); }}
+                                    className="w-5 h-5 rounded-full flex items-center justify-center"
+                                    style={{ background: "hsl(210 60% 50% / 0.8)", color: "#fff" }}
+                                    title="Umbenennen"
+                                  >
+                                    <Pencil className="w-2.5 h-2.5" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); updateCustomTemplate(ct.id); }}
+                                    className="w-5 h-5 rounded-full flex items-center justify-center"
+                                    style={{ background: "hsl(140 60% 40% / 0.8)", color: "#fff" }}
+                                    title="Mit aktuellem Design überschreiben"
+                                  >
+                                    <RefreshCw className="w-2.5 h-2.5" />
+                                  </button>
+                                </div>
                               </div>
                             );
                           })}
