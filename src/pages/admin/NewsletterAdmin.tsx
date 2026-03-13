@@ -7,7 +7,7 @@ import {
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
   Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
-  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor,
+  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save,
 } from "lucide-react";
 import { toast } from "sonner";
 
