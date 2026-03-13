@@ -980,9 +980,49 @@ const NewsletterAdmin = () => {
     if (subsRes.data) setSubscribers(subsRes.data as Subscriber[]);
     if (listsRes.data) setNlLists(listsRes.data as NLList[]);
     setLoading(false);
+
+    // Load custom templates
+    const { data: tplData } = await supabase.from("settings").select("value").eq("key", "newsletter_custom_templates").maybeSingle();
+    if (tplData?.value && Array.isArray(tplData.value)) {
+      setCustomTemplates(tplData.value as unknown as CustomTemplate[]);
+    }
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  const saveCustomTemplate = useCallback(async (name: string) => {
+    const newTpl: CustomTemplate = {
+      id: uid(),
+      name,
+      blocks: blocks.map(({ ...b }) => b),
+      colorSchemeId: colorScheme.id,
+      colorScheme,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [...customTemplates, newTpl];
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success(`Vorlage "${name}" gespeichert`);
+    setShowSaveTemplateDialog(false);
+    setSaveTemplateName("");
+  }, [blocks, colorScheme, customTemplates]);
+
+  const deleteCustomTemplate = useCallback(async (id: string) => {
+    const updated = customTemplates.filter((t) => t.id !== id);
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success("Vorlage gelöscht");
+  }, [customTemplates]);
+
+  const loadCustomTemplate = useCallback((tpl: CustomTemplate) => {
+    setBlocks(tpl.blocks.map((b) => ({ ...b, id: uid() })));
+    setActiveTemplateId(`custom-${tpl.id}`);
+    setShowTemplates(false);
+    setSelectedBlock(null);
+    const cs = tpl.colorScheme || COLOR_SCHEMES.find((c) => c.id === tpl.colorSchemeId);
+    if (cs) applyColorScheme(cs);
+    toast.success(`Vorlage "${tpl.name}" geladen`);
+  }, [applyColorScheme]);
 
   const eventMap = useMemo(() => {
     const m = new Map<string, EventInfo>();
