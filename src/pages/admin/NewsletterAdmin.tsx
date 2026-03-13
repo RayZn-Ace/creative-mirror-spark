@@ -1016,6 +1016,24 @@ const NewsletterAdmin = () => {
     toast.success("Vorlage gelöscht");
   }, [customTemplates]);
 
+  const updateCustomTemplate = useCallback(async (id: string) => {
+    const updated = customTemplates.map((t) =>
+      t.id === id ? { ...t, blocks: blocks.map(({ ...b }) => b), colorSchemeId: colorScheme.id, colorScheme, createdAt: new Date().toISOString() } : t
+    );
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    toast.success("Vorlage aktualisiert");
+  }, [blocks, colorScheme, customTemplates]);
+
+  const renameCustomTemplate = useCallback(async (id: string, newName: string) => {
+    const updated = customTemplates.map((t) => t.id === id ? { ...t, name: newName } : t);
+    setCustomTemplates(updated);
+    await supabase.from("settings").upsert({ key: "newsletter_custom_templates", value: updated as any }, { onConflict: "key" });
+    setEditingTemplateId(null);
+    setEditingTemplateName("");
+    toast.success("Vorlage umbenannt");
+  }, [customTemplates]);
+
   const loadCustomTemplate = useCallback((tpl: CustomTemplate) => {
     setBlocks(tpl.blocks.map((b) => ({ ...b, id: uid() })));
     setActiveTemplateId(`custom-${tpl.id}`);
