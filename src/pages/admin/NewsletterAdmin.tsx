@@ -912,6 +912,7 @@ const NewsletterAdmin = () => {
 
   // Recipient filters
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");
+  const [listFilter, setListFilter] = useState<"all" | "paid-only">("all");
   
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("paid");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
