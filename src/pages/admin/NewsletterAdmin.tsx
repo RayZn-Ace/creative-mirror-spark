@@ -1094,6 +1094,9 @@ const NewsletterAdmin = () => {
     }
 
     // Smart mode: combine orders + subscribers with filters
+    // Build set of unsubscribed emails
+    const unsubscribedEmails = new Set(subscribers.filter(s => s.unsubscribed).map(s => s.email.toLowerCase().trim()));
+
     // 1. Orders
     orders.forEach((o) => {
       // Order status filter
@@ -1101,6 +1104,9 @@ const NewsletterAdmin = () => {
       if (orderFilter === "cancelled" && o.status !== "cancelled") return;
       if (orderFilter === "unpaid" && o.status === "paid") return;
 
+      // Skip unsubscribed
+      const email = o.email.toLowerCase().trim();
+      if (unsubscribedEmails.has(email)) return;
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
@@ -1110,7 +1116,6 @@ const NewsletterAdmin = () => {
         if (ageFilter.max != null && age > ageFilter.max) return;
       }
 
-      const email = o.email.toLowerCase().trim();
       if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
     });
 
