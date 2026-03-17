@@ -919,6 +919,11 @@ const CustomersAdmin = () => {
                           Stammkunde
                         </span>
                       )}
+                      {unsubscribedEmails.has(customer.email) && (
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5" style={{ background: "hsl(0 70% 50% / 0.12)", color: "hsl(0 70% 55%)" }}>
+                          <MailX className="w-2.5 h-2.5" /> Newsletter abgemeldet
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs truncate block" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
                       {customer.email}
