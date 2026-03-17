@@ -2017,6 +2017,15 @@ ${bodyContent}
                                 <button onClick={addSubscriber} className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider" style={{ background: "hsl(215 90% 55% / 0.15)", color: "hsl(215 90% 55%)" }}>
                                   Hinzufügen
                                 </button>
+                                <button
+                                  onClick={importCustomerEmails}
+                                  disabled={importing}
+                                  className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                                  style={{ background: "hsl(150 60% 40% / 0.15)", color: "hsl(150 60% 50%)" }}
+                                >
+                                  {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShoppingCart className="w-3 h-3" />}
+                                  Alle Kunden importieren
+                                </button>
                               </div>
                             </motion.div>
                           )}
