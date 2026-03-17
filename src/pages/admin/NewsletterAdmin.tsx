@@ -1931,26 +1931,6 @@ ${bodyContent}
                       {/* List Mode */}
                       {recipientMode === "list" && (
                         <div className="space-y-2">
-                          {/* Filter toggle */}
-                          <div className="flex gap-1.5">
-                            {([
-                              { value: "all" as const, label: "Alle Daten" },
-                              { value: "paid-only" as const, label: "Nur bezahlte Kunden" },
-                            ]).map(({ value, label }) => (
-                              <button
-                                key={value}
-                                onClick={() => setListFilter(value)}
-                                className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
-                                style={{
-                                  background: listFilter === value ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                                  color: listFilter === value ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-                                  border: `1px solid ${listFilter === value ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
-                                }}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
 
                           {nlLists.length === 0 ? (
                             <p className="text-[11px] py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Listen erstellt</p>
