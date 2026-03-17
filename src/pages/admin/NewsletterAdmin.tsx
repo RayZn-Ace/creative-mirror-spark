@@ -1101,19 +1101,29 @@ const NewsletterAdmin = () => {
     }
 
     if (recipientMode === "list") {
-      // Build set of unsubscribed emails
       const unsubEmails = new Set(subscribers.filter(s => s.unsubscribed).map(s => s.email.toLowerCase().trim()));
-      // Include all subscribers + all paid order customers, minus unsubscribed
-      subscribers.forEach((s) => {
-        if (s.unsubscribed) return;
-        emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
-      });
-      orders.forEach((o) => {
-        if (o.status !== "paid") return;
-        const email = o.email.toLowerCase().trim();
-        if (unsubEmails.has(email)) return;
-        if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
-      });
+
+      if (listFilter === "paid-only") {
+        // Only paid order customers
+        orders.forEach((o) => {
+          if (o.status !== "paid") return;
+          const email = o.email.toLowerCase().trim();
+          if (unsubEmails.has(email)) return;
+          if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
+        });
+      } else {
+        // All: subscribers + paid order customers
+        subscribers.forEach((s) => {
+          if (s.unsubscribed) return;
+          emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
+        });
+        orders.forEach((o) => {
+          if (o.status !== "paid") return;
+          const email = o.email.toLowerCase().trim();
+          if (unsubEmails.has(email)) return;
+          if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
+        });
+      }
       return Array.from(emailMap.values());
     }
 
