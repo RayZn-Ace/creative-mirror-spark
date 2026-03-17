@@ -1242,6 +1242,7 @@ ${bodyContent}
 </td></tr>
 <tr><td style="padding:24px 40px;background:${cs.footerBg};border-top:1px solid ${cs.footerBorder};">
 <p style="margin:0;font-size:12px;color:${cs.footerText};">Du erhältst diese E-Mail, weil du bei uns ein Ticket gekauft hast.</p>
+<p style="margin:8px 0 0 0;font-size:11px;"><a href="${import.meta.env.VITE_SUPABASE_URL}/functions/v1/newsletter-unsubscribe?email={{email}}" style="color:${cs.footerText};text-decoration:underline;opacity:0.7;">Newsletter abbestellen</a></p>
 </td></tr>
 </table>
 </td></tr>
