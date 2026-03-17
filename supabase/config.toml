@@ -2,3 +2,6 @@ project_id = "tgoudlmcoftlpcwmhhfn"
 
 [functions.countdown-image]
 verify_jwt = false
+
+[functions.newsletter-unsubscribe]
+verify_jwt = false

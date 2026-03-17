@@ -5,6 +5,7 @@ import {
   Users, Search, ChevronDown, ChevronUp, Mail, Phone, Calendar, ShoppingCart,
   TrendingUp, User, CreditCard, X, ArrowUpDown, Eye, MapPin,
   Download, Upload, FileSpreadsheet, Ticket, UserCheck, Filter, Check, Send, Loader2,
+  MailX,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -193,6 +194,7 @@ const CustomersAdmin = () => {
   const [events, setEvents] = useState<EventInfo[]>([]);
   const [allTickets, setAllTickets] = useState<TicketRow[]>([]);
   const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
+  const [unsubscribedEmails, setUnsubscribedEmails] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
@@ -234,6 +236,19 @@ const CustomersAdmin = () => {
       setEvents(eventsData as unknown as EventInfo[]);
       setAllTickets(ticketsData as unknown as TicketRow[]);
       setTicketCategories(categoriesData as unknown as TicketCategory[]);
+
+      // Load unsubscribed newsletter emails
+      let allSubs: any[] = [];
+      let subFrom = 0;
+      while (true) {
+        const { data } = await supabase.from("newsletter_subscribers").select("email, unsubscribed").eq("unsubscribed", true).range(subFrom, subFrom + 999);
+        if (!data || data.length === 0) break;
+        allSubs = allSubs.concat(data);
+        if (data.length < 1000) break;
+        subFrom += 1000;
+      }
+      setUnsubscribedEmails(new Set(allSubs.map((s: any) => s.email.toLowerCase().trim())));
+
       setLoading(false);
     };
     load();
@@ -902,6 +917,11 @@ const CustomersAdmin = () => {
                       {customer.orders.filter(o => o.status === "paid").length > 2 && (
                         <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0" style={{ background: "hsl(330 80% 55% / 0.12)", color: "hsl(330 80% 55%)" }}>
                           Stammkunde
+                        </span>
+                      )}
+                      {unsubscribedEmails.has(customer.email) && (
+                        <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0 flex items-center gap-0.5" style={{ background: "hsl(0 70% 50% / 0.12)", color: "hsl(0 70% 55%)" }}>
+                          <MailX className="w-2.5 h-2.5" /> Newsletter abgemeldet
                         </span>
                       )}
                     </div>

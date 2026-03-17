@@ -1094,6 +1094,9 @@ const NewsletterAdmin = () => {
     }
 
     // Smart mode: combine orders + subscribers with filters
+    // Build set of unsubscribed emails
+    const unsubscribedEmails = new Set(subscribers.filter(s => s.unsubscribed).map(s => s.email.toLowerCase().trim()));
+
     // 1. Orders
     orders.forEach((o) => {
       // Order status filter
@@ -1101,6 +1104,9 @@ const NewsletterAdmin = () => {
       if (orderFilter === "cancelled" && o.status !== "cancelled") return;
       if (orderFilter === "unpaid" && o.status === "paid") return;
 
+      // Skip unsubscribed
+      const email = o.email.toLowerCase().trim();
+      if (unsubscribedEmails.has(email)) return;
 
       // Age filter
       if (ageFilter.min != null || ageFilter.max != null) {
@@ -1110,7 +1116,6 @@ const NewsletterAdmin = () => {
         if (ageFilter.max != null && age > ageFilter.max) return;
       }
 
-      const email = o.email.toLowerCase().trim();
       if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
     });
 
@@ -1182,6 +1187,64 @@ const NewsletterAdmin = () => {
     loadData();
   };
 
+  // Import customer emails as newsletter subscribers
+  const [importing, setImporting] = useState(false);
+  const importCustomerEmails = async () => {
+    setImporting(true);
+    try {
+      // Get all unique paid order emails
+      const PAGE = 1000;
+      let allOrders: { email: string; name: string | null }[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await supabase.from("orders").select("email, name").eq("status", "paid").range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        allOrders = allOrders.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+
+      // Get existing subscriber emails
+      const existingEmails = new Set(subscribers.map(s => s.email.toLowerCase().trim()));
+
+      // Find missing emails
+      const newEmailMap = new Map<string, string | null>();
+      allOrders.forEach(o => {
+        const email = o.email.toLowerCase().trim();
+        if (!existingEmails.has(email) && !newEmailMap.has(email)) {
+          newEmailMap.set(email, o.name);
+        }
+      });
+
+      if (newEmailMap.size === 0) {
+        toast.info("Alle Kunden sind bereits als Abonnenten eingetragen");
+        setImporting(false);
+        return;
+      }
+
+      // Insert in batches
+      const entries = Array.from(newEmailMap.entries()).map(([email, name]) => ({
+        email,
+        name,
+        source: "order-import",
+        unsubscribed: false,
+      }));
+
+      const BATCH = 500;
+      for (let i = 0; i < entries.length; i += BATCH) {
+        const batch = entries.slice(i, i + BATCH);
+        await supabase.from("newsletter_subscribers").upsert(batch, { onConflict: "email" });
+      }
+
+      toast.success(`${newEmailMap.size} Kunden als Abonnenten importiert`);
+      loadData();
+    } catch (err: any) {
+      toast.error("Fehler beim Import: " + (err.message || "Unbekannt"));
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // ─── Block operations ──────────────────────────────────────
   const addBlock = useCallback((type: BlockType) => {
     setBlocks((prev) => [...prev, createBlock(type)]);
@@ -1242,6 +1305,7 @@ ${bodyContent}
 </td></tr>
 <tr><td style="padding:24px 40px;background:${cs.footerBg};border-top:1px solid ${cs.footerBorder};">
 <p style="margin:0;font-size:12px;color:${cs.footerText};">Du erhältst diese E-Mail, weil du bei uns ein Ticket gekauft hast.</p>
+<p style="margin:8px 0 0 0;font-size:11px;"><a href="${import.meta.env.VITE_SUPABASE_URL}/functions/v1/newsletter-unsubscribe?email={{email}}" style="color:${cs.footerText};text-decoration:underline;opacity:0.7;">Newsletter abbestellen</a></p>
 </td></tr>
 </table>
 </td></tr>
@@ -1952,6 +2016,15 @@ ${bodyContent}
                                 </div>
                                 <button onClick={addSubscriber} className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider" style={{ background: "hsl(215 90% 55% / 0.15)", color: "hsl(215 90% 55%)" }}>
                                   Hinzufügen
+                                </button>
+                                <button
+                                  onClick={importCustomerEmails}
+                                  disabled={importing}
+                                  className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                                  style={{ background: "hsl(150 60% 40% / 0.15)", color: "hsl(150 60% 50%)" }}
+                                >
+                                  {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShoppingCart className="w-3 h-3" />}
+                                  Alle Kunden importieren
                                 </button>
                               </div>
                             </motion.div>
