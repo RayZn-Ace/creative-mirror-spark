@@ -971,15 +971,30 @@ const NewsletterAdmin = () => {
   }, []);
 
   const loadData = useCallback(async () => {
-    const [ordersRes, eventsRes, subsRes, listsRes] = await Promise.all([
-      supabase.from("orders").select("email, name, status, event_id, birth_date"),
+    // Paginated fetch to get ALL rows (not just 1000)
+    const fetchAll = async (table: string, select: string) => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await (supabase.from as any)(table).select(select).range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
+    const [ordersData, eventsRes, subsData, listsRes] = await Promise.all([
+      fetchAll("orders", "email, name, status, event_id, birth_date"),
       supabase.from("events").select("id, title, city"),
-      supabase.from("newsletter_subscribers").select("*"),
+      fetchAll("newsletter_subscribers", "id, email, name, tags, city, birth_date, source, unsubscribed"),
       supabase.from("newsletter_lists").select("*"),
     ]);
-    if (ordersRes.data) setOrders(ordersRes.data as Order[]);
+    setOrders(ordersData as Order[]);
     if (eventsRes.data) setEvents(eventsRes.data as EventInfo[]);
-    if (subsRes.data) setSubscribers(subsRes.data as Subscriber[]);
+    setSubscribers(subsData as Subscriber[]);
     if (listsRes.data) setNlLists(listsRes.data as NLList[]);
     setLoading(false);
 
@@ -1085,10 +1100,18 @@ const NewsletterAdmin = () => {
     }
 
     if (recipientMode === "list") {
-      // From newsletter subscribers in selected lists (TODO: load list members)
+      // Build set of unsubscribed emails
+      const unsubEmails = new Set(subscribers.filter(s => s.unsubscribed).map(s => s.email.toLowerCase().trim()));
+      // Include all subscribers + all paid order customers, minus unsubscribed
       subscribers.forEach((s) => {
         if (s.unsubscribed) return;
         emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
+      });
+      orders.forEach((o) => {
+        if (o.status !== "paid") return;
+        const email = o.email.toLowerCase().trim();
+        if (unsubEmails.has(email)) return;
+        if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
       });
       return Array.from(emailMap.values());
     }
@@ -1187,63 +1210,6 @@ const NewsletterAdmin = () => {
     loadData();
   };
 
-  // Import customer emails as newsletter subscribers
-  const [importing, setImporting] = useState(false);
-  const importCustomerEmails = async () => {
-    setImporting(true);
-    try {
-      // Get all unique paid order emails
-      const PAGE = 1000;
-      let allOrders: { email: string; name: string | null }[] = [];
-      let from = 0;
-      while (true) {
-        const { data } = await supabase.from("orders").select("email, name").eq("status", "paid").range(from, from + PAGE - 1);
-        if (!data || data.length === 0) break;
-        allOrders = allOrders.concat(data);
-        if (data.length < PAGE) break;
-        from += PAGE;
-      }
-
-      // Get existing subscriber emails
-      const existingEmails = new Set(subscribers.map(s => s.email.toLowerCase().trim()));
-
-      // Find missing emails
-      const newEmailMap = new Map<string, string | null>();
-      allOrders.forEach(o => {
-        const email = o.email.toLowerCase().trim();
-        if (!existingEmails.has(email) && !newEmailMap.has(email)) {
-          newEmailMap.set(email, o.name);
-        }
-      });
-
-      if (newEmailMap.size === 0) {
-        toast.info("Alle Kunden sind bereits als Abonnenten eingetragen");
-        setImporting(false);
-        return;
-      }
-
-      // Insert in batches
-      const entries = Array.from(newEmailMap.entries()).map(([email, name]) => ({
-        email,
-        name,
-        source: "order-import",
-        unsubscribed: false,
-      }));
-
-      const BATCH = 500;
-      for (let i = 0; i < entries.length; i += BATCH) {
-        const batch = entries.slice(i, i + BATCH);
-        await supabase.from("newsletter_subscribers").upsert(batch, { onConflict: "email" });
-      }
-
-      toast.success(`${newEmailMap.size} Kunden als Abonnenten importiert`);
-      loadData();
-    } catch (err: any) {
-      toast.error("Fehler beim Import: " + (err.message || "Unbekannt"));
-    } finally {
-      setImporting(false);
-    }
-  };
 
   // ─── Block operations ──────────────────────────────────────
   const addBlock = useCallback((type: BlockType) => {
@@ -2016,15 +1982,6 @@ ${bodyContent}
                                 </div>
                                 <button onClick={addSubscriber} className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider" style={{ background: "hsl(215 90% 55% / 0.15)", color: "hsl(215 90% 55%)" }}>
                                   Hinzufügen
-                                </button>
-                                <button
-                                  onClick={importCustomerEmails}
-                                  disabled={importing}
-                                  className="w-full py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                                  style={{ background: "hsl(150 60% 40% / 0.15)", color: "hsl(150 60% 50%)" }}
-                                >
-                                  {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShoppingCart className="w-3 h-3" />}
-                                  Alle Kunden importieren
                                 </button>
                               </div>
                             </motion.div>
