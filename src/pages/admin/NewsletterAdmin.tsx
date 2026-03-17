@@ -971,15 +971,30 @@ const NewsletterAdmin = () => {
   }, []);
 
   const loadData = useCallback(async () => {
-    const [ordersRes, eventsRes, subsRes, listsRes] = await Promise.all([
-      supabase.from("orders").select("email, name, status, event_id, birth_date"),
+    // Paginated fetch to get ALL rows (not just 1000)
+    const fetchAll = async (table: string, select: string) => {
+      const PAGE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await (supabase.from as any)(table).select(select).range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
+    };
+
+    const [ordersData, eventsRes, subsData, listsRes] = await Promise.all([
+      fetchAll("orders", "email, name, status, event_id, birth_date"),
       supabase.from("events").select("id, title, city"),
-      supabase.from("newsletter_subscribers").select("*"),
+      fetchAll("newsletter_subscribers", "id, email, name, tags, city, birth_date, source, unsubscribed"),
       supabase.from("newsletter_lists").select("*"),
     ]);
-    if (ordersRes.data) setOrders(ordersRes.data as Order[]);
+    setOrders(ordersData as Order[]);
     if (eventsRes.data) setEvents(eventsRes.data as EventInfo[]);
-    if (subsRes.data) setSubscribers(subsRes.data as Subscriber[]);
+    setSubscribers(subsData as Subscriber[]);
     if (listsRes.data) setNlLists(listsRes.data as NLList[]);
     setLoading(false);
 
