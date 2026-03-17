@@ -1153,25 +1153,26 @@ const NewsletterAdmin = () => {
       if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
     });
 
-    // 2. Subscribers matching filters
-    subscribers.forEach((s) => {
-      if (s.unsubscribed) return;
+    // 2. Subscribers matching filters (skip if paid-only filter is active)
+    if (listFilter !== "paid-only") {
+      subscribers.forEach((s) => {
+        if (s.unsubscribed) return;
 
-      // Tag filter
-      if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
+        // Tag filter
+        if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
 
+        // Age filter
+        if (ageFilter.min != null || ageFilter.max != null) {
+          const age = getAge(s.birth_date);
+          if (age === null) return;
+          if (ageFilter.min != null && age < ageFilter.min) return;
+          if (ageFilter.max != null && age > ageFilter.max) return;
+        }
 
-      // Age filter
-      if (ageFilter.min != null || ageFilter.max != null) {
-        const age = getAge(s.birth_date);
-        if (age === null) return;
-        if (ageFilter.min != null && age < ageFilter.min) return;
-        if (ageFilter.max != null && age > ageFilter.max) return;
-      }
-
-      const email = s.email.toLowerCase().trim();
-      if (!emailMap.has(email)) emailMap.set(email, { email, name: s.name });
-    });
+        const email = s.email.toLowerCase().trim();
+        if (!emailMap.has(email)) emailMap.set(email, { email, name: s.name });
+      });
+    }
 
     // Search filter
     let result = Array.from(emailMap.values());
@@ -1821,8 +1822,29 @@ ${bodyContent}
                 {showRecipients && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                     <div className="px-5 pb-4 space-y-3" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                      {/* Global filter: all data vs paid only */}
+                      <div className="flex gap-1.5 pt-3">
+                        {([
+                          { value: "all" as const, label: "Alle Daten" },
+                          { value: "paid-only" as const, label: "Nur bezahlte Kunden" },
+                        ]).map(({ value, label }) => (
+                          <button
+                            key={value}
+                            onClick={() => setListFilter(value)}
+                            className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                            style={{
+                              background: listFilter === value ? "hsl(270 70% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                              color: listFilter === value ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+                              border: `1px solid ${listFilter === value ? "hsl(270 70% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
                       {/* Mode Tabs */}
-                      <div className="flex gap-1 pt-3">
+                      <div className="flex gap-1">
                         {([
                           { mode: "smart" as RecipientMode, label: "Smart Filter", icon: Filter },
                           { mode: "list" as RecipientMode, label: "Listen", icon: List },
@@ -1833,9 +1855,9 @@ ${bodyContent}
                             onClick={() => setRecipientMode(mode)}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
                             style={{
-                              background: recipientMode === mode ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.03)",
-                              color: recipientMode === mode ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-                              border: `1px solid ${recipientMode === mode ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
+                              background: recipientMode === mode ? "hsl(270 70% 55% / 0.15)" : "hsl(0 0% 100% / 0.03)",
+                              color: recipientMode === mode ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.4)",
+                              border: `1px solid ${recipientMode === mode ? "hsl(270 70% 55% / 0.3)" : "hsl(0 0% 100% / 0.06)"}`,
                             }}
                           >
                             <I className="w-3 h-3" /> {label}
@@ -1931,26 +1953,6 @@ ${bodyContent}
                       {/* List Mode */}
                       {recipientMode === "list" && (
                         <div className="space-y-2">
-                          {/* Filter toggle */}
-                          <div className="flex gap-1.5">
-                            {([
-                              { value: "all" as const, label: "Alle Daten" },
-                              { value: "paid-only" as const, label: "Nur bezahlte Kunden" },
-                            ]).map(({ value, label }) => (
-                              <button
-                                key={value}
-                                onClick={() => setListFilter(value)}
-                                className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
-                                style={{
-                                  background: listFilter === value ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
-                                  color: listFilter === value ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
-                                  border: `1px solid ${listFilter === value ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
-                                }}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
 
                           {nlLists.length === 0 ? (
                             <p className="text-[11px] py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Listen erstellt</p>
