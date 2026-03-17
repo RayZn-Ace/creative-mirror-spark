@@ -1181,7 +1181,7 @@ const NewsletterAdmin = () => {
     }
 
     return result;
-  }, [orders, subscribers, orderFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds]);
+  }, [orders, subscribers, orderFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds, listFilter]);
 
   // Add subscriber
   const addSubscriber = async () => {
