@@ -1210,63 +1210,6 @@ const NewsletterAdmin = () => {
     loadData();
   };
 
-  // Import customer emails as newsletter subscribers
-  const [importing, setImporting] = useState(false);
-  const importCustomerEmails = async () => {
-    setImporting(true);
-    try {
-      // Get all unique paid order emails
-      const PAGE = 1000;
-      let allOrders: { email: string; name: string | null }[] = [];
-      let from = 0;
-      while (true) {
-        const { data } = await supabase.from("orders").select("email, name").eq("status", "paid").range(from, from + PAGE - 1);
-        if (!data || data.length === 0) break;
-        allOrders = allOrders.concat(data);
-        if (data.length < PAGE) break;
-        from += PAGE;
-      }
-
-      // Get existing subscriber emails
-      const existingEmails = new Set(subscribers.map(s => s.email.toLowerCase().trim()));
-
-      // Find missing emails
-      const newEmailMap = new Map<string, string | null>();
-      allOrders.forEach(o => {
-        const email = o.email.toLowerCase().trim();
-        if (!existingEmails.has(email) && !newEmailMap.has(email)) {
-          newEmailMap.set(email, o.name);
-        }
-      });
-
-      if (newEmailMap.size === 0) {
-        toast.info("Alle Kunden sind bereits als Abonnenten eingetragen");
-        setImporting(false);
-        return;
-      }
-
-      // Insert in batches
-      const entries = Array.from(newEmailMap.entries()).map(([email, name]) => ({
-        email,
-        name,
-        source: "order-import",
-        unsubscribed: false,
-      }));
-
-      const BATCH = 500;
-      for (let i = 0; i < entries.length; i += BATCH) {
-        const batch = entries.slice(i, i + BATCH);
-        await supabase.from("newsletter_subscribers").upsert(batch, { onConflict: "email" });
-      }
-
-      toast.success(`${newEmailMap.size} Kunden als Abonnenten importiert`);
-      loadData();
-    } catch (err: any) {
-      toast.error("Fehler beim Import: " + (err.message || "Unbekannt"));
-    } finally {
-      setImporting(false);
-    }
-  };
 
   // ─── Block operations ──────────────────────────────────────
   const addBlock = useCallback((type: BlockType) => {
