@@ -912,6 +912,7 @@ const NewsletterAdmin = () => {
 
   // Recipient filters
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("smart");
+  const [listFilter, setListFilter] = useState<"all" | "paid-only">("all");
   
   const [orderFilter, setOrderFilter] = useState<OrderFilter>("paid");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -1100,19 +1101,29 @@ const NewsletterAdmin = () => {
     }
 
     if (recipientMode === "list") {
-      // Build set of unsubscribed emails
       const unsubEmails = new Set(subscribers.filter(s => s.unsubscribed).map(s => s.email.toLowerCase().trim()));
-      // Include all subscribers + all paid order customers, minus unsubscribed
-      subscribers.forEach((s) => {
-        if (s.unsubscribed) return;
-        emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
-      });
-      orders.forEach((o) => {
-        if (o.status !== "paid") return;
-        const email = o.email.toLowerCase().trim();
-        if (unsubEmails.has(email)) return;
-        if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
-      });
+
+      if (listFilter === "paid-only") {
+        // Only paid order customers
+        orders.forEach((o) => {
+          if (o.status !== "paid") return;
+          const email = o.email.toLowerCase().trim();
+          if (unsubEmails.has(email)) return;
+          if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
+        });
+      } else {
+        // All: subscribers + paid order customers
+        subscribers.forEach((s) => {
+          if (s.unsubscribed) return;
+          emailMap.set(s.email.toLowerCase(), { email: s.email.toLowerCase(), name: s.name });
+        });
+        orders.forEach((o) => {
+          if (o.status !== "paid") return;
+          const email = o.email.toLowerCase().trim();
+          if (unsubEmails.has(email)) return;
+          if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
+        });
+      }
       return Array.from(emailMap.values());
     }
 
@@ -1170,7 +1181,7 @@ const NewsletterAdmin = () => {
     }
 
     return result;
-  }, [orders, subscribers, orderFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds]);
+  }, [orders, subscribers, orderFilter, ageFilter, selectedTags, eventMap, recipientMode, manualEmails, recipientSearch, selectedListIds, listFilter]);
 
   // Add subscriber
   const addSubscriber = async () => {
@@ -1920,6 +1931,27 @@ ${bodyContent}
                       {/* List Mode */}
                       {recipientMode === "list" && (
                         <div className="space-y-2">
+                          {/* Filter toggle */}
+                          <div className="flex gap-1.5">
+                            {([
+                              { value: "all" as const, label: "Alle Daten" },
+                              { value: "paid-only" as const, label: "Nur bezahlte Kunden" },
+                            ]).map(({ value, label }) => (
+                              <button
+                                key={value}
+                                onClick={() => setListFilter(value)}
+                                className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                                style={{
+                                  background: listFilter === value ? "hsl(330 80% 55% / 0.15)" : "hsl(0 0% 100% / 0.04)",
+                                  color: listFilter === value ? "hsl(330 80% 55%)" : "hsl(0 0% 100% / 0.4)",
+                                  border: `1px solid ${listFilter === value ? "hsl(330 80% 55% / 0.3)" : "hsl(0 0% 100% / 0.08)"}`,
+                                }}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+
                           {nlLists.length === 0 ? (
                             <p className="text-[11px] py-2" style={{ color: "hsl(0 0% 100% / 0.3)" }}>Noch keine Listen erstellt</p>
                           ) : (
