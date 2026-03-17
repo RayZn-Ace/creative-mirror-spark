@@ -194,6 +194,7 @@ const CustomersAdmin = () => {
   const [events, setEvents] = useState<EventInfo[]>([]);
   const [allTickets, setAllTickets] = useState<TicketRow[]>([]);
   const [ticketCategories, setTicketCategories] = useState<TicketCategory[]>([]);
+  const [unsubscribedEmails, setUnsubscribedEmails] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
