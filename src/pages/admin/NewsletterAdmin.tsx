@@ -1153,25 +1153,26 @@ const NewsletterAdmin = () => {
       if (!emailMap.has(email)) emailMap.set(email, { email, name: o.name });
     });
 
-    // 2. Subscribers matching filters
-    subscribers.forEach((s) => {
-      if (s.unsubscribed) return;
+    // 2. Subscribers matching filters (skip if paid-only filter is active)
+    if (listFilter !== "paid-only") {
+      subscribers.forEach((s) => {
+        if (s.unsubscribed) return;
 
-      // Tag filter
-      if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
+        // Tag filter
+        if (selectedTags.length > 0 && !selectedTags.some((t) => s.tags?.includes(t))) return;
 
+        // Age filter
+        if (ageFilter.min != null || ageFilter.max != null) {
+          const age = getAge(s.birth_date);
+          if (age === null) return;
+          if (ageFilter.min != null && age < ageFilter.min) return;
+          if (ageFilter.max != null && age > ageFilter.max) return;
+        }
 
-      // Age filter
-      if (ageFilter.min != null || ageFilter.max != null) {
-        const age = getAge(s.birth_date);
-        if (age === null) return;
-        if (ageFilter.min != null && age < ageFilter.min) return;
-        if (ageFilter.max != null && age > ageFilter.max) return;
-      }
-
-      const email = s.email.toLowerCase().trim();
-      if (!emailMap.has(email)) emailMap.set(email, { email, name: s.name });
-    });
+        const email = s.email.toLowerCase().trim();
+        if (!emailMap.has(email)) emailMap.set(email, { email, name: s.name });
+      });
+    }
 
     // Search filter
     let result = Array.from(emailMap.values());
