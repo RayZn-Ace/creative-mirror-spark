@@ -2021,7 +2021,7 @@ ${bodyContent}
                             nlLists.map((list) => {
                               const active = selectedListIds.includes(list.id);
                               return (
-                                <div key={list.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: active ? "hsl(330 80% 55% / 0.08)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${active ? "hsl(330 80% 55% / 0.2)" : "transparent"}` }}>
+                                <div key={list.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: active ? "hsl(270 70% 55% / 0.08)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${active ? "hsl(270 70% 55% / 0.2)" : "transparent"}` }}>
                                   <input type="checkbox" checked={active} onChange={() => setSelectedListIds(active ? selectedListIds.filter((id) => id !== list.id) : [...selectedListIds, list.id])} />
                                   <span className="text-xs font-bold flex-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{list.name}</span>
                                   <button onClick={() => deleteList(list.id)} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.4)" }}><Trash2 className="w-3 h-3" /></button>
@@ -2031,10 +2031,22 @@ ${bodyContent}
                           )}
                           <div className="flex gap-1.5">
                             <input value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="Neue Liste..." className="flex-1 px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
-                            <button onClick={addList} className="px-3 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
+                            <button onClick={addList} className="px-3 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}>
                               <Plus className="w-3 h-3" />
                             </button>
                           </div>
+
+                          {/* CSV Import */}
+                          <input ref={csvFileInputRef} type="file" accept=".csv,.txt" onChange={handleCsvImport} className="hidden" />
+                          <button
+                            onClick={() => csvFileInputRef.current?.click()}
+                            disabled={csvImporting}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.01]"
+                            style={{ background: "hsl(270 70% 55% / 0.1)", color: "hsl(270 70% 55%)", border: "1px dashed hsl(270 70% 55% / 0.3)" }}
+                          >
+                            {csvImporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                            {csvImporting ? "Importiere..." : "CSV importieren"}
+                          </button>
                         </div>
                       )}
 
