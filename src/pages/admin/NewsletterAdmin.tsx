@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,7 +7,7 @@ import {
   ChevronUp, ChevronDown, AlignLeft, AlignCenter, AlignRight, Bold, Italic, ChevronRight,
   LayoutTemplate, Sparkles, Zap, PartyPopper, Megaphone, Heart, Palette, Sun, Moon, Paintbrush,
   Star, CalendarDays, MapPin, Clock, Wand2, Calendar, Gift, Timer,
-  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save, Pencil, RefreshCw,
+  Tag, UserPlus, X, Search, ShoppingCart, Ban, XCircle, List, Smartphone, Monitor, Save, Pencil, RefreshCw, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -956,6 +956,8 @@ const NewsletterAdmin = () => {
   const [newSubName, setNewSubName] = useState("");
   const [newSubTags, setNewSubTags] = useState("");
   const [newSubCity, setNewSubCity] = useState("");
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
+  const [csvImporting, setCsvImporting] = useState(false);
 
   // Sync event block colors when color scheme changes
   const applyColorScheme = useCallback((cs: ColorScheme) => {
@@ -1220,6 +1222,65 @@ const NewsletterAdmin = () => {
   const deleteList = async (id: string) => {
     await supabase.from("newsletter_lists").delete().eq("id", id);
     loadData();
+  };
+
+  // CSV Import for newsletter subscribers
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.trim());
+      if (lines.length < 2) { toast.error("CSV enthält keine Daten"); return; }
+      
+      const headerLine = lines[0];
+      const sep = headerLine.includes(";") ? ";" : ",";
+      const headers = headerLine.split(sep).map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
+      
+      // Find email column
+      const emailIdx = headers.findIndex((h) => h.includes("mail") || h === "e-mail" || h === "email");
+      if (emailIdx < 0) { toast.error("Keine E-Mail-Spalte gefunden"); return; }
+      
+      const nameIdx = headers.findIndex((h) => h === "name" || h === "vorname" || h.includes("name"));
+      const cityIdx = headers.findIndex((h) => h === "stadt" || h === "city" || h === "ort");
+      
+      const rows: { email: string; name: string | null; city: string | null }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
+        const email = cols[emailIdx]?.toLowerCase().trim();
+        if (!email || !email.includes("@")) continue;
+        rows.push({
+          email,
+          name: nameIdx >= 0 ? cols[nameIdx] || null : null,
+          city: cityIdx >= 0 ? cols[cityIdx] || null : null,
+        });
+      }
+      
+      if (rows.length === 0) { toast.error("Keine gültigen E-Mail-Adressen gefunden"); return; }
+      
+      // Batch upsert into newsletter_subscribers
+      const BATCH = 100;
+      let imported = 0;
+      for (let i = 0; i < rows.length; i += BATCH) {
+        const batch = rows.slice(i, i + BATCH).map((r) => ({
+          email: r.email,
+          name: r.name,
+          city: r.city,
+          source: "csv-import",
+        }));
+        const { error } = await supabase.from("newsletter_subscribers").upsert(batch, { onConflict: "email", ignoreDuplicates: true });
+        if (!error) imported += batch.length;
+      }
+      
+      toast.success(`${imported} Abonnenten importiert`);
+      loadData();
+    } catch (err: any) {
+      toast.error("Import-Fehler: " + (err.message || "Unbekannt"));
+    } finally {
+      setCsvImporting(false);
+      if (csvFileInputRef.current) csvFileInputRef.current.value = "";
+    }
   };
 
 
@@ -1960,7 +2021,7 @@ ${bodyContent}
                             nlLists.map((list) => {
                               const active = selectedListIds.includes(list.id);
                               return (
-                                <div key={list.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: active ? "hsl(330 80% 55% / 0.08)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${active ? "hsl(330 80% 55% / 0.2)" : "transparent"}` }}>
+                                <div key={list.id} className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: active ? "hsl(270 70% 55% / 0.08)" : "hsl(0 0% 100% / 0.03)", border: `1px solid ${active ? "hsl(270 70% 55% / 0.2)" : "transparent"}` }}>
                                   <input type="checkbox" checked={active} onChange={() => setSelectedListIds(active ? selectedListIds.filter((id) => id !== list.id) : [...selectedListIds, list.id])} />
                                   <span className="text-xs font-bold flex-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{list.name}</span>
                                   <button onClick={() => deleteList(list.id)} className="p-1 rounded hover:bg-red-500/10" style={{ color: "hsl(0 70% 55% / 0.4)" }}><Trash2 className="w-3 h-3" /></button>
@@ -1970,10 +2031,22 @@ ${bodyContent}
                           )}
                           <div className="flex gap-1.5">
                             <input value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="Neue Liste..." className="flex-1 px-2.5 py-1.5 rounded-lg text-xs" style={inputStyle} />
-                            <button onClick={addList} className="px-3 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: "hsl(330 80% 55% / 0.15)", color: "hsl(330 80% 55%)" }}>
+                            <button onClick={addList} className="px-3 py-1.5 rounded-lg text-[10px] font-bold" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}>
                               <Plus className="w-3 h-3" />
                             </button>
                           </div>
+
+                          {/* CSV Import */}
+                          <input ref={csvFileInputRef} type="file" accept=".csv,.txt" onChange={handleCsvImport} className="hidden" />
+                          <button
+                            onClick={() => csvFileInputRef.current?.click()}
+                            disabled={csvImporting}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.01]"
+                            style={{ background: "hsl(270 70% 55% / 0.1)", color: "hsl(270 70% 55%)", border: "1px dashed hsl(270 70% 55% / 0.3)" }}
+                          >
+                            {csvImporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                            {csvImporting ? "Importiere..." : "CSV importieren"}
+                          </button>
                         </div>
                       )}
 
