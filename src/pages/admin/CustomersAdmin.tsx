@@ -997,6 +997,55 @@ const CustomersAdmin = () => {
                           </div>
                         </div>
 
+                        {/* Newsletter unsubscribe toggle */}
+                        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl" style={{
+                          background: unsubscribedEmails.has(customer.email) ? "hsl(0 70% 50% / 0.08)" : "hsl(0 0% 100% / 0.03)",
+                          border: `1px solid ${unsubscribedEmails.has(customer.email) ? "hsl(0 70% 50% / 0.15)" : "hsl(0 0% 100% / 0.06)"}`,
+                        }}>
+                          <MailX className="w-4 h-4 shrink-0" style={{ color: unsubscribedEmails.has(customer.email) ? "hsl(0 70% 55%)" : "hsl(0 0% 100% / 0.3)" }} />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-bold block" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+                              Newsletter-Sperre
+                            </span>
+                            <span className="text-[9px]" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                              {unsubscribedEmails.has(customer.email) ? "Kunde erhält keine Newsletter-Mails" : "Kunde kann Newsletter empfangen"}
+                            </span>
+                          </div>
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const email = customer.email.toLowerCase().trim();
+                              const isCurrentlyUnsubbed = unsubscribedEmails.has(email);
+                              
+                              // Upsert into newsletter_subscribers with unsubscribed flag
+                              const { error } = await supabase.from("newsletter_subscribers").upsert(
+                                { email, unsubscribed: !isCurrentlyUnsubbed, source: "manual" },
+                                { onConflict: "email" }
+                              );
+                              if (error) {
+                                toast.error("Fehler: " + error.message);
+                                return;
+                              }
+                              
+                              // Update local state
+                              setUnsubscribedEmails((prev) => {
+                                const next = new Set(prev);
+                                if (isCurrentlyUnsubbed) next.delete(email);
+                                else next.add(email);
+                                return next;
+                              });
+                              toast.success(isCurrentlyUnsubbed ? "Newsletter-Sperre aufgehoben" : "Kunde vom Newsletter ausgeschlossen");
+                            }}
+                            className="w-11 h-6 rounded-full relative transition-all shrink-0"
+                            style={{ background: unsubscribedEmails.has(customer.email) ? "hsl(0 70% 50%)" : "hsl(0 0% 100% / 0.12)" }}
+                          >
+                            <div className="absolute top-1 w-4 h-4 rounded-full transition-all" style={{
+                              background: "#fff",
+                              left: unsubscribedEmails.has(customer.email) ? "24px" : "4px",
+                            }} />
+                          </button>
+                        </div>
+
                         {/* Revenue summary */}
                         {(() => {
                           const paidOrders = customer.orders.filter(o => o.status === "paid");
