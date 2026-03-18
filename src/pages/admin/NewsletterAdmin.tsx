@@ -1224,6 +1224,65 @@ const NewsletterAdmin = () => {
     loadData();
   };
 
+  // CSV Import for newsletter subscribers
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCsvImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.trim());
+      if (lines.length < 2) { toast.error("CSV enthält keine Daten"); return; }
+      
+      const headerLine = lines[0];
+      const sep = headerLine.includes(";") ? ";" : ",";
+      const headers = headerLine.split(sep).map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
+      
+      // Find email column
+      const emailIdx = headers.findIndex((h) => h.includes("mail") || h === "e-mail" || h === "email");
+      if (emailIdx < 0) { toast.error("Keine E-Mail-Spalte gefunden"); return; }
+      
+      const nameIdx = headers.findIndex((h) => h === "name" || h === "vorname" || h.includes("name"));
+      const cityIdx = headers.findIndex((h) => h === "stadt" || h === "city" || h === "ort");
+      
+      const rows: { email: string; name: string | null; city: string | null }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
+        const email = cols[emailIdx]?.toLowerCase().trim();
+        if (!email || !email.includes("@")) continue;
+        rows.push({
+          email,
+          name: nameIdx >= 0 ? cols[nameIdx] || null : null,
+          city: cityIdx >= 0 ? cols[cityIdx] || null : null,
+        });
+      }
+      
+      if (rows.length === 0) { toast.error("Keine gültigen E-Mail-Adressen gefunden"); return; }
+      
+      // Batch upsert into newsletter_subscribers
+      const BATCH = 100;
+      let imported = 0;
+      for (let i = 0; i < rows.length; i += BATCH) {
+        const batch = rows.slice(i, i + BATCH).map((r) => ({
+          email: r.email,
+          name: r.name,
+          city: r.city,
+          source: "csv-import",
+        }));
+        const { error } = await supabase.from("newsletter_subscribers").upsert(batch, { onConflict: "email", ignoreDuplicates: true });
+        if (!error) imported += batch.length;
+      }
+      
+      toast.success(`${imported} Abonnenten importiert`);
+      loadData();
+    } catch (err: any) {
+      toast.error("Import-Fehler: " + (err.message || "Unbekannt"));
+    } finally {
+      setCsvImporting(false);
+      if (csvFileInputRef.current) csvFileInputRef.current.value = "";
+    }
+  };
+
 
   // ─── Block operations ──────────────────────────────────────
   const addBlock = useCallback((type: BlockType) => {
