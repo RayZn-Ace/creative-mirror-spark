@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
     }
 
     // Return a styled HTML page confirming unsubscription
+    const safeEmail = email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const html = `<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Newsletter abgemeldet</title>
@@ -46,20 +47,23 @@ Deno.serve(async (req) => {
   h1 { font-size: 24px; margin: 0 0 12px 0; }
   p { color: #999; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0; }
   .icon { font-size: 48px; margin-bottom: 16px; }
-  .email { color: #e91e8c; font-weight: 600; }
-  a { color: #e91e8c; text-decoration: none; font-size: 13px; }
+  .email { color: #8b5cf6; font-weight: 600; }
+  a { color: #8b5cf6; text-decoration: none; font-size: 13px; }
 </style>
 </head><body>
 <div class="card">
-  <div class="icon">📭</div>
+  <div class="icon">&#128236;</div>
   <h1>Abmeldung erfolgreich</h1>
-  <p>Die E-Mail-Adresse <span class="email">${email}</span> wurde vom Newsletter abgemeldet. Du wirst keine weiteren Newsletter von uns erhalten.</p>
-  <a href="https://nightlifeticket.app">← Zurück zur Website</a>
+  <p>Die E-Mail-Adresse <span class="email">${safeEmail}</span> wurde vom Newsletter abgemeldet. Du wirst keine weiteren Newsletter von uns erhalten.</p>
+  <a href="https://nightlifeticket.app">&larr; Zur&uuml;ck zur Website</a>
 </div>
 </body></html>`;
 
     return new Response(html, {
-      headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+      },
     });
   } catch (err) {
     console.error("newsletter-unsubscribe error:", err);
