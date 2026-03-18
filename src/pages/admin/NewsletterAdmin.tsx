@@ -956,6 +956,8 @@ const NewsletterAdmin = () => {
   const [newSubName, setNewSubName] = useState("");
   const [newSubTags, setNewSubTags] = useState("");
   const [newSubCity, setNewSubCity] = useState("");
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
+  const [csvImporting, setCsvImporting] = useState(false);
 
   // Sync event block colors when color scheme changes
   const applyColorScheme = useCallback((cs: ColorScheme) => {
