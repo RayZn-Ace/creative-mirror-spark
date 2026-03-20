@@ -648,10 +648,16 @@ export default function Termine() {
                             {/* CTA Button */}
                             <div className="ml-auto">
                               {allSoldOut ? (
-                                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
-                                  <XCircle className="w-4 h-4" />
-                                  Warteliste
-                                </span>
+                                anyBoxOffice ? (
+                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(45 80% 40% / 0.2)", color: "hsl(45 80% 55%)" }}>
+                                    🎫 Abendkasse
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
+                                    <XCircle className="w-4 h-4" />
+                                    Warteliste
+                                  </span>
+                                )
                               ) : (
                                 <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:shadow-[var(--shadow-glow)] transition-shadow duration-300">
                                   <Ticket className="w-4 h-4" />
