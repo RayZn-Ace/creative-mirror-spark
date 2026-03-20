@@ -10,6 +10,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import BulkEditDialog from "@/components/admin/BulkEditDialog";
+import ImportedDataDialog from "@/components/admin/ImportedDataDialog";
+import { FileSpreadsheet } from "lucide-react";
 
 
 interface GalleryConfig {
