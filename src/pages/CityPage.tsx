@@ -1535,7 +1535,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
           style={{
             boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)",
             transition: "filter 0.6s ease, opacity 0.6s ease",
-            ...(event.soldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+            ...(event.soldOut && !event.boxOfficeEnabled ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
           }}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
