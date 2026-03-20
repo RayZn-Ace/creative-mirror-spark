@@ -130,8 +130,8 @@ const ImportedDataDialog = ({ onClose }: Props) => {
 
         {/* Table */}
         <div className="flex-1 overflow-auto px-6 py-3">
-          {loading ? (
-            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
+          {filtered.length === 0 ? (
+            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Einträge gefunden</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
