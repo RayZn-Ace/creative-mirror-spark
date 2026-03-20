@@ -985,8 +985,8 @@ const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; cu
   );
 };
 
-/* ─── Waitlist Form ─── */
-const WaitlistForm = ({ eventId, t }: { eventId: string; t: Translations }) => {
+/* ─── Waitlist / Box Office Form ─── */
+const WaitlistForm = ({ eventId, t, boxOfficeEnabled, boxOfficePrice }: { eventId: string; t: Translations; boxOfficeEnabled?: boolean; boxOfficePrice?: number | null }) => {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
