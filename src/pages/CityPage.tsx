@@ -1538,7 +1538,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
             ...(event.soldOut && !event.boxOfficeEnabled ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
           }}
           initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
+          animate={{ opacity: event.soldOut && !event.boxOfficeEnabled ? 0.7 : 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         />
         <AnimatePresence>
