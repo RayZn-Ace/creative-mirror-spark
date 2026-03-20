@@ -2458,6 +2458,13 @@ const EventsAdmin = () => {
         )}
       </AnimatePresence>
 
+      {/* Imported Data Dialog */}
+      <AnimatePresence>
+        {showImportedData && (
+          <ImportedDataDialog onClose={() => setShowImportedData(false)} />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
