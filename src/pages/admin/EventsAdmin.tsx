@@ -142,7 +142,7 @@ const TEMPLATE_CATEGORIES = ["Inhalt", "Layout", "Widgets"];
 const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
-  status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
+  status: "draft", highlight: false, open_air: false, sold_out: false, box_office_enabled: false, box_office_price: null, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19, service_fee_mode: "per_order",
   info_sections: [...DEFAULT_INFO_SECTIONS],
   is_16plus: true, muttizettel: true,
