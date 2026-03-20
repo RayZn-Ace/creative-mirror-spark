@@ -34,6 +34,8 @@ interface CityEvent {
   city: string;
   openAir: boolean;
   soldOut: boolean;
+  boxOfficeEnabled: boolean;
+  boxOfficePrice: number | null;
   ticketLink: string | null;
   infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[];
   description: string | null;
@@ -156,8 +158,8 @@ const EventDateTiles = ({ events, selectedId, onSelect, t }: { events: CityEvent
         >
           {event.soldOut && (
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase whitespace-nowrap"
-              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
-              {t.soldOutLabel}
+              style={{ background: event.boxOfficeEnabled ? "hsl(45 80% 40%)" : "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+              {event.boxOfficeEnabled ? "Abendkasse" : t.soldOutLabel}
             </span>
           )}
           {event.openAir && !event.soldOut && (
@@ -983,8 +985,8 @@ const NearbyEvents = ({ currentSlug, currentCity, t }: { currentSlug: string; cu
   );
 };
 
-/* ─── Waitlist Form ─── */
-const WaitlistForm = ({ eventId, t }: { eventId: string; t: Translations }) => {
+/* ─── Waitlist / Box Office Form ─── */
+const WaitlistForm = ({ eventId, t, boxOfficeEnabled, boxOfficePrice }: { eventId: string; t: Translations; boxOfficeEnabled?: boolean; boxOfficePrice?: number | null }) => {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -1013,12 +1015,30 @@ const WaitlistForm = ({ eventId, t }: { eventId: string; t: Translations }) => {
 
   return (
     <div className="text-center py-6 sm:py-10">
-      <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
-        {t.soldOutTitle}
-      </div>
-      <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-        {t.soldOutDesc}
-      </p>
+      {boxOfficeEnabled ? (
+        <>
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(45 80% 55%)" }}>
+            🎫 ABENDKASSE GEÖFFNET
+          </div>
+          <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            Tickets sind an der Abendkasse vor Ort erhältlich!
+          </p>
+          {boxOfficePrice != null && boxOfficePrice > 0 && (
+            <p className="text-lg font-bold mb-4" style={{ color: "hsl(45 80% 60%)" }}>
+              Abendkasse: {boxOfficePrice.toFixed(2).replace(".", ",")} €
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
+            {t.soldOutTitle}
+          </div>
+          <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            {t.soldOutDesc}
+          </p>
+        </>
+      )}
 
       <AnimatePresence mode="wait">
         {submitted ? (
@@ -1282,7 +1302,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       </a>
 
       {event.soldOut ? (
-        <WaitlistForm eventId={event.id} t={t} />
+        <WaitlistForm eventId={event.id} t={t} boxOfficeEnabled={event.boxOfficeEnabled} boxOfficePrice={event.boxOfficePrice} />
       ) : loadingTickets ? (
         <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{t.ticketsLoading}</div></div>
       ) : (
@@ -1515,10 +1535,10 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
           style={{
             boxShadow: "0 8px 40px hsl(0 0% 0% / 0.4)",
             transition: "filter 0.6s ease, opacity 0.6s ease",
-            ...(event.soldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+            ...(event.soldOut && !event.boxOfficeEnabled ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
           }}
           initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: event.soldOut ? 0.7 : 1, scale: 1 }}
+          animate={{ opacity: event.soldOut && !event.boxOfficeEnabled ? 0.7 : 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         />
         <AnimatePresence>
@@ -1533,7 +1553,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
               <div
                 className="absolute font-black uppercase text-center text-white text-sm sm:text-base tracking-widest"
                 style={{
-                  background: "hsl(0 70% 45%)",
+                  background: event.boxOfficeEnabled ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                   width: "120%",
                   top: "50%",
                   left: "50%",
@@ -1542,7 +1562,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
                   boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
                 }}
               >
-                AUSVERKAUFT
+                {event.boxOfficeEnabled ? "ABENDKASSE" : "AUSVERKAUFT"}
               </div>
             </motion.div>
           )}
@@ -1744,6 +1764,8 @@ const CityPage = () => {
         city: e.city || city,
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
+        boxOfficeEnabled: e.box_office_enabled === true,
+        boxOfficePrice: e.box_office_price != null ? Number(e.box_office_price) : null,
         ticketLink: e.ticket_link,
         description: e.description || null,
         insuranceEnabled: e.insurance_enabled === true,

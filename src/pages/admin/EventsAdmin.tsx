@@ -53,6 +53,8 @@ interface EventRow {
   highlight: boolean | null;
   open_air: boolean | null;
   sold_out: boolean | null;
+  box_office_enabled: boolean | null;
+  box_office_price: number | null;
   ticket_link: string | null;
   sort_order: number | null;
   series_id: string | null;
@@ -140,7 +142,7 @@ const TEMPLATE_CATEGORIES = ["Inhalt", "Layout", "Widgets"];
 const emptyEvent: Omit<EventRow, "id"> = {
   title: "", subtitle: "", slug: "", description: "", date: null, time: "20:00", end_time: "23:00",
   location_name: "", location_address: "", city: "", image_url: "", tag: "Konzert",
-  status: "draft", highlight: false, open_air: false, sold_out: false, ticket_link: "", sort_order: 0, series_id: null,
+  status: "draft", highlight: false, open_air: false, sold_out: false, box_office_enabled: false, box_office_price: null, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19, service_fee_mode: "per_order",
   info_sections: [...DEFAULT_INFO_SECTIONS],
   is_16plus: true, muttizettel: true,
@@ -1520,6 +1522,42 @@ const EventEditView = ({
                 </div>
               </label>
             ))}
+            {/* Abendkasse option - only visible when sold_out is true */}
+            {editing.sold_out && (
+              <div className="mt-2 p-3 rounded-xl" style={{ background: "hsl(45 80% 50% / 0.08)", border: "1px solid hsl(45 80% 50% / 0.2)" }}>
+                <label className="flex items-center justify-between text-sm cursor-pointer" style={{ color: "hsl(45 80% 60%)" }}>
+                  <span>🎫 Abendkasse statt Ausverkauft</span>
+                  <div
+                    className="relative w-10 h-5 rounded-full cursor-pointer transition-colors"
+                    style={{ background: editing.box_office_enabled ? "hsl(45 80% 50%)" : "hsl(0 0% 100% / 0.15)" }}
+                    onClick={() => setEditing({ ...editing, box_office_enabled: !editing.box_office_enabled })}
+                  >
+                    <div
+                      className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                      style={{
+                        background: "hsl(0 0% 100%)",
+                        left: editing.box_office_enabled ? "calc(100% - 18px)" : "2px",
+                      }}
+                    />
+                  </div>
+                </label>
+                {editing.box_office_enabled && (
+                  <div className="mt-2">
+                    <label className="text-xs block mb-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Abendkasse-Preis (optional, in €)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editing.box_office_price ?? ""}
+                      onChange={(e) => setEditing({ ...editing, box_office_price: e.target.value ? parseFloat(e.target.value) : null })}
+                      placeholder="z.B. 15.00"
+                      className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                      style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </Section>
 
           <Section title="Servicegebühr" icon={Ticket}>

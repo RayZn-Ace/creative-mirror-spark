@@ -218,7 +218,7 @@ export default function Termine() {
 
       const { data: events } = await supabase
         .from("events")
-        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight")
+        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight, box_office_enabled")
         .eq("status", "published")
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
@@ -263,6 +263,7 @@ export default function Termine() {
               time: e.time,
               locationName: e.location_name,
               soldOut: e.sold_out || false,
+              boxOfficeEnabled: (e as any).box_office_enabled === true,
               openAir: e.open_air || false,
               highlight: e.highlight || false,
             })),
@@ -296,6 +297,7 @@ export default function Termine() {
             time: e.time,
             locationName: e.location_name,
             soldOut: e.sold_out || false,
+            boxOfficeEnabled: (e as any).box_office_enabled === true,
             openAir: e.open_air || false,
             highlight: e.highlight || false,
           })),
@@ -543,6 +545,7 @@ export default function Termine() {
               const featured = sortedGroups[0];
               const nextDate = featured.events.find(e => !e.soldOut) || featured.events[0];
               const allSoldOut = featured.events.every(e => e.soldOut);
+              const anyBoxOffice = featured.events.some(e => (e as any).boxOfficeEnabled);
               return (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -570,7 +573,7 @@ export default function Termine() {
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform"
                             style={{
                               transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.7s ease",
-                              ...(allSoldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
+                              ...(allSoldOut && !anyBoxOffice ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
                             }}
                           />
                         ) : (
@@ -588,8 +591,8 @@ export default function Termine() {
                           >
                             <div
                               className="absolute font-black uppercase text-center text-white text-lg sm:text-2xl tracking-widest"
-                              style={{
-                                background: "hsl(0 70% 45%)",
+                             style={{
+                                background: anyBoxOffice ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                                 width: "120%",
                                 top: "50%",
                                 left: "50%",
@@ -598,7 +601,7 @@ export default function Termine() {
                                 boxShadow: "0 2px 12px hsl(0 0% 0% / 0.5)",
                               }}
                             >
-                              AUSVERKAUFT
+                              {anyBoxOffice ? "ABENDKASSE" : "AUSVERKAUFT"}
                             </div>
                           </motion.div>
                         )}
@@ -645,10 +648,16 @@ export default function Termine() {
                             {/* CTA Button */}
                             <div className="ml-auto">
                               {allSoldOut ? (
-                                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
-                                  <XCircle className="w-4 h-4" />
-                                  Warteliste
-                                </span>
+                                anyBoxOffice ? (
+                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(45 80% 40% / 0.2)", color: "hsl(45 80% 55%)" }}>
+                                    🎫 Abendkasse
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
+                                    <XCircle className="w-4 h-4" />
+                                    Warteliste
+                                  </span>
+                                )
                               ) : (
                                 <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:shadow-[var(--shadow-glow)] transition-shadow duration-300">
                                   <Ticket className="w-4 h-4" />
@@ -691,7 +700,7 @@ export default function Termine() {
                             loading="lazy"
                              style={{
                                transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.5s ease",
-                               ...(group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+                               ...(group.events.every(e => e.soldOut) && !group.events.some(e => (e as any).boxOfficeEnabled) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
                              }}
                           />
                           
@@ -705,7 +714,7 @@ export default function Termine() {
                               <div
                                 className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
                                 style={{
-                                  background: "hsl(0 70% 45%)",
+                                  background: group.events.some(e => (e as any).boxOfficeEnabled) ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                                   width: "120%",
                                   top: "50%",
                                   left: "50%",
@@ -714,7 +723,7 @@ export default function Termine() {
                                   boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
                                 }}
                               >
-                                AUSVERKAUFT
+                                {group.events.some(e => (e as any).boxOfficeEnabled) ? "ABENDKASSE" : "AUSVERKAUFT"}
                               </div>
                             </motion.div>
                           )}
