@@ -34,6 +34,8 @@ interface CityEvent {
   city: string;
   openAir: boolean;
   soldOut: boolean;
+  boxOfficeEnabled: boolean;
+  boxOfficePrice: number | null;
   ticketLink: string | null;
   infoSections: { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[];
   description: string | null;
