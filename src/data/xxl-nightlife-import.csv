@@ -1,0 +1,27 @@
+Checkout-Id;Vorname;Nachname;E-Mail;Telefonnummer;Ticketart;Kaufpreis p. Ticket;Anzahl;Summe ohne Gebühren; Gebühren; Ticketsumme; Ticket-Steuersatz; Ticket-Steuern; Ticket Versichert?; Versicherungspreis pro Ticket; Versicherungspreis Gesamt; Versicherungs-Steuersatz; Versicherungs-Steuer; Gesamt-Umsatz (Netto); Gesamt-Steuern; Gesamt-Umsatz (Brutto)
+6857;Jaime ;Gonzalez ;fakefacee9@gmail.com;01746444752;EARLY-BIRD-TICKET;10,00€;15;150,00€;29,85€;179,85€;19%;28,72€;Nein;0,00€;0,00€;19%;0,00€;151,13€;28,72€;179,85€
+7110;Leon;Tarrach;leonta@gmail.com;1788418737;EARLY-BIRD-TICKET;10,00€;2;20,00€;3,98€;23,98€;19%;3,83€;Nein;0,00€;0,00€;19%;0,00€;20,15€;3,83€;23,98€
+7620;Sophie;Holzhauser;sophie.holzhauser@web.de;017641144232;EARLY-BIRD-TICKET;10,00€;2;20,00€;3,98€;23,98€;19%;3,83€;Nein;0,00€;0,00€;19%;0,00€;20,15€;3,83€;23,98€
+7621;Julia;Bychenko;juliabyc@outlook.de;015205243180;EARLY-BIRD-TICKET;10,00€;2;20,00€;3,98€;23,98€;19%;3,83€;Nein;0,00€;0,00€;19%;0,00€;20,15€;3,83€;23,98€
+7622;Safiatou;Fofana;safifofi08@gmail.com;01631475918;EARLY-BIRD-TICKET;10,00€;3;30,00€;5,97€;35,97€;19%;5,74€;Nein;0,00€;0,00€;19%;0,00€;30,23€;5,74€;35,97€
+7623;Zuzanna;Plottnik ;zuzanna-81@web.de;017620662709;EARLY-BIRD-TICKET;10,00€;1;10,00€;1,99€;11,99€;19%;1,91€;Nein;0,00€;0,00€;19%;0,00€;10,08€;1,91€;11,99€
+7624;Zuzanna ;Plottnik;zuzanna-81@web.de;017620662709;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7625;Violeta;Milovan;violetamilovan5@gmail.com;015566595850;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7626;Samantha;Roh;sammybecca07@gmail.com;017655089443;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7627;Melody;Krämer ;melo.kram@icloud.com;01627281070;VORVERKAUFSTICKET ;11,00€;2;22,00€;3,98€;25,98€;19%;4,15€;Nein;0,00€;0,00€;19%;0,00€;21,83€;4,15€;25,98€
+7628;Mia;Emely;mia_mcdermott@yahoo.com;MiaEmely;VORVERKAUFSTICKET ;11,00€;3;33,00€;5,97€;38,97€;19%;6,22€;Nein;0,00€;0,00€;19%;0,00€;32,75€;6,22€;38,97€
+7630;sinem;can;sinvm@gmx.de;015203409078;VORVERKAUFSTICKET ;11,00€;2;22,00€;3,98€;25,98€;19%;4,15€;Nein;0,00€;0,00€;19%;0,00€;21,83€;4,15€;25,98€
+7632;Karim;Abu saqer;karimabusaqer1204@icloud.com;+49 176 70882739;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7633;Lina;Sieburg;lina.sieburg@gmail.com;017622762641;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7634;Florian;Hinse;florianhinse1904@gmail.com;01786840806;VORVERKAUFSTICKET ;11,00€;1;11,00€;1,99€;12,99€;19%;2,07€;Nein;0,00€;0,00€;19%;0,00€;10,92€;2,07€;12,99€
+7635;Jil;Stahlmecke;jil.stahlmecke@icloud.com;01748414920;VORVERKAUFSTICKET ;11,00€;2;22,00€;3,98€;25,98€;19%;4,15€;Nein;0,00€;0,00€;19%;0,00€;21,83€;4,15€;25,98€
+7636;Lennart ;Bujak;quentin.bujak@gmail.com;01607739584;VORVERKAUFSTICKET;12,00€;1;12,00€;1,99€;13,99€;19%;2,23€;Nein;0,00€;0,00€;19%;0,00€;11,76€;2,23€;13,99€
+7637;Jonas;Hebel;jonas.hebel0707@gmail.com;01726114004;VORVERKAUFSTICKET;12,00€;1;12,00€;1,99€;13,99€;19%;2,23€;Nein;0,00€;0,00€;19%;0,00€;11,76€;2,23€;13,99€
+7638;Lena;Carlguth ;lenacarlguth@gmail.com;15151438013;VORVERKAUFSTICKET;12,00€;4;48,00€;7,96€;55,96€;19%;8,93€;Nein;0,00€;0,00€;19%;0,00€;47,03€;8,93€;55,96€
+7639;Larissa;Bröcker;broeckerlarissa2@gmx.de;017630678018;VORVERKAUFSTICKET;12,00€;2;24,00€;3,98€;27,98€;19%;4,47€;Nein;0,00€;0,00€;19%;0,00€;23,51€;4,47€;27,98€
+7640;Eveline;Kullmann;evelinekullmann@gmx.de;015126744151;VORVERKAUFSTICKET;12,00€;3;36,00€;5,97€;41,97€;19%;6,70€;Nein;0,00€;0,00€;19%;0,00€;35,27€;6,70€;41,97€
+7642;Andrea;Köhnen;andrea.koehnen@gmx.de;01608403546;VORVERKAUFSTICKET;12,00€;2;24,00€;3,98€;27,98€;19%;4,47€;Nein;0,00€;0,00€;19%;0,00€;23,51€;4,47€;27,98€
+7644;Timo;Vetter;timo_vetter@icloud.com;15175023827;VORVERKAUFSTICKET;12,00€;2;24,00€;3,98€;27,98€;19%;4,47€;Nein;0,00€;0,00€;19%;0,00€;23,51€;4,47€;27,98€
+7645;Leander;Widerstein;leawik08@gmail.com;015167337575;VORVERKAUFSTICKET;12,00€;1;12,00€;1,99€;13,99€;19%;2,23€;Nein;0,00€;0,00€;19%;0,00€;11,76€;2,23€;13,99€
+7646;Marcel;Fudali ;marceljoelx@gmail.com;017630659188;VORVERKAUFSTICKET;12,00€;1;12,00€;1,99€;13,99€;19%;2,23€;Nein;0,00€;0,00€;19%;0,00€;11,76€;2,23€;13,99€
+7647;Mia Sofia;Matheja;miasofia.m@icloud.com;+4917646642774;VORVERKAUFSTICKET;12,00€;1;12,00€;1,99€;13,99€;19%;2,23€;Nein;0,00€;0,00€;19%;0,00€;11,76€;2,23€;13,99€

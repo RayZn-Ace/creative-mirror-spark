@@ -10,6 +10,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import BulkEditDialog from "@/components/admin/BulkEditDialog";
+import ImportedDataDialog from "@/components/admin/ImportedDataDialog";
+import { FileSpreadsheet } from "lucide-react";
 
 
 interface GalleryConfig {
@@ -1833,7 +1835,8 @@ const EventsAdmin = () => {
   const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
-  
+  const [showImportedData, setShowImportedData] = useState(false);
+
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
@@ -2125,6 +2128,11 @@ const EventsAdmin = () => {
         </div>
       </div>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        {event.title.toLowerCase().includes("xxl") && event.date === "2026-03-20" && (
+          <button onClick={() => setShowImportedData(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.03]" title="Importierte Daten anzeigen" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)", border: "1px solid hsl(45 80% 50% / 0.3)" }}>
+            <FileSpreadsheet className="w-3.5 h-3.5" /> Import
+          </button>
+        )}
         <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
           <Send className="w-4 h-4" />
         </button>
@@ -2447,6 +2455,13 @@ const EventsAdmin = () => {
       <AnimatePresence>
         {showBulkAdd && (
           <BulkAddDialog events={events} onClose={() => setShowBulkAdd(false)} onComplete={load} />
+        )}
+      </AnimatePresence>
+
+      {/* Imported Data Dialog */}
+      <AnimatePresence>
+        {showImportedData && (
+          <ImportedDataDialog onClose={() => setShowImportedData(false)} />
         )}
       </AnimatePresence>
 
