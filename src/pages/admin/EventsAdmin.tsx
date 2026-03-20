@@ -1835,7 +1835,8 @@ const EventsAdmin = () => {
   const [showSoldOutPanel, setShowSoldOutPanel] = useState(false);
   const [bulkEditSource, setBulkEditSource] = useState<EventRow | null>(null);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
-  
+  const [showImportedData, setShowImportedData] = useState(false);
+
 
   const loadEventStats = async (eventIds: string[]) => {
     if (!eventIds.length) return;
