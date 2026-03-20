@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { X, Download, Mail, Search, FileSpreadsheet } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, Download, Search, FileSpreadsheet } from "lucide-react";
 import { motion } from "framer-motion";
-
+import csvRaw from "@/data/xxl-nightlife-import.csv?raw";
 interface ImportedRow {
   checkoutId: string;
   firstName: string;
@@ -41,19 +41,8 @@ interface Props {
 }
 
 const ImportedDataDialog = ({ onClose }: Props) => {
-  const [rows, setRows] = useState<ImportedRow[]>([]);
+  const rows = useMemo(() => parseCSV(csvRaw), []);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/src/data/xxl-nightlife-import.csv")
-      .then((r) => r.text())
-      .then((text) => {
-        setRows(parseCSV(text));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   const filtered = rows.filter((r) => {
     if (!search) return true;
@@ -141,8 +130,8 @@ const ImportedDataDialog = ({ onClose }: Props) => {
 
         {/* Table */}
         <div className="flex-1 overflow-auto px-6 py-3">
-          {loading ? (
-            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
+          {filtered.length === 0 ? (
+            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Einträge gefunden</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
