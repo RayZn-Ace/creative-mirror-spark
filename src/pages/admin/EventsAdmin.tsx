@@ -1522,6 +1522,42 @@ const EventEditView = ({
                 </div>
               </label>
             ))}
+            {/* Abendkasse option - only visible when sold_out is true */}
+            {editing.sold_out && (
+              <div className="mt-2 p-3 rounded-xl" style={{ background: "hsl(45 80% 50% / 0.08)", border: "1px solid hsl(45 80% 50% / 0.2)" }}>
+                <label className="flex items-center justify-between text-sm cursor-pointer" style={{ color: "hsl(45 80% 60%)" }}>
+                  <span>🎫 Abendkasse statt Ausverkauft</span>
+                  <div
+                    className="relative w-10 h-5 rounded-full cursor-pointer transition-colors"
+                    style={{ background: editing.box_office_enabled ? "hsl(45 80% 50%)" : "hsl(0 0% 100% / 0.15)" }}
+                    onClick={() => setEditing({ ...editing, box_office_enabled: !editing.box_office_enabled })}
+                  >
+                    <div
+                      className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                      style={{
+                        background: "hsl(0 0% 100%)",
+                        left: editing.box_office_enabled ? "calc(100% - 18px)" : "2px",
+                      }}
+                    />
+                  </div>
+                </label>
+                {editing.box_office_enabled && (
+                  <div className="mt-2">
+                    <label className="text-xs block mb-1" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Abendkasse-Preis (optional, in €)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editing.box_office_price ?? ""}
+                      onChange={(e) => setEditing({ ...editing, box_office_price: e.target.value ? parseFloat(e.target.value) : null })}
+                      placeholder="z.B. 15.00"
+                      className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                      style={{ background: "hsl(0 0% 100% / 0.08)", border: "1px solid hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100%)" }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </Section>
 
           <Section title="Servicegebühr" icon={Ticket}>
