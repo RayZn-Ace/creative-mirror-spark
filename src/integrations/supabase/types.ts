@@ -281,6 +281,8 @@ export type Database = {
       }
       events: {
         Row: {
+          box_office_enabled: boolean | null
+          box_office_price: number | null
           city: string | null
           created_at: string
           date: string | null
@@ -315,6 +317,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          box_office_enabled?: boolean | null
+          box_office_price?: number | null
           city?: string | null
           created_at?: string
           date?: string | null
@@ -349,6 +353,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          box_office_enabled?: boolean | null
+          box_office_price?: number | null
           city?: string | null
           created_at?: string
           date?: string | null
