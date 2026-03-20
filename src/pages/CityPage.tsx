@@ -1746,6 +1746,8 @@ const CityPage = () => {
         city: e.city || city,
         openAir: e.open_air === true,
         soldOut: e.sold_out === true,
+        boxOfficeEnabled: e.box_office_enabled === true,
+        boxOfficePrice: e.box_office_price != null ? Number(e.box_office_price) : null,
         ticketLink: e.ticket_link,
         description: e.description || null,
         insuranceEnabled: e.insurance_enabled === true,
