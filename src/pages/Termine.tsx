@@ -545,6 +545,7 @@ export default function Termine() {
               const featured = sortedGroups[0];
               const nextDate = featured.events.find(e => !e.soldOut) || featured.events[0];
               const allSoldOut = featured.events.every(e => e.soldOut);
+              const anyBoxOffice = featured.events.some(e => (e as any).boxOfficeEnabled);
               return (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
