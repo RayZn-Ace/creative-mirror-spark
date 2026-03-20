@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { X, Download, Mail, Search, FileSpreadsheet } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, Download, Search, FileSpreadsheet } from "lucide-react";
 import { motion } from "framer-motion";
-
+import csvRaw from "@/data/xxl-nightlife-import.csv?raw";
 interface ImportedRow {
   checkoutId: string;
   firstName: string;
