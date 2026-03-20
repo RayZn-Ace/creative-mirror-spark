@@ -591,8 +591,8 @@ export default function Termine() {
                           >
                             <div
                               className="absolute font-black uppercase text-center text-white text-lg sm:text-2xl tracking-widest"
-                              style={{
-                                background: "hsl(0 70% 45%)",
+                             style={{
+                                background: anyBoxOffice ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                                 width: "120%",
                                 top: "50%",
                                 left: "50%",
@@ -601,7 +601,7 @@ export default function Termine() {
                                 boxShadow: "0 2px 12px hsl(0 0% 0% / 0.5)",
                               }}
                             >
-                              AUSVERKAUFT
+                              {anyBoxOffice ? "ABENDKASSE" : "AUSVERKAUFT"}
                             </div>
                           </motion.div>
                         )}
