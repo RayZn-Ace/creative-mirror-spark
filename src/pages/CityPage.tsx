@@ -158,8 +158,8 @@ const EventDateTiles = ({ events, selectedId, onSelect, t }: { events: CityEvent
         >
           {event.soldOut && (
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold uppercase whitespace-nowrap"
-              style={{ background: "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
-              {t.soldOutLabel}
+              style={{ background: event.boxOfficeEnabled ? "hsl(45 80% 40%)" : "hsl(0 70% 50%)", color: "hsl(0 0% 100%)" }}>
+              {event.boxOfficeEnabled ? "Abendkasse" : t.soldOutLabel}
             </span>
           )}
           {event.openAir && !event.soldOut && (
