@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { X, Download, Search, FileSpreadsheet } from "lucide-react";
 import { motion } from "framer-motion";
-import csvRaw from "@/data/xxl-nightlife-import.csv?raw";
+
 interface ImportedRow {
   checkoutId: string;
   firstName: string;
@@ -17,10 +17,18 @@ interface ImportedRow {
 }
 
 const parseCSV = (csv: string): ImportedRow[] => {
-  const lines = csv.trim().split("\n");
-  return lines.slice(1).map((line) => {
-    const cols = line.split(";").map((c) => c.trim());
-    return {
+  const normalized = csv.replace(/\r/g, "").trim();
+  if (!normalized) return [];
+
+  const lines = normalized.split("\n");
+  const header = lines[0]?.toLowerCase() ?? "";
+  if (!header.includes("checkout-id")) return [];
+
+  return lines
+    .slice(1)
+    .map((line) => line.split(";").map((c) => c.trim()))
+    .filter((cols) => cols.length >= 11 && cols[0])
+    .map((cols) => ({
       checkoutId: cols[0],
       firstName: cols[1],
       lastName: cols[2],
@@ -28,12 +36,11 @@ const parseCSV = (csv: string): ImportedRow[] => {
       phone: cols[4],
       ticketType: cols[5],
       pricePerTicket: cols[6],
-      quantity: parseInt(cols[7]) || 0,
+      quantity: parseInt(cols[7], 10) || 0,
       subtotal: cols[8],
       fees: cols[9],
       total: cols[10],
-    };
-  });
+    }));
 };
 
 interface Props {
@@ -41,8 +48,27 @@ interface Props {
 }
 
 const ImportedDataDialog = ({ onClose }: Props) => {
-  const rows = useMemo(() => parseCSV(csvRaw), []);
+  const [rows, setRows] = useState<ImportedRow[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/xxl-nightlife-import.csv", { cache: "no-store" })
+      .then((r) => r.text())
+      .then((text) => {
+        if (!active) return;
+        setRows(parseCSV(text));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filtered = rows.filter((r) => {
     if (!search) return true;
@@ -89,7 +115,6 @@ const ImportedDataDialog = ({ onClose }: Props) => {
         exit={{ scale: 0.95, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.08)" }}>
           <div className="flex items-center gap-3">
             <FileSpreadsheet className="w-5 h-5" style={{ color: "hsl(45 80% 55%)" }} />
@@ -107,7 +132,6 @@ const ImportedDataDialog = ({ onClose }: Props) => {
           </button>
         </div>
 
-        {/* Toolbar */}
         <div className="flex items-center gap-3 px-6 py-3" style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
@@ -128,9 +152,10 @@ const ImportedDataDialog = ({ onClose }: Props) => {
           </button>
         </div>
 
-        {/* Table */}
         <div className="flex-1 overflow-auto px-6 py-3">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Laden...</p>
+          ) : filtered.length === 0 ? (
             <p className="text-sm py-8 text-center" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Keine Einträge gefunden</p>
           ) : (
             <table className="w-full text-sm">
@@ -175,7 +200,6 @@ const ImportedDataDialog = ({ onClose }: Props) => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-3 flex items-center justify-between" style={{ borderTop: "1px solid hsl(0 0% 100% / 0.08)" }}>
           <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
             {filtered.length} von {rows.length} Einträgen
