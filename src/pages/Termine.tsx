@@ -573,7 +573,7 @@ export default function Termine() {
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform"
                             style={{
                               transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.7s ease",
-                              ...(allSoldOut ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
+                              ...(allSoldOut && !anyBoxOffice ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
                             }}
                           />
                         ) : (
