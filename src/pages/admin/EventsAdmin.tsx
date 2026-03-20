@@ -53,6 +53,8 @@ interface EventRow {
   highlight: boolean | null;
   open_air: boolean | null;
   sold_out: boolean | null;
+  box_office_enabled: boolean | null;
+  box_office_price: number | null;
   ticket_link: string | null;
   sort_order: number | null;
   series_id: string | null;
