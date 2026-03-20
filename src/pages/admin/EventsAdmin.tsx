@@ -2127,6 +2127,11 @@ const EventsAdmin = () => {
         </div>
       </div>
       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        {event.title.toLowerCase().includes("xxl") && event.date === "2026-03-20" && (
+          <button onClick={() => setShowImportedData(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.03]" title="Importierte Daten anzeigen" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)", border: "1px solid hsl(45 80% 50% / 0.3)" }}>
+            <FileSpreadsheet className="w-3.5 h-3.5" /> Import
+          </button>
+        )}
         <button onClick={() => setBulkEditSource(event)} className="p-2 rounded-lg hover:bg-white/5" title="Bulk Edit" style={{ color: "hsl(270 60% 55%)" }}>
           <Send className="w-4 h-4" />
         </button>
