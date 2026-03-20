@@ -700,7 +700,7 @@ export default function Termine() {
                             loading="lazy"
                              style={{
                                transition: "filter 0.6s ease, opacity 0.6s ease, transform 0.5s ease",
-                               ...(group.events.every(e => e.soldOut) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
+                               ...(group.events.every(e => e.soldOut) && !group.events.some(e => (e as any).boxOfficeEnabled) ? { filter: "grayscale(100%)", opacity: 0.7 } : { filter: "grayscale(0%)", opacity: 1 }),
                              }}
                           />
                           
@@ -714,7 +714,7 @@ export default function Termine() {
                               <div
                                 className="absolute font-black uppercase text-center text-white text-xs sm:text-sm tracking-widest"
                                 style={{
-                                  background: "hsl(0 70% 45%)",
+                                  background: group.events.some(e => (e as any).boxOfficeEnabled) ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                                   width: "120%",
                                   top: "50%",
                                   left: "50%",
@@ -723,7 +723,7 @@ export default function Termine() {
                                   boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
                                 }}
                               >
-                                AUSVERKAUFT
+                                {group.events.some(e => (e as any).boxOfficeEnabled) ? "ABENDKASSE" : "AUSVERKAUFT"}
                               </div>
                             </motion.div>
                           )}
