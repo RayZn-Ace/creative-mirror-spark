@@ -1015,12 +1015,30 @@ const WaitlistForm = ({ eventId, t, boxOfficeEnabled, boxOfficePrice }: { eventI
 
   return (
     <div className="text-center py-6 sm:py-10">
-      <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
-        {t.soldOutTitle}
-      </div>
-      <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-        {t.soldOutDesc}
-      </p>
+      {boxOfficeEnabled ? (
+        <>
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(45 80% 55%)" }}>
+            🎫 ABENDKASSE GEÖFFNET
+          </div>
+          <p className="text-sm mb-2" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            Tickets sind an der Abendkasse vor Ort erhältlich!
+          </p>
+          {boxOfficePrice != null && boxOfficePrice > 0 && (
+            <p className="text-lg font-bold mb-4" style={{ color: "hsl(45 80% 60%)" }}>
+              Abendkasse: {boxOfficePrice.toFixed(2).replace(".", ",")} €
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-2" style={{ color: "hsl(0 70% 60%)" }}>
+            {t.soldOutTitle}
+          </div>
+          <p className="text-sm mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
+            {t.soldOutDesc}
+          </p>
+        </>
+      )}
 
       <AnimatePresence mode="wait">
         {submitted ? (
