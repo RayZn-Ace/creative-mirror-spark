@@ -41,19 +41,8 @@ interface Props {
 }
 
 const ImportedDataDialog = ({ onClose }: Props) => {
-  const [rows, setRows] = useState<ImportedRow[]>([]);
+  const rows = useMemo(() => parseCSV(csvRaw), []);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/src/data/xxl-nightlife-import.csv")
-      .then((r) => r.text())
-      .then((text) => {
-        setRows(parseCSV(text));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   const filtered = rows.filter((r) => {
     if (!search) return true;
