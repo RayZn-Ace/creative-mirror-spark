@@ -1553,7 +1553,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
               <div
                 className="absolute font-black uppercase text-center text-white text-sm sm:text-base tracking-widest"
                 style={{
-                  background: "hsl(0 70% 45%)",
+                  background: event.boxOfficeEnabled ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
                   width: "120%",
                   top: "50%",
                   left: "50%",
@@ -1562,7 +1562,7 @@ const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImag
                   boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4)",
                 }}
               >
-                AUSVERKAUFT
+                {event.boxOfficeEnabled ? "ABENDKASSE" : "AUSVERKAUFT"}
               </div>
             </motion.div>
           )}
