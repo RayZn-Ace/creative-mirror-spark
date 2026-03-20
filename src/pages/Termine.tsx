@@ -297,6 +297,7 @@ export default function Termine() {
             time: e.time,
             locationName: e.location_name,
             soldOut: e.sold_out || false,
+            boxOfficeEnabled: (e as any).box_office_enabled === true,
             openAir: e.open_air || false,
             highlight: e.highlight || false,
           })),
