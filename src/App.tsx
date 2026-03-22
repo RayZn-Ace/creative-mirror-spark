@@ -127,6 +127,7 @@ const App = () => (
                 <Route path="waitlist" element={<WaitlistAdmin />} />
                 <Route path="bewerber" element={<ApplicantsAdmin />} />
                 <Route path="freitickets" element={<FreeTicketsAdmin />} />
+                <Route path="lounges" element={<LoungesAdmin />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
