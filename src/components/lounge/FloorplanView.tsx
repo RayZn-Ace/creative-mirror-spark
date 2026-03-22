@@ -87,7 +87,7 @@ const FloorplanView = ({ lounges, onSelect, selectedId, adminMode = false }: Pro
 
         {/* Lounges */}
         {lounges.map((lounge) => {
-          const pos = defaultPositions[lounge.name] || {
+          const pos = defaultPositions[lounge.sort_order ?? 0] || {
             x: lounge.position_x, y: lounge.position_y, w: lounge.position_w, h: lounge.position_h
           };
           const colors = statusColors[lounge.status] || statusColors.available;
