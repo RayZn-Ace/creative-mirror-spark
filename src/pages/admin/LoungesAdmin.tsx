@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Armchair, LayoutGrid, List, Pencil, Image as ImageIcon } from "lucide-react";
+import { Check, X, Armchair, LayoutGrid, List, Pencil, Upload, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import FloorplanView from "@/components/lounge/FloorplanView";
