@@ -114,11 +114,31 @@ const LoungesAdmin = () => {
   // Re-fetch bookings when lounges change (for names)
   useEffect(() => { if (selectedEventId) fetchBookings(); }, [lounges]);
 
+  const defaultLounges = [
+    { name: "Lounge 1", sort_order: 0 },
+    { name: "Lounge 2", sort_order: 1 },
+    { name: "Lounge 3", sort_order: 2 },
+    { name: "Martini Lounge 4", sort_order: 3 },
+    { name: "VIP Lounge 5", sort_order: 4 },
+    { name: "Lounge 6", sort_order: 5 },
+    { name: "Lounge 7", sort_order: 6 },
+    { name: "Lounge 8", sort_order: 7 },
+  ];
+
   const toggleLoungeEnabled = async () => {
     const newVal = !loungeEnabled;
     await supabase.from("events").update({ lounge_enabled: newVal }).eq("id", selectedEventId);
     setLoungeEnabled(newVal);
     setEvents(prev => prev.map(e => e.id === selectedEventId ? { ...e, lounge_enabled: newVal } : e));
+
+    // Auto-create default lounges if activating and none exist
+    if (newVal && lounges.length === 0) {
+      await supabase.from("lounges").insert(
+        defaultLounges.map(l => ({ ...l, event_id: selectedEventId }))
+      );
+      await fetchLounges();
+    }
+
     toast.success(newVal ? "Lounges aktiviert" : "Lounges deaktiviert");
   };
 
