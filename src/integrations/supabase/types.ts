@@ -466,10 +466,12 @@ export type Database = {
       }
       lounges: {
         Row: {
+          active: boolean
           created_at: string
           description: string | null
           event_id: string
           id: string
+          image_url: string | null
           max_persons: number | null
           min_persons: number | null
           name: string
@@ -483,10 +485,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           description?: string | null
           event_id: string
           id?: string
+          image_url?: string | null
           max_persons?: number | null
           min_persons?: number | null
           name: string
@@ -500,10 +504,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           description?: string | null
           event_id?: string
           id?: string
+          image_url?: string | null
           max_persons?: number | null
           min_persons?: number | null
           name?: string
