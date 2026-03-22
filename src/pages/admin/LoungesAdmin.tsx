@@ -253,15 +253,53 @@ const LoungesAdmin = () => {
               Klicke oben auf „Aktiv" um die 8 Standard-Lounges automatisch anzulegen.
             </p>
           ) : viewMode === "floorplan" ? (
-            <div className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
-              <p className="text-xs text-center mb-3" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                Klicke auf eine Lounge um den Status zu ändern (Frei → Reserviert → Gebucht → Frei)
-              </p>
-              <FloorplanView
-                lounges={lounges as any}
-                adminMode
-                onSelect={(lounge) => updateLoungeStatus(lounge.id, statusCycle(lounge.status))}
-              />
+            <div className="space-y-4">
+              <div className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                <p className="text-xs text-center mb-3" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                  Klicke auf eine Lounge um den Status zu ändern (Frei → Reserviert → Gebucht → Frei)
+                </p>
+                <FloorplanView
+                  lounges={lounges as any}
+                  adminMode
+                  onSelect={(lounge) => updateLoungeStatus(lounge.id, statusCycle(lounge.status))}
+                />
+              </div>
+              {/* Compact control list below floorplan */}
+              <div className="grid gap-2">
+                {lounges.map(lounge => {
+                  const sc = loungeStatusColors[lounge.status] || loungeStatusColors.available;
+                  return (
+                    <div key={lounge.id} className="rounded-xl px-4 py-2.5 flex items-center gap-3"
+                      style={{
+                        background: "hsl(0 0% 100% / 0.03)",
+                        border: `1px solid ${lounge.active ? sc.border : "hsl(0 0% 100% / 0.06)"}`,
+                        opacity: lounge.active ? 1 : 0.5,
+                      }}>
+                      <span className="text-xs font-bold flex-1 truncate" style={{ color: "hsl(0 0% 100% / 0.85)" }}>
+                        {lounge.name}
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                        style={{ background: sc.bg, color: sc.text }}>
+                        {sc.label}
+                      </span>
+                      <button onClick={() => openEdit(lounge)}
+                        className="p-1.5 rounded-lg shrink-0 hover:scale-105 transition-all"
+                        style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
+                        <Pencil className="w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.6)" }} />
+                      </button>
+                      <div className="flex flex-col items-center gap-0.5 shrink-0">
+                        <Switch
+                          checked={lounge.active}
+                          onCheckedChange={(val) => toggleLoungeActive(lounge.id, val)}
+                        />
+                        <span className="text-[8px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                          {lounge.active ? "Aktiv" : "Aus"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             /* LIST VIEW */
