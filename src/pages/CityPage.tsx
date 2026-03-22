@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCityLandmarkUrl } from "@/data/cityLandmarks";
 import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCity, getCurrencySymbol, convertPrice, getLangForCity, getPaymentProvider, type Translations } from "@/lib/i18n";
 import { useSeoMeta } from "@/hooks/useSeoMeta";
+import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
 
 
@@ -41,6 +42,8 @@ interface CityEvent {
   description: string | null;
   insuranceEnabled: boolean;
   insuranceAmount: number;
+  loungeEnabled: boolean;
+  loungeViewMode: string;
 }
 
 interface TicketItem {
@@ -1493,6 +1496,11 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         <Instagram className="w-3.5 h-3.5" /> {instagramHandle}
       </a>
 
+      {/* Lounge Section */}
+      {event.loungeEnabled && (
+        <LoungeSection eventId={event.id} viewMode={event.loungeViewMode as "list" | "floorplan"} />
+      )}
+
       {/* Event description */}
       {event.description && (
         <div className="pt-3">
@@ -1770,6 +1778,8 @@ const CityPage = () => {
         description: e.description || null,
         insuranceEnabled: e.insurance_enabled === true,
         insuranceAmount: Number(e.insurance_amount) || 0,
+        loungeEnabled: e.lounge_enabled === true,
+        loungeViewMode: e.lounge_view_mode || "list",
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
           ? (e.info_sections as unknown as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[])
           : [],

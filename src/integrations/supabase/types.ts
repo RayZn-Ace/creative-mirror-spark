@@ -297,6 +297,8 @@ export type Database = {
           is_16plus: boolean | null
           location_address: string | null
           location_name: string | null
+          lounge_enabled: boolean | null
+          lounge_view_mode: string | null
           muttizettel: boolean | null
           open_air: boolean | null
           series_id: string | null
@@ -333,6 +335,8 @@ export type Database = {
           is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
+          lounge_enabled?: boolean | null
+          lounge_view_mode?: string | null
           muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
@@ -369,6 +373,8 @@ export type Database = {
           is_16plus?: boolean | null
           location_address?: string | null
           location_name?: string | null
+          lounge_enabled?: boolean | null
+          lounge_view_mode?: string | null
           muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
@@ -394,6 +400,128 @@ export type Database = {
             columns: ["series_id"]
             isOneToOne: false
             referencedRelation: "event_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lounge_bookings: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          event_id: string
+          id: string
+          lounge_id: string
+          message: string | null
+          party_size: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          event_id: string
+          id?: string
+          lounge_id: string
+          message?: string | null
+          party_size?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          event_id?: string
+          id?: string
+          lounge_id?: string
+          message?: string | null
+          party_size?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lounge_bookings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lounge_bookings_lounge_id_fkey"
+            columns: ["lounge_id"]
+            isOneToOne: false
+            referencedRelation: "lounges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lounges: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          max_persons: number | null
+          min_persons: number | null
+          name: string
+          position_h: number | null
+          position_w: number | null
+          position_x: number | null
+          position_y: number | null
+          price: number | null
+          sort_order: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          max_persons?: number | null
+          min_persons?: number | null
+          name: string
+          position_h?: number | null
+          position_w?: number | null
+          position_x?: number | null
+          position_y?: number | null
+          price?: number | null
+          sort_order?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          max_persons?: number | null
+          min_persons?: number | null
+          name?: string
+          position_h?: number | null
+          position_w?: number | null
+          position_x?: number | null
+          position_y?: number | null
+          price?: number | null
+          sort_order?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lounges_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]

@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones, ClipboardList, ImageIcon, Upload, UserPlus, Briefcase, Gift,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones, ClipboardList, ImageIcon, Upload, UserPlus, Briefcase, Gift, Armchair,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -25,6 +25,7 @@ const navItems = [
   { label: "Muttizettel", href: "/admin/muttizettel", icon: ClipboardList },
   { label: "Warteliste", href: "/admin/waitlist", icon: UserPlus },
   { label: "Freitickets", href: "/admin/freitickets", icon: Gift },
+  { label: "Lounges", href: "/admin/lounges", icon: Armchair },
   { label: "CSV-Import", href: "/admin/csv-import", icon: Upload },
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
