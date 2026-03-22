@@ -1772,6 +1772,8 @@ const CityPage = () => {
         description: e.description || null,
         insuranceEnabled: e.insurance_enabled === true,
         insuranceAmount: Number(e.insurance_amount) || 0,
+        loungeEnabled: e.lounge_enabled === true,
+        loungeViewMode: e.lounge_view_mode || "list",
         infoSections: Array.isArray(e.info_sections) && (e.info_sections as any[]).length > 0
           ? (e.info_sections as unknown as { id: string; title: string; content: string; show_title?: boolean; external_urls?: string[]; gallery_config?: GalleryConfig }[])
           : [],
