@@ -303,6 +303,23 @@ const LoungesAdmin = () => {
             </div>
           )}
 
+          {/* Admin Floorplan View */}
+          {viewMode === "floorplan" && lounges.length > 0 && (
+            <div className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.02)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+              <p className="text-xs text-center mb-3" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                Klicke auf eine Lounge um den Status zu ändern (Frei → Reserviert → Gebucht → Frei)
+              </p>
+              <FloorplanView
+                lounges={lounges as any}
+                adminMode
+                onSelect={(lounge) => {
+                  const cycle: Record<string, string> = { available: "reserved", reserved: "booked", booked: "available" };
+                  updateLoungeStatus(lounge.id, cycle[lounge.status] || "available");
+                }}
+              />
+            </div>
+          )}
+
           {/* Lounge list */}
           {lounges.map(l => {
             const sc = statusColors[l.status] || statusColors.available;
