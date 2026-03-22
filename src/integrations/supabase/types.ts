@@ -472,6 +472,7 @@ export type Database = {
           event_id: string
           id: string
           image_url: string | null
+          images: string[] | null
           max_persons: number | null
           min_persons: number | null
           name: string
@@ -491,6 +492,7 @@ export type Database = {
           event_id: string
           id?: string
           image_url?: string | null
+          images?: string[] | null
           max_persons?: number | null
           min_persons?: number | null
           name: string
@@ -510,6 +512,7 @@ export type Database = {
           event_id?: string
           id?: string
           image_url?: string | null
+          images?: string[] | null
           max_persons?: number | null
           min_persons?: number | null
           name?: string
