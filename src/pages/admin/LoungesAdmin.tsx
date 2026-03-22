@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   Plus, Trash2, Pencil, Check, X, ChevronDown, Armchair, Eye, LayoutGrid, List,
 } from "lucide-react";
+import FloorplanView from "@/components/lounge/FloorplanView";
 
 interface LoungeRow {
   id: string;
