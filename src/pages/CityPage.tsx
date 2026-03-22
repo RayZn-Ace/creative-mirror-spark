@@ -1495,6 +1495,11 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         <Instagram className="w-3.5 h-3.5" /> {instagramHandle}
       </a>
 
+      {/* Lounge Section */}
+      {event.loungeEnabled && (
+        <LoungeSection eventId={event.id} viewMode={event.loungeViewMode as "list" | "floorplan"} />
+      )}
+
       {/* Event description */}
       {event.description && (
         <div className="pt-3">
