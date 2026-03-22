@@ -41,6 +41,8 @@ interface CityEvent {
   description: string | null;
   insuranceEnabled: boolean;
   insuranceAmount: number;
+  loungeEnabled: boolean;
+  loungeViewMode: string;
 }
 
 interface TicketItem {
