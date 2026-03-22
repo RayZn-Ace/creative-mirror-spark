@@ -17,6 +17,7 @@ interface LoungeRow {
   status: string;
   sort_order: number;
   image_url: string | null;
+  images: string[] | null;
   active: boolean;
   position_x: number;
   position_y: number;
