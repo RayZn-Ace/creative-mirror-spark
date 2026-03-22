@@ -73,7 +73,9 @@ const LoungesAdmin = () => {
   const [loungeEnabled, setLoungeEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<string>("list");
   const [editingLounge, setEditingLounge] = useState<LoungeRow | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "", price: 0, min_persons: 1, max_persons: 10, image_url: "" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", price: 0, min_persons: 1, max_persons: 10, images: [] as string[] });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
