@@ -25,16 +25,16 @@ const statusColors: Record<string, { fill: string; stroke: string; text: string;
   booked: { fill: "hsl(0 60% 25% / 0.4)", stroke: "hsl(0 60% 50%)", text: "hsl(0 60% 60%)", label: "Gebucht" },
 };
 
-// Default lounge positions based on the floorplan image
-const defaultPositions: Record<string, { x: number; y: number; w: number; h: number }> = {
-  "Lounge 1": { x: 60, y: 590, w: 100, h: 80 },
-  "Lounge 2": { x: 60, y: 470, w: 100, h: 80 },
-  "Lounge 3": { x: 60, y: 350, w: 100, h: 80 },
-  "Martini Lounge 4": { x: 30, y: 130, w: 180, h: 110 },
-  "VIP Lounge 5": { x: 260, y: 130, w: 140, h: 80 },
-  "Lounge 6": { x: 430, y: 300, w: 110, h: 70 },
-  "Lounge 7": { x: 430, y: 570, w: 110, h: 70 },
-  "Lounge 8": { x: 430, y: 660, w: 110, h: 70 },
+// Positions keyed by sort_order (0-7) to survive renames
+const defaultPositions: Record<number, { x: number; y: number; w: number; h: number }> = {
+  0: { x: 60, y: 590, w: 100, h: 80 },   // Lounge 1
+  1: { x: 60, y: 470, w: 100, h: 80 },   // Lounge 2
+  2: { x: 60, y: 350, w: 100, h: 80 },   // Lounge 3
+  3: { x: 30, y: 130, w: 180, h: 110 },  // Martini Lounge 4
+  4: { x: 260, y: 130, w: 140, h: 80 },  // VIP Lounge 5
+  5: { x: 430, y: 300, w: 110, h: 70 },  // Lounge 6
+  6: { x: 430, y: 570, w: 110, h: 70 },  // Lounge 7
+  7: { x: 430, y: 660, w: 110, h: 70 },  // Lounge 8
 };
 
 const FloorplanView = ({ lounges, onSelect, selectedId, adminMode = false }: Props) => {
