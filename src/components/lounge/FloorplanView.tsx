@@ -4,6 +4,7 @@ interface Lounge {
   id: string;
   name: string;
   status: "available" | "reserved" | "booked";
+  sort_order: number;
   price: number;
   position_x: number;
   position_y: number;
