@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import FloorplanView from "./FloorplanView";
 import LoungeBookingForm from "./LoungeBookingForm";
+import LoungeDetailPopup from "./LoungeDetailPopup";
 import { Armchair, Check, Clock, X as XIcon } from "lucide-react";
 
 interface Lounge {
@@ -17,6 +18,8 @@ interface Lounge {
   position_w: number;
   position_h: number;
   sort_order: number;
+  images: string[] | null;
+  image_url: string | null;
 }
 
 interface Props {
@@ -33,6 +36,7 @@ const statusConfig: Record<string, { bg: string; border: string; text: string; l
 const LoungeSection = ({ eventId, viewMode }: Props) => {
   const [lounges, setLounges] = useState<Lounge[]>([]);
   const [selected, setSelected] = useState<Lounge | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const fetchLounges = async () => {
@@ -40,6 +44,7 @@ const LoungeSection = ({ eventId, viewMode }: Props) => {
       .from("lounges")
       .select("*")
       .eq("event_id", eventId)
+      .eq("active", true)
       .order("sort_order", { ascending: true });
     if (data) setLounges(data as Lounge[]);
   };
@@ -49,9 +54,19 @@ const LoungeSection = ({ eventId, viewMode }: Props) => {
   if (!lounges.length) return null;
 
   const handleSelect = (lounge: Lounge) => {
-    if (lounge.status !== "available") return;
     setSelected(lounge);
+    setShowDetail(true);
+  };
+
+  const handleBookFromDetail = () => {
+    setShowDetail(false);
     setShowForm(true);
+  };
+
+  const handleCloseAll = () => {
+    setShowDetail(false);
+    setShowForm(false);
+    setSelected(null);
   };
 
   return (
@@ -73,18 +88,15 @@ const LoungeSection = ({ eventId, viewMode }: Props) => {
           {lounges.map(lounge => {
             const cfg = statusConfig[lounge.status];
             const Icon = cfg.icon;
-            const isAvailable = lounge.status === "available";
             return (
               <button
                 key={lounge.id}
-                disabled={!isAvailable}
                 onClick={() => handleSelect(lounge)}
                 className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-left transition-all"
                 style={{
                   background: cfg.bg,
                   border: `1px solid ${cfg.border}`,
-                  opacity: isAvailable ? 1 : 0.6,
-                  cursor: isAvailable ? "pointer" : "not-allowed",
+                  cursor: "pointer",
                 }}
               >
                 <div className="min-w-0">
@@ -106,12 +118,22 @@ const LoungeSection = ({ eventId, viewMode }: Props) => {
         </div>
       )}
 
+      {/* Detail popup */}
+      {showDetail && selected && (
+        <LoungeDetailPopup
+          lounge={selected}
+          onClose={handleCloseAll}
+          onBook={handleBookFromDetail}
+        />
+      )}
+
+      {/* Booking form */}
       {showForm && selected && (
         <LoungeBookingForm
           lounge={selected}
           eventId={eventId}
-          onClose={() => { setShowForm(false); setSelected(null); }}
-          onSuccess={() => { setShowForm(false); setSelected(null); fetchLounges(); }}
+          onClose={handleCloseAll}
+          onSuccess={() => { handleCloseAll(); fetchLounges(); }}
         />
       )}
     </div>
