@@ -69,7 +69,8 @@ const LoungesAdmin = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [lounges, setLounges] = useState<LoungeRow[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
-  const [tab, setTab] = useState<"lounges" | "bookings">("lounges");
+  const [tab, setTab] = useState<"lounges" | "bookings" | "all_bookings">("lounges");
+  const [allBookings, setAllBookings] = useState<(BookingRow & { event_title?: string; lounge_name?: string })[]>([]);
   const [loungeEnabled, setLoungeEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<string>("list");
   const [editingLounge, setEditingLounge] = useState<LoungeRow | null>(null);
@@ -114,6 +115,21 @@ const LoungesAdmin = () => {
     const { data } = await supabase.from("lounge_bookings")
       .select("*").eq("event_id", selectedEventId).order("created_at", { ascending: false });
     if (data) setBookings(data as BookingRow[]);
+  };
+
+  const fetchAllBookings = async () => {
+    const { data } = await supabase.from("lounge_bookings")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) {
+      // Enrich with event title and lounge name
+      const enriched = await Promise.all(data.map(async (b: any) => {
+        const ev = events.find(e => e.id === b.event_id);
+        const { data: loungeData } = await supabase.from("lounges").select("name").eq("id", b.lounge_id).single();
+        return { ...b, event_title: ev?.title || "—", lounge_name: loungeData?.name || "—" };
+      }));
+      setAllBookings(enriched);
+    }
   };
 
   const toggleLoungeEnabled = async () => {
@@ -262,14 +278,18 @@ const LoungesAdmin = () => {
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
-        {(["lounges", "bookings"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {([
+          { key: "lounges" as const, label: `Lounges (${lounges.length})` },
+          { key: "bookings" as const, label: `Anfragen (${bookings.length})` },
+          { key: "all_bookings" as const, label: "Alle Anfragen" },
+        ]).map(t => (
+          <button key={t.key} onClick={() => { setTab(t.key); if (t.key === "all_bookings") fetchAllBookings(); }}
             className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
             style={{
-              background: tab === t ? "hsl(270 70% 55% / 0.15)" : "transparent",
-              color: tab === t ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.5)",
+              background: tab === t.key ? "hsl(270 70% 55% / 0.15)" : "transparent",
+              color: tab === t.key ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.5)",
             }}>
-            {t === "lounges" ? `Lounges (${lounges.length})` : `Anfragen (${bookings.length})`}
+            {t.label}
           </button>
         ))}
       </div>
@@ -538,6 +558,56 @@ const LoungesAdmin = () => {
           {bookings.length === 0 && (
             <p className="text-center py-8 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
               Noch keine Anfragen für dieses Event.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* All Bookings Tab */}
+      {tab === "all_bookings" && (
+        <div className="space-y-3">
+          {allBookings.map(b => {
+            const sc = bookingStatusColors[b.status] || bookingStatusColors.pending;
+            return (
+              <div key={b.id} className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+                      {b.customer_name} → {b.lounge_name}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "hsl(270 60% 70%)" }}>
+                      {b.event_title}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      {b.customer_email} {b.customer_phone ? `· ${b.customer_phone}` : ""} · {b.party_size} Pers.
+                    </p>
+                    {b.message && <p className="text-xs mt-1 italic" style={{ color: "hsl(0 0% 100% / 0.3)" }}>"{b.message}"</p>}
+                    <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                      {new Date(b.created_at).toLocaleString("de-DE")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: sc.bg, color: sc.text }}>{sc.label}</span>
+                    {b.status === "pending" && (
+                      <>
+                        <button onClick={async () => { await updateBookingStatus(b.id, "approved", b.lounge_id); fetchAllBookings(); }}
+                          className="p-1.5 rounded-lg" style={{ background: "hsl(150 60% 25% / 0.3)" }}>
+                          <Check className="w-3.5 h-3.5" style={{ color: "hsl(150 70% 55%)" }} />
+                        </button>
+                        <button onClick={async () => { await updateBookingStatus(b.id, "rejected", b.lounge_id); fetchAllBookings(); }}
+                          className="p-1.5 rounded-lg" style={{ background: "hsl(0 60% 25% / 0.3)" }}>
+                          <X className="w-3.5 h-3.5" style={{ color: "hsl(0 60% 55%)" }} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {allBookings.length === 0 && (
+            <p className="text-center py-8 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+              Noch keine Anfragen vorhanden.
             </p>
           )}
         </div>
