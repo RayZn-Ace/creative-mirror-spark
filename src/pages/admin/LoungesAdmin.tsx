@@ -342,8 +342,8 @@ const LoungesAdmin = () => {
                     {/* Image thumbnail */}
                     <div className="w-14 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
                       style={{ background: sc.bg, border: `1px solid ${sc.border}` }}>
-                      {lounge.image_url ? (
-                        <img src={lounge.image_url} alt={lounge.name} className="w-full h-full object-cover" />
+                      {lounge.images && lounge.images.length > 0 ? (
+                        <img src={lounge.images[0]} alt={lounge.name} className="w-full h-full object-cover" />
                       ) : (
                         <Armchair className="w-6 h-6" style={{ color: sc.text }} />
                       )}
