@@ -39,11 +39,14 @@ const LoungeBookingForm = ({ lounge, eventId, onClose, onSuccess }: Props) => {
       party_size: partySize,
       message: message || null,
     });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       toast.error("Fehler beim Senden der Anfrage");
       return;
     }
+    // Auto-set lounge to reserved
+    await supabase.from("lounges").update({ status: "reserved" }).eq("id", lounge.id);
+    setSubmitting(false);
     toast.success("Lounge-Anfrage gesendet! Du erhältst eine Bestätigung per E-Mail.");
     onSuccess();
   };

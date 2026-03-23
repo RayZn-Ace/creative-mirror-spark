@@ -201,9 +201,13 @@ const LoungesAdmin = () => {
   const updateBookingStatus = async (bookingId: string, status: string, loungeId: string) => {
     await supabase.from("lounge_bookings").update({ status }).eq("id", bookingId);
     if (status === "approved") {
-      await supabase.from("lounges").update({ status: "reserved" }).eq("id", loungeId);
+      // Approved = booked (confirmed)
+      await supabase.from("lounges").update({ status: "booked" }).eq("id", loungeId);
+    } else if (status === "rejected") {
+      // Rejected = back to available
+      await supabase.from("lounges").update({ status: "available" }).eq("id", loungeId);
     }
-    toast.success(status === "approved" ? "Anfrage zugesagt" : "Anfrage abgelehnt");
+    toast.success(status === "approved" ? "Anfrage zugesagt – Lounge gebucht" : "Anfrage abgelehnt – Lounge wieder frei");
     fetchLounges();
     fetchBookings();
   };
