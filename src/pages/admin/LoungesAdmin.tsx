@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Armchair, LayoutGrid, List, Pencil, Image as ImageIcon } from "lucide-react";
+import { Check, X, Armchair, LayoutGrid, List, Pencil, Upload, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import FloorplanView from "@/components/lounge/FloorplanView";
@@ -17,6 +17,7 @@ interface LoungeRow {
   status: string;
   sort_order: number;
   image_url: string | null;
+  images: string[] | null;
   active: boolean;
   position_x: number;
   position_y: number;
@@ -72,7 +73,9 @@ const LoungesAdmin = () => {
   const [loungeEnabled, setLoungeEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<string>("list");
   const [editingLounge, setEditingLounge] = useState<LoungeRow | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "", price: 0, min_persons: 1, max_persons: 10, image_url: "" });
+  const [editForm, setEditForm] = useState({ name: "", description: "", price: 0, min_persons: 1, max_persons: 10, images: [] as string[] });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -154,8 +157,29 @@ const LoungesAdmin = () => {
       price: lounge.price || 0,
       min_persons: lounge.min_persons || 1,
       max_persons: lounge.max_persons || 10,
-      image_url: lounge.image_url || "",
+      images: lounge.images || [],
     });
+  };
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || !editingLounge) return;
+    setUploading(true);
+    const newUrls: string[] = [];
+    for (const file of Array.from(files)) {
+      const ext = file.name.split(".").pop();
+      const path = `${editingLounge.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("lounge-images").upload(path, file);
+      if (error) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
+      const { data: urlData } = supabase.storage.from("lounge-images").getPublicUrl(path);
+      newUrls.push(urlData.publicUrl);
+    }
+    setEditForm(f => ({ ...f, images: [...f.images, ...newUrls] }));
+    setUploading(false);
+    if (newUrls.length > 0) toast.success(`${newUrls.length} Bild(er) hochgeladen`);
+  };
+
+  const removeImage = (url: string) => {
+    setEditForm(f => ({ ...f, images: f.images.filter(u => u !== url) }));
   };
 
   const saveEdit = async () => {
@@ -166,7 +190,8 @@ const LoungesAdmin = () => {
       price: editForm.price,
       min_persons: editForm.min_persons,
       max_persons: editForm.max_persons,
-      image_url: editForm.image_url || null,
+      images: editForm.images,
+      image_url: editForm.images[0] || null,
     } as any).eq("id", editingLounge.id);
     toast.success("Lounge gespeichert");
     setEditingLounge(null);
@@ -317,8 +342,8 @@ const LoungesAdmin = () => {
                     {/* Image thumbnail */}
                     <div className="w-14 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
                       style={{ background: sc.bg, border: `1px solid ${sc.border}` }}>
-                      {lounge.image_url ? (
-                        <img src={lounge.image_url} alt={lounge.name} className="w-full h-full object-cover" />
+                      {lounge.images && lounge.images.length > 0 ? (
+                        <img src={lounge.images[0]} alt={lounge.name} className="w-full h-full object-cover" />
                       ) : (
                         <Armchair className="w-6 h-6" style={{ color: sc.text }} />
                       )}
@@ -422,14 +447,31 @@ const LoungesAdmin = () => {
 
               <div>
                 <label className="text-xs font-bold mb-1 block" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                  <ImageIcon className="w-3 h-3 inline mr-1" />
-                  Bild-URL
+                  Bilder
                 </label>
-                <Input value={editForm.image_url} onChange={e => setEditForm(f => ({ ...f, image_url: e.target.value }))}
-                  className="bg-white/5 border-white/10 text-white" placeholder="https://..." />
-                {editForm.image_url && (
-                  <img src={editForm.image_url} alt="Preview" className="mt-2 w-full h-24 object-cover rounded-lg" />
+                {/* Image grid */}
+                {editForm.images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {editForm.images.map((url, i) => (
+                      <div key={i} className="relative group rounded-lg overflow-hidden h-20">
+                        <img src={url} alt={`Bild ${i + 1}`} className="w-full h-full object-cover" />
+                        <button onClick={() => removeImage(url)}
+                          className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{ background: "hsl(0 60% 40% / 0.9)" }}>
+                          <Trash2 className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
+                <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
+                  onChange={e => handleImageUpload(e.target.files)} />
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
+                  style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px dashed hsl(0 0% 100% / 0.15)", color: "hsl(0 0% 100% / 0.5)" }}>
+                  <Upload className="w-3.5 h-3.5" />
+                  {uploading ? "Lädt hoch..." : "Bilder hochladen"}
+                </button>
               </div>
             </div>
 
