@@ -117,6 +117,21 @@ const LoungesAdmin = () => {
     if (data) setBookings(data as BookingRow[]);
   };
 
+  const fetchAllBookings = async () => {
+    const { data } = await supabase.from("lounge_bookings")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) {
+      // Enrich with event title and lounge name
+      const enriched = await Promise.all(data.map(async (b: any) => {
+        const ev = events.find(e => e.id === b.event_id);
+        const { data: loungeData } = await supabase.from("lounges").select("name").eq("id", b.lounge_id).single();
+        return { ...b, event_title: ev?.title || "—", lounge_name: loungeData?.name || "—" };
+      }));
+      setAllBookings(enriched);
+    }
+  };
+
   const toggleLoungeEnabled = async () => {
     const newVal = !loungeEnabled;
     await supabase.from("events").update({ lounge_enabled: newVal }).eq("id", selectedEventId);
