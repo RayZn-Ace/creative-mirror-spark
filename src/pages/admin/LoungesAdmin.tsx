@@ -278,14 +278,18 @@ const LoungesAdmin = () => {
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
-        {(["lounges", "bookings"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {([
+          { key: "lounges" as const, label: `Lounges (${lounges.length})` },
+          { key: "bookings" as const, label: `Anfragen (${bookings.length})` },
+          { key: "all_bookings" as const, label: "Alle Anfragen" },
+        ]).map(t => (
+          <button key={t.key} onClick={() => { setTab(t.key); if (t.key === "all_bookings") fetchAllBookings(); }}
             className="flex-1 py-2 rounded-lg text-xs font-bold transition-all"
             style={{
-              background: tab === t ? "hsl(270 70% 55% / 0.15)" : "transparent",
-              color: tab === t ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.5)",
+              background: tab === t.key ? "hsl(270 70% 55% / 0.15)" : "transparent",
+              color: tab === t.key ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.5)",
             }}>
-            {t === "lounges" ? `Lounges (${lounges.length})` : `Anfragen (${bookings.length})`}
+            {t.label}
           </button>
         ))}
       </div>
