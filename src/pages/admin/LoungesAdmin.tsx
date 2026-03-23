@@ -69,7 +69,8 @@ const LoungesAdmin = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [lounges, setLounges] = useState<LoungeRow[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
-  const [tab, setTab] = useState<"lounges" | "bookings">("lounges");
+  const [tab, setTab] = useState<"lounges" | "bookings" | "all_bookings">("lounges");
+  const [allBookings, setAllBookings] = useState<(BookingRow & { event_title?: string; lounge_name?: string })[]>([]);
   const [loungeEnabled, setLoungeEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<string>("list");
   const [editingLounge, setEditingLounge] = useState<LoungeRow | null>(null);
