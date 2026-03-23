@@ -562,6 +562,56 @@ const LoungesAdmin = () => {
           )}
         </div>
       )}
+
+      {/* All Bookings Tab */}
+      {tab === "all_bookings" && (
+        <div className="space-y-3">
+          {allBookings.map(b => {
+            const sc = bookingStatusColors[b.status] || bookingStatusColors.pending;
+            return (
+              <div key={b.id} className="rounded-xl p-4" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: "hsl(0 0% 100% / 0.9)" }}>
+                      {b.customer_name} → {b.lounge_name}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "hsl(270 60% 70%)" }}>
+                      {b.event_title}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
+                      {b.customer_email} {b.customer_phone ? `· ${b.customer_phone}` : ""} · {b.party_size} Pers.
+                    </p>
+                    {b.message && <p className="text-xs mt-1 italic" style={{ color: "hsl(0 0% 100% / 0.3)" }}>"{b.message}"</p>}
+                    <p className="text-[10px] mt-1" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+                      {new Date(b.created_at).toLocaleString("de-DE")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: sc.bg, color: sc.text }}>{sc.label}</span>
+                    {b.status === "pending" && (
+                      <>
+                        <button onClick={async () => { await updateBookingStatus(b.id, "approved", b.lounge_id); fetchAllBookings(); }}
+                          className="p-1.5 rounded-lg" style={{ background: "hsl(150 60% 25% / 0.3)" }}>
+                          <Check className="w-3.5 h-3.5" style={{ color: "hsl(150 70% 55%)" }} />
+                        </button>
+                        <button onClick={async () => { await updateBookingStatus(b.id, "rejected", b.lounge_id); fetchAllBookings(); }}
+                          className="p-1.5 rounded-lg" style={{ background: "hsl(0 60% 25% / 0.3)" }}>
+                          <X className="w-3.5 h-3.5" style={{ color: "hsl(0 60% 55%)" }} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {allBookings.length === 0 && (
+            <p className="text-center py-8 text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+              Noch keine Anfragen vorhanden.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
