@@ -157,8 +157,29 @@ const LoungesAdmin = () => {
       price: lounge.price || 0,
       min_persons: lounge.min_persons || 1,
       max_persons: lounge.max_persons || 10,
-      image_url: lounge.image_url || "",
+      images: lounge.images || [],
     });
+  };
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || !editingLounge) return;
+    setUploading(true);
+    const newUrls: string[] = [];
+    for (const file of Array.from(files)) {
+      const ext = file.name.split(".").pop();
+      const path = `${editingLounge.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("lounge-images").upload(path, file);
+      if (error) { toast.error(`Upload fehlgeschlagen: ${file.name}`); continue; }
+      const { data: urlData } = supabase.storage.from("lounge-images").getPublicUrl(path);
+      newUrls.push(urlData.publicUrl);
+    }
+    setEditForm(f => ({ ...f, images: [...f.images, ...newUrls] }));
+    setUploading(false);
+    if (newUrls.length > 0) toast.success(`${newUrls.length} Bild(er) hochgeladen`);
+  };
+
+  const removeImage = (url: string) => {
+    setEditForm(f => ({ ...f, images: f.images.filter(u => u !== url) }));
   };
 
   const saveEdit = async () => {
@@ -169,7 +190,8 @@ const LoungesAdmin = () => {
       price: editForm.price,
       min_persons: editForm.min_persons,
       max_persons: editForm.max_persons,
-      image_url: editForm.image_url || null,
+      images: editForm.images,
+      image_url: editForm.images[0] || null,
     } as any).eq("id", editingLounge.id);
     toast.success("Lounge gespeichert");
     setEditingLounge(null);
