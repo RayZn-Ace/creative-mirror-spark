@@ -28,7 +28,7 @@ const LoungeBookingForm = ({ lounge, eventId, onClose, onSuccess }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email) return;
+    if (!name || !email || !phone) return;
     setSubmitting(true);
     const { error } = await supabase.from("lounge_bookings").insert({
       lounge_id: lounge.id,
@@ -84,7 +84,7 @@ const LoungeBookingForm = ({ lounge, eventId, onClose, onSuccess }: Props) => {
             className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle}
           />
           <input
-            type="tel" placeholder="Telefon (optional)" value={phone} onChange={e => setPhone(e.target.value)}
+            required type="tel" placeholder="Telefon *" value={phone} onChange={e => setPhone(e.target.value)}
             className="w-full px-3 py-2.5 rounded-xl text-sm" style={inputStyle}
           />
           <div>
