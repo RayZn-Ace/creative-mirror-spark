@@ -282,7 +282,7 @@ const FreeTicketsAdmin = () => {
                     background: "hsl(220 50% 6%)",
                   }}
                 >
-                  {filteredEvents?.slice(0, 10).map((event) => (
+                  {filteredEvents?.map((event) => (
                     <button
                       key={event.id}
                       onClick={() => {
