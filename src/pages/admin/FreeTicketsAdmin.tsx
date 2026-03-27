@@ -54,10 +54,12 @@ const FreeTicketsAdmin = () => {
   const { data: events } = useQuery({
     queryKey: ["admin-events-for-free-tickets"],
     queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
       const { data } = await supabase
         .from("events")
         .select("id, title, date, city")
-        .order("date", { ascending: false });
+        .gte("date", today)
+        .order("date", { ascending: true });
       return data || [];
     },
   });
