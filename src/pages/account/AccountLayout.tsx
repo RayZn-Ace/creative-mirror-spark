@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, User, Ticket, ShoppingBag, Heart, Bell, LogOut, Trophy } from "lucide-react";
+import { LayoutDashboard, User, Ticket, ShoppingBag, Heart, Bell, LogOut, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageLayout } from "@/components/PageLayout";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { to: "/account", icon: LayoutDashboard, label: "Übersicht", end: true },
   { to: "/account/rewards", icon: Trophy, label: "Rewards" },
+  { to: "/account/friends", icon: Users, label: "Squad" },
   { to: "/account/profile", icon: User, label: "Profil" },
   { to: "/account/tickets", icon: Ticket, label: "Meine Tickets" },
   { to: "/account/orders", icon: ShoppingBag, label: "Bestellungen" },

@@ -74,6 +74,7 @@ const AccountOrders = lazy(() => import("./pages/account/Orders"));
 const AccountFavorites = lazy(() => import("./pages/account/Favorites"));
 const AccountNotifications = lazy(() => import("./pages/account/Notifications"));
 const AccountRewards = lazy(() => import("./pages/account/Rewards"));
+const AccountFriends = lazy(() => import("./pages/account/Friends"));
 
 const queryClient = new QueryClient();
 
@@ -153,6 +154,7 @@ const App = () => (
                 <Route path="favorites" element={<AccountFavorites />} />
                 <Route path="notifications" element={<AccountNotifications />} />
                 <Route path="rewards" element={<AccountRewards />} />
+                <Route path="friends" element={<AccountFriends />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />
