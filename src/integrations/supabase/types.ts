@@ -822,6 +822,72 @@ export type Database = {
           },
         ]
       }
+      member_goodies: {
+        Row: {
+          code: string | null
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_id: string | null
+          expires_at: string | null
+          icon: string | null
+          id: string
+          metadata: Json
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          value: number | null
+          value_type: string | null
+        }
+        Insert: {
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+          value_type?: string | null
+        }
+        Update: {
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_id?: string | null
+          expires_at?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+          value_type?: string | null
+        }
+        Relationships: []
+      }
       muttizettel_submissions: {
         Row: {
           child_address: string | null
