@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LayoutDashboard, User, Ticket, ShoppingBag, Heart, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PageLayout from "@/components/PageLayout";
+import { PageLayout } from "@/components/PageLayout";
 import { cn } from "@/lib/utils";
 
 const items = [
