@@ -272,6 +272,7 @@ export type Database = {
           address: string | null
           avatar_url: string | null
           birth_date: string | null
+          birthday_bonus_year: number | null
           city: string | null
           country: string | null
           created_at: string
@@ -281,6 +282,8 @@ export type Database = {
           preferred_cities: string[] | null
           push_enabled: boolean
           push_preferences: Json
+          referral_code: string | null
+          referred_by_code: string | null
           show_attendance: boolean
           updated_at: string
           user_id: string
@@ -290,6 +293,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          birthday_bonus_year?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -299,6 +303,8 @@ export type Database = {
           preferred_cities?: string[] | null
           push_enabled?: boolean
           push_preferences?: Json
+          referral_code?: string | null
+          referred_by_code?: string | null
           show_attendance?: boolean
           updated_at?: string
           user_id: string
@@ -308,6 +314,7 @@ export type Database = {
           address?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          birthday_bonus_year?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -317,6 +324,8 @@ export type Database = {
           preferred_cities?: string[] | null
           push_enabled?: boolean
           push_preferences?: Json
+          referral_code?: string | null
+          referred_by_code?: string | null
           show_attendance?: boolean
           updated_at?: string
           user_id?: string
@@ -1279,6 +1288,42 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          referee_user_id: string
+          referrer_user_id: string
+          reward_points_referee: number
+          reward_points_referrer: number
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          referee_user_id: string
+          referrer_user_id: string
+          reward_points_referee?: number
+          reward_points_referrer?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          referee_user_id?: string
+          referrer_user_id?: string
+          reward_points_referee?: number
+          reward_points_referrer?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           granted: boolean
@@ -1563,6 +1608,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ticket_transfers: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          from_email: string
+          from_user_id: string
+          id: string
+          message: string | null
+          status: string
+          ticket_id: string
+          to_email: string
+          to_name: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          from_email: string
+          from_user_id: string
+          id?: string
+          message?: string | null
+          status?: string
+          ticket_id: string
+          to_email: string
+          to_name?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          from_email?: string
+          from_user_id?: string
+          id?: string
+          message?: string | null
+          status?: string
+          ticket_id?: string
+          to_email?: string
+          to_name?: string | null
+        }
+        Relationships: []
       }
       ticket_verification_codes: {
         Row: {
@@ -1936,6 +2020,9 @@ export type Database = {
         Args: { r: Database["public"]["Tables"]["orders"]["Row"] }
         Returns: undefined
       }
+      claim_birthday_bonus: { Args: { _user_id: string }; Returns: Json }
+      claim_referral: { Args: { _code: string }; Returns: Json }
+      generate_referral_code: { Args: never; Returns: string }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
