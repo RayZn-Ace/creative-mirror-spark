@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, QrCode } from "lucide-react";
+import TicketTransferDialog from "@/components/account/TicketTransferDialog";
 
 export default function MyTickets() {
   const { user } = useAuth();
@@ -54,7 +55,7 @@ export default function MyTickets() {
         <section>
           <h2 className="font-semibold mb-3 text-muted-foreground uppercase text-xs tracking-wider">Kommende Events</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {upcoming.map((t) => <TicketCard key={t.id} ticket={t} />)}
+            {upcoming.map((t) => <TicketCard key={t.id} ticket={t} onTransferred={() => location.reload()} />)}
           </div>
         </section>
       )}
@@ -71,8 +72,9 @@ export default function MyTickets() {
   );
 }
 
-function TicketCard({ ticket, past }: any) {
+function TicketCard({ ticket, past, onTransferred }: any) {
   const ev = ticket.events;
+  const canTransfer = !past && ticket.status === "valid";
   return (
     <Card className="overflow-hidden group hover:border-primary transition-colors">
       <div className="aspect-video relative bg-muted overflow-hidden">
@@ -96,11 +98,19 @@ function TicketCard({ ticket, past }: any) {
           <MapPin className="h-4 w-4" />
           {ev?.location_name || ev?.city}
         </div>
+        {ticket.holder_email && (
+          <div className="text-xs text-muted-foreground">
+            Inhaber: <span className="font-medium text-foreground">{ticket.holder_name || ticket.holder_email}</span>
+          </div>
+        )}
         <Button asChild className="w-full mt-3" variant={past ? "outline" : "default"}>
           <Link to={`/bestellung/${ticket.order_id}`}>
             <QrCode className="h-4 w-4 mr-2" /> QR-Code anzeigen
           </Link>
         </Button>
+        {canTransfer && (
+          <TicketTransferDialog ticketId={ticket.id} eventTitle={ev?.title} onSuccess={onTransferred} />
+        )}
       </div>
     </Card>
   );
