@@ -281,6 +281,7 @@ export type Database = {
           preferred_cities: string[] | null
           push_enabled: boolean
           push_preferences: Json
+          show_attendance: boolean
           updated_at: string
           user_id: string
           zip: string | null
@@ -298,6 +299,7 @@ export type Database = {
           preferred_cities?: string[] | null
           push_enabled?: boolean
           push_preferences?: Json
+          show_attendance?: boolean
           updated_at?: string
           user_id: string
           zip?: string | null
@@ -315,6 +317,7 @@ export type Database = {
           preferred_cities?: string[] | null
           push_enabled?: boolean
           push_preferences?: Json
+          show_attendance?: boolean
           updated_at?: string
           user_id?: string
           zip?: string | null
@@ -511,6 +514,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       lounge_bookings: {
         Row: {
