@@ -35,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <PageLayout>
+    <PageLayout title="Login">
       <div className="container max-w-md py-12">
         <Card className="p-8">
           <h1 className="text-3xl font-bold mb-2">Login</h1>

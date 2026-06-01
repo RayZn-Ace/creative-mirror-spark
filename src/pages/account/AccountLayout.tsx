@@ -24,11 +24,11 @@ export default function AccountLayout() {
   }, [loading, user, nav]);
 
   if (loading || !user) {
-    return <PageLayout><div className="container py-12">Lade...</div></PageLayout>;
+    return <PageLayout title="Account"><div className="container py-12">Lade...</div></PageLayout>;
   }
 
   return (
-    <PageLayout>
+    <PageLayout title="Account">
       <div className="container py-8 grid lg:grid-cols-[260px_1fr] gap-8">
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="bg-card rounded-2xl border p-4 space-y-1">
