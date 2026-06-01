@@ -62,6 +62,17 @@ const WaitlistAdmin = lazy(() => import("./pages/admin/WaitlistAdmin"));
 const ApplicantsAdmin = lazy(() => import("./pages/admin/ApplicantsAdmin"));
 const FreeTicketsAdmin = lazy(() => import("./pages/admin/FreeTicketsAdmin"));
 const LoungesAdmin = lazy(() => import("./pages/admin/LoungesAdmin"));
+const PushAdmin = lazy(() => import("./pages/admin/PushAdmin"));
+
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
+const AccountLayout = lazy(() => import("./pages/account/AccountLayout"));
+const AccountDashboard = lazy(() => import("./pages/account/Dashboard"));
+const AccountProfile = lazy(() => import("./pages/account/Profile"));
+const AccountTickets = lazy(() => import("./pages/account/MyTickets"));
+const AccountOrders = lazy(() => import("./pages/account/Orders"));
+const AccountFavorites = lazy(() => import("./pages/account/Favorites"));
+const AccountNotifications = lazy(() => import("./pages/account/Notifications"));
 
 const queryClient = new QueryClient();
 
@@ -128,6 +139,18 @@ const App = () => (
                 <Route path="bewerber" element={<ApplicantsAdmin />} />
                 <Route path="freitickets" element={<FreeTicketsAdmin />} />
                 <Route path="lounges" element={<LoungesAdmin />} />
+                <Route path="push" element={<PushAdmin />} />
+              </Route>
+
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/account" element={<AccountLayout />}>
+                <Route index element={<AccountDashboard />} />
+                <Route path="profile" element={<AccountProfile />} />
+                <Route path="tickets" element={<AccountTickets />} />
+                <Route path="orders" element={<AccountOrders />} />
+                <Route path="favorites" element={<AccountFavorites />} />
+                <Route path="notifications" element={<AccountNotifications />} />
               </Route>
 
               <Route path="/bestellung/:orderId" element={<OrderConfirmation />} />

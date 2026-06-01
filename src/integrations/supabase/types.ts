@@ -213,6 +213,81 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_favorites: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          birth_date: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          preferred_cities: string[] | null
+          push_enabled: boolean
+          push_preferences: Json
+          updated_at: string
+          user_id: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          preferred_cities?: string[] | null
+          push_enabled?: boolean
+          push_preferences?: Json
+          updated_at?: string
+          user_id: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          preferred_cities?: string[] | null
+          push_enabled?: boolean
+          push_preferences?: Json
+          updated_at?: string
+          user_id?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
       dashboard_layouts: {
         Row: {
           created_at: string
@@ -1015,6 +1090,99 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      push_campaigns: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          deep_link: string | null
+          failed_count: number
+          id: string
+          image_url: string | null
+          opened_count: number
+          sent_at: string | null
+          sent_count: number
+          status: string
+          target_filter: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          deep_link?: string | null
+          failed_count?: number
+          id?: string
+          image_url?: string | null
+          opened_count?: number
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          target_filter?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          deep_link?: string | null
+          failed_count?: number
+          id?: string
+          image_url?: string | null
+          opened_count?: number
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          target_filter?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          active: boolean
+          created_at: string
+          device_id: string | null
+          id: string
+          last_seen_at: string
+          platform: string
+          preferences: Json
+          preferred_cities: string[] | null
+          token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          last_seen_at?: string
+          platform: string
+          preferences?: Json
+          preferred_cities?: string[] | null
+          token: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          preferences?: Json
+          preferred_cities?: string[] | null
+          token?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
