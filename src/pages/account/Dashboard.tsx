@@ -5,6 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Ticket, Heart, ShoppingBag, Calendar } from "lucide-react";
 import LoyaltyWidget from "@/components/account/LoyaltyWidget";
+import ReferralWidget from "@/components/account/ReferralWidget";
+import BirthdayBonusClaimer from "@/components/account/BirthdayBonusClaimer";
+import ReferralClaimer from "@/components/account/ReferralClaimer";
 
 export default function AccountDashboard() {
   const { user } = useAuth();
@@ -36,6 +39,11 @@ export default function AccountDashboard() {
       </div>
 
       <LoyaltyWidget />
+
+      <ReferralWidget />
+
+      <BirthdayBonusClaimer />
+      <ReferralClaimer />
 
       <div className="grid sm:grid-cols-3 gap-4">
         <StatCard icon={Ticket} label="Tickets" value={stats.tickets} to="/account/tickets" />
