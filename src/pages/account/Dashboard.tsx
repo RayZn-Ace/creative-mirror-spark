@@ -9,6 +9,7 @@ import ReferralWidget from "@/components/account/ReferralWidget";
 import BirthdayBonusClaimer from "@/components/account/BirthdayBonusClaimer";
 import ReferralClaimer from "@/components/account/ReferralClaimer";
 import StatsHighlightWidget from "@/components/account/StatsHighlightWidget";
+import MyGoodiesWidget from "@/components/account/MyGoodiesWidget";
 
 export default function AccountDashboard() {
   const { user } = useAuth();
@@ -40,6 +41,8 @@ export default function AccountDashboard() {
       </div>
 
       <LoyaltyWidget />
+
+      <MyGoodiesWidget />
 
       <StatsHighlightWidget />
 
