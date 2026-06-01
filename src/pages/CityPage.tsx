@@ -10,6 +10,7 @@ import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCit
 import { useSeoMeta } from "@/hooks/useSeoMeta";
 import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 
 /* ─── Types ─── */
