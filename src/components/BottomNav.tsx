@@ -1,19 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
 import { Calendar, Ticket, Image, User } from "lucide-react";
 import { getGlobalTranslations } from "@/lib/i18n";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BottomNav() {
   const location = useLocation();
+  const { user } = useAuth();
   const gt = getGlobalTranslations();
 
-  // Hide on admin pages
   if (location.pathname.startsWith("/admin")) return null;
 
   const tabs = [
     { icon: Calendar, label: "Events", path: "/" },
     { icon: Ticket, label: gt.navTickets || "Tickets", path: "/termine" },
     { icon: Image, label: gt.navMedia || "Partymomente", path: "/fotos" },
-    { icon: User, label: "Profil", path: "/meine-tickets" },
+    { icon: User, label: user ? "Konto" : "Login", path: user ? "/account" : "/login" },
   ];
 
   return (
