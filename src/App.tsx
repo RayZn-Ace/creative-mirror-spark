@@ -63,6 +63,7 @@ const ApplicantsAdmin = lazy(() => import("./pages/admin/ApplicantsAdmin"));
 const FreeTicketsAdmin = lazy(() => import("./pages/admin/FreeTicketsAdmin"));
 const LoungesAdmin = lazy(() => import("./pages/admin/LoungesAdmin"));
 const PushAdmin = lazy(() => import("./pages/admin/PushAdmin"));
+const GoodiesAdmin = lazy(() => import("./pages/admin/GoodiesAdmin"));
 
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
@@ -144,6 +145,7 @@ const App = () => (
                 <Route path="freitickets" element={<FreeTicketsAdmin />} />
                 <Route path="lounges" element={<LoungesAdmin />} />
                 <Route path="push" element={<PushAdmin />} />
+                <Route path="goodies" element={<GoodiesAdmin />} />
               </Route>
 
               <Route path="/login" element={<Login />} />

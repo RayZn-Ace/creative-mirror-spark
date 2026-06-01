@@ -25,6 +25,7 @@ const navItems = [
   { label: "Muttizettel", href: "/admin/muttizettel", icon: ClipboardList },
   { label: "Warteliste", href: "/admin/waitlist", icon: UserPlus },
   { label: "Freitickets", href: "/admin/freitickets", icon: Gift },
+  { label: "Member-Goodies", href: "/admin/goodies", icon: Gift },
   { label: "Lounges", href: "/admin/lounges", icon: Armchair },
   { label: "CSV-Import", href: "/admin/csv-import", icon: Upload },
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
