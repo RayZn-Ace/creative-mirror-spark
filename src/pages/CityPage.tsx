@@ -10,7 +10,7 @@ import { getTranslations, translateBadge, translateTicketDesc, getCurrencyForCit
 import { useSeoMeta } from "@/hooks/useSeoMeta";
 import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
-import { FavoriteButton } from "@/components/FavoriteButton";
+import FavoriteButton from "@/components/FavoriteButton";
 
 
 /* ─── Types ─── */
@@ -1535,6 +1535,9 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImage }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations; headerImage?: string | null }) => (
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+    <div className="absolute top-0 right-0 z-10">
+      <FavoriteButton eventId={event.id} size="lg" />
+    </div>
     {headerImage && (
       <div className="relative w-[85%] sm:w-[75%] max-w-md mx-auto mb-4 sm:mb-6">
         <motion.img
