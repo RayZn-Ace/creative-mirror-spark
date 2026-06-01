@@ -1,20 +1,35 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Gift } from "lucide-react";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
 
 export default function Register() {
   const nav = useNavigate();
+  const [params] = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [refCode, setRefCode] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const r = params.get("ref");
+    if (r) {
+      const upper = r.toUpperCase();
+      setRefCode(upper);
+      localStorage.setItem("pending_ref_code", upper);
+    } else {
+      const stored = localStorage.getItem("pending_ref_code");
+      if (stored) setRefCode(stored);
+    }
+  }, [params]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +39,7 @@ export default function Register() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/account`,
-        data: { display_name: name, name },
+        data: { display_name: name, name, ref_code: refCode || null },
       },
     });
     setLoading(false);
@@ -32,11 +47,13 @@ export default function Register() {
       toast.error(error.message);
       return;
     }
+    if (refCode) localStorage.setItem("pending_ref_code", refCode);
     toast.success("Check deine Mails zur Bestätigung 📬");
     nav("/login");
   };
 
   const onGoogle = async () => {
+    if (refCode) localStorage.setItem("pending_ref_code", refCode);
     await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/account`,
     });
@@ -48,6 +65,13 @@ export default function Register() {
         <Card className="p-8">
           <h1 className="text-3xl font-bold mb-2">Account erstellen</h1>
           <p className="text-muted-foreground mb-6">Speichere Events, verwalte Tickets, bleib up to date</p>
+
+          {refCode && (
+            <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center gap-2 text-sm">
+              <Gift className="h-4 w-4 text-primary" />
+              <span>Eingeladen mit Code <strong className="font-mono">{refCode}</strong> – du bekommst <strong>+25 Punkte</strong> ✨</span>
+            </div>
+          )}
 
           <Button onClick={onGoogle} variant="outline" className="w-full mb-4">
             Mit Google registrieren
@@ -72,6 +96,10 @@ export default function Register() {
             <div>
               <Label htmlFor="password">Passwort (min. 6 Zeichen)</Label>
               <Input id="password" type="password" minLength={6} required value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="ref">Empfehlungs-Code (optional)</Label>
+              <Input id="ref" value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} placeholder="z.B. AB12CD34" className="font-mono uppercase" />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? "..." : "Account erstellen"}
