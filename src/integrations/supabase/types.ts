@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points_reward: number
+          sort_order: number
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon?: string
+          id: string
+          name: string
+          points_reward?: number
+          sort_order?: number
+          tier?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points_reward?: number
+          sort_order?: number
+          tier?: string
+        }
+        Relationships: []
+      }
       ad_placements: {
         Row: {
           active: boolean
@@ -609,6 +642,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      loyalty_points: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          order_id: string | null
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          points: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       media_albums: {
         Row: {
@@ -1755,6 +1818,35 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1810,6 +1902,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_loyalty_for_paid_order_backfill: {
+        Args: { r: Database["public"]["Tables"]["orders"]["Row"] }
+        Returns: undefined
+      }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
