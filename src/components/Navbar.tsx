@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Ticket, ChevronDown } from "lucide-react";
+import { Menu, X, Ticket, ChevronDown, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
@@ -130,6 +130,14 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
         {/* Right side */}
         <div className="hidden lg:flex items-center gap-2 shrink-0">
           <Link
+            to="/account"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Mein Konto"
+          >
+            <User className="w-4 h-4" />
+            <span className="hidden xl:inline">Konto</span>
+          </Link>
+          <Link
             to="/meine-tickets"
             className="px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground"
           >
@@ -215,6 +223,16 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
                   {item.label}
                 </Link>
               ))}
+
+              <Link
+                to="/account"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname.startsWith("/account") ? "text-primary bg-muted" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                <User className="w-4 h-4" /> Mein Konto
+              </Link>
 
               <Link
                 to="/meine-tickets"
