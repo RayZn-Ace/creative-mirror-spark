@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Ticket, Heart, ShoppingBag, Calendar } from "lucide-react";
+import LoyaltyWidget from "@/components/account/LoyaltyWidget";
 
 export default function AccountDashboard() {
   const { user } = useAuth();
@@ -33,6 +34,8 @@ export default function AccountDashboard() {
         <h1 className="text-3xl font-bold">Servus, {user?.user_metadata?.display_name || user?.email?.split("@")[0]} 👋</h1>
         <p className="text-muted-foreground mt-1">Hier dein Account-Overview</p>
       </div>
+
+      <LoyaltyWidget />
 
       <div className="grid sm:grid-cols-3 gap-4">
         <StatCard icon={Ticket} label="Tickets" value={stats.tickets} to="/account/tickets" />
