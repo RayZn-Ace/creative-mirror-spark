@@ -72,16 +72,28 @@ export function useFriends() {
       if (!user) return { ok: false, error: "Nicht eingeloggt" };
       const normalized = email.trim().toLowerCase();
       if (!normalized) return { ok: false, error: "E-Mail fehlt" };
+      if (normalized === user.email?.toLowerCase()) return { ok: false, error: "Du kannst dich nicht selbst adden 😅" };
 
-      // Find user by email via customer_profiles join — we can't query auth.users, so use RPC pattern via profiles.
-      // Workaround: profiles table has display_name but no email; we use a simple lookup via Supabase edge function would be cleanest.
-      // For now: try to find a customer_profile whose display_name matches or via an Edge Function later.
-      // Simpler: search profile by email-like display_name match — fallback: ask user to share their friend code.
+      const { data, error } = await supabase.functions.invoke("social-lookup", {
+        body: { action: "lookup_by_email", email: normalized },
+      });
+      if (error) return { ok: false, error: error.message };
+      const addresseeId = (data as any)?.user_id as string | null;
+      if (!addresseeId) return { ok: false, error: "Keinen Nutzer mit dieser E-Mail gefunden" };
 
-      // Use friend_code approach: addressee_id is the user_id, requester pastes friend id.
-      return { ok: false, error: "Bitte verwende den Freundes-Code (User ID) – Email-Lookup folgt." };
+      const { error: insErr } = await supabase.from("friendships").insert({
+        requester_id: user.id,
+        addressee_id: addresseeId,
+        status: "pending",
+      });
+      if (insErr) {
+        if (insErr.code === "23505") return { ok: false, error: "Anfrage existiert bereits" };
+        return { ok: false, error: insErr.message };
+      }
+      await load();
+      return { ok: true };
     },
-    [user]
+    [user, load]
   );
 
   const sendRequestById = useCallback(
