@@ -6,18 +6,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Users, UserPlus, Check, X, Trash2, MapPin } from "lucide-react";
+import { Users, UserPlus, Check, X, Trash2, MapPin, QrCode, Camera } from "lucide-react";
 import { useFriends, type FriendWithProfile } from "@/hooks/useFriends";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { FriendQRDialog } from "@/components/account/FriendQRDialog";
 
 export default function Friends() {
   const { user } = useAuth();
   const { accepted, incoming, outgoing, loading, respond, remove, reload } = useFriends();
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrTab, setQrTab] = useState<"show" | "scan">("show");
   const [showAttendance, setShowAttendance] = useState(true);
 
   useEffect(() => {
