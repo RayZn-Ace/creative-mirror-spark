@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'de.nightlifegeneration.app',
+  appId: 'app.nightlife.app',
   appName: 'Nightlife Generation',
   webDir: 'dist',
   // Production build: lädt den lokal gebauten Web-Code (kein Hot-Reload aus Sandbox).
