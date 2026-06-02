@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
-import MusicConnections from "@/components/account/MusicConnections";
+
 
 export default function Profile() {
   const { user } = useAuth();
@@ -117,8 +117,6 @@ export default function Profile() {
           {saving ? "Speichere..." : "Speichern"}
         </Button>
       </Card>
-
-      <MusicConnections />
     </div>
   );
 }
