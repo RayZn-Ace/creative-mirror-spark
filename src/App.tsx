@@ -2,9 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
-import { initDeepLinks } from "@/lib/deepLinks";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
 import VisitorTracker from "@/components/VisitorTracker";
@@ -79,16 +78,11 @@ const AccountNotifications = lazy(() => import("./pages/account/Notifications"))
 const AccountRewards = lazy(() => import("./pages/account/Rewards"));
 const AccountFriends = lazy(() => import("./pages/account/Friends"));
 const AccountWrapped = lazy(() => import("./pages/account/Wrapped"));
-const AccountMusicCallback = lazy(() => import("./pages/account/MusicCallback"));
+
 const AccountMemories = lazy(() => import("./pages/account/Memories"));
 
 const queryClient = new QueryClient();
 
-const DeepLinkHandler = () => {
-  const navigate = useNavigate();
-  useEffect(() => { initDeepLinks(navigate); }, [navigate]);
-  return null;
-};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -97,7 +91,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <DeepLinkHandler />
+          
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
@@ -171,7 +165,7 @@ const App = () => (
                 <Route path="rewards" element={<AccountRewards />} />
                 <Route path="friends" element={<AccountFriends />} />
                 <Route path="wrapped" element={<AccountWrapped />} />
-                <Route path="music/callback" element={<AccountMusicCallback />} />
+                
                 <Route path="memories" element={<AccountMemories />} />
               </Route>
 
