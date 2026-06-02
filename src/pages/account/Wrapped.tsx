@@ -29,6 +29,7 @@ export default function Wrapped() {
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string } | null>(null);
+  const [resolvedPreview, setResolvedPreview] = useState<string>("");
   const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
