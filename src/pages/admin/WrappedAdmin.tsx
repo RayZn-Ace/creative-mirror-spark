@@ -115,6 +115,10 @@ export default function WrappedAdmin() {
     setConfig((c) => ({ ...c, [year]: { ...yc, fallbackSong: { ...yc.fallbackSong, ...patch } } }));
   };
 
+  const updateCover = (patch: Partial<NonNullable<WrappedYearConfig["cover"]>>) => {
+    setConfig((c) => ({ ...c, [year]: { ...yc, cover: { ...(yc.cover || {}), ...patch } } }));
+  };
+
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("settings").upsert({ key: "wrapped_config", value: config as any }, { onConflict: "key" });
