@@ -514,6 +514,22 @@ const SettingsAdmin = () => {
             </div>
             <Field label="Antwort-Adresse (Reply-To)" value={emailSettings.reply_to} onChange={(v) => setEmailSettings((p) => ({ ...p, reply_to: v }))} placeholder="info@gimmegimmeparty.com" type="email" />
           </SectionCard>
+
+          <SectionCard icon={Sparkles} title="Features" description="Aktiviere oder deaktiviere App-Features für alle Nutzer." onSave={() => save("features", features, setSavingFeatures)} saving={savingFeatures}>
+            <ToggleRow
+              label="Year in Review (Wrapped)"
+              description="Spotify-Wrapped-style Story für jedes Jahr im Account."
+              checked={features.wrapped_enabled}
+              onChange={(v) => setFeatures((p) => ({ ...p, wrapped_enabled: v }))}
+            />
+            <ToggleRow
+              label="„Was bisher geschah" Welcome-Wrapped"
+              description="Neue Nutzer ohne Partys sehen eine kleine Willkommens-Story statt der leeren Seite."
+              checked={features.wrapped_welcome_enabled}
+              onChange={(v) => setFeatures((p) => ({ ...p, wrapped_welcome_enabled: v }))}
+              disabled={!features.wrapped_enabled}
+            />
+          </SectionCard>
         </>
       )}
 
