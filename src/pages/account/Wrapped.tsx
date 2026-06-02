@@ -221,17 +221,27 @@ export default function Wrapped() {
           (oldAudio as any).preservesPitch = true;
           (next as any).preservesPitch = true;
         } catch {}
-        const bpmOld = bpmCacheRef.current.get(oldAudio.src) ?? 0;
-        const bpmNew = bpmCacheRef.current.get(url2) ?? 0;
-        let ratio = 0.94;
-        let oldEndRate = 0.95;
-        if (bpmOld > 0 && bpmNew > 0) {
-          let r = bpmOld / bpmNew;
+        const oldInfo = bpmCacheRef.current.get(oldAudio.src);
+        const newInfo = bpmCacheRef.current.get(url2);
+        const CONF_MIN = 0.5; // below this we don't trust the BPM
+        // Safe default: gentle symmetric pitch-bend, no audible cut
+        let ratio = 0.96;
+        let oldEndRate = 0.97;
+        const stable = !!(oldInfo && newInfo
+          && oldInfo.bpm > 0 && newInfo.bpm > 0
+          && oldInfo.confidence >= CONF_MIN
+          && newInfo.confidence >= CONF_MIN);
+        if (stable && oldInfo && newInfo) {
+          let r = oldInfo.bpm / newInfo.bpm;
           while (r > 1.4) r /= 2;
           while (r < 0.71) r *= 2;
-          ratio = Math.max(0.88, Math.min(1.12, r));
-          oldEndRate = Math.max(0.88, Math.min(1.12, 1 / ratio));
+          // Extra guard: if folded ratio is still way off, treat as unstable
+          if (r > 0.78 && r < 1.28) {
+            ratio = Math.max(0.88, Math.min(1.12, r));
+            oldEndRate = Math.max(0.88, Math.min(1.12, 1 / ratio));
+          }
         }
+
         next.playbackRate = ratio;
 
         const startVol = (() => { try { return oldAudio.volume; } catch { return 1; } })();
