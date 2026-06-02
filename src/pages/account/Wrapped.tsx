@@ -28,7 +28,7 @@ export default function Wrapped() {
   const { flags, loading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
-  const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string } | null>(null);
+  const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string } | null>(null);
   const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -49,7 +49,8 @@ export default function Wrapped() {
       setWrappedCfg(cfg);
       const yearCfg = cfg[String(year)];
       const fb = yearCfg?.fallbackSong || (legacyRes.data?.value as any);
-      if (fb?.title && fb?.artist) setFallbackSong(fb);
+      if (fb?.title || fb?.artist || fb?.cover_url || fb?.spotify_url || fb?.audio_url) setFallbackSong(fb);
+      else setFallbackSong(null);
     })();
   }, [user, year]);
 
@@ -318,22 +319,35 @@ export default function Wrapped() {
 
   const cover = yearCfg.cover || {};
   const coverImg = cover.image_url || "";
-  const audioUrl = cover.audio_url || "";
+  const audioUrl = cover.audio_url || (!music?.connected ? fallbackSong?.audio_url || "" : "");
 
   const startStory = async () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+
     // Create + start audio SYNC within user gesture (before any await)
     if (audioUrl) {
       try {
-        if (!audioRef.current) {
-          const a = new Audio(audioUrl);
-          a.loop = true;
-          a.muted = muted;
-          audioRef.current = a;
+        const a = new Audio(audioUrl);
+        a.loop = true;
+        a.muted = muted;
+        a.preload = "auto";
+        a.playsInline = true;
+        audioRef.current = a;
+        a.currentTime = 0;
+
+        try {
+          await a.play();
+        } catch (err) {
+          console.warn("audio play failed", err);
+          toast.error("Der hinterlegte Song konnte nicht gestartet werden.");
         }
-        audioRef.current.currentTime = 0;
-        const p = audioRef.current.play();
-        if (p) p.catch((err) => console.warn("audio play failed", err));
-      } catch (e) { console.warn(e); }
+      } catch (e) {
+        console.warn(e);
+      }
     }
     setStarted(true);
     setSlide(0);
@@ -346,7 +360,11 @@ export default function Wrapped() {
 
   const stopStory = () => {
     setStarted(false);
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
 
