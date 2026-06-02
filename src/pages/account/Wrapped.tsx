@@ -53,7 +53,7 @@ export default function Wrapped() {
     })();
   }, [user, year]);
 
-  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }> };
+  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }>; cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string } };
   const sCfg = (k: string) => yearCfg.slides?.[k] || {};
   const isOn = (k: string) => sCfg(k).enabled !== false;
   const grad = (k: string, def: string) => sCfg(k).gradient || def;
