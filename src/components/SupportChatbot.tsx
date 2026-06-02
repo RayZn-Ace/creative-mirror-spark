@@ -48,6 +48,13 @@ export default function SupportChatbot() {
     checkAlfred();
   }, []);
 
+  // Allow opening from BottomNav (mobile) or any other component
+  useEffect(() => {
+    const handler = () => setChatOpen(true);
+    window.addEventListener("open-sophia", handler);
+    return () => window.removeEventListener("open-sophia", handler);
+  }, []);
+
   // Check support online status
   useEffect(() => {
     const check = async () => {
