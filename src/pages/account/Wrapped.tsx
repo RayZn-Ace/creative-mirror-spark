@@ -54,29 +54,28 @@ export default function Wrapped() {
       const fb = yearCfg?.fallbackSong || (legacyRes.data?.value as any);
       if (fb?.title || fb?.artist || fb?.cover_url || fb?.spotify_url || fb?.audio_url) setFallbackSong(fb);
       else setFallbackSong(null);
+      const fb2 = yearCfg?.fallbackSong2;
+      if (fb2?.title || fb2?.artist || fb2?.audio_url) setFallbackSong2(fb2);
+      else setFallbackSong2(null);
     })();
   }, [user, year]);
 
-  // Auto-resolve preview URL from iTunes if admin only provided title/artist (no audio_url)
+  // Auto-resolve preview URLs from iTunes if admin only provided title/artist (no audio_url)
   useEffect(() => {
-    if (music?.connected) { setResolvedPreview(""); return; }
-    if (!fallbackSong) { setResolvedPreview(""); return; }
-    if (fallbackSong.audio_url) { setResolvedPreview(""); return; }
-    const q = `${fallbackSong.title || ""} ${fallbackSong.artist || ""}`.trim();
-    if (!q) { setResolvedPreview(""); return; }
-    let cancelled = false;
-    (async () => {
+    const resolve = async (song: typeof fallbackSong, setter: (s: string) => void) => {
+      if (music?.connected || !song || song.audio_url) { setter(""); return; }
+      const q = `${song.title || ""} ${song.artist || ""}`.trim();
+      if (!q) { setter(""); return; }
       try {
         const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
         const j = await r.json();
-        const url = j?.results?.[0]?.previewUrl || "";
-        if (!cancelled) setResolvedPreview(url);
-      } catch {
-        if (!cancelled) setResolvedPreview("");
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [fallbackSong, music?.connected]);
+        setter(j?.results?.[0]?.previewUrl || "");
+      } catch { setter(""); }
+    };
+    resolve(fallbackSong, setResolvedPreview);
+    resolve(fallbackSong2, setResolvedPreview2);
+  }, [fallbackSong, fallbackSong2, music?.connected]);
+
 
   // Auto-advance slides while playing (hooks must run unconditionally)
   useEffect(() => {
