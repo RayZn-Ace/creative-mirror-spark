@@ -321,25 +321,35 @@ export default function Wrapped() {
   const audioUrl = cover.audio_url || "";
 
   const startStory = async () => {
+    // Create + start audio SYNC within user gesture (before any await)
+    if (audioUrl) {
+      try {
+        if (!audioRef.current) {
+          const a = new Audio(audioUrl);
+          a.loop = true;
+          a.muted = muted;
+          audioRef.current = a;
+        }
+        audioRef.current.currentTime = 0;
+        const p = audioRef.current.play();
+        if (p) p.catch((err) => console.warn("audio play failed", err));
+      } catch (e) { console.warn(e); }
+    }
     setStarted(true);
     setSlide(0);
-    // Try fullscreen
+    // Fullscreen (async ok — gesture still counts)
     try {
       const el = containerRef.current;
       if (el && el.requestFullscreen) await el.requestFullscreen();
     } catch {}
-    // Start audio (user-gesture safe)
-    if (audioUrl && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      try { await audioRef.current.play(); } catch {}
-    }
   };
 
   const stopStory = () => {
     setStarted(false);
-    if (audioRef.current) { audioRef.current.pause(); }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
+
 
 
   // Cover screen (before start)
