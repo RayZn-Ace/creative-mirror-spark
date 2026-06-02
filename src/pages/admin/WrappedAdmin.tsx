@@ -513,10 +513,4 @@ function FallbackSongCard({
     </Card>
   );
 }
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>{label}</Label>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
-    </div>
-  );
-}
+
