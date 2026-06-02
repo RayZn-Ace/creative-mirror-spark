@@ -38,6 +38,8 @@ export default function Wrapped() {
   const [muted, setMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const slidesCountRef = useRef(1);
+  const MAX_STORY_MS = 60000;
 
   useEffect(() => {
     if (!user) return;
