@@ -89,6 +89,19 @@ export default function Wrapped() {
     }, perSlide);
     return () => clearTimeout(t);
   }, [started, paused, slide]);
+  // Swap audio source when crossing halftime
+  useEffect(() => {
+    if (!started || !audioRef.current) return;
+    const n = Math.max(1, slidesCountRef.current);
+    const half = Math.ceil(n / 2);
+    const url2 = !music?.connected ? (fallbackSong2?.audio_url || resolvedPreview2 || "") : "";
+    if (slide >= half && url2 && audioRef.current.src !== url2) {
+      audioRef.current.pause();
+      audioRef.current.src = url2;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [slide, started, fallbackSong2, resolvedPreview2, music?.connected]);
 
   // Cleanup on fullscreen exit
   useEffect(() => {
