@@ -55,6 +55,27 @@ export default function Wrapped() {
     })();
   }, [user, year]);
 
+  // Auto-resolve preview URL from iTunes if admin only provided title/artist (no audio_url)
+  useEffect(() => {
+    if (music?.connected) { setResolvedPreview(""); return; }
+    if (!fallbackSong) { setResolvedPreview(""); return; }
+    if (fallbackSong.audio_url) { setResolvedPreview(""); return; }
+    const q = `${fallbackSong.title || ""} ${fallbackSong.artist || ""}`.trim();
+    if (!q) { setResolvedPreview(""); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
+        const j = await r.json();
+        const url = j?.results?.[0]?.previewUrl || "";
+        if (!cancelled) setResolvedPreview(url);
+      } catch {
+        if (!cancelled) setResolvedPreview("");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [fallbackSong, music?.connected]);
+
   // Auto-advance slides while playing (hooks must run unconditionally)
   useEffect(() => {
     if (!started || paused) return;
