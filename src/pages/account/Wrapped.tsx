@@ -37,6 +37,7 @@ export default function Wrapped() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const queuedAudioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const slidesCountRef = useRef(1);
   // Cache: bpm + confidence (0..1). confidence<0.5 → unreliable, use safe pitch-bend fallback
@@ -207,12 +208,14 @@ export default function Wrapped() {
       (oldAudio as any)._swapping = true;
 
       const targetVol = muted ? 0 : 1;
-      const next = new Audio(url2);
+      const prepared = queuedAudioRef.current;
+      const next = prepared && prepared.src === url2 ? prepared : new Audio(url2);
       next.loop = true;
       next.muted = muted;
       next.preload = "auto";
       next.volume = 0;
       audioRef.current = next;
+      queuedAudioRef.current = null;
 
       const DURATION = 1800; // ms
 
@@ -276,6 +279,7 @@ export default function Wrapped() {
       if (!document.fullscreenElement && started) {
         setStarted(false);
         if (audioRef.current) audioRef.current.pause();
+        if (queuedAudioRef.current) queuedAudioRef.current.pause();
       }
     };
     document.addEventListener("fullscreenchange", onFs);
@@ -539,6 +543,11 @@ export default function Wrapped() {
       audioRef.current.src = "";
       audioRef.current = null;
     }
+    if (queuedAudioRef.current) {
+      queuedAudioRef.current.pause();
+      queuedAudioRef.current.src = "";
+      queuedAudioRef.current = null;
+    }
 
     // Create + start audio SYNC within user gesture (before any await)
     if (audioUrl1) {
@@ -560,6 +569,28 @@ export default function Wrapped() {
         console.warn(e);
       }
     }
+    if (audioUrl2 && audioUrl2 !== audioUrl1) {
+      try {
+        const queued = new Audio(audioUrl2);
+        queued.loop = true;
+        queued.muted = true;
+        queued.preload = "auto";
+        queued.volume = 0;
+        queued.currentTime = 0;
+        queuedAudioRef.current = queued;
+
+        try {
+          await queued.play();
+          queued.pause();
+          queued.currentTime = 0;
+          queued.muted = muted;
+        } catch (err) {
+          console.warn("queued audio unlock failed", err);
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
     setStarted(true);
     setSlide(0);
     // Fullscreen (async ok — gesture still counts)
@@ -575,6 +606,11 @@ export default function Wrapped() {
       audioRef.current.pause();
       audioRef.current.src = "";
       audioRef.current = null;
+    }
+    if (queuedAudioRef.current) {
+      queuedAudioRef.current.pause();
+      queuedAudioRef.current.src = "";
+      queuedAudioRef.current = null;
     }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
@@ -660,7 +696,7 @@ export default function Wrapped() {
         <div className="absolute top-6 right-3 flex gap-2 z-30">
           {(audioUrl1 || audioUrl2) && (
             <button
-              onClick={(e) => { e.stopPropagation(); setMuted((m) => { const nm = !m; if (audioRef.current) audioRef.current.muted = nm; return nm; }); }}
+              onClick={(e) => { e.stopPropagation(); setMuted((m) => { const nm = !m; if (audioRef.current) audioRef.current.muted = nm; if (queuedAudioRef.current) queuedAudioRef.current.muted = nm; return nm; }); }}
               className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Mute"
             >
