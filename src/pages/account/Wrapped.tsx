@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
