@@ -1,18 +1,31 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.f082f45ba1db4d218075e707c6f2e4d6',
+  appId: 'de.nightlifegeneration.app',
   appName: 'Nightlife Generation',
   webDir: 'dist',
-  server: {
-    url: 'https://f082f45b-a1db-4d21-8075-e707c6f2e4d6.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
-  },
+  // Production build: lädt den lokal gebauten Web-Code (kein Hot-Reload aus Sandbox).
+  // Für lokales Testing mit Live-Preview kannst du temporär ein "server"-Objekt einfügen.
   plugins: {
     App: {
-      // Custom URL scheme for deep linking (z.B. Payment Returns)
+      // Deep Linking (z.B. nightlife://payment-return)
       url: 'nightlife',
     },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
+    SplashScreen: {
+      launchShowDuration: 1500,
+      backgroundColor: '#0a0a0f',
+      showSpinner: false,
+      androidScaleType: 'CENTER_CROP',
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+  },
+  ios: {
+    contentInset: 'always',
+    backgroundColor: '#0a0a0f',
   },
 };
 
