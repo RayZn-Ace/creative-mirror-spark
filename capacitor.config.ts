@@ -4,11 +4,11 @@ const config: CapacitorConfig = {
   appId: 'app.nightlife.app',
   appName: 'Nightlife Generation',
   webDir: 'dist',
-  // Production build: lädt den lokal gebauten Web-Code (kein Hot-Reload aus Sandbox).
-  // Für lokales Testing mit Live-Preview kannst du temporär ein "server"-Objekt einfügen.
+  // Versioning wird in Xcode gesetzt (Marketing Version + Build Number),
+  // nicht hier. Aktuell im Store: 1.0.1 (Build 1.2.0).
+  // Nächstes Update MUSS höher sein, z.B. Version 1.1.0, Build 1.2.1.
   plugins: {
     App: {
-      // Deep Linking (z.B. nightlife://payment-return)
       url: 'nightlife',
     },
     PushNotifications: {
