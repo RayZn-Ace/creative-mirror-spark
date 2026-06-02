@@ -160,12 +160,14 @@ const SettingsAdmin = () => {
   const [company, setCompany] = useState<CompanyData>(emptyCompany);
   const [invoice, setInvoice] = useState<InvoiceData>(emptyInvoice);
   const [emailSettings, setEmailSettings] = useState<EmailData>(emptyEmail);
+  const [features, setFeatures] = useState<FeaturesData>(emptyFeatures);
   const [profile, setProfile] = useState<ProfileData>({ display_name: "", avatar_url: "" });
   const [userRoles, setUserRoles] = useState<UserRoleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingInvoice, setSavingInvoice] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [savingFeatures, setSavingFeatures] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState<string>("user");
