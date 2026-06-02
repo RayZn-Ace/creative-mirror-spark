@@ -73,6 +73,7 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
     SLIDE_META.map((s) => [s.key, { enabled: true, gradient: DEFAULT_GRADIENTS[s.key] } as SlideConfig]),
   ) as Record<SlideKey, SlideConfig>,
   fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "" },
+  cover: { image_url: "", audio_url: "", title: "", subtitle: "" },
 });
 
 /* ───────── Component ───────── */
