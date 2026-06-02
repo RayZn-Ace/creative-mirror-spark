@@ -29,6 +29,7 @@ const navItems = [
   { label: "Lounges", href: "/admin/lounges", icon: Armchair },
   { label: "CSV-Import", href: "/admin/csv-import", icon: Upload },
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
+  { label: "Year-in-Review", href: "/admin/wrapped", icon: Sparkles },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
