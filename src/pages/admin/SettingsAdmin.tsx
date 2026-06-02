@@ -183,6 +183,8 @@ const SettingsAdmin = () => {
   const [invoice, setInvoice] = useState<InvoiceData>(emptyInvoice);
   const [emailSettings, setEmailSettings] = useState<EmailData>(emptyEmail);
   const [features, setFeatures] = useState<FeaturesData>(emptyFeatures);
+  const [wrappedSong, setWrappedSong] = useState<WrappedSongData>(emptyWrappedSong);
+  const [savingWrappedSong, setSavingWrappedSong] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({ display_name: "", avatar_url: "" });
   const [userRoles, setUserRoles] = useState<UserRoleRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -220,6 +222,7 @@ const SettingsAdmin = () => {
           if (row.key === "invoice") setInvoice({ ...emptyInvoice, ...val });
           if (row.key === "email") setEmailSettings({ ...emptyEmail, ...val });
           if (row.key === "features") setFeatures({ ...emptyFeatures, ...val });
+          if (row.key === "wrapped_fallback_song") setWrappedSong({ ...emptyWrappedSong, ...val });
         }
       }
       if (user) {
