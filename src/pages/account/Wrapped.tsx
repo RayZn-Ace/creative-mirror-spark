@@ -29,6 +29,7 @@ export default function Wrapped() {
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string } | null>(null);
+  const [resolvedPreview, setResolvedPreview] = useState<string>("");
   const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -53,6 +54,27 @@ export default function Wrapped() {
       else setFallbackSong(null);
     })();
   }, [user, year]);
+
+  // Auto-resolve preview URL from iTunes if admin only provided title/artist (no audio_url)
+  useEffect(() => {
+    if (music?.connected) { setResolvedPreview(""); return; }
+    if (!fallbackSong) { setResolvedPreview(""); return; }
+    if (fallbackSong.audio_url) { setResolvedPreview(""); return; }
+    const q = `${fallbackSong.title || ""} ${fallbackSong.artist || ""}`.trim();
+    if (!q) { setResolvedPreview(""); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
+        const j = await r.json();
+        const url = j?.results?.[0]?.previewUrl || "";
+        if (!cancelled) setResolvedPreview(url);
+      } catch {
+        if (!cancelled) setResolvedPreview("");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [fallbackSong, music?.connected]);
 
   // Auto-advance slides while playing (hooks must run unconditionally)
   useEffect(() => {
@@ -319,7 +341,7 @@ export default function Wrapped() {
 
   const cover = yearCfg.cover || {};
   const coverImg = cover.image_url || "";
-  const audioUrl = cover.audio_url || (!music?.connected ? fallbackSong?.audio_url || "" : "");
+  const audioUrl = cover.audio_url || (!music?.connected ? (fallbackSong?.audio_url || resolvedPreview || "") : "");
 
   const startStory = async () => {
     if (audioRef.current) {
