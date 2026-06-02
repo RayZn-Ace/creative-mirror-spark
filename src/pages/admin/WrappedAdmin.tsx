@@ -81,22 +81,44 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
 });
 
 /* ───────── iTunes helper ───────── */
-async function lookupItunes(title: string, artist: string): Promise<{ preview: string; cover: string } | null> {
-  const q = `${title} ${artist}`.trim();
-  if (!q) return null;
-  const tryFetch = async (country: string) => {
-    const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=15&country=${country}&term=${encodeURIComponent(q)}`);
-    const j = await r.json();
-    return (j?.results || []) as any[];
+function norm(s: string) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+function scoreHit(it: any, title: string, artist: string): number {
+  const t = norm(title), a = norm(artist);
+  const tn = norm(it.trackName || ""), an = norm(it.artistName || "");
+  let s = 0;
+  if (tn === t) s += 100; else if (tn.startsWith(t)) s += 60; else if (tn.includes(t)) s += 30;
+  if (an === a) s += 100; else if (an.includes(a) || a.includes(an)) s += 60;
+  if (it.previewUrl) s += 10;
+  return s;
+}
+export async function lookupItunes(title: string, artist: string): Promise<{ preview: string; cover: string } | null> {
+  if (!title.trim() && !artist.trim()) return null;
+  const tryFetch = async (country: string, term: string) => {
+    try {
+      const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=25&country=${country}&term=${encodeURIComponent(term)}`);
+      const j = await r.json();
+      return (j?.results || []) as any[];
+    } catch { return []; }
   };
-  try {
-    let results = await tryFetch("DE");
-    if (!results.some((it) => it.previewUrl)) results = await tryFetch("US");
-    const hit = results.find((it) => it.previewUrl) || results[0];
-    if (!hit) return null;
-    const cover = (hit.artworkUrl100 || "").replace("100x100", "600x600");
-    return { preview: hit.previewUrl || "", cover };
-  } catch { return null; }
+  const terms = [`${artist} ${title}`, `${title} ${artist}`, title].map((t) => t.trim()).filter(Boolean);
+  const countries = ["DE", "US"];
+  let best: any = null; let bestScore = -1;
+  for (const c of countries) {
+    for (const term of terms) {
+      const results = await tryFetch(c, term);
+      for (const it of results) {
+        const sc = scoreHit(it, title, artist);
+        if (sc > bestScore && (it.previewUrl || bestScore < 0)) { best = it; bestScore = sc; }
+      }
+      if (best?.previewUrl && bestScore >= 160) break;
+    }
+    if (best?.previewUrl && bestScore >= 160) break;
+  }
+  if (!best) return null;
+  const cover = (best.artworkUrl100 || "").replace("100x100", "600x600");
+  return { preview: best.previewUrl || "", cover };
 }
 
 /* ───────── Component ───────── */
