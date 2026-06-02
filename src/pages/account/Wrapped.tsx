@@ -361,9 +361,9 @@ export default function Wrapped() {
     }
 
     // Create + start audio SYNC within user gesture (before any await)
-    if (audioUrl) {
+    if (audioUrl1) {
       try {
-        const a = new Audio(audioUrl);
+        const a = new Audio(audioUrl1);
         a.loop = true;
         a.muted = muted;
         a.preload = "auto";
