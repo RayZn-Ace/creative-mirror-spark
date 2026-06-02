@@ -92,6 +92,43 @@ export default function Friends() {
         </p>
       </Card>
 
+      <Card className="p-6 bg-gradient-to-br from-primary/10 via-card to-card border-primary/20">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="rounded-xl bg-primary/15 p-2.5">
+            <QrCode className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-semibold">QR-Code Squad-Add</h2>
+            <p className="text-sm text-muted-foreground">
+              Zeig deinen Code oder scanne den deines Freundes – instant verbunden.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setQrTab("show");
+              setQrOpen(true);
+            }}
+          >
+            <QrCode className="h-4 w-4 mr-2" /> Mein Code
+          </Button>
+          <Button
+            onClick={() => {
+              setQrTab("scan");
+              setQrOpen(true);
+            }}
+          >
+            <Camera className="h-4 w-4 mr-2" /> Scannen
+          </Button>
+        </div>
+      </Card>
+
+      <FriendQRDialog open={qrOpen} onOpenChange={setQrOpen} defaultTab={qrTab} />
+
+
+
       <Card className="p-6 flex items-center justify-between">
         <div>
           <Label htmlFor="show-att" className="text-base font-semibold">Für Freunde sichtbar</Label>
