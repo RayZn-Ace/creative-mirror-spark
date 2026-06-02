@@ -53,6 +53,27 @@ export default function Wrapped() {
     })();
   }, [user, year]);
 
+  // Auto-advance slides while playing (hooks must run unconditionally)
+  useEffect(() => {
+    if (!started || paused) return;
+    const t = setTimeout(() => {
+      setSlide((s) => s + 1);
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [started, paused, slide]);
+
+  // Cleanup on fullscreen exit
+  useEffect(() => {
+    const onFs = () => {
+      if (!document.fullscreenElement && started) {
+        setStarted(false);
+        if (audioRef.current) audioRef.current.pause();
+      }
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, [started]);
+
   const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }>; cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string } };
   const sCfg = (k: string) => yearCfg.slides?.[k] || {};
   const isOn = (k: string) => sCfg(k).enabled !== false;
@@ -320,22 +341,6 @@ export default function Wrapped() {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
 
-  // Auto-advance slides while playing
-  useEffect(() => {
-    if (!started || paused) return;
-    const t = setTimeout(() => {
-      if (slide < slides.length - 1) setSlide((s) => s + 1);
-      else stopStory();
-    }, 5000);
-    return () => clearTimeout(t);
-  }, [started, paused, slide, slides.length]);
-
-  // Cleanup on fullscreen exit
-  useEffect(() => {
-    const onFs = () => { if (!document.fullscreenElement && started) setStarted(false); };
-    document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
-  }, [started]);
 
   // Cover screen (before start)
   if (!started) {
