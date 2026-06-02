@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Sparkles, Upload, Eye, Save, Music } from "lucide-react";
+import { Sparkles, Upload, Eye, Save, Music, Play, Pause, Wand2 } from "lucide-react";
 
 /* ───────── Types ───────── */
 export type SlideKey =
@@ -21,9 +21,12 @@ export type SlideConfig = {
   subtitle?: string;       // optional override for sub text
 };
 
+export type FallbackSongData = { title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string };
+
 export type WrappedYearConfig = {
   slides: Record<SlideKey, SlideConfig>;
-  fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string };
+  fallbackSong: FallbackSongData;   // 1. Hälfte
+  fallbackSong2?: FallbackSongData; // 2. Hälfte
   cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string };
 };
 
@@ -72,9 +75,24 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
   slides: Object.fromEntries(
     SLIDE_META.map((s) => [s.key, { enabled: true, gradient: DEFAULT_GRADIENTS[s.key] } as SlideConfig]),
   ) as Record<SlideKey, SlideConfig>,
-  fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
+  fallbackSong:  { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
+  fallbackSong2: { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
   cover: { image_url: "", audio_url: "", title: "", subtitle: "" },
 });
+
+/* ───────── iTunes helper ───────── */
+async function lookupItunes(title: string, artist: string): Promise<{ preview: string; cover: string } | null> {
+  const q = `${title} ${artist}`.trim();
+  if (!q) return null;
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
+    const j = await r.json();
+    const it = j?.results?.[0];
+    if (!it) return null;
+    const cover = (it.artworkUrl100 || "").replace("100x100", "600x600");
+    return { preview: it.previewUrl || "", cover };
+  } catch { return null; }
+}
 
 /* ───────── Component ───────── */
 export default function WrappedAdmin() {
@@ -111,8 +129,15 @@ export default function WrappedAdmin() {
     }));
   };
 
-  const updateSong = (patch: Partial<WrappedYearConfig["fallbackSong"]>) => {
+  const updateSong = (patch: Partial<FallbackSongData>) => {
     setConfig((c) => ({ ...c, [year]: { ...yc, fallbackSong: { ...yc.fallbackSong, ...patch } } }));
+  };
+
+  const updateSong2 = (patch: Partial<FallbackSongData>) => {
+    setConfig((c) => ({
+      ...c,
+      [year]: { ...yc, fallbackSong2: { ...(yc.fallbackSong2 || { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" }), ...patch } },
+    }));
   };
 
   const updateCover = (patch: Partial<NonNullable<WrappedYearConfig["cover"]>>) => {
@@ -253,52 +278,31 @@ export default function WrappedAdmin() {
         </div>
       </Card>
 
-      {/* Fallback Song */}
-
-      <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+      {/* Fallback Songs (2 Hälften) */}
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Music className="h-5 w-5" style={{ color: "hsl(270 70% 55%)" }} />
-          <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>Fallback-Song {year}</h2>
+          <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>Fallback-Songs {year}</h2>
         </div>
-        <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-          Wird gespielt wenn der Nutzer Spotify nicht verbunden hat. Echte Spotify-Daten überschreiben das.
+        <p className="text-xs -mt-2" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+          Gespielt wenn kein Spotify verbunden ist. Song 1 läuft die erste Hälfte der Story, Song 2 die zweite (max 1 Min gesamt).
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <FieldLight label="Song-Titel" value={yc.fallbackSong.title} onChange={(v) => updateSong({ title: v })} placeholder="z.B. Mockingbird" />
-          <FieldLight label="Künstler" value={yc.fallbackSong.artist} onChange={(v) => updateSong({ artist: v })} placeholder="z.B. Eminem" />
-        </div>
-        <FieldLight label="Spotify-Link (optional)" value={yc.fallbackSong.spotify_url} onChange={(v) => updateSong({ spotify_url: v })} placeholder="https://open.spotify.com/track/..." />
-        <div className="space-y-2">
-          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Fallback-Audio (optional, wird genutzt wenn oben kein Start-Song gesetzt ist)</Label>
-          <div className="flex items-center gap-3">
-            <Input value={yc.fallbackSong.audio_url || ""} onChange={(e) => updateSong({ audio_url: e.target.value })} placeholder="https://…" className="flex-1" />
-            <label className="cursor-pointer">
-              <input type="file" accept="audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFallbackAudio(e.target.files[0])} />
-              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
-                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
-                <Upload className="h-3.5 w-3.5" /> Upload
-              </span>
-            </label>
-          </div>
-          {yc.fallbackSong.audio_url && <audio src={yc.fallbackSong.audio_url} controls className="w-full mt-2" />}
-        </div>
-        <div className="space-y-2">
-          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Cover</Label>
-          <div className="flex items-center gap-3">
-            {yc.fallbackSong.cover_url && (
-              <img src={yc.fallbackSong.cover_url} alt="Cover" className="w-16 h-16 rounded-lg object-cover" />
-            )}
-            <Input value={yc.fallbackSong.cover_url} onChange={(e) => updateSong({ cover_url: e.target.value })} placeholder="https://…" className="flex-1" />
-            <label className="cursor-pointer">
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadCover(e.target.files[0])} />
-              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
-                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
-                <Upload className="h-3.5 w-3.5" /> Upload
-              </span>
-            </label>
-          </div>
-        </div>
-      </Card>
+        <FallbackSongCard
+          label="1. Hälfte"
+          year={year}
+          song={yc.fallbackSong}
+          onChange={updateSong}
+          storagePrefix="fallback1"
+        />
+        <FallbackSongCard
+          label="2. Hälfte"
+          year={year}
+          song={yc.fallbackSong2 || { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" }}
+          onChange={updateSong2}
+          storagePrefix="fallback2"
+        />
+      </div>
+
 
       {/* Slides */}
       <div className="space-y-4">
@@ -399,3 +403,114 @@ function FieldLight({ label, value, onChange, placeholder }: { label: string; va
     </div>
   );
 }
+
+function FallbackSongCard({
+  label, year, song, onChange, storagePrefix,
+}: {
+  label: string;
+  year: number;
+  song: FallbackSongData;
+  onChange: (patch: Partial<FallbackSongData>) => void;
+  storagePrefix: string;
+}) {
+  const [playing, setPlaying] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const audioRef = useState(() => ({ a: null as HTMLAudioElement | null }))[0];
+
+  const stop = () => {
+    if (audioRef.a) { audioRef.a.pause(); audioRef.a = null; }
+    setPlaying(false);
+  };
+
+  const playPreview = async () => {
+    if (playing) { stop(); return; }
+    let url = song.audio_url || "";
+    if (!url) {
+      const found = await lookupItunes(song.title, song.artist);
+      if (!found?.preview) { toast.error("Keine Preview gefunden für „" + song.title + " – " + song.artist + "“"); return; }
+      url = found.preview;
+    }
+    const a = new Audio(url);
+    a.onended = () => setPlaying(false);
+    audioRef.a = a;
+    try { await a.play(); setPlaying(true); }
+    catch { toast.error("Wiedergabe blockiert"); }
+  };
+
+  const placeFromItunes = async () => {
+    if (!song.title && !song.artist) { toast.error("Titel + Künstler eingeben"); return; }
+    setBusy(true);
+    const found = await lookupItunes(song.title, song.artist);
+    setBusy(false);
+    if (!found) { toast.error("Nicht bei iTunes gefunden"); return; }
+    const patch: Partial<FallbackSongData> = {};
+    if (found.preview) patch.audio_url = found.preview;
+    if (found.cover && !song.cover_url) patch.cover_url = found.cover;
+    onChange(patch);
+    toast.success("Song geplaced ✨");
+  };
+
+  const uploadFile = async (kind: "audio" | "cover", file: File) => {
+    const path = `wrapped/${year}/${storagePrefix}-${kind}-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    if (kind === "audio") onChange({ audio_url: data.publicUrl });
+    else onChange({ cover_url: data.publicUrl });
+    toast.success("Hochgeladen");
+  };
+
+  return (
+    <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="font-bold" style={{ color: "hsl(0 0% 100%)" }}>{label}</div>
+        <div className="flex gap-2">
+          <Button type="button" size="sm" variant="outline" onClick={playPreview}>
+            {playing ? <Pause className="h-3.5 w-3.5 mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
+            {playing ? "Stop" : "Preview (30s)"}
+          </Button>
+          <Button type="button" size="sm" onClick={placeFromItunes} disabled={busy} style={{ background: "hsl(270 70% 55%)" }}>
+            <Wand2 className="h-3.5 w-3.5 mr-1" /> {busy ? "Suche…" : "Auto-Placen"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <FieldLight label="Song-Titel" value={song.title} onChange={(v) => onChange({ title: v })} placeholder="z.B. Mockingbird" />
+        <FieldLight label="Künstler" value={song.artist} onChange={(v) => onChange({ artist: v })} placeholder="z.B. Eminem" />
+      </div>
+      <FieldLight label="Spotify-Link (optional)" value={song.spotify_url} onChange={(v) => onChange({ spotify_url: v })} placeholder="https://open.spotify.com/track/..." />
+
+      <div className="space-y-2">
+        <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Audio-URL (mp3/m4a)</Label>
+        <div className="flex items-center gap-3">
+          <Input value={song.audio_url || ""} onChange={(e) => onChange({ audio_url: e.target.value })} placeholder="https://…" className="flex-1" />
+          <label className="cursor-pointer">
+            <input type="file" accept="audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile("audio", e.target.files[0])} />
+            <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                  style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+              <Upload className="h-3.5 w-3.5" /> Upload
+            </span>
+          </label>
+        </div>
+        {song.audio_url && <audio src={song.audio_url} controls className="w-full mt-2" />}
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Cover</Label>
+        <div className="flex items-center gap-3">
+          {song.cover_url && (<img src={song.cover_url} alt="Cover" className="w-16 h-16 rounded-lg object-cover" />)}
+          <Input value={song.cover_url} onChange={(e) => onChange({ cover_url: e.target.value })} placeholder="https://…" className="flex-1" />
+          <label className="cursor-pointer">
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile("cover", e.target.files[0])} />
+            <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                  style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+              <Upload className="h-3.5 w-3.5" /> Upload
+            </span>
+          </label>
+        </div>
+      </div>
+    </Card>
+  );
+}
+

@@ -29,13 +29,17 @@ export default function Wrapped() {
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string } | null>(null);
+  const [fallbackSong2, setFallbackSong2] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string } | null>(null);
   const [resolvedPreview, setResolvedPreview] = useState<string>("");
+  const [resolvedPreview2, setResolvedPreview2] = useState<string>("");
   const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
   const [started, setStarted] = useState(false);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const slidesCountRef = useRef(1);
+  const MAX_STORY_MS = 60000;
 
   useEffect(() => {
     if (!user) return;
@@ -52,38 +56,52 @@ export default function Wrapped() {
       const fb = yearCfg?.fallbackSong || (legacyRes.data?.value as any);
       if (fb?.title || fb?.artist || fb?.cover_url || fb?.spotify_url || fb?.audio_url) setFallbackSong(fb);
       else setFallbackSong(null);
+      const fb2 = yearCfg?.fallbackSong2;
+      if (fb2?.title || fb2?.artist || fb2?.audio_url) setFallbackSong2(fb2);
+      else setFallbackSong2(null);
     })();
   }, [user, year]);
 
-  // Auto-resolve preview URL from iTunes if admin only provided title/artist (no audio_url)
+  // Auto-resolve preview URLs from iTunes if admin only provided title/artist (no audio_url)
   useEffect(() => {
-    if (music?.connected) { setResolvedPreview(""); return; }
-    if (!fallbackSong) { setResolvedPreview(""); return; }
-    if (fallbackSong.audio_url) { setResolvedPreview(""); return; }
-    const q = `${fallbackSong.title || ""} ${fallbackSong.artist || ""}`.trim();
-    if (!q) { setResolvedPreview(""); return; }
-    let cancelled = false;
-    (async () => {
+    const resolve = async (song: typeof fallbackSong, setter: (s: string) => void) => {
+      if (music?.connected || !song || song.audio_url) { setter(""); return; }
+      const q = `${song.title || ""} ${song.artist || ""}`.trim();
+      if (!q) { setter(""); return; }
       try {
         const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
         const j = await r.json();
-        const url = j?.results?.[0]?.previewUrl || "";
-        if (!cancelled) setResolvedPreview(url);
-      } catch {
-        if (!cancelled) setResolvedPreview("");
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [fallbackSong, music?.connected]);
+        setter(j?.results?.[0]?.previewUrl || "");
+      } catch { setter(""); }
+    };
+    resolve(fallbackSong, setResolvedPreview);
+    resolve(fallbackSong2, setResolvedPreview2);
+  }, [fallbackSong, fallbackSong2, music?.connected]);
 
-  // Auto-advance slides while playing (hooks must run unconditionally)
+
+  // Auto-advance slides while playing — total story capped at 60s
   useEffect(() => {
     if (!started || paused) return;
+    const n = Math.max(1, slidesCountRef.current);
+    const perSlide = Math.max(2500, Math.min(5000, Math.floor(MAX_STORY_MS / n)));
     const t = setTimeout(() => {
       setSlide((s) => s + 1);
-    }, 5000);
+    }, perSlide);
     return () => clearTimeout(t);
   }, [started, paused, slide]);
+  // Swap audio source when crossing halftime
+  useEffect(() => {
+    if (!started || !audioRef.current) return;
+    const n = Math.max(1, slidesCountRef.current);
+    const half = Math.ceil(n / 2);
+    const url2 = !music?.connected ? (fallbackSong2?.audio_url || resolvedPreview2 || "") : "";
+    if (slide >= half && url2 && audioRef.current.src !== url2) {
+      audioRef.current.pause();
+      audioRef.current.src = url2;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [slide, started, fallbackSong2, resolvedPreview2, music?.connected]);
 
   // Cleanup on fullscreen exit
   useEffect(() => {
@@ -306,6 +324,8 @@ export default function Wrapped() {
   ];
 
   const slides = rawSlides.filter((s) => isOn(s.key));
+  slidesCountRef.current = Math.max(1, slides.length);
+  const halfIndex = Math.ceil(slides.length / 2);
 
   if (flagsLoading || stats.loading) {
     return <div className="p-12 text-center text-muted-foreground">Lade dein Wrapped...</div>;
@@ -341,7 +361,10 @@ export default function Wrapped() {
 
   const cover = yearCfg.cover || {};
   const coverImg = cover.image_url || "";
-  const audioUrl = cover.audio_url || (!music?.connected ? (fallbackSong?.audio_url || resolvedPreview || "") : "");
+  const audioUrl1 = cover.audio_url || (!music?.connected ? (fallbackSong?.audio_url || resolvedPreview || "") : "");
+  const audioUrl2 = !music?.connected ? (fallbackSong2?.audio_url || resolvedPreview2 || "") : "";
+  const currentAudioUrl = slide >= halfIndex && audioUrl2 ? audioUrl2 : audioUrl1;
+
 
   const startStory = async () => {
     if (audioRef.current) {
@@ -351,9 +374,9 @@ export default function Wrapped() {
     }
 
     // Create + start audio SYNC within user gesture (before any await)
-    if (audioUrl) {
+    if (audioUrl1) {
       try {
-        const a = new Audio(audioUrl);
+        const a = new Audio(audioUrl1);
         a.loop = true;
         a.muted = muted;
         a.preload = "auto";
@@ -468,7 +491,7 @@ export default function Wrapped() {
 
         {/* top controls */}
         <div className="absolute top-6 right-3 flex gap-2 z-30">
-          {audioUrl && (
+          {(audioUrl1 || audioUrl2) && (
             <button
               onClick={(e) => { e.stopPropagation(); setMuted((m) => { const nm = !m; if (audioRef.current) audioRef.current.muted = nm; return nm; }); }}
               className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
