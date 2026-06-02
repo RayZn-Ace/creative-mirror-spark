@@ -11,6 +11,9 @@ const config: CapacitorConfig = {
     App: {
       url: 'nightlife',
     },
+    CapacitorHttp: {
+      enabled: true,
+    },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
