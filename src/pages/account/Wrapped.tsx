@@ -39,7 +39,51 @@ export default function Wrapped() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const slidesCountRef = useRef(1);
+  const bpmCacheRef = useRef<Map<string, number>>(new Map());
   const MAX_STORY_MS = 60000;
+
+  // Lightweight BPM detection via OfflineAudio decode + energy autocorrelation
+  async function detectBpm(url: string): Promise<number | null> {
+    try {
+      const cached = bpmCacheRef.current.get(url);
+      if (cached) return cached;
+      const res = await fetch(url);
+      const buf = await res.arrayBuffer();
+      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return null;
+      const tmp = new AC();
+      const audioBuf: AudioBuffer = await new Promise((resolve, reject) =>
+        tmp.decodeAudioData(buf.slice(0), resolve, reject)
+      );
+      try { tmp.close(); } catch {}
+      const data = audioBuf.getChannelData(0);
+      const sr = audioBuf.sampleRate;
+      const fps = 50; // 20ms frames
+      const winSize = Math.floor(sr / fps);
+      const frames: number[] = [];
+      for (let i = 0; i + winSize <= data.length; i += winSize) {
+        let s = 0;
+        for (let j = 0; j < winSize; j++) { const v = data[i + j]; s += v * v; }
+        frames.push(s);
+      }
+      // Autocorrelate in BPM range 70..180
+      const minLag = Math.floor((fps * 60) / 180);
+      const maxLag = Math.floor((fps * 60) / 70);
+      let bestLag = minLag, bestVal = -Infinity;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        let sum = 0;
+        for (let i = 0; i + lag < frames.length; i++) sum += frames[i] * frames[i + lag];
+        if (sum > bestVal) { bestVal = sum; bestLag = lag; }
+      }
+      let bpm = (60 * fps) / bestLag;
+      // Fold into 80..160 range (handle half/double-time)
+      while (bpm < 80) bpm *= 2;
+      while (bpm > 160) bpm /= 2;
+      bpmCacheRef.current.set(url, bpm);
+      return bpm;
+    } catch { return null; }
+  }
+
 
   useEffect(() => {
     if (!user) return;
@@ -103,6 +147,16 @@ export default function Wrapped() {
     resolve(fallbackSong, setResolvedPreview);
     resolve(fallbackSong2, setResolvedPreview2);
   }, [fallbackSong, fallbackSong2, music?.connected]);
+
+  // Prefetch BPM for both fallback tracks so the crossfade can beatmatch
+  useEffect(() => {
+    const urls = [
+      fallbackSong?.audio_url || resolvedPreview,
+      fallbackSong2?.audio_url || resolvedPreview2,
+    ].filter(Boolean) as string[];
+    urls.forEach((u) => { void detectBpm(u); });
+  }, [fallbackSong?.audio_url, fallbackSong2?.audio_url, resolvedPreview, resolvedPreview2]);
+
 
 
   // Auto-advance slides while playing — total story capped at 60s
@@ -184,19 +238,36 @@ export default function Wrapped() {
           newHP.frequency.exponentialRampToValueAtTime(20, tEnd);
         }
 
-        // Tempo ramp on both elements (DJ pitch-bend feel)
+        // Beat-matched tempo ramp using detected BPMs (with fallback to subtle pitch-bend)
         try {
           (oldAudio as any).preservesPitch = true;
           (next as any).preservesPitch = true;
         } catch {}
+        const bpmOld = bpmCacheRef.current.get(oldAudio.src) ?? 0;
+        const bpmNew = bpmCacheRef.current.get(url2) ?? 0;
+        let ratio = 1; // newRate at p=0 (matched to old)
+        let oldEndRate = 1; // oldRate at p=1 (matched to new)
+        if (bpmOld > 0 && bpmNew > 0) {
+          // Fold to nearest octave so a 80 vs 160 BPM pair still matches
+          let r = bpmOld / bpmNew;
+          while (r > 1.4) r /= 2;
+          while (r < 0.71) r *= 2;
+          // Clamp to ±12% so vocals don't get chipmunked
+          ratio = Math.max(0.88, Math.min(1.12, r));
+          oldEndRate = Math.max(0.88, Math.min(1.12, 1 / ratio));
+        } else {
+          ratio = 0.94; oldEndRate = 0.95; // legacy fallback
+        }
+        // Start new track at old's tempo, ramp to its own; old does the opposite
+        next.playbackRate = ratio;
         const startTime = performance.now();
         const tick = () => {
           const p = Math.min(1, (performance.now() - startTime) / DURATION);
-          // old slows slightly, new starts slow and catches up
-          oldAudio.playbackRate = 1 - 0.05 * p;
-          next.playbackRate = 0.94 + 0.06 * p;
+          // smoothstep easing keeps the bpm slide musical
+          const e = p * p * (3 - 2 * p);
+          oldAudio.playbackRate = 1 * (1 - e) + oldEndRate * e;
+          next.playbackRate = ratio * (1 - e) + 1 * e;
           if (!useWebAudio) {
-            // fallback equal-power gain on element volume
             const eo = Math.cos((p * Math.PI) / 2);
             const en = Math.sin((p * Math.PI) / 2);
             try { oldAudio.volume = Math.max(0, eo); } catch {}
@@ -209,6 +280,7 @@ export default function Wrapped() {
           }
         };
         requestAnimationFrame(tick);
+
       }).catch(() => {
         try { oldAudio.pause(); oldAudio.src = ""; } catch {}
         next.volume = targetVol;
