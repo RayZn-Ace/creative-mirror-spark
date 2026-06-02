@@ -24,6 +24,7 @@ export type SlideConfig = {
 export type WrappedYearConfig = {
   slides: Record<SlideKey, SlideConfig>;
   fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string };
+  cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string };
 };
 
 export type WrappedConfig = Record<string, WrappedYearConfig>; // keyed by year
@@ -72,6 +73,7 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
     SLIDE_META.map((s) => [s.key, { enabled: true, gradient: DEFAULT_GRADIENTS[s.key] } as SlideConfig]),
   ) as Record<SlideKey, SlideConfig>,
   fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "" },
+  cover: { image_url: "", audio_url: "", title: "", subtitle: "" },
 });
 
 /* ───────── Component ───────── */
@@ -113,6 +115,10 @@ export default function WrappedAdmin() {
     setConfig((c) => ({ ...c, [year]: { ...yc, fallbackSong: { ...yc.fallbackSong, ...patch } } }));
   };
 
+  const updateCover = (patch: Partial<NonNullable<WrappedYearConfig["cover"]>>) => {
+    setConfig((c) => ({ ...c, [year]: { ...yc, cover: { ...(yc.cover || {}), ...patch } } }));
+  };
+
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("settings").upsert({ key: "wrapped_config", value: config as any }, { onConflict: "key" });
@@ -137,6 +143,24 @@ export default function WrappedAdmin() {
     const { data } = supabase.storage.from("event-images").getPublicUrl(path);
     updateSong({ cover_url: data.publicUrl });
     toast.success("Cover hochgeladen");
+  };
+
+  const uploadStartCover = async (file: File) => {
+    const path = `wrapped/${year}/start-cover-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    updateCover({ image_url: data.publicUrl });
+    toast.success("Start-Cover hochgeladen");
+  };
+
+  const uploadAudio = async (file: File) => {
+    const path = `wrapped/${year}/audio-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    updateCover({ audio_url: data.publicUrl });
+    toast.success("Audio hochgeladen");
   };
 
   if (loading) {
@@ -175,7 +199,53 @@ export default function WrappedAdmin() {
         ))}
       </div>
 
+      {/* Start Cover (click-to-play) */}
+      <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5" style={{ color: "hsl(270 70% 55%)" }} />
+          <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>Start-Cover {year}</h2>
+        </div>
+        <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+          Cover-Bild + Sound. User klickt drauf → Fullscreen-Story startet mit Musik.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FieldLight label="Titel (optional)" value={yc.cover?.title || ""} onChange={(v) => updateCover({ title: v })} placeholder={`Dein ${year}`} />
+          <FieldLight label="Subtitle (optional)" value={yc.cover?.subtitle || ""} onChange={(v) => updateCover({ subtitle: v })} placeholder="Tap to play 🔥" />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Cover-Bild</Label>
+          <div className="flex items-center gap-3">
+            {yc.cover?.image_url && (
+              <img src={yc.cover.image_url} alt="Cover" className="w-16 h-16 rounded-lg object-cover" />
+            )}
+            <Input value={yc.cover?.image_url || ""} onChange={(e) => updateCover({ image_url: e.target.value })} placeholder="https://…" className="flex-1" />
+            <label className="cursor-pointer">
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadStartCover(e.target.files[0])} />
+              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+                <Upload className="h-3.5 w-3.5" /> Upload
+              </span>
+            </label>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Audio (mp3/m4a, wird beim Start gespielt)</Label>
+          <div className="flex items-center gap-3">
+            <Input value={yc.cover?.audio_url || ""} onChange={(e) => updateCover({ audio_url: e.target.value })} placeholder="https://…" className="flex-1" />
+            <label className="cursor-pointer">
+              <input type="file" accept="audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAudio(e.target.files[0])} />
+              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+                <Upload className="h-3.5 w-3.5" /> Upload
+              </span>
+            </label>
+          </div>
+          {yc.cover?.audio_url && <audio src={yc.cover.audio_url} controls className="w-full mt-2" />}
+        </div>
+      </Card>
+
       {/* Fallback Song */}
+
       <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
         <div className="flex items-center gap-2">
           <Music className="h-5 w-5" style={{ color: "hsl(270 70% 55%)" }} />

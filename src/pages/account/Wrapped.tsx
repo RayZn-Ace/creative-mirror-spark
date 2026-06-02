@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart, Music, Headphones } from "lucide-react";
+import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart, Music, Headphones, Play, X, Pause, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -30,6 +30,11 @@ export default function Wrapped() {
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string } | null>(null);
   const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
+  const [started, setStarted] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -48,7 +53,7 @@ export default function Wrapped() {
     })();
   }, [user, year]);
 
-  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }> };
+  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }>; cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string } };
   const sCfg = (k: string) => yearCfg.slides?.[k] || {};
   const isOn = (k: string) => sCfg(k).enabled !== false;
   const grad = (k: string, def: string) => sCfg(k).gradient || def;
@@ -290,11 +295,87 @@ export default function Wrapped() {
   const next = () => setSlide((s) => Math.min(slides.length - 1, s + 1));
   const prev = () => setSlide((s) => Math.max(0, s - 1));
 
-  return (
-    <div className="space-y-4">
-      <YearPicker year={year} setYear={setYear} onChange={() => setSlide(0)} />
+  const cover = yearCfg.cover || {};
+  const coverImg = cover.image_url || "";
+  const audioUrl = cover.audio_url || "";
 
-      <div className="relative aspect-[9/16] sm:aspect-[4/5] max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl">
+  const startStory = async () => {
+    setStarted(true);
+    setSlide(0);
+    // Try fullscreen
+    try {
+      const el = containerRef.current;
+      if (el && el.requestFullscreen) await el.requestFullscreen();
+    } catch {}
+    // Start audio (user-gesture safe)
+    if (audioUrl && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      try { await audioRef.current.play(); } catch {}
+    }
+  };
+
+  const stopStory = () => {
+    setStarted(false);
+    if (audioRef.current) { audioRef.current.pause(); }
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  };
+
+  // Auto-advance slides while playing
+  useEffect(() => {
+    if (!started || paused) return;
+    const t = setTimeout(() => {
+      if (slide < slides.length - 1) setSlide((s) => s + 1);
+      else stopStory();
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [started, paused, slide, slides.length]);
+
+  // Cleanup on fullscreen exit
+  useEffect(() => {
+    const onFs = () => { if (!document.fullscreenElement && started) setStarted(false); };
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, [started]);
+
+  // Cover screen (before start)
+  if (!started) {
+    return (
+      <div className="space-y-4">
+        <YearPicker year={year} setYear={setYear} onChange={() => setSlide(0)} />
+        <button
+          onClick={startStory}
+          className="group relative aspect-[9/16] sm:aspect-[4/5] max-w-md mx-auto w-full rounded-3xl overflow-hidden shadow-2xl block"
+        >
+          {coverImg ? (
+            <img src={coverImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-purple-600 to-pink-600" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
+            <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-4 ring-white/40">
+              <Play className="h-10 w-10 ml-1 fill-white" />
+            </div>
+            <div className="text-4xl md:text-5xl font-black drop-shadow-lg">
+              {cover.title || `Dein ${year}`}
+            </div>
+            <div className="text-lg opacity-90 mt-2 drop-shadow">
+              {cover.subtitle || "Tap to play 🔥"}
+            </div>
+          </div>
+        </button>
+        <p className="text-center text-xs text-muted-foreground">
+          {stats.yearCount} Partys · {stats.yearSpent.toFixed(0)}€ Vibes
+        </p>
+      </div>
+    );
+  }
+
+  // Fullscreen story player
+  return (
+    <div ref={containerRef} className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
+      {audioUrl && <audio ref={audioRef} src={audioUrl} loop muted={muted} />}
+      <div className="relative w-full h-full max-w-md mx-auto sm:aspect-[9/16] sm:h-auto sm:max-h-[95vh] sm:rounded-3xl overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.key}
@@ -317,43 +398,48 @@ export default function Wrapped() {
         </AnimatePresence>
 
         {/* progress bars */}
-        <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+        <div className="absolute top-3 left-3 right-3 flex gap-1 z-20">
           {slides.map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 h-1 rounded-full ${i <= slide ? "bg-white" : "bg-white/30"}`}
-            />
+            <div key={i} className="flex-1 h-1 rounded-full bg-white/30 overflow-hidden">
+              <div
+                className="h-full bg-white"
+                style={{
+                  width: i < slide ? "100%" : i === slide ? (paused ? "50%" : "100%") : "0%",
+                  transition: i === slide && !paused ? "width 5s linear" : "none",
+                }}
+              />
+            </div>
           ))}
         </div>
 
-        {/* tap zones */}
-        <button
-          className="absolute inset-y-0 left-0 w-1/3 z-10"
-          onClick={prev}
-          aria-label="Previous"
-        />
-        <button
-          className="absolute inset-y-0 right-0 w-1/3 z-10"
-          onClick={next}
-          aria-label="Next"
-        />
-      </div>
-
-      <div className="flex justify-center gap-3">
-        <Button variant="outline" size="sm" onClick={prev} disabled={slide === 0}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="text-sm text-muted-foreground self-center">
-          {slide + 1} / {slides.length}
+        {/* top controls */}
+        <div className="absolute top-6 right-3 flex gap-2 z-30">
+          {audioUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
+              className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
+              aria-label="Mute"
+            >
+              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); stopStory(); }}
+            className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={next}
-          disabled={slide === slides.length - 1}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+
+        {/* tap zones */}
+        <button className="absolute inset-y-0 left-0 w-1/3 z-10" onClick={prev} aria-label="Previous" />
+        <button
+          className="absolute inset-y-1/4 left-1/3 right-1/3 z-10"
+          onClick={() => setPaused((p) => !p)}
+          aria-label="Pause"
+        />
+        <button className="absolute inset-y-0 right-0 w-1/3 z-10" onClick={next} aria-label="Next" />
       </div>
     </div>
   );
