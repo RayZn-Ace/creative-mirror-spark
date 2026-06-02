@@ -183,109 +183,54 @@ export default function Wrapped() {
       const next = new Audio(url2);
       next.loop = true;
       next.muted = muted;
-      next.crossOrigin = "anonymous";
       next.preload = "auto";
+      next.volume = 0;
       audioRef.current = next;
 
-      const DURATION = 1800; // ms — DJ-style longer blend
-
-      // Try Web Audio routing for filter sweep; fall back to plain gain crossfade
-      let useWebAudio = false;
-      let ctx: AudioContext | null = null;
-      let oldGain: GainNode | null = null;
-      let newGain: GainNode | null = null;
-      let oldLP: BiquadFilterNode | null = null;
-      let newHP: BiquadFilterNode | null = null;
-
-      try {
-        const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (AC && !(oldAudio as any)._wa) {
-          (oldAudio as any).crossOrigin = "anonymous";
-          ctx = new AC();
-          (oldAudio as any)._wa = ctx;
-          const srcOld = ctx.createMediaElementSource(oldAudio);
-          oldLP = ctx.createBiquadFilter(); oldLP.type = "lowpass"; oldLP.frequency.value = 20000;
-          oldGain = ctx.createGain(); oldGain.gain.value = oldAudio.volume || 1;
-          srcOld.connect(oldLP).connect(oldGain).connect(ctx.destination);
-
-          const srcNew = ctx.createMediaElementSource(next);
-          newHP = ctx.createBiquadFilter(); newHP.type = "highpass"; newHP.frequency.value = 800;
-          newGain = ctx.createGain(); newGain.gain.value = 0;
-          srcNew.connect(newHP).connect(newGain).connect(ctx.destination);
-          useWebAudio = true;
-        }
-      } catch (e) {
-        useWebAudio = false;
-      }
+      const DURATION = 1800; // ms
 
       next.play().then(() => {
-        const t0 = (ctx?.currentTime ?? 0);
-        const tEnd = t0 + DURATION / 1000;
-
-        if (useWebAudio && ctx && oldGain && newGain && oldLP && newHP) {
-          // Equal-power crossfade via gain
-          oldGain.gain.cancelScheduledValues(t0);
-          newGain.gain.cancelScheduledValues(t0);
-          oldGain.gain.setValueAtTime(oldGain.gain.value, t0);
-          newGain.gain.setValueAtTime(0.0001, t0);
-          oldGain.gain.exponentialRampToValueAtTime(0.0001, tEnd);
-          newGain.gain.exponentialRampToValueAtTime(targetVol || 0.0001, tEnd);
-
-          // Filter sweep: old → muffled (LP 20k→200), new → opens up (HP 800→20)
-          oldLP.frequency.setValueAtTime(20000, t0);
-          oldLP.frequency.exponentialRampToValueAtTime(220, tEnd);
-          newHP.frequency.setValueAtTime(800, t0);
-          newHP.frequency.exponentialRampToValueAtTime(20, tEnd);
-        }
-
-        // Beat-matched tempo ramp using detected BPMs (with fallback to subtle pitch-bend)
         try {
           (oldAudio as any).preservesPitch = true;
           (next as any).preservesPitch = true;
         } catch {}
         const bpmOld = bpmCacheRef.current.get(oldAudio.src) ?? 0;
         const bpmNew = bpmCacheRef.current.get(url2) ?? 0;
-        let ratio = 1; // newRate at p=0 (matched to old)
-        let oldEndRate = 1; // oldRate at p=1 (matched to new)
+        let ratio = 0.94;
+        let oldEndRate = 0.95;
         if (bpmOld > 0 && bpmNew > 0) {
-          // Fold to nearest octave so a 80 vs 160 BPM pair still matches
           let r = bpmOld / bpmNew;
           while (r > 1.4) r /= 2;
           while (r < 0.71) r *= 2;
-          // Clamp to ±12% so vocals don't get chipmunked
           ratio = Math.max(0.88, Math.min(1.12, r));
           oldEndRate = Math.max(0.88, Math.min(1.12, 1 / ratio));
-        } else {
-          ratio = 0.94; oldEndRate = 0.95; // legacy fallback
         }
-        // Start new track at old's tempo, ramp to its own; old does the opposite
         next.playbackRate = ratio;
+
+        const startVol = (() => { try { return oldAudio.volume; } catch { return 1; } })();
         const startTime = performance.now();
         const tick = () => {
           const p = Math.min(1, (performance.now() - startTime) / DURATION);
-          // smoothstep easing keeps the bpm slide musical
           const e = p * p * (3 - 2 * p);
-          oldAudio.playbackRate = 1 * (1 - e) + oldEndRate * e;
-          next.playbackRate = ratio * (1 - e) + 1 * e;
-          if (!useWebAudio) {
-            const eo = Math.cos((p * Math.PI) / 2);
-            const en = Math.sin((p * Math.PI) / 2);
-            try { oldAudio.volume = Math.max(0, eo); } catch {}
-            try { next.volume = Math.min(targetVol, targetVol * en); } catch {}
-          }
+          try { oldAudio.playbackRate = 1 * (1 - e) + oldEndRate * e; } catch {}
+          try { next.playbackRate = ratio * (1 - e) + 1 * e; } catch {}
+          const eo = Math.cos((p * Math.PI) / 2);
+          const en = Math.sin((p * Math.PI) / 2);
+          try { oldAudio.volume = Math.max(0, startVol * eo); } catch {}
+          try { next.volume = Math.min(targetVol, targetVol * en); } catch {}
           if (p < 1) requestAnimationFrame(tick);
           else {
             try { oldAudio.pause(); oldAudio.src = ""; } catch {}
-            next.playbackRate = 1;
+            try { next.playbackRate = 1; next.volume = targetVol; } catch {}
           }
         };
         requestAnimationFrame(tick);
-
       }).catch(() => {
         try { oldAudio.pause(); oldAudio.src = ""; } catch {}
-        next.volume = targetVol;
+        try { next.volume = targetVol; } catch {}
       });
     }
+
   }, [slide, started, fallbackSong2, resolvedPreview2, music?.connected, muted]);
 
   // Cleanup on fullscreen exit
