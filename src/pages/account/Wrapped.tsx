@@ -275,3 +275,112 @@ function YearPicker({
     </div>
   );
 }
+
+/* ─── Welcome Wrapped: "Was bisher geschah" für neue Nutzer ─── */
+function WelcomeWrapped({ name }: { name: string }) {
+  const [slide, setSlide] = useState(0);
+  const slides = [
+    {
+      key: "hi",
+      bg: "from-primary via-purple-600 to-pink-600",
+      content: (
+        <div className="text-center">
+          <div className="text-6xl mb-6">👋</div>
+          <div className="text-5xl md:text-7xl font-black mb-4">Servus, {name}!</div>
+          <div className="text-xl opacity-90">Schön dass du da bist 🖤</div>
+        </div>
+      ),
+    },
+    {
+      key: "what",
+      bg: "from-pink-600 via-rose-500 to-orange-500",
+      content: (
+        <div className="text-center">
+          <PartyPopper className="h-16 w-16 mx-auto mb-6" />
+          <div className="text-3xl font-bold mb-4">Das hier ist deine Nightlife-Story</div>
+          <div className="text-lg opacity-90">Sobald du auf Partys gehst, wird hier dein eigenes Wrapped entstehen ✨</div>
+        </div>
+      ),
+    },
+    {
+      key: "perks",
+      bg: "from-cyan-500 via-blue-600 to-indigo-700",
+      content: (
+        <div className="text-center">
+          <Heart className="h-14 w-14 mx-auto mb-6" />
+          <div className="text-3xl font-bold mb-6">Was du bei uns kriegst</div>
+          <div className="space-y-3 text-left max-w-xs mx-auto">
+            <div className="flex items-center gap-3"><Ticket className="h-5 w-5 shrink-0" /><span>Tickets für die sicksten Abipartys</span></div>
+            <div className="flex items-center gap-3"><Sparkles className="h-5 w-5 shrink-0" /><span>Rewards & Goodies just for vibing</span></div>
+            <div className="flex items-center gap-3"><MapPin className="h-5 w-5 shrink-0" /><span>Events in deiner Stadt zuerst</span></div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "cta",
+      bg: "from-violet-600 via-pink-600 to-orange-500",
+      content: (
+        <div className="text-center">
+          <Rocket className="h-16 w-16 mx-auto mb-6 animate-pulse" />
+          <div className="text-4xl md:text-5xl font-black mb-4">Ready to write history?</div>
+          <div className="text-lg opacity-90 mb-8">Dein erstes Ticket wartet 🎫</div>
+          <Link to="/termine">
+            <Button size="lg" variant="secondary">
+              <Ticket className="h-4 w-4 mr-2" /> Veranstaltungen ansehen
+            </Button>
+          </Link>
+        </div>
+      ),
+    },
+  ];
+
+  const current = slides[slide];
+  const next = () => setSlide((s) => Math.min(slides.length - 1, s + 1));
+  const prev = () => setSlide((s) => Math.max(0, s - 1));
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Sparkles className="h-7 w-7 text-primary" /> Was bisher geschah
+        </h1>
+        <p className="text-muted-foreground mt-1">Deine kleine Welcome-Story 📲</p>
+      </div>
+
+      <div className="relative aspect-[9/16] sm:aspect-[4/5] max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current.key}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+            className={`absolute inset-0 bg-gradient-to-br ${current.bg} flex items-center justify-center p-8 text-white`}
+          >
+            {current.content}
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+          {slides.map((_, i) => (
+            <div key={i} className={`flex-1 h-1 rounded-full ${i <= slide ? "bg-white" : "bg-white/30"}`} />
+          ))}
+        </div>
+
+        <button className="absolute inset-y-0 left-0 w-1/3 z-10" onClick={prev} aria-label="Previous" />
+        <button className="absolute inset-y-0 right-0 w-1/3 z-10" onClick={next} aria-label="Next" />
+      </div>
+
+      <div className="flex justify-center gap-3">
+        <Button variant="outline" size="sm" onClick={prev} disabled={slide === 0}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="text-sm text-muted-foreground self-center">{slide + 1} / {slides.length}</div>
+        <Button variant="outline" size="sm" onClick={next} disabled={slide === slides.length - 1}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
