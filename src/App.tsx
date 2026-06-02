@@ -84,6 +84,12 @@ const AccountMemories = lazy(() => import("./pages/account/Memories"));
 
 const queryClient = new QueryClient();
 
+const DeepLinkHandler = () => {
+  const navigate = useNavigate();
+  useEffect(() => { initDeepLinks(navigate); }, [navigate]);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
