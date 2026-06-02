@@ -12,6 +12,7 @@ interface CompanyData {
 interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
 interface FeaturesData { wrapped_enabled: boolean; wrapped_welcome_enabled: boolean; }
+interface WrappedSongData { title: string; artist: string; cover_url: string; spotify_url: string; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
 interface EditingUser { userId: string; currentRole: string; newRole: string; }
@@ -22,6 +23,7 @@ const emptyCompany: CompanyData = { name: "", address: "", zip: "", city: "", co
 const emptyInvoice: InvoiceData = { prefix: "RE", next_number: 1 };
 const emptyEmail: EmailData = { sender_name: "Tickets", sender_domain: "", reply_to: "" };
 const emptyFeatures: FeaturesData = { wrapped_enabled: true, wrapped_welcome_enabled: true };
+const emptyWrappedSong: WrappedSongData = { title: "", artist: "", cover_url: "", spotify_url: "" };
 
 const inputStyle = { background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", width: "100%", outline: "none", transition: "border-color 0.2s" };
 const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "4px", display: "block" };
@@ -181,6 +183,8 @@ const SettingsAdmin = () => {
   const [invoice, setInvoice] = useState<InvoiceData>(emptyInvoice);
   const [emailSettings, setEmailSettings] = useState<EmailData>(emptyEmail);
   const [features, setFeatures] = useState<FeaturesData>(emptyFeatures);
+  const [wrappedSong, setWrappedSong] = useState<WrappedSongData>(emptyWrappedSong);
+  const [savingWrappedSong, setSavingWrappedSong] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({ display_name: "", avatar_url: "" });
   const [userRoles, setUserRoles] = useState<UserRoleRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -218,6 +222,7 @@ const SettingsAdmin = () => {
           if (row.key === "invoice") setInvoice({ ...emptyInvoice, ...val });
           if (row.key === "email") setEmailSettings({ ...emptyEmail, ...val });
           if (row.key === "features") setFeatures({ ...emptyFeatures, ...val });
+          if (row.key === "wrapped_fallback_song") setWrappedSong({ ...emptyWrappedSong, ...val });
         }
       }
       if (user) {
@@ -549,6 +554,30 @@ const SettingsAdmin = () => {
               onChange={(v) => setFeatures((p) => ({ ...p, wrapped_welcome_enabled: v }))}
               disabled={!features.wrapped_enabled}
             />
+          </SectionCard>
+
+          <SectionCard
+            icon={Sparkles}
+            title="Wrapped Fallback-Song"
+            description="Wird im Year in Review angezeigt, wenn der Nutzer Spotify nicht verbunden hat. Wird durch echte Spotify-Daten überschrieben sobald verlinkt."
+            onSave={() => save("wrapped_fallback_song", wrappedSong, setSavingWrappedSong)}
+            saving={savingWrappedSong}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Song-Titel" value={wrappedSong.title} onChange={(v) => setWrappedSong((p) => ({ ...p, title: v }))} placeholder="z.B. Mockingbird" />
+              <Field label="Künstler" value={wrappedSong.artist} onChange={(v) => setWrappedSong((p) => ({ ...p, artist: v }))} placeholder="z.B. Eminem" />
+            </div>
+            <Field label="Cover-URL (optional)" value={wrappedSong.cover_url} onChange={(v) => setWrappedSong((p) => ({ ...p, cover_url: v }))} placeholder="https://..." />
+            <Field label="Spotify-Link (optional)" value={wrappedSong.spotify_url} onChange={(v) => setWrappedSong((p) => ({ ...p, spotify_url: v }))} placeholder="https://open.spotify.com/track/..." />
+            {wrappedSong.cover_url && (
+              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                <img src={wrappedSong.cover_url} alt="Cover" className="w-14 h-14 rounded-lg object-cover" />
+                <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                  <div className="font-bold" style={{ color: "hsl(0 0% 100%)" }}>{wrappedSong.title || "—"}</div>
+                  <div>{wrappedSong.artist || "—"}</div>
+                </div>
+              </div>
+            )}
           </SectionCard>
         </>
       )}
