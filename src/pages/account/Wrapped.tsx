@@ -64,20 +64,41 @@ export default function Wrapped() {
 
   // Auto-resolve preview URLs from iTunes if admin only provided title/artist (no audio_url)
   useEffect(() => {
+    const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    const score = (it: any, title: string, artist: string) => {
+      const t = norm(title), a = norm(artist);
+      const tn = norm(it.trackName || ""), an = norm(it.artistName || "");
+      let s = 0;
+      if (tn === t) s += 100; else if (tn.startsWith(t)) s += 60; else if (tn.includes(t)) s += 30;
+      if (an === a) s += 100; else if (an.includes(a) || a.includes(an)) s += 60;
+      if (it.previewUrl) s += 10;
+      return s;
+    };
     const resolve = async (song: typeof fallbackSong, setter: (s: string) => void) => {
       if (music?.connected || !song || song.audio_url) { setter(""); return; }
-      const q = `${song.title || ""} ${song.artist || ""}`.trim();
-      if (!q) { setter(""); return; }
-      const tryFetch = async (country: string): Promise<string> => {
+      const title = song.title || ""; const artist = song.artist || "";
+      if (!title.trim() && !artist.trim()) { setter(""); return; }
+      const tryFetch = async (country: string, term: string): Promise<any[]> => {
         try {
-          const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=15&country=${country}&term=${encodeURIComponent(q)}`);
+          const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=25&country=${country}&term=${encodeURIComponent(term)}`);
           const j = await r.json();
-          const hit = (j?.results || []).find((it: any) => it.previewUrl);
-          return hit?.previewUrl || "";
-        } catch { return ""; }
+          return (j?.results || []) as any[];
+        } catch { return []; }
       };
-      const url = (await tryFetch("DE")) || (await tryFetch("US"));
-      setter(url);
+      const terms = [`${artist} ${title}`, `${title} ${artist}`, title].map((t) => t.trim()).filter(Boolean);
+      let best: any = null; let bestScore = -1;
+      for (const c of ["DE", "US"]) {
+        for (const term of terms) {
+          const results = await tryFetch(c, term);
+          for (const it of results) {
+            const sc = score(it, title, artist);
+            if (sc > bestScore && (it.previewUrl || bestScore < 0)) { best = it; bestScore = sc; }
+          }
+          if (best?.previewUrl && bestScore >= 160) break;
+        }
+        if (best?.previewUrl && bestScore >= 160) break;
+      }
+      setter(best?.previewUrl || "");
     };
     resolve(fallbackSong, setResolvedPreview);
     resolve(fallbackSong2, setResolvedPreview2);
