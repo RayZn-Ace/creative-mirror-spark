@@ -321,25 +321,35 @@ export default function Wrapped() {
   const audioUrl = cover.audio_url || "";
 
   const startStory = async () => {
+    // Create + start audio SYNC within user gesture (before any await)
+    if (audioUrl) {
+      try {
+        if (!audioRef.current) {
+          const a = new Audio(audioUrl);
+          a.loop = true;
+          a.muted = muted;
+          audioRef.current = a;
+        }
+        audioRef.current.currentTime = 0;
+        const p = audioRef.current.play();
+        if (p) p.catch((err) => console.warn("audio play failed", err));
+      } catch (e) { console.warn(e); }
+    }
     setStarted(true);
     setSlide(0);
-    // Try fullscreen
+    // Fullscreen (async ok — gesture still counts)
     try {
       const el = containerRef.current;
       if (el && el.requestFullscreen) await el.requestFullscreen();
     } catch {}
-    // Start audio (user-gesture safe)
-    if (audioUrl && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      try { await audioRef.current.play(); } catch {}
-    }
   };
 
   const stopStory = () => {
     setStarted(false);
-    if (audioRef.current) { audioRef.current.pause(); }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
+
 
 
   // Cover screen (before start)
@@ -379,7 +389,7 @@ export default function Wrapped() {
   // Fullscreen story player
   return (
     <div ref={containerRef} className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
-      {audioUrl && <audio ref={audioRef} src={audioUrl} loop muted={muted} />}
+      {/* audio managed imperatively via audioRef in startStory */}
       <div className="relative w-full h-full max-w-md mx-auto sm:aspect-[9/16] sm:h-auto sm:max-h-[95vh] sm:rounded-3xl overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -421,7 +431,7 @@ export default function Wrapped() {
         <div className="absolute top-6 right-3 flex gap-2 z-30">
           {audioUrl && (
             <button
-              onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
+              onClick={(e) => { e.stopPropagation(); setMuted((m) => { const nm = !m; if (audioRef.current) audioRef.current.muted = nm; return nm; }); }}
               className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Mute"
             >
