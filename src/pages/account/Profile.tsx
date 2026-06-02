@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
+import MusicConnections from "@/components/account/MusicConnections";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -79,42 +80,46 @@ export default function Profile() {
   if (loading) return <div>Lade...</div>;
 
   return (
-    <Card className="p-6 md:p-8">
-      <h1 className="text-2xl font-bold mb-6">Mein Profil</h1>
+    <div className="space-y-6">
+      <Card className="p-6 md:p-8">
+        <h1 className="text-2xl font-bold mb-6">Mein Profil</h1>
 
-      <div className="flex items-center gap-4 mb-8">
-        <Avatar className="h-20 w-20">
-          <AvatarImage src={profile.avatar_url} />
-          <AvatarFallback>{(profile.display_name || user?.email || "?")[0].toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <label>
-          <Button type="button" variant="outline" asChild>
-            <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" />Foto ändern</span>
-          </Button>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])}
-          />
-        </label>
-      </div>
+        <div className="flex items-center gap-4 mb-8">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={profile.avatar_url} />
+            <AvatarFallback>{(profile.display_name || user?.email || "?")[0].toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <label>
+            <Button type="button" variant="outline" asChild>
+              <span className="cursor-pointer"><Upload className="h-4 w-4 mr-2" />Foto ändern</span>
+            </Button>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])}
+            />
+          </label>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <Field label="Name" value={profile.display_name} onChange={(v) => setProfile({ ...profile, display_name: v })} />
-        <Field label="Telefon" value={profile.phone} onChange={(v) => setProfile({ ...profile, phone: v })} />
-        <Field label="Geburtstag" type="date" value={profile.birth_date} onChange={(v) => setProfile({ ...profile, birth_date: v })} />
-        <Field label="E-Mail" value={user?.email || ""} onChange={() => {}} disabled />
-        <Field label="Straße & Nr." value={profile.address} onChange={(v) => setProfile({ ...profile, address: v })} />
-        <Field label="PLZ" value={profile.zip} onChange={(v) => setProfile({ ...profile, zip: v })} />
-        <Field label="Stadt" value={profile.city} onChange={(v) => setProfile({ ...profile, city: v })} />
-        <Field label="Land" value={profile.country} onChange={(v) => setProfile({ ...profile, country: v })} />
-      </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Field label="Name" value={profile.display_name} onChange={(v) => setProfile({ ...profile, display_name: v })} />
+          <Field label="Telefon" value={profile.phone} onChange={(v) => setProfile({ ...profile, phone: v })} />
+          <Field label="Geburtstag" type="date" value={profile.birth_date} onChange={(v) => setProfile({ ...profile, birth_date: v })} />
+          <Field label="E-Mail" value={user?.email || ""} onChange={() => {}} disabled />
+          <Field label="Straße & Nr." value={profile.address} onChange={(v) => setProfile({ ...profile, address: v })} />
+          <Field label="PLZ" value={profile.zip} onChange={(v) => setProfile({ ...profile, zip: v })} />
+          <Field label="Stadt" value={profile.city} onChange={(v) => setProfile({ ...profile, city: v })} />
+          <Field label="Land" value={profile.country} onChange={(v) => setProfile({ ...profile, country: v })} />
+        </div>
 
-      <Button onClick={save} disabled={saving} className="mt-6">
-        {saving ? "Speichere..." : "Speichern"}
-      </Button>
-    </Card>
+        <Button onClick={save} disabled={saving} className="mt-6">
+          {saving ? "Speichere..." : "Speichern"}
+        </Button>
+      </Card>
+
+      <MusicConnections />
+    </div>
   );
 }
 

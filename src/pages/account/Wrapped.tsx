@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart } from "lucide-react";
+import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart, Music, Headphones } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+
+type MusicData = {
+  connected: boolean;
+  profile?: { display_name: string | null; avatar_url: string | null };
+  yearTopTrack?: { name: string; artist: string; image: string | null } | null;
+  yearTopArtist?: { name: string; image: string | null; genre: string | null } | null;
+  recentTopTrack?: { name: string; artist: string; image: string | null } | null;
+  midTermTopTrack?: { name: string; artist: string; image: string | null } | null;
+};
 
 export default function Wrapped() {
   const now = new Date();
@@ -17,6 +27,15 @@ export default function Wrapped() {
   const [slide, setSlide] = useState(0);
   const { flags, loading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
+  const [music, setMusic] = useState<MusicData | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.functions.invoke("spotify-wrapped", { body: {} });
+      if (data) setMusic(data as MusicData);
+    })();
+  }, [user]);
 
   const slides = [
     {
@@ -109,6 +128,61 @@ export default function Wrapped() {
         </div>
       ),
     },
+    ...(music?.connected && music.yearTopArtist ? [{
+      key: "soundtrack",
+      bg: "from-green-500 via-emerald-600 to-teal-700",
+      content: (
+        <div className="text-center w-full">
+          <Headphones className="h-12 w-12 mx-auto mb-4 opacity-80" />
+          <div className="text-xl opacity-80 mb-2">Dein Soundtrack {year}</div>
+          {music.yearTopArtist.image && (
+            <img src={music.yearTopArtist.image} alt="" className="h-32 w-32 mx-auto rounded-full mb-4 object-cover shadow-2xl ring-4 ring-white/40" />
+          )}
+          <div className="text-4xl md:text-5xl font-black mb-2">{music.yearTopArtist.name}</div>
+          {music.yearTopArtist.genre && (
+            <div className="text-sm opacity-70 capitalize mb-4">{music.yearTopArtist.genre}</div>
+          )}
+          {music.yearTopTrack && (
+            <div className="mt-6 bg-white/15 backdrop-blur rounded-2xl p-4">
+              <div className="text-xs opacity-70 uppercase tracking-wide mb-1">Top Song</div>
+              <div className="font-bold">{music.yearTopTrack.name}</div>
+              <div className="text-sm opacity-80">{music.yearTopTrack.artist}</div>
+            </div>
+          )}
+        </div>
+      ),
+    }] : []),
+    ...(music?.connected && music.recentTopTrack ? [{
+      key: "month-song",
+      bg: "from-fuchsia-600 via-purple-700 to-indigo-800",
+      content: (
+        <div className="text-center w-full max-w-sm">
+          <Music className="h-12 w-12 mx-auto mb-4 opacity-80" />
+          <div className="text-xl opacity-80 mb-4">Im Monat deiner Lieblings-Party hattest du das hier in Dauerschleife 🔁</div>
+          {music.recentTopTrack.image && (
+            <img src={music.recentTopTrack.image} alt="" className="h-44 w-44 mx-auto rounded-2xl mb-5 object-cover shadow-2xl" />
+          )}
+          <div className="text-3xl font-black mb-2">{music.recentTopTrack.name}</div>
+          <div className="text-lg opacity-90">{music.recentTopTrack.artist}</div>
+        </div>
+      ),
+    }] : []),
+    ...(!music?.connected ? [{
+      key: "connect-music",
+      bg: "from-[#1DB954] via-emerald-600 to-teal-700",
+      content: (
+        <div className="text-center">
+          <Headphones className="h-16 w-16 mx-auto mb-6" />
+          <div className="text-3xl font-black mb-4">Connect Spotify 🎧</div>
+          <div className="text-lg opacity-90 mb-6 max-w-xs mx-auto">
+            Verbinde Spotify und sieh deinen Party-Soundtrack als nächstes Mal hier
+          </div>
+          <Link to="/account/profile">
+            <Button size="lg" variant="secondary">Jetzt verbinden</Button>
+          </Link>
+        </div>
+      ),
+    }] : []),
     {
       key: "outro",
       bg: "from-primary via-pink-600 to-orange-500",
