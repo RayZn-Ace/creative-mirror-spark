@@ -34,7 +34,38 @@ export default function AccountLayout() {
   return (
     <PageLayout title="Account">
       <div className="container py-8 grid lg:grid-cols-[260px_1fr] gap-8">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        {/* Mobile: horizontal scrollable pill nav */}
+        <nav className="lg:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 pb-2 w-max">
+            {items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all border",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-[0_4px_20px_hsl(var(--primary)/0.4)]"
+                      : "bg-card/60 text-foreground/80 border-border hover:bg-accent"
+                  )
+                }
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </NavLink>
+            ))}
+            <button
+              onClick={async () => { await signOut(); nav("/"); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-destructive/40 text-destructive hover:bg-destructive/10 transition-all"
+            >
+              <LogOut className="h-4 w-4" /> Logout
+            </button>
+          </div>
+        </nav>
+
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
           <div className="bg-card rounded-2xl border p-4 space-y-1">
             {items.map((item) => (
               <NavLink
