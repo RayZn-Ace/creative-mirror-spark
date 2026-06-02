@@ -42,8 +42,8 @@ export default function SocialProofToast() {
   const realOrdersQueue = useRef<ToastMsg[]>([]);
   const location = useLocation();
 
-  // Don't show on admin pages
-  const isAdmin = location.pathname.startsWith("/admin");
+  // Don't show on admin pages or in customer account area
+  const isAdmin = location.pathname.startsWith("/admin") || location.pathname.startsWith("/account");
 
   // Fetch published events that have ticket categories
   useEffect(() => {
