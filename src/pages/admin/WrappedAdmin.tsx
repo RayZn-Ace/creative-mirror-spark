@@ -23,7 +23,7 @@ export type SlideConfig = {
 
 export type WrappedYearConfig = {
   slides: Record<SlideKey, SlideConfig>;
-  fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string };
+  fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string };
   cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string };
 };
 
@@ -72,7 +72,7 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
   slides: Object.fromEntries(
     SLIDE_META.map((s) => [s.key, { enabled: true, gradient: DEFAULT_GRADIENTS[s.key] } as SlideConfig]),
   ) as Record<SlideKey, SlideConfig>,
-  fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "" },
+  fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
   cover: { image_url: "", audio_url: "", title: "", subtitle: "" },
 });
 
@@ -161,6 +161,15 @@ export default function WrappedAdmin() {
     const { data } = supabase.storage.from("event-images").getPublicUrl(path);
     updateCover({ audio_url: data.publicUrl });
     toast.success("Audio hochgeladen");
+  };
+
+  const uploadFallbackAudio = async (file: File) => {
+    const path = `wrapped/${year}/fallback-audio-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    updateSong({ audio_url: data.publicUrl });
+    toast.success("Fallback-Audio hochgeladen");
   };
 
   if (loading) {
