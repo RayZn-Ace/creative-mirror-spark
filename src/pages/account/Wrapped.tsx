@@ -39,11 +39,12 @@ export default function Wrapped() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const slidesCountRef = useRef(1);
-  const bpmCacheRef = useRef<Map<string, number>>(new Map());
+  // Cache: bpm + confidence (0..1). confidence<0.5 → unreliable, use safe pitch-bend fallback
+  const bpmCacheRef = useRef<Map<string, { bpm: number; confidence: number }>>(new Map());
   const MAX_STORY_MS = 60000;
 
-  // Lightweight BPM detection via OfflineAudio decode + energy autocorrelation
-  async function detectBpm(url: string): Promise<number | null> {
+  // Lightweight BPM detection via decode + energy autocorrelation with stability check
+  async function detectBpm(url: string): Promise<{ bpm: number; confidence: number } | null> {
     try {
       const cached = bpmCacheRef.current.get(url);
       if (cached) return cached;
@@ -58,7 +59,7 @@ export default function Wrapped() {
       try { tmp.close(); } catch {}
       const data = audioBuf.getChannelData(0);
       const sr = audioBuf.sampleRate;
-      const fps = 50; // 20ms frames
+      const fps = 50;
       const winSize = Math.floor(sr / fps);
       const frames: number[] = [];
       for (let i = 0; i + winSize <= data.length; i += winSize) {
@@ -66,23 +67,49 @@ export default function Wrapped() {
         for (let j = 0; j < winSize; j++) { const v = data[i + j]; s += v * v; }
         frames.push(s);
       }
-      // Autocorrelate in BPM range 70..180
+      if (frames.length < 200) return null; // too short → unreliable
+      // Normalise frame energies so confidence is comparable across tracks
+      const fMax = Math.max(...frames) || 1;
+      for (let i = 0; i < frames.length; i++) frames[i] /= fMax;
+
       const minLag = Math.floor((fps * 60) / 180);
       const maxLag = Math.floor((fps * 60) / 70);
-      let bestLag = minLag, bestVal = -Infinity;
+      const corr: number[] = new Array(maxLag + 1).fill(0);
+      let mean = 0;
       for (let lag = minLag; lag <= maxLag; lag++) {
         let sum = 0;
         for (let i = 0; i + lag < frames.length; i++) sum += frames[i] * frames[i + lag];
-        if (sum > bestVal) { bestVal = sum; bestLag = lag; }
+        corr[lag] = sum;
+        mean += sum;
       }
+      const n = maxLag - minLag + 1;
+      mean /= n;
+      // Find best and runner-up (excluding ±3 lags around the peak so we don't pick the same bump)
+      let bestLag = minLag, bestVal = -Infinity;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        if (corr[lag] > bestVal) { bestVal = corr[lag]; bestLag = lag; }
+      }
+      let secondVal = -Infinity;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        if (Math.abs(lag - bestLag) <= 3) continue;
+        if (corr[lag] > secondVal) secondVal = corr[lag];
+      }
+      // Confidence: how much the best peak dominates the mean & the runner-up
+      const peakOverMean = bestVal > 0 ? (bestVal - mean) / bestVal : 0;
+      const peakOverSecond = bestVal > 0 ? 1 - (secondVal / bestVal) : 0;
+      const confidence = Math.max(0, Math.min(1, 0.5 * peakOverMean + 0.5 * peakOverSecond));
+
       let bpm = (60 * fps) / bestLag;
-      // Fold into 80..160 range (handle half/double-time)
       while (bpm < 80) bpm *= 2;
       while (bpm > 160) bpm /= 2;
-      bpmCacheRef.current.set(url, bpm);
-      return bpm;
+      if (!isFinite(bpm) || bpm < 60 || bpm > 200) return null;
+
+      const out = { bpm, confidence };
+      bpmCacheRef.current.set(url, out);
+      return out;
     } catch { return null; }
   }
+
 
 
   useEffect(() => {
