@@ -30,7 +30,12 @@ export default function MusicConnections() {
   useEffect(() => { load(); }, [user]);
 
   const connect = () => {
-    const redirect_uri = `${window.location.origin}/account/music/callback`;
+    const isNative =
+      window.location.protocol === "capacitor:" ||
+      window.location.hostname === "localhost" && /(iPhone|iPad|Android)/i.test(navigator.userAgent);
+    const redirect_uri = isNative
+      ? "app.nightlife.app://music-callback"
+      : `${window.location.origin}/account/music/callback`;
     const url = new URL("https://accounts.spotify.com/authorize");
     url.searchParams.set("client_id", SPOTIFY_CLIENT_ID);
     url.searchParams.set("response_type", "code");
