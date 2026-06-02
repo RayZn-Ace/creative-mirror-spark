@@ -97,6 +97,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <DeepLinkHandler />
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
