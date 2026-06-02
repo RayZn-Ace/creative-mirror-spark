@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart } from "lucide-react";
+import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart, Music, Headphones } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+
+type MusicData = {
+  connected: boolean;
+  profile?: { display_name: string | null; avatar_url: string | null };
+  yearTopTrack?: { name: string; artist: string; image: string | null } | null;
+  yearTopArtist?: { name: string; image: string | null; genre: string | null } | null;
+  recentTopTrack?: { name: string; artist: string; image: string | null } | null;
+  midTermTopTrack?: { name: string; artist: string; image: string | null } | null;
+};
 
 export default function Wrapped() {
   const now = new Date();
@@ -17,6 +27,15 @@ export default function Wrapped() {
   const [slide, setSlide] = useState(0);
   const { flags, loading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
+  const [music, setMusic] = useState<MusicData | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.functions.invoke("spotify-wrapped", { body: {} });
+      if (data) setMusic(data as MusicData);
+    })();
+  }, [user]);
 
   const slides = [
     {
