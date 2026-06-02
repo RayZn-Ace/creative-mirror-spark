@@ -79,12 +79,14 @@ export default function Wrapped() {
   }, [fallbackSong, fallbackSong2, music?.connected]);
 
 
-  // Auto-advance slides while playing (hooks must run unconditionally)
+  // Auto-advance slides while playing — total story capped at 60s
   useEffect(() => {
     if (!started || paused) return;
+    const n = Math.max(1, slidesCountRef.current);
+    const perSlide = Math.max(2500, Math.min(5000, Math.floor(MAX_STORY_MS / n)));
     const t = setTimeout(() => {
       setSlide((s) => s + 1);
-    }, 5000);
+    }, perSlide);
     return () => clearTimeout(t);
   }, [started, paused, slide]);
 
