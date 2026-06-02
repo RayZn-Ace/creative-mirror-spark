@@ -29,84 +29,92 @@ export default function Wrapped() {
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string } | null>(null);
+  const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [musicRes, songRes] = await Promise.all([
+      const [musicRes, cfgRes, legacyRes] = await Promise.all([
         supabase.functions.invoke("spotify-wrapped", { body: {} }),
+        supabase.from("settings").select("value").eq("key", "wrapped_config").maybeSingle(),
         supabase.from("settings").select("value").eq("key", "wrapped_fallback_song").maybeSingle(),
       ]);
       if (musicRes.data) setMusic(musicRes.data as MusicData);
-      const v = songRes.data?.value as any;
-      if (v?.title && v?.artist) setFallbackSong(v);
+      const cfg = (cfgRes.data?.value as Record<string, any>) || {};
+      setWrappedCfg(cfg);
+      const yearCfg = cfg[String(year)];
+      const fb = yearCfg?.fallbackSong || (legacyRes.data?.value as any);
+      if (fb?.title && fb?.artist) setFallbackSong(fb);
     })();
-  }, [user]);
+  }, [user, year]);
 
-  const slides = [
+  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }> };
+  const sCfg = (k: string) => yearCfg.slides?.[k] || {};
+  const isOn = (k: string) => sCfg(k).enabled !== false;
+  const grad = (k: string, def: string) => sCfg(k).gradient || def;
+  const bgImg = (k: string) => sCfg(k).bgImage || "";
+
+  const rawSlides = [
     {
       key: "intro",
-      bg: "from-primary via-purple-600 to-pink-600",
+      bg: grad("intro", "from-primary via-purple-600 to-pink-600"),
+      bgImage: bgImg("intro"),
       content: (
         <div className="text-center">
           <Sparkles className="h-16 w-16 mx-auto mb-6 animate-pulse" />
-          <div className="text-5xl md:text-7xl font-bold mb-4">Dein {year}</div>
-          <div className="text-2xl opacity-90">war sick fr fr 🔥</div>
+          <div className="text-5xl md:text-7xl font-bold mb-4">{sCfg("intro").title || `Dein ${year}`}</div>
+          <div className="text-2xl opacity-90">{sCfg("intro").subtitle || "war sick fr fr 🔥"}</div>
         </div>
       ),
     },
     {
       key: "parties",
-      bg: "from-pink-600 via-rose-500 to-orange-500",
+      bg: grad("parties", "from-pink-600 via-rose-500 to-orange-500"),
+      bgImage: bgImg("parties"),
       content: (
         <div className="text-center">
           <Ticket className="h-12 w-12 mx-auto mb-4 opacity-70" />
-          <div className="text-xl opacity-80 mb-3">Du warst auf</div>
+          <div className="text-xl opacity-80 mb-3">{sCfg("parties").subtitle || "Du warst auf"}</div>
           <div className="text-8xl md:text-9xl font-black mb-3">{stats.yearCount}</div>
-          <div className="text-3xl font-bold">Partys 🎉</div>
-          <div className="mt-6 opacity-80">
-            Das sind {stats.yearCount * 6} Stunden Vibes
-          </div>
+          <div className="text-3xl font-bold">{sCfg("parties").title || "Partys 🎉"}</div>
+          <div className="mt-6 opacity-80">Das sind {stats.yearCount * 6} Stunden Vibes</div>
         </div>
       ),
     },
     {
       key: "city",
-      bg: "from-cyan-500 via-blue-600 to-indigo-700",
+      bg: grad("city", "from-cyan-500 via-blue-600 to-indigo-700"),
+      bgImage: bgImg("city"),
       content: (
         <div className="text-center">
           <MapPin className="h-12 w-12 mx-auto mb-4 opacity-70" />
-          <div className="text-xl opacity-80 mb-3">Deine Homebase</div>
-          <div className="text-6xl md:text-7xl font-black mb-3">
-            {stats.topCity || "—"}
-          </div>
-          <div className="text-2xl opacity-90">
-            {stats.topCityCount}x am Start
-          </div>
+          <div className="text-xl opacity-80 mb-3">{sCfg("city").subtitle || "Deine Homebase"}</div>
+          <div className="text-6xl md:text-7xl font-black mb-3">{stats.topCity || "—"}</div>
+          <div className="text-2xl opacity-90">{stats.topCityCount}x am Start</div>
         </div>
       ),
     },
     {
       key: "spend",
-      bg: "from-emerald-500 via-teal-600 to-green-700",
+      bg: grad("spend", "from-emerald-500 via-teal-600 to-green-700"),
+      bgImage: bgImg("spend"),
       content: (
         <div className="text-center">
           <Euro className="h-12 w-12 mx-auto mb-4 opacity-70" />
-          <div className="text-xl opacity-80 mb-3">Du hast investiert</div>
-          <div className="text-7xl md:text-8xl font-black mb-3">
-            {stats.yearSpent.toFixed(0)}€
-          </div>
-          <div className="text-xl opacity-90">in unvergessliche Nächte 💸</div>
+          <div className="text-xl opacity-80 mb-3">{sCfg("spend").subtitle || "Du hast investiert"}</div>
+          <div className="text-7xl md:text-8xl font-black mb-3">{stats.yearSpent.toFixed(0)}€</div>
+          <div className="text-xl opacity-90">{sCfg("spend").title || "in unvergessliche Nächte 💸"}</div>
         </div>
       ),
     },
     {
       key: "month",
-      bg: "from-violet-600 via-purple-700 to-fuchsia-700",
+      bg: grad("month", "from-violet-600 via-purple-700 to-fuchsia-700"),
+      bgImage: bgImg("month"),
       content: (
         <div className="text-center w-full max-w-md">
           <Calendar className="h-12 w-12 mx-auto mb-4 opacity-70" />
-          <div className="text-xl opacity-80 mb-3">Dein Party-Monat</div>
+          <div className="text-xl opacity-80 mb-3">{sCfg("month").subtitle || "Dein Party-Monat"}</div>
           <div className="text-5xl font-black mb-6">
             {(() => {
               const max = stats.monthBreakdown.reduce(
@@ -122,10 +130,7 @@ export default function Wrapped() {
               const h = (m.count / max) * 100;
               return (
                 <div key={m.month} className="flex flex-col items-center gap-1">
-                  <div
-                    className="w-full bg-white/80 rounded-t transition-all"
-                    style={{ height: `${h}%`, minHeight: m.count ? "8%" : "0" }}
-                  />
+                  <div className="w-full bg-white/80 rounded-t transition-all" style={{ height: `${h}%`, minHeight: m.count ? "8%" : "0" }} />
                   <div className="text-[10px] opacity-70">{m.month[0]}</div>
                 </div>
               );
@@ -136,11 +141,12 @@ export default function Wrapped() {
     },
     ...(music?.connected && music.yearTopArtist ? [{
       key: "soundtrack",
-      bg: "from-green-500 via-emerald-600 to-teal-700",
+      bg: grad("soundtrack", "from-green-500 via-emerald-600 to-teal-700"),
+      bgImage: bgImg("soundtrack"),
       content: (
         <div className="text-center w-full">
           <Headphones className="h-12 w-12 mx-auto mb-4 opacity-80" />
-          <div className="text-xl opacity-80 mb-2">Dein Soundtrack {year}</div>
+          <div className="text-xl opacity-80 mb-2">{sCfg("soundtrack").subtitle || `Dein Soundtrack ${year}`}</div>
           {music.yearTopArtist.image && (
             <img src={music.yearTopArtist.image} alt="" className="h-32 w-32 mx-auto rounded-full mb-4 object-cover shadow-2xl ring-4 ring-white/40" />
           )}
@@ -159,12 +165,13 @@ export default function Wrapped() {
       ),
     }] : []),
     ...(music?.connected && music.recentTopTrack ? [{
-      key: "month-song",
-      bg: "from-fuchsia-600 via-purple-700 to-indigo-800",
+      key: "monthSong",
+      bg: grad("monthSong", "from-fuchsia-600 via-purple-700 to-indigo-800"),
+      bgImage: bgImg("monthSong"),
       content: (
         <div className="text-center w-full max-w-sm">
           <Music className="h-12 w-12 mx-auto mb-4 opacity-80" />
-          <div className="text-xl opacity-80 mb-4">Im Monat deiner Lieblings-Party hattest du das hier in Dauerschleife 🔁</div>
+          <div className="text-xl opacity-80 mb-4">{sCfg("monthSong").subtitle || "Im Monat deiner Lieblings-Party hattest du das hier in Dauerschleife 🔁"}</div>
           {music.recentTopTrack.image && (
             <img src={music.recentTopTrack.image} alt="" className="h-44 w-44 mx-auto rounded-2xl mb-5 object-cover shadow-2xl" />
           )}
@@ -174,12 +181,13 @@ export default function Wrapped() {
       ),
     }] : []),
     ...(!music?.connected && fallbackSong ? [{
-      key: "fallback-song",
-      bg: "from-fuchsia-600 via-purple-700 to-indigo-800",
+      key: "fallbackSong",
+      bg: grad("fallbackSong", "from-fuchsia-600 via-purple-700 to-indigo-800"),
+      bgImage: bgImg("fallbackSong"),
       content: (
         <div className="text-center w-full max-w-sm">
           <Music className="h-12 w-12 mx-auto mb-4 opacity-80" />
-          <div className="text-xl opacity-80 mb-4">Der Sound deiner Saison 🔁</div>
+          <div className="text-xl opacity-80 mb-4">{sCfg("fallbackSong").subtitle || "Der Sound deiner Saison 🔁"}</div>
           {fallbackSong.cover_url && (
             <img src={fallbackSong.cover_url} alt="" className="h-44 w-44 mx-auto rounded-2xl mb-5 object-cover shadow-2xl" />
           )}
@@ -195,14 +203,15 @@ export default function Wrapped() {
       ),
     }] : []),
     ...(!music?.connected && !fallbackSong ? [{
-      key: "connect-music",
-      bg: "from-[#1DB954] via-emerald-600 to-teal-700",
+      key: "connectMusic",
+      bg: grad("connectMusic", "from-[#1DB954] via-emerald-600 to-teal-700"),
+      bgImage: bgImg("connectMusic"),
       content: (
         <div className="text-center">
           <Headphones className="h-16 w-16 mx-auto mb-6" />
-          <div className="text-3xl font-black mb-4">Connect Spotify 🎧</div>
+          <div className="text-3xl font-black mb-4">{sCfg("connectMusic").title || "Connect Spotify 🎧"}</div>
           <div className="text-lg opacity-90 mb-6 max-w-xs mx-auto">
-            Verbinde Spotify und sieh deinen Party-Soundtrack als nächstes Mal hier
+            {sCfg("connectMusic").subtitle || "Verbinde Spotify und sieh deinen Party-Soundtrack als nächstes Mal hier"}
           </div>
           <Link to="/account/profile">
             <Button size="lg" variant="secondary">Jetzt verbinden</Button>
@@ -212,15 +221,14 @@ export default function Wrapped() {
     }] : []),
     {
       key: "outro",
-      bg: "from-primary via-pink-600 to-orange-500",
+      bg: grad("outro", "from-primary via-pink-600 to-orange-500"),
+      bgImage: bgImg("outro"),
       content: (
         <div className="text-center">
           <div className="text-6xl mb-6">👑</div>
-          <div className="text-4xl md:text-6xl font-black mb-4">
-            Du bist eine Legende
-          </div>
+          <div className="text-4xl md:text-6xl font-black mb-4">{sCfg("outro").title || "Du bist eine Legende"}</div>
           <div className="text-xl opacity-90 mb-8">
-            Bereit für noch mehr Bangers in {now.getFullYear() + (year < now.getFullYear() ? 1 : 1)}? 🚀
+            {sCfg("outro").subtitle || `Bereit für noch mehr Bangers in ${now.getFullYear() + 1}? 🚀`}
           </div>
           <Button
             size="lg"
@@ -247,6 +255,8 @@ export default function Wrapped() {
       ),
     },
   ];
+
+  const slides = rawSlides.filter((s) => isOn(s.key));
 
   if (flagsLoading || stats.loading) {
     return <div className="p-12 text-center text-muted-foreground">Lade dein Wrapped...</div>;
@@ -292,9 +302,17 @@ export default function Wrapped() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className={`absolute inset-0 bg-gradient-to-br ${current.bg} flex items-center justify-center p-8 text-white`}
+            className={`absolute inset-0 bg-gradient-to-br ${current.bg} text-white`}
           >
-            {current.content}
+            {current.bgImage && (
+              <>
+                <img src={current.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-black/30" />
+              </>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center p-8">
+              {current.content}
+            </div>
           </motion.div>
         </AnimatePresence>
 
