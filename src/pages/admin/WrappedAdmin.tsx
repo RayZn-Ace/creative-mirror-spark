@@ -21,9 +21,12 @@ export type SlideConfig = {
   subtitle?: string;       // optional override for sub text
 };
 
+export type FallbackSongData = { title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string };
+
 export type WrappedYearConfig = {
   slides: Record<SlideKey, SlideConfig>;
-  fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string; audio_url?: string };
+  fallbackSong: FallbackSongData;   // 1. Hälfte
+  fallbackSong2?: FallbackSongData; // 2. Hälfte
   cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string };
 };
 
