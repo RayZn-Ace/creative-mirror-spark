@@ -246,7 +246,7 @@ export default function SupportChatbot() {
   if (!alfredEnabled) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-50">
       {chatOpen ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -427,7 +427,7 @@ export default function SupportChatbot() {
           </motion.div>
           <button
             onClick={() => setChatOpen(true)}
-            className="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+            className="relative w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
             style={{
               background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
               boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
@@ -435,7 +435,7 @@ export default function SupportChatbot() {
             aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
-            <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
+            <span className="relative z-10 text-base sm:text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
           </button>
         </div>
       )}
