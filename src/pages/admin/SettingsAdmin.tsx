@@ -523,7 +523,7 @@ const SettingsAdmin = () => {
               onChange={(v) => setFeatures((p) => ({ ...p, wrapped_enabled: v }))}
             />
             <ToggleRow
-              label="„Was bisher geschah" Welcome-Wrapped"
+              label={'„Was bisher geschah" Welcome-Wrapped'}
               description="Neue Nutzer ohne Partys sehen eine kleine Willkommens-Story statt der leeren Seite."
               checked={features.wrapped_welcome_enabled}
               onChange={(v) => setFeatures((p) => ({ ...p, wrapped_welcome_enabled: v }))}
