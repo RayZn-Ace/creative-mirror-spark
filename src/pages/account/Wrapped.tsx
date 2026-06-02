@@ -173,7 +173,28 @@ export default function Wrapped() {
         </div>
       ),
     }] : []),
-    ...(!music?.connected ? [{
+    ...(!music?.connected && fallbackSong ? [{
+      key: "fallback-song",
+      bg: "from-fuchsia-600 via-purple-700 to-indigo-800",
+      content: (
+        <div className="text-center w-full max-w-sm">
+          <Music className="h-12 w-12 mx-auto mb-4 opacity-80" />
+          <div className="text-xl opacity-80 mb-4">Der Sound deiner Saison 🔁</div>
+          {fallbackSong.cover_url && (
+            <img src={fallbackSong.cover_url} alt="" className="h-44 w-44 mx-auto rounded-2xl mb-5 object-cover shadow-2xl" />
+          )}
+          <div className="text-3xl font-black mb-2">{fallbackSong.title}</div>
+          <div className="text-lg opacity-90 mb-6">{fallbackSong.artist}</div>
+          <div className="text-xs opacity-70 mb-3">Verbinde Spotify für deinen echten Soundtrack</div>
+          <Link to="/account/profile">
+            <Button size="sm" variant="secondary" className="bg-[#1DB954] hover:bg-[#1aa34a] text-white border-0">
+              <Headphones className="h-4 w-4 mr-2" /> Spotify verbinden
+            </Button>
+          </Link>
+        </div>
+      ),
+    }] : []),
+    ...(!music?.connected && !fallbackSong ? [{
       key: "connect-music",
       bg: "from-[#1DB954] via-emerald-600 to-teal-700",
       content: (
