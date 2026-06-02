@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3 } from "lucide-react";
+import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3, Sparkles } from "lucide-react";
 
 interface CompanyData {
   name: string; address: string; zip: string; city: string; country: string;
@@ -11,6 +11,7 @@ interface CompanyData {
 }
 interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
+interface FeaturesData { wrapped_enabled: boolean; wrapped_welcome_enabled: boolean; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
 interface EditingUser { userId: string; currentRole: string; newRole: string; }
@@ -20,6 +21,7 @@ interface CustomRole { id: string; name: string; display_name: string; color: st
 const emptyCompany: CompanyData = { name: "", address: "", zip: "", city: "", country: "Deutschland", vat_id: "", managing_director: "", email: "", phone: "", bank_name: "", iban: "", bic: "" };
 const emptyInvoice: InvoiceData = { prefix: "RE", next_number: 1 };
 const emptyEmail: EmailData = { sender_name: "Tickets", sender_domain: "", reply_to: "" };
+const emptyFeatures: FeaturesData = { wrapped_enabled: true, wrapped_welcome_enabled: true };
 
 const inputStyle = { background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", width: "100%", outline: "none", transition: "border-color 0.2s" };
 const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "4px", display: "block" };
