@@ -115,7 +115,7 @@ export default function Wrapped() {
     }, perSlide);
     return () => clearTimeout(t);
   }, [started, paused, slide]);
-  // Swap audio source when crossing halftime — with crossfade
+  // DJ-style crossfade with low-pass sweep + tempo ramp when crossing halftime
   useEffect(() => {
     if (!started || !audioRef.current) return;
     const n = Math.max(1, slidesCountRef.current);
@@ -124,31 +124,92 @@ export default function Wrapped() {
     const oldAudio = audioRef.current;
     if (slide >= half && url2 && oldAudio.src !== url2 && !(oldAudio as any)._swapping) {
       (oldAudio as any)._swapping = true;
+
       const targetVol = muted ? 0 : 1;
       const next = new Audio(url2);
       next.loop = true;
       next.muted = muted;
+      next.crossOrigin = "anonymous";
       next.preload = "auto";
-      next.volume = 0;
       audioRef.current = next;
+
+      const DURATION = 1800; // ms — DJ-style longer blend
+
+      // Try Web Audio routing for filter sweep; fall back to plain gain crossfade
+      let useWebAudio = false;
+      let ctx: AudioContext | null = null;
+      let oldGain: GainNode | null = null;
+      let newGain: GainNode | null = null;
+      let oldLP: BiquadFilterNode | null = null;
+      let newHP: BiquadFilterNode | null = null;
+
+      try {
+        const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (AC && !(oldAudio as any)._wa) {
+          (oldAudio as any).crossOrigin = "anonymous";
+          ctx = new AC();
+          (oldAudio as any)._wa = ctx;
+          const srcOld = ctx.createMediaElementSource(oldAudio);
+          oldLP = ctx.createBiquadFilter(); oldLP.type = "lowpass"; oldLP.frequency.value = 20000;
+          oldGain = ctx.createGain(); oldGain.gain.value = oldAudio.volume || 1;
+          srcOld.connect(oldLP).connect(oldGain).connect(ctx.destination);
+
+          const srcNew = ctx.createMediaElementSource(next);
+          newHP = ctx.createBiquadFilter(); newHP.type = "highpass"; newHP.frequency.value = 800;
+          newGain = ctx.createGain(); newGain.gain.value = 0;
+          srcNew.connect(newHP).connect(newGain).connect(ctx.destination);
+          useWebAudio = true;
+        }
+      } catch (e) {
+        useWebAudio = false;
+      }
+
       next.play().then(() => {
-        const duration = 900;
-        const steps = 30;
-        const stepMs = duration / steps;
-        let i = 0;
-        const startVol = oldAudio.volume;
-        const iv = setInterval(() => {
-          i++;
-          const p = i / steps;
-          oldAudio.volume = Math.max(0, startVol * (1 - p));
-          next.volume = Math.min(targetVol, targetVol * p);
-          if (i >= steps) {
-            clearInterval(iv);
-            try { oldAudio.pause(); oldAudio.src = ""; } catch {}
+        const t0 = (ctx?.currentTime ?? 0);
+        const tEnd = t0 + DURATION / 1000;
+
+        if (useWebAudio && ctx && oldGain && newGain && oldLP && newHP) {
+          // Equal-power crossfade via gain
+          oldGain.gain.cancelScheduledValues(t0);
+          newGain.gain.cancelScheduledValues(t0);
+          oldGain.gain.setValueAtTime(oldGain.gain.value, t0);
+          newGain.gain.setValueAtTime(0.0001, t0);
+          oldGain.gain.exponentialRampToValueAtTime(0.0001, tEnd);
+          newGain.gain.exponentialRampToValueAtTime(targetVol || 0.0001, tEnd);
+
+          // Filter sweep: old → muffled (LP 20k→200), new → opens up (HP 800→20)
+          oldLP.frequency.setValueAtTime(20000, t0);
+          oldLP.frequency.exponentialRampToValueAtTime(220, tEnd);
+          newHP.frequency.setValueAtTime(800, t0);
+          newHP.frequency.exponentialRampToValueAtTime(20, tEnd);
+        }
+
+        // Tempo ramp on both elements (DJ pitch-bend feel)
+        try {
+          (oldAudio as any).preservesPitch = true;
+          (next as any).preservesPitch = true;
+        } catch {}
+        const startTime = performance.now();
+        const tick = () => {
+          const p = Math.min(1, (performance.now() - startTime) / DURATION);
+          // old slows slightly, new starts slow and catches up
+          oldAudio.playbackRate = 1 - 0.05 * p;
+          next.playbackRate = 0.94 + 0.06 * p;
+          if (!useWebAudio) {
+            // fallback equal-power gain on element volume
+            const eo = Math.cos((p * Math.PI) / 2);
+            const en = Math.sin((p * Math.PI) / 2);
+            try { oldAudio.volume = Math.max(0, eo); } catch {}
+            try { next.volume = Math.min(targetVol, targetVol * en); } catch {}
           }
-        }, stepMs);
+          if (p < 1) requestAnimationFrame(tick);
+          else {
+            try { oldAudio.pause(); oldAudio.src = ""; } catch {}
+            next.playbackRate = 1;
+          }
+        };
+        requestAnimationFrame(tick);
       }).catch(() => {
-        // fallback: hard swap
         try { oldAudio.pause(); oldAudio.src = ""; } catch {}
         next.volume = targetVol;
       });
