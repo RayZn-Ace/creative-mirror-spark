@@ -341,7 +341,7 @@ export default function Wrapped() {
 
   const cover = yearCfg.cover || {};
   const coverImg = cover.image_url || "";
-  const audioUrl = cover.audio_url || (!music?.connected ? fallbackSong?.audio_url || "" : "");
+  const audioUrl = cover.audio_url || (!music?.connected ? (fallbackSong?.audio_url || resolvedPreview || "") : "");
 
   const startStory = async () => {
     if (audioRef.current) {
