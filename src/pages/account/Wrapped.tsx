@@ -29,19 +29,30 @@ export default function Wrapped() {
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
   const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string } | null>(null);
+  const [wrappedCfg, setWrappedCfg] = useState<Record<string, any> | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [musicRes, songRes] = await Promise.all([
+      const [musicRes, cfgRes, legacyRes] = await Promise.all([
         supabase.functions.invoke("spotify-wrapped", { body: {} }),
+        supabase.from("settings").select("value").eq("key", "wrapped_config").maybeSingle(),
         supabase.from("settings").select("value").eq("key", "wrapped_fallback_song").maybeSingle(),
       ]);
       if (musicRes.data) setMusic(musicRes.data as MusicData);
-      const v = songRes.data?.value as any;
-      if (v?.title && v?.artist) setFallbackSong(v);
+      const cfg = (cfgRes.data?.value as Record<string, any>) || {};
+      setWrappedCfg(cfg);
+      const yearCfg = cfg[String(year)];
+      const fb = yearCfg?.fallbackSong || (legacyRes.data?.value as any);
+      if (fb?.title && fb?.artist) setFallbackSong(fb);
     })();
-  }, [user]);
+  }, [user, year]);
+
+  const yearCfg = (wrappedCfg?.[String(year)] || {}) as { slides?: Record<string, { enabled?: boolean; gradient?: string; bgImage?: string; title?: string; subtitle?: string }> };
+  const sCfg = (k: string) => yearCfg.slides?.[k] || {};
+  const isOn = (k: string) => sCfg(k).enabled !== false;
+  const grad = (k: string, def: string) => sCfg(k).gradient || def;
+  const bgImg = (k: string) => sCfg(k).bgImage || "";
 
   const slides = [
     {
