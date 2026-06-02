@@ -33,6 +33,26 @@ const Field = ({ label, value, onChange, placeholder, type = "text" }: { label: 
   </div>
 );
 
+const ToggleRow = ({ label, description, checked, onChange, disabled }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) => (
+  <div className={`flex items-start justify-between gap-4 p-3 rounded-xl ${disabled ? "opacity-50" : ""}`} style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+    <div className="flex-1 min-w-0">
+      <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{label}</div>
+      {description && <div className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{description}</div>}
+    </div>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed"
+      style={{ background: checked ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.15)" }}
+    >
+      <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"} mt-0.5`} />
+    </button>
+  </div>
+);
+
 const SectionCard = ({ icon: Icon, title, description, children, onSave, saving }: { icon: any; title: string; description: string; children: React.ReactNode; onSave?: () => void; saving?: boolean }) => (
   <div className="rounded-2xl p-6" style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
     <div className="flex items-center gap-3 mb-1">
