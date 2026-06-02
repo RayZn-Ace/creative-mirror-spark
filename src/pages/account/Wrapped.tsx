@@ -148,6 +148,16 @@ export default function Wrapped() {
     resolve(fallbackSong2, setResolvedPreview2);
   }, [fallbackSong, fallbackSong2, music?.connected]);
 
+  // Prefetch BPM for both fallback tracks so the crossfade can beatmatch
+  useEffect(() => {
+    const urls = [
+      fallbackSong?.audio_url || resolvedPreview,
+      fallbackSong2?.audio_url || resolvedPreview2,
+    ].filter(Boolean) as string[];
+    urls.forEach((u) => { void detectBpm(u); });
+  }, [fallbackSong?.audio_url, fallbackSong2?.audio_url, resolvedPreview, resolvedPreview2]);
+
+
 
   // Auto-advance slides while playing — total story capped at 60s
   useEffect(() => {
