@@ -23,6 +23,12 @@ const allItems = [
 export default function AccountLayout() {
   const { user, loading, signOut } = useAuth();
   const nav = useNavigate();
+  const { flags } = useFeatureFlags();
+  const items = useMemo(
+    () => allItems.filter((i) => !i.feature || flags[i.feature]),
+    [flags]
+  );
+
 
   useEffect(() => {
     if (!loading && !user) nav("/login");
