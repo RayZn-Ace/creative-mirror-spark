@@ -311,6 +311,8 @@ export default function Wrapped() {
   ];
 
   const slides = rawSlides.filter((s) => isOn(s.key));
+  slidesCountRef.current = Math.max(1, slides.length);
+  const halfIndex = Math.ceil(slides.length / 2);
 
   if (flagsLoading || stats.loading) {
     return <div className="p-12 text-center text-muted-foreground">Lade dein Wrapped...</div>;
