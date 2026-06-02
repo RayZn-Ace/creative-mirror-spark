@@ -75,9 +75,24 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
   slides: Object.fromEntries(
     SLIDE_META.map((s) => [s.key, { enabled: true, gradient: DEFAULT_GRADIENTS[s.key] } as SlideConfig]),
   ) as Record<SlideKey, SlideConfig>,
-  fallbackSong: { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
+  fallbackSong:  { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
+  fallbackSong2: { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" },
   cover: { image_url: "", audio_url: "", title: "", subtitle: "" },
 });
+
+/* ───────── iTunes helper ───────── */
+async function lookupItunes(title: string, artist: string): Promise<{ preview: string; cover: string } | null> {
+  const q = `${title} ${artist}`.trim();
+  if (!q) return null;
+  try {
+    const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
+    const j = await r.json();
+    const it = j?.results?.[0];
+    if (!it) return null;
+    const cover = (it.artworkUrl100 || "").replace("100x100", "600x600");
+    return { preview: it.previewUrl || "", cover };
+  } catch { return null; }
+}
 
 /* ───────── Component ───────── */
 export default function WrappedAdmin() {
