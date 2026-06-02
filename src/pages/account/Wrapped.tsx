@@ -302,9 +302,17 @@ export default function Wrapped() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className={`absolute inset-0 bg-gradient-to-br ${current.bg} flex items-center justify-center p-8 text-white`}
+            className={`absolute inset-0 bg-gradient-to-br ${current.bg} text-white`}
           >
-            {current.content}
+            {current.bgImage && (
+              <>
+                <img src={current.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-black/30" />
+              </>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center p-8">
+              {current.content}
+            </div>
           </motion.div>
         </AnimatePresence>
 
