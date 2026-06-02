@@ -537,66 +537,65 @@ export default function Wrapped() {
   const currentAudioUrl = slide >= halfIndex && audioUrl2 ? audioUrl2 : audioUrl1;
 
 
-  const startStory = async () => {
+  const startStory = () => {
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
+      try { audioRef.current.pause(); audioRef.current.src = ""; } catch {}
       audioRef.current = null;
     }
     if (queuedAudioRef.current) {
-      queuedAudioRef.current.pause();
-      queuedAudioRef.current.src = "";
+      try { queuedAudioRef.current.pause(); queuedAudioRef.current.src = ""; } catch {}
       queuedAudioRef.current = null;
     }
 
-    // Create + start audio SYNC within user gesture (before any await)
-    if (audioUrl1) {
-      try {
-        const a = new Audio(audioUrl1);
-        a.loop = true;
-        a.muted = muted;
-        a.preload = "auto";
-        audioRef.current = a;
-        a.currentTime = 0;
-
-        try {
-          await a.play();
-        } catch (err) {
+    // CRITICAL: Everything that triggers media must run SYNCHRONOUSLY in this
+    // gesture. No `await` before .play() — iOS WKWebView (Capacitor) loses the
+    // user-gesture context after the first await and blocks all subsequent
+    // playback (including the first track if we awaited fullscreen etc.).
+    const a = audioUrl1 ? new Audio(audioUrl1) : null;
+    if (a) {
+      a.loop = true;
+      a.muted = muted;
+      a.preload = "auto";
+      a.setAttribute("playsinline", "true");
+      (a as any).playsInline = true;
+      a.crossOrigin = "anonymous";
+      audioRef.current = a;
+      const p1 = a.play();
+      if (p1 && typeof p1.catch === "function") {
+        p1.catch((err) => {
           console.warn("audio play failed", err);
           toast.error("Der hinterlegte Song konnte nicht gestartet werden.");
-        }
-      } catch (e) {
-        console.warn(e);
+        });
       }
     }
-    if (audioUrl2 && audioUrl2 !== audioUrl1) {
-      try {
-        const queued = new Audio(audioUrl2);
-        queued.loop = true;
-        queued.muted = true;
-        queued.preload = "auto";
-        queued.volume = 0;
-        queued.currentTime = 0;
-        queuedAudioRef.current = queued;
 
-        try {
-          await queued.play();
-          queued.pause();
-          queued.currentTime = 0;
-          queued.muted = muted;
-        } catch (err) {
-          console.warn("queued audio unlock failed", err);
-        }
-      } catch (e) {
-        console.warn(e);
+    if (audioUrl2 && audioUrl2 !== audioUrl1) {
+      const queued = new Audio(audioUrl2);
+      queued.loop = true;
+      queued.muted = true; // unlock silently
+      queued.volume = 0;
+      queued.preload = "auto";
+      queued.setAttribute("playsinline", "true");
+      (queued as any).playsInline = true;
+      queued.crossOrigin = "anonymous";
+      queuedAudioRef.current = queued;
+      const p2 = queued.play();
+      if (p2 && typeof p2.then === "function") {
+        p2.then(() => {
+          try { queued.pause(); queued.currentTime = 0; queued.muted = muted; } catch {}
+        }).catch((err) => console.warn("queued audio unlock failed", err));
       }
     }
+
     setStarted(true);
     setSlide(0);
-    // Fullscreen (async ok — gesture still counts)
+
+    // Fullscreen LAST — its await would otherwise kill the gesture for audio above.
     try {
       const el = containerRef.current;
-      if (el && el.requestFullscreen) await el.requestFullscreen();
+      if (el && el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      }
     } catch {}
   };
 
