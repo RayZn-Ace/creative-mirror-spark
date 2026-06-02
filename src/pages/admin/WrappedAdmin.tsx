@@ -129,8 +129,15 @@ export default function WrappedAdmin() {
     }));
   };
 
-  const updateSong = (patch: Partial<WrappedYearConfig["fallbackSong"]>) => {
+  const updateSong = (patch: Partial<FallbackSongData>) => {
     setConfig((c) => ({ ...c, [year]: { ...yc, fallbackSong: { ...yc.fallbackSong, ...patch } } }));
+  };
+
+  const updateSong2 = (patch: Partial<FallbackSongData>) => {
+    setConfig((c) => ({
+      ...c,
+      [year]: { ...yc, fallbackSong2: { ...(yc.fallbackSong2 || { title: "", artist: "", cover_url: "", spotify_url: "", audio_url: "" }), ...patch } },
+    }));
   };
 
   const updateCover = (patch: Partial<NonNullable<WrappedYearConfig["cover"]>>) => {
