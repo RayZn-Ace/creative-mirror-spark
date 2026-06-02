@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3 } from "lucide-react";
+import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3, Sparkles } from "lucide-react";
 
 interface CompanyData {
   name: string; address: string; zip: string; city: string; country: string;
@@ -11,6 +11,7 @@ interface CompanyData {
 }
 interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
+interface FeaturesData { wrapped_enabled: boolean; wrapped_welcome_enabled: boolean; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
 interface EditingUser { userId: string; currentRole: string; newRole: string; }
@@ -20,6 +21,7 @@ interface CustomRole { id: string; name: string; display_name: string; color: st
 const emptyCompany: CompanyData = { name: "", address: "", zip: "", city: "", country: "Deutschland", vat_id: "", managing_director: "", email: "", phone: "", bank_name: "", iban: "", bic: "" };
 const emptyInvoice: InvoiceData = { prefix: "RE", next_number: 1 };
 const emptyEmail: EmailData = { sender_name: "Tickets", sender_domain: "", reply_to: "" };
+const emptyFeatures: FeaturesData = { wrapped_enabled: true, wrapped_welcome_enabled: true };
 
 const inputStyle = { background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", width: "100%", outline: "none", transition: "border-color 0.2s" };
 const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "4px", display: "block" };
@@ -28,6 +30,26 @@ const Field = ({ label, value, onChange, placeholder, type = "text" }: { label: 
   <div>
     <label style={labelStyle}>{label}</label>
     <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} className="focus:border-blue-500" />
+  </div>
+);
+
+const ToggleRow = ({ label, description, checked, onChange, disabled }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) => (
+  <div className={`flex items-start justify-between gap-4 p-3 rounded-xl ${disabled ? "opacity-50" : ""}`} style={{ background: "hsl(0 0% 100% / 0.03)", border: "1px solid hsl(0 0% 100% / 0.06)" }}>
+    <div className="flex-1 min-w-0">
+      <div className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{label}</div>
+      {description && <div className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{description}</div>}
+    </div>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors disabled:cursor-not-allowed"
+      style={{ background: checked ? "hsl(270 70% 55%)" : "hsl(0 0% 100% / 0.15)" }}
+    >
+      <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"} mt-0.5`} />
+    </button>
   </div>
 );
 
@@ -158,12 +180,14 @@ const SettingsAdmin = () => {
   const [company, setCompany] = useState<CompanyData>(emptyCompany);
   const [invoice, setInvoice] = useState<InvoiceData>(emptyInvoice);
   const [emailSettings, setEmailSettings] = useState<EmailData>(emptyEmail);
+  const [features, setFeatures] = useState<FeaturesData>(emptyFeatures);
   const [profile, setProfile] = useState<ProfileData>({ display_name: "", avatar_url: "" });
   const [userRoles, setUserRoles] = useState<UserRoleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingInvoice, setSavingInvoice] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [savingFeatures, setSavingFeatures] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState<string>("user");
@@ -193,6 +217,7 @@ const SettingsAdmin = () => {
           if (row.key === "company") setCompany({ ...emptyCompany, ...val });
           if (row.key === "invoice") setInvoice({ ...emptyInvoice, ...val });
           if (row.key === "email") setEmailSettings({ ...emptyEmail, ...val });
+          if (row.key === "features") setFeatures({ ...emptyFeatures, ...val });
         }
       }
       if (user) {
@@ -508,6 +533,22 @@ const SettingsAdmin = () => {
               <Field label="Absender-Domain" value={emailSettings.sender_domain} onChange={(v) => setEmailSettings((p) => ({ ...p, sender_domain: v }))} placeholder="gimmegimmeparty.com" />
             </div>
             <Field label="Antwort-Adresse (Reply-To)" value={emailSettings.reply_to} onChange={(v) => setEmailSettings((p) => ({ ...p, reply_to: v }))} placeholder="info@gimmegimmeparty.com" type="email" />
+          </SectionCard>
+
+          <SectionCard icon={Sparkles} title="Features" description="Aktiviere oder deaktiviere App-Features für alle Nutzer." onSave={() => save("features", features, setSavingFeatures)} saving={savingFeatures}>
+            <ToggleRow
+              label="Year in Review (Wrapped)"
+              description="Spotify-Wrapped-style Story für jedes Jahr im Account."
+              checked={features.wrapped_enabled}
+              onChange={(v) => setFeatures((p) => ({ ...p, wrapped_enabled: v }))}
+            />
+            <ToggleRow
+              label={'„Was bisher geschah" Welcome-Wrapped'}
+              description="Neue Nutzer ohne Partys sehen eine kleine Willkommens-Story statt der leeren Seite."
+              checked={features.wrapped_welcome_enabled}
+              onChange={(v) => setFeatures((p) => ({ ...p, wrapped_welcome_enabled: v }))}
+              disabled={!features.wrapped_enabled}
+            />
           </SectionCard>
         </>
       )}
