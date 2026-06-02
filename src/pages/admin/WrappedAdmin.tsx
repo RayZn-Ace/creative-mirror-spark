@@ -269,6 +269,20 @@ export default function WrappedAdmin() {
         </div>
         <FieldLight label="Spotify-Link (optional)" value={yc.fallbackSong.spotify_url} onChange={(v) => updateSong({ spotify_url: v })} placeholder="https://open.spotify.com/track/..." />
         <div className="space-y-2">
+          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Fallback-Audio (optional, wird genutzt wenn oben kein Start-Song gesetzt ist)</Label>
+          <div className="flex items-center gap-3">
+            <Input value={yc.fallbackSong.audio_url || ""} onChange={(e) => updateSong({ audio_url: e.target.value })} placeholder="https://…" className="flex-1" />
+            <label className="cursor-pointer">
+              <input type="file" accept="audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFallbackAudio(e.target.files[0])} />
+              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+                <Upload className="h-3.5 w-3.5" /> Upload
+              </span>
+            </label>
+          </div>
+          {yc.fallbackSong.audio_url && <audio src={yc.fallbackSong.audio_url} controls className="w-full mt-2" />}
+        </div>
+        <div className="space-y-2">
           <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Cover</Label>
           <div className="flex items-center gap-3">
             {yc.fallbackSong.cover_url && (

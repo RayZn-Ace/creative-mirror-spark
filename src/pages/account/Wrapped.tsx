@@ -335,7 +335,6 @@ export default function Wrapped() {
         a.loop = true;
         a.muted = muted;
         a.preload = "auto";
-        a.playsInline = true;
         audioRef.current = a;
         a.currentTime = 0;
 
