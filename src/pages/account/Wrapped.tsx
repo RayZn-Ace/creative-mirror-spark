@@ -320,22 +320,6 @@ export default function Wrapped() {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
 
-  // Auto-advance slides while playing
-  useEffect(() => {
-    if (!started || paused) return;
-    const t = setTimeout(() => {
-      if (slide < slides.length - 1) setSlide((s) => s + 1);
-      else stopStory();
-    }, 5000);
-    return () => clearTimeout(t);
-  }, [started, paused, slide, slides.length]);
-
-  // Cleanup on fullscreen exit
-  useEffect(() => {
-    const onFs = () => { if (!document.fullscreenElement && started) setStarted(false); };
-    document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
-  }, [started]);
 
   // Cover screen (before start)
   if (!started) {
