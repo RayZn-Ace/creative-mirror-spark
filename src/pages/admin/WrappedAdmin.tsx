@@ -145,6 +145,24 @@ export default function WrappedAdmin() {
     toast.success("Cover hochgeladen");
   };
 
+  const uploadStartCover = async (file: File) => {
+    const path = `wrapped/${year}/start-cover-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    updateCover({ image_url: data.publicUrl });
+    toast.success("Start-Cover hochgeladen");
+  };
+
+  const uploadAudio = async (file: File) => {
+    const path = `wrapped/${year}/audio-${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("event-images").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return toast.error(error.message);
+    const { data } = supabase.storage.from("event-images").getPublicUrl(path);
+    updateCover({ audio_url: data.publicUrl });
+    toast.success("Audio hochgeladen");
+  };
+
   if (loading) {
     return <div className="p-8 text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Laden…</div>;
   }
