@@ -197,6 +197,7 @@ const SettingsAdmin = () => {
           if (row.key === "company") setCompany({ ...emptyCompany, ...val });
           if (row.key === "invoice") setInvoice({ ...emptyInvoice, ...val });
           if (row.key === "email") setEmailSettings({ ...emptyEmail, ...val });
+          if (row.key === "features") setFeatures({ ...emptyFeatures, ...val });
         }
       }
       if (user) {
