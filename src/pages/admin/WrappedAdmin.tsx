@@ -84,13 +84,18 @@ export const defaultYearConfig = (): WrappedYearConfig => ({
 async function lookupItunes(title: string, artist: string): Promise<{ preview: string; cover: string } | null> {
   const q = `${title} ${artist}`.trim();
   if (!q) return null;
-  try {
-    const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
+  const tryFetch = async (country: string) => {
+    const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=15&country=${country}&term=${encodeURIComponent(q)}`);
     const j = await r.json();
-    const it = j?.results?.[0];
-    if (!it) return null;
-    const cover = (it.artworkUrl100 || "").replace("100x100", "600x600");
-    return { preview: it.previewUrl || "", cover };
+    return (j?.results || []) as any[];
+  };
+  try {
+    let results = await tryFetch("DE");
+    if (!results.some((it) => it.previewUrl)) results = await tryFetch("US");
+    const hit = results.find((it) => it.previewUrl) || results[0];
+    if (!hit) return null;
+    const cover = (hit.artworkUrl100 || "").replace("100x100", "600x600");
+    return { preview: hit.previewUrl || "", cover };
   } catch { return null; }
 }
 
