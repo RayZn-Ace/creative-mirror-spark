@@ -68,11 +68,16 @@ export default function Wrapped() {
       if (music?.connected || !song || song.audio_url) { setter(""); return; }
       const q = `${song.title || ""} ${song.artist || ""}`.trim();
       if (!q) { setter(""); return; }
-      try {
-        const r = await fetch(`https://itunes.apple.com/search?media=music&limit=1&term=${encodeURIComponent(q)}`);
-        const j = await r.json();
-        setter(j?.results?.[0]?.previewUrl || "");
-      } catch { setter(""); }
+      const tryFetch = async (country: string): Promise<string> => {
+        try {
+          const r = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=15&country=${country}&term=${encodeURIComponent(q)}`);
+          const j = await r.json();
+          const hit = (j?.results || []).find((it: any) => it.previewUrl);
+          return hit?.previewUrl || "";
+        } catch { return ""; }
+      };
+      const url = (await tryFetch("DE")) || (await tryFetch("US"));
+      setter(url);
     };
     resolve(fallbackSong, setResolvedPreview);
     resolve(fallbackSong2, setResolvedPreview2);
