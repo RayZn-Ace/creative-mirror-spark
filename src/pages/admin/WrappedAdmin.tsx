@@ -24,6 +24,7 @@ export type SlideConfig = {
 export type WrappedYearConfig = {
   slides: Record<SlideKey, SlideConfig>;
   fallbackSong: { title: string; artist: string; cover_url: string; spotify_url: string };
+  cover?: { image_url?: string; audio_url?: string; title?: string; subtitle?: string };
 };
 
 export type WrappedConfig = Record<string, WrappedYearConfig>; // keyed by year
