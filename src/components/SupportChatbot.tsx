@@ -48,6 +48,13 @@ export default function SupportChatbot() {
     checkAlfred();
   }, []);
 
+  // Allow opening from BottomNav (mobile) or any other component
+  useEffect(() => {
+    const handler = () => setChatOpen(true);
+    window.addEventListener("open-sophia", handler);
+    return () => window.removeEventListener("open-sophia", handler);
+  }, []);
+
   // Check support online status
   useEffect(() => {
     const check = async () => {
@@ -246,12 +253,12 @@ export default function SupportChatbot() {
   if (!alfredEnabled) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-50">
+    <div className="fixed bottom-20 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-50">
       {chatOpen ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="w-full sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{
             background: "hsl(270 30% 10%)",
             border: "1px solid hsl(270 60% 40% / 0.2)",
@@ -413,7 +420,7 @@ export default function SupportChatbot() {
           )}
         </motion.div>
       ) : (
-        <div className="flex items-center gap-3 mb-20 lg:mb-0">
+        <div className="hidden lg:flex items-center gap-3">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -427,7 +434,7 @@ export default function SupportChatbot() {
           </motion.div>
           <button
             onClick={() => setChatOpen(true)}
-            className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+            className="relative w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
             style={{
               background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
               boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
@@ -435,7 +442,7 @@ export default function SupportChatbot() {
             aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
-            <span className="relative z-10 text-xl sm:text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
+            <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
           </button>
         </div>
       )}
