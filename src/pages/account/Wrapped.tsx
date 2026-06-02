@@ -115,19 +115,45 @@ export default function Wrapped() {
     }, perSlide);
     return () => clearTimeout(t);
   }, [started, paused, slide]);
-  // Swap audio source when crossing halftime
+  // Swap audio source when crossing halftime — with crossfade
   useEffect(() => {
     if (!started || !audioRef.current) return;
     const n = Math.max(1, slidesCountRef.current);
     const half = Math.ceil(n / 2);
     const url2 = !music?.connected ? (fallbackSong2?.audio_url || resolvedPreview2 || "") : "";
-    if (slide >= half && url2 && audioRef.current.src !== url2) {
-      audioRef.current.pause();
-      audioRef.current.src = url2;
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+    const oldAudio = audioRef.current;
+    if (slide >= half && url2 && oldAudio.src !== url2 && !(oldAudio as any)._swapping) {
+      (oldAudio as any)._swapping = true;
+      const targetVol = muted ? 0 : 1;
+      const next = new Audio(url2);
+      next.loop = true;
+      next.muted = muted;
+      next.preload = "auto";
+      next.volume = 0;
+      audioRef.current = next;
+      next.play().then(() => {
+        const duration = 900;
+        const steps = 30;
+        const stepMs = duration / steps;
+        let i = 0;
+        const startVol = oldAudio.volume;
+        const iv = setInterval(() => {
+          i++;
+          const p = i / steps;
+          oldAudio.volume = Math.max(0, startVol * (1 - p));
+          next.volume = Math.min(targetVol, targetVol * p);
+          if (i >= steps) {
+            clearInterval(iv);
+            try { oldAudio.pause(); oldAudio.src = ""; } catch {}
+          }
+        }, stepMs);
+      }).catch(() => {
+        // fallback: hard swap
+        try { oldAudio.pause(); oldAudio.src = ""; } catch {}
+        next.volume = targetVol;
+      });
     }
-  }, [slide, started, fallbackSong2, resolvedPreview2, music?.connected]);
+  }, [slide, started, fallbackSong2, resolvedPreview2, music?.connected, muted]);
 
   // Cleanup on fullscreen exit
   useEffect(() => {
