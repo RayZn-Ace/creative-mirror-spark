@@ -147,24 +147,33 @@ export default function Wrapped() {
     },
   ];
 
-  if (stats.loading) {
+  if (flagsLoading || stats.loading) {
     return <div className="p-12 text-center text-muted-foreground">Lade dein Wrapped...</div>;
   }
 
-  if (stats.yearCount === 0) {
-    return (
-      <div className="space-y-6">
-        <YearPicker year={year} setYear={setYear} />
-        <Card className="p-12 text-center">
-          <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-bold mb-2">Noch keine Story für {year}</h2>
-          <p className="text-muted-foreground">
-            Schnapp dir Tickets und komm wieder, wenn du was zu wrappen hast 🎉
-          </p>
-        </Card>
-      </div>
-    );
+  if (!flags.wrapped_enabled) {
+    return <Navigate to="/account" replace />;
   }
+
+  // No partys yet → "Was bisher geschah" welcome wrapped (if enabled)
+  if (stats.yearCount === 0) {
+    if (!flags.wrapped_welcome_enabled) {
+      return (
+        <div className="space-y-6">
+          <YearPicker year={year} setYear={setYear} />
+          <Card className="p-12 text-center">
+            <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-2xl font-bold mb-2">Noch keine Story für {year}</h2>
+            <p className="text-muted-foreground">
+              Schnapp dir Tickets und komm wieder, wenn du was zu wrappen hast 🎉
+            </p>
+          </Card>
+        </div>
+      );
+    }
+    return <WelcomeWrapped name={user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Legend"} />;
+  }
+
 
   const current = slides[slide];
   const next = () => setSlide((s) => Math.min(slides.length - 1, s + 1));
