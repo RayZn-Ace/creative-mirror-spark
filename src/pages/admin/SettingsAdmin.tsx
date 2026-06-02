@@ -12,6 +12,7 @@ interface CompanyData {
 interface InvoiceData { prefix: string; next_number: number; }
 interface EmailData { sender_name: string; sender_domain: string; reply_to: string; }
 interface FeaturesData { wrapped_enabled: boolean; wrapped_welcome_enabled: boolean; }
+interface WrappedSongData { title: string; artist: string; cover_url: string; spotify_url: string; }
 interface ProfileData { display_name: string; avatar_url: string; }
 interface UserRoleRow { id: string; user_id: string; role: string; created_at: string; email?: string; display_name?: string; }
 interface EditingUser { userId: string; currentRole: string; newRole: string; }
@@ -22,6 +23,7 @@ const emptyCompany: CompanyData = { name: "", address: "", zip: "", city: "", co
 const emptyInvoice: InvoiceData = { prefix: "RE", next_number: 1 };
 const emptyEmail: EmailData = { sender_name: "Tickets", sender_domain: "", reply_to: "" };
 const emptyFeatures: FeaturesData = { wrapped_enabled: true, wrapped_welcome_enabled: true };
+const emptyWrappedSong: WrappedSongData = { title: "", artist: "", cover_url: "", spotify_url: "" };
 
 const inputStyle = { background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)", color: "hsl(0 0% 100%)", borderRadius: "10px", padding: "10px 14px", fontSize: "14px", width: "100%", outline: "none", transition: "border-color 0.2s" };
 const labelStyle = { color: "hsl(0 0% 100% / 0.5)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.5px", marginBottom: "4px", display: "block" };
