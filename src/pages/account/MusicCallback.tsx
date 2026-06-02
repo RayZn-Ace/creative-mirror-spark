@@ -30,7 +30,11 @@ export default function MusicCallback() {
     }
 
     (async () => {
-      const redirect_uri = `${window.location.origin}/account/music/callback`;
+      const isNative = /(iPhone|iPad|Android)/i.test(navigator.userAgent) &&
+        (window.location.protocol === "capacitor:" || window.location.hostname === "localhost");
+      const redirect_uri = isNative
+        ? "app.nightlife.app://music-callback"
+        : `${window.location.origin}/account/music/callback`;
       const { data, error } = await supabase.functions.invoke("spotify-callback", {
         body: { code, redirect_uri },
       });
