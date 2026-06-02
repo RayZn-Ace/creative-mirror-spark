@@ -2,8 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { initDeepLinks } from "@/lib/deepLinks";
 import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
 import VisitorTracker from "@/components/VisitorTracker";
@@ -83,6 +84,12 @@ const AccountMemories = lazy(() => import("./pages/account/Memories"));
 
 const queryClient = new QueryClient();
 
+const DeepLinkHandler = () => {
+  const navigate = useNavigate();
+  useEffect(() => { initDeepLinks(navigate); }, [navigate]);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -90,6 +97,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <DeepLinkHandler />
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <TrackingProvider />
             <VisitorTracker />
