@@ -199,7 +199,53 @@ export default function WrappedAdmin() {
         ))}
       </div>
 
+      {/* Start Cover (click-to-play) */}
+      <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5" style={{ color: "hsl(270 70% 55%)" }} />
+          <h2 className="text-lg font-bold" style={{ color: "hsl(0 0% 100%)" }}>Start-Cover {year}</h2>
+        </div>
+        <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+          Cover-Bild + Sound. User klickt drauf → Fullscreen-Story startet mit Musik.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FieldLight label="Titel (optional)" value={yc.cover?.title || ""} onChange={(v) => updateCover({ title: v })} placeholder={`Dein ${year}`} />
+          <FieldLight label="Subtitle (optional)" value={yc.cover?.subtitle || ""} onChange={(v) => updateCover({ subtitle: v })} placeholder="Tap to play 🔥" />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Cover-Bild</Label>
+          <div className="flex items-center gap-3">
+            {yc.cover?.image_url && (
+              <img src={yc.cover.image_url} alt="Cover" className="w-16 h-16 rounded-lg object-cover" />
+            )}
+            <Input value={yc.cover?.image_url || ""} onChange={(e) => updateCover({ image_url: e.target.value })} placeholder="https://…" className="flex-1" />
+            <label className="cursor-pointer">
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadStartCover(e.target.files[0])} />
+              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+                <Upload className="h-3.5 w-3.5" /> Upload
+              </span>
+            </label>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs" style={{ color: "hsl(0 0% 100% / 0.7)" }}>Audio (mp3/m4a, wird beim Start gespielt)</Label>
+          <div className="flex items-center gap-3">
+            <Input value={yc.cover?.audio_url || ""} onChange={(e) => updateCover({ audio_url: e.target.value })} placeholder="https://…" className="flex-1" />
+            <label className="cursor-pointer">
+              <input type="file" accept="audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAudio(e.target.files[0])} />
+              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium"
+                    style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 70% 75%)" }}>
+                <Upload className="h-3.5 w-3.5" /> Upload
+              </span>
+            </label>
+          </div>
+          {yc.cover?.audio_url && <audio src={yc.cover.audio_url} controls className="w-full mt-2" />}
+        </div>
+      </Card>
+
       {/* Fallback Song */}
+
       <Card className="p-5 space-y-4" style={{ background: "hsl(220 50% 12%)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
         <div className="flex items-center gap-2">
           <Music className="h-5 w-5" style={{ color: "hsl(270 70% 55%)" }} />
