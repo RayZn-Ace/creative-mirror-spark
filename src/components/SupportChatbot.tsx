@@ -253,7 +253,7 @@ export default function SupportChatbot() {
   if (!alfredEnabled) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-50">
+    <div className="fixed bottom-20 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 z-50">
       {chatOpen ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
