@@ -389,7 +389,7 @@ export default function Wrapped() {
   // Fullscreen story player
   return (
     <div ref={containerRef} className="fixed inset-0 z-[100] bg-black flex items-center justify-center">
-      {audioUrl && <audio ref={audioRef} src={audioUrl} loop muted={muted} />}
+      {/* audio managed imperatively via audioRef in startStory */}
       <div className="relative w-full h-full max-w-md mx-auto sm:aspect-[9/16] sm:h-auto sm:max-h-[95vh] sm:rounded-3xl overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
