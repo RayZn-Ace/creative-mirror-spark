@@ -258,7 +258,7 @@ export default function SupportChatbot() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-80 sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="w-full sm:w-96 h-[450px] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{
             background: "hsl(270 30% 10%)",
             border: "1px solid hsl(270 60% 40% / 0.2)",
