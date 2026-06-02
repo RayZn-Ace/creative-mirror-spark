@@ -39,7 +39,51 @@ export default function Wrapped() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const slidesCountRef = useRef(1);
+  const bpmCacheRef = useRef<Map<string, number>>(new Map());
   const MAX_STORY_MS = 60000;
+
+  // Lightweight BPM detection via OfflineAudio decode + energy autocorrelation
+  async function detectBpm(url: string): Promise<number | null> {
+    try {
+      const cached = bpmCacheRef.current.get(url);
+      if (cached) return cached;
+      const res = await fetch(url);
+      const buf = await res.arrayBuffer();
+      const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return null;
+      const tmp = new AC();
+      const audioBuf: AudioBuffer = await new Promise((resolve, reject) =>
+        tmp.decodeAudioData(buf.slice(0), resolve, reject)
+      );
+      try { tmp.close(); } catch {}
+      const data = audioBuf.getChannelData(0);
+      const sr = audioBuf.sampleRate;
+      const fps = 50; // 20ms frames
+      const winSize = Math.floor(sr / fps);
+      const frames: number[] = [];
+      for (let i = 0; i + winSize <= data.length; i += winSize) {
+        let s = 0;
+        for (let j = 0; j < winSize; j++) { const v = data[i + j]; s += v * v; }
+        frames.push(s);
+      }
+      // Autocorrelate in BPM range 70..180
+      const minLag = Math.floor((fps * 60) / 180);
+      const maxLag = Math.floor((fps * 60) / 70);
+      let bestLag = minLag, bestVal = -Infinity;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        let sum = 0;
+        for (let i = 0; i + lag < frames.length; i++) sum += frames[i] * frames[i + lag];
+        if (sum > bestVal) { bestVal = sum; bestLag = lag; }
+      }
+      let bpm = (60 * fps) / bestLag;
+      // Fold into 80..160 range (handle half/double-time)
+      while (bpm < 80) bpm *= 2;
+      while (bpm > 160) bpm /= 2;
+      bpmCacheRef.current.set(url, bpm);
+      return bpm;
+    } catch { return null; }
+  }
+
 
   useEffect(() => {
     if (!user) return;
