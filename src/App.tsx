@@ -77,6 +77,7 @@ const AccountNotifications = lazy(() => import("./pages/account/Notifications"))
 const AccountRewards = lazy(() => import("./pages/account/Rewards"));
 const AccountFriends = lazy(() => import("./pages/account/Friends"));
 const AccountWrapped = lazy(() => import("./pages/account/Wrapped"));
+const AccountMusicCallback = lazy(() => import("./pages/account/MusicCallback"));
 const AccountMemories = lazy(() => import("./pages/account/Memories"));
 
 const queryClient = new QueryClient();
@@ -160,6 +161,7 @@ const App = () => (
                 <Route path="rewards" element={<AccountRewards />} />
                 <Route path="friends" element={<AccountFriends />} />
                 <Route path="wrapped" element={<AccountWrapped />} />
+                <Route path="music/callback" element={<AccountMusicCallback />} />
                 <Route path="memories" element={<AccountMemories />} />
               </Route>
 
