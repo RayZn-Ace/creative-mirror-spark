@@ -555,6 +555,30 @@ const SettingsAdmin = () => {
               disabled={!features.wrapped_enabled}
             />
           </SectionCard>
+
+          <SectionCard
+            icon={Sparkles}
+            title="Wrapped Fallback-Song"
+            description="Wird im Year in Review angezeigt, wenn der Nutzer Spotify nicht verbunden hat. Wird durch echte Spotify-Daten überschrieben sobald verlinkt."
+            onSave={() => save("wrapped_fallback_song", wrappedSong, setSavingWrappedSong)}
+            saving={savingWrappedSong}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Song-Titel" value={wrappedSong.title} onChange={(v) => setWrappedSong((p) => ({ ...p, title: v }))} placeholder="z.B. Mockingbird" />
+              <Field label="Künstler" value={wrappedSong.artist} onChange={(v) => setWrappedSong((p) => ({ ...p, artist: v }))} placeholder="z.B. Eminem" />
+            </div>
+            <Field label="Cover-URL (optional)" value={wrappedSong.cover_url} onChange={(v) => setWrappedSong((p) => ({ ...p, cover_url: v }))} placeholder="https://..." />
+            <Field label="Spotify-Link (optional)" value={wrappedSong.spotify_url} onChange={(v) => setWrappedSong((p) => ({ ...p, spotify_url: v }))} placeholder="https://open.spotify.com/track/..." />
+            {wrappedSong.cover_url && (
+              <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
+                <img src={wrappedSong.cover_url} alt="Cover" className="w-14 h-14 rounded-lg object-cover" />
+                <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+                  <div className="font-bold" style={{ color: "hsl(0 0% 100%)" }}>{wrappedSong.title || "—"}</div>
+                  <div>{wrappedSong.artist || "—"}</div>
+                </div>
+              </div>
+            )}
+          </SectionCard>
         </>
       )}
 
