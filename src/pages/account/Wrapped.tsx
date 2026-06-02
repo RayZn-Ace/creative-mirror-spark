@@ -28,12 +28,18 @@ export default function Wrapped() {
   const { flags, loading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
   const [music, setMusic] = useState<MusicData | null>(null);
+  const [fallbackSong, setFallbackSong] = useState<{ title: string; artist: string; cover_url: string; spotify_url: string } | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.functions.invoke("spotify-wrapped", { body: {} });
-      if (data) setMusic(data as MusicData);
+      const [musicRes, songRes] = await Promise.all([
+        supabase.functions.invoke("spotify-wrapped", { body: {} }),
+        supabase.from("settings").select("value").eq("key", "wrapped_fallback_song").maybeSingle(),
+      ]);
+      if (musicRes.data) setMusic(musicRes.data as MusicData);
+      const v = songRes.data?.value as any;
+      if (v?.title && v?.artist) setFallbackSong(v);
     })();
   }, [user]);
 
