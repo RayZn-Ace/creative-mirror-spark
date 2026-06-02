@@ -427,7 +427,7 @@ export default function SupportChatbot() {
           </motion.div>
           <button
             onClick={() => setChatOpen(true)}
-            className="relative w-10 h-10 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+            className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
             style={{
               background: "linear-gradient(135deg, hsl(270 90% 55%), hsl(280 85% 45%))",
               boxShadow: "0 0 25px hsl(270 90% 55% / 0.5), 0 0 60px hsl(270 90% 55% / 0.2)",
