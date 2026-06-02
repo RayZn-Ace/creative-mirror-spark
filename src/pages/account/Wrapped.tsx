@@ -431,7 +431,7 @@ export default function Wrapped() {
         <div className="absolute top-6 right-3 flex gap-2 z-30">
           {audioUrl && (
             <button
-              onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
+              onClick={(e) => { e.stopPropagation(); setMuted((m) => { const nm = !m; if (audioRef.current) audioRef.current.muted = nm; return nm; }); }}
               className="h-9 w-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Mute"
             >
