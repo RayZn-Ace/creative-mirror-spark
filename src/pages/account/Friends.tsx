@@ -15,7 +15,7 @@ import { useEffect } from "react";
 
 export default function Friends() {
   const { user } = useAuth();
-  const { accepted, incoming, outgoing, loading, sendRequest, respond, remove } = useFriends();
+  const { accepted, incoming, outgoing, loading, respond, remove, reload } = useFriends();
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [showAttendance, setShowAttendance] = useState(true);
@@ -42,14 +42,24 @@ export default function Friends() {
   const onSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    const res = await sendRequest(email);
+    const { data, error } = await supabase.functions.invoke("invite-friend", {
+      body: { email: email.trim().toLowerCase() },
+    });
     setSending(false);
-    if (res.ok) {
-      toast.success("Anfrage gesendet 🚀");
-      setEmail("");
-    } else {
-      toast.error(res.error || "Fehler");
+    if (error || (data as any)?.error) {
+      toast.error((data as any)?.error || error?.message || "Fehler");
+      return;
     }
+    const status = (data as any)?.status;
+    if (status === "friend_request_sent") {
+      toast.success("Freundschaftsanfrage gesendet 🚀");
+      reload();
+    } else if (status === "invite_email_sent") {
+      toast.success("Einladung per E-Mail geschickt ✉️");
+    } else {
+      toast.success("Erledigt");
+    }
+    setEmail("");
   };
 
   return (
@@ -71,11 +81,11 @@ export default function Friends() {
             required
           />
           <Button type="submit" disabled={sending}>
-            <UserPlus className="h-4 w-4 mr-2" /> Anfragen
+            <UserPlus className="h-4 w-4 mr-2" /> Einladen
           </Button>
         </form>
         <p className="text-xs text-muted-foreground mt-2">
-          Dein Freund muss bereits einen Account haben (gleiche E-Mail).
+          Hat dein Freund schon einen Account, schicken wir direkt eine Anfrage. Sonst kriegt er eine Einladung per Mail 💌
         </p>
       </Card>
 
