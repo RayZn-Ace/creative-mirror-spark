@@ -1,16 +1,22 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, MapPin, Ticket, Clock, Euro, Calendar, Share2, ChevronLeft, ChevronRight, PartyPopper, Rocket, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 export default function Wrapped() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const stats = useUserStats(year);
   const [slide, setSlide] = useState(0);
+  const { flags, loading: flagsLoading } = useFeatureFlags();
+  const { user } = useAuth();
 
   const slides = [
     {
