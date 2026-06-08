@@ -953,34 +953,36 @@ Deno.serve(async (req) => {
     const eventTitle = ticketData[0]?.event_title || "Event";
 
     // ─── Generate PDFs ───
-    const [ticketPdfBytes, invoicePdfBytes] = await Promise.all([
-      generateTicketPDF(ticketData, ticketTemplate),
-      generateInvoicePDF({
-        invoiceNumber,
-        invoiceDate: formatDateShort(new Date().toISOString().split("T")[0]),
-        company,
-        customerName: order.name || "",
-        customerEmail: order.email,
-        items: orderItems.map((i: any) => ({
-          name: i.name,
-          quantity: i.quantity,
-          unitPrice: i.priceEur,
-          total: i.priceEur * i.quantity,
-        })),
-        serviceFee: order.service_fee || 0,
-        totalAmount: order.total_amount,
-        vatRate: 19,
-        currency: order.currency || "EUR",
-        payment_terms: invoiceTemplate.payment_terms || "",
-        additional_text: invoiceTemplate.additional_text || "",
-        footer_note: invoiceTemplate.footer_note || "",
-        show_bank_details: invoiceTemplate.show_bank_details || false,
-        bank_override: invoiceTemplate.bank_override || "",
-      }),
-    ]);
+    // In download_only mode, skip the invoice PDF to stay under the edge function CPU limit.
+    const ticketPdfBytes = await generateTicketPDF(ticketData, ticketTemplate);
+    const invoicePdfBytes = download_only
+      ? new Uint8Array()
+      : await generateInvoicePDF({
+          invoiceNumber,
+          invoiceDate: formatDateShort(new Date().toISOString().split("T")[0]),
+          company,
+          customerName: order.name || "",
+          customerEmail: order.email,
+          items: orderItems.map((i: any) => ({
+            name: i.name,
+            quantity: i.quantity,
+            unitPrice: i.priceEur,
+            total: i.priceEur * i.quantity,
+          })),
+          serviceFee: order.service_fee || 0,
+          totalAmount: order.total_amount,
+          vatRate: 19,
+          currency: order.currency || "EUR",
+          payment_terms: invoiceTemplate.payment_terms || "",
+          additional_text: invoiceTemplate.additional_text || "",
+          footer_note: invoiceTemplate.footer_note || "",
+          show_bank_details: invoiceTemplate.show_bank_details || false,
+          bank_override: invoiceTemplate.bank_override || "",
+        });
 
     // Convert Uint8Array to base64 in chunks to avoid stack overflow
     function uint8ToBase64(bytes: Uint8Array): string {
+      if (bytes.length === 0) return "";
       let binary = "";
       const chunkSize = 8192;
       for (let i = 0; i < bytes.length; i += chunkSize) {
@@ -992,12 +994,13 @@ Deno.serve(async (req) => {
     const ticketPdfBase64 = uint8ToBase64(ticketPdfBytes);
     const invoicePdfBase64 = uint8ToBase64(invoicePdfBytes);
 
-    // ─── Download only mode: return PDFs as base64 ───
+    // ─── Download only mode: return ticket PDF as base64 ───
     if (download_only) {
-      return new Response(JSON.stringify({ ticket_pdf: ticketPdfBase64, invoice_pdf: invoicePdfBase64 }), {
+      return new Response(JSON.stringify({ ticket_pdf: ticketPdfBase64 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     // ─── Build email ───
     const htmlEmail = buildEmailHTML({
