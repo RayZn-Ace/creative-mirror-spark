@@ -915,6 +915,11 @@ Deno.serve(async (req) => {
     const invoiceSettings = settingsMap.invoice || { prefix: "RE", next_number: 1 };
     const emailSettings = settingsMap.email || {};
     const ticketTemplate: TicketTemplate = { ...defaultTpl, ...(settingsMap.ticket_template || {}) };
+    // In download mode, disable magic ticket background to stay within CPU limits.
+    if (download_only) {
+      ticketTemplate.magic_ticket_enabled = false;
+    }
+
     const invoiceTemplate = settingsMap.invoice_template || {};
 
     // ─── Generate invoice number ───
