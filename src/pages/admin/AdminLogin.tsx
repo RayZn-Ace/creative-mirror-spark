@@ -45,7 +45,7 @@ const AdminLogin = () => {
             Admin Panel
           </h1>
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-            Gimme Gimme Party Verwaltung
+            Nightlife Verwaltung
           </p>
         </div>
 
