@@ -444,7 +444,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             </div>
           </div>
           {/* Group size & Capacity */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Field label="Gruppengröße (1 = Einzelticket)" value={editingTicket.group_size || 1} onChange={(v: string) => setEditingTicket({ ...editingTicket, group_size: parseInt(v) || 1 })} type="number" />
             <Field label="Kapazität (max. Tickets)" value={editingTicket.max_capacity ?? ""} onChange={(v: string) => setEditingTicket({ ...editingTicket, max_capacity: v ? parseInt(v) : null })} type="number" placeholder="unbegrenzt" />
             <div className="flex items-end pb-1">
