@@ -425,7 +425,8 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             <Field label="Badge" value={editingTicket.badge} onChange={(v: string) => setEditingTicket({ ...editingTicket, badge: v })} placeholder="z.B. FAST AUSVERKAUFT" />
           </div>
           <Field label="Beschreibung" value={editingTicket.description} onChange={(v: string) => setEditingTicket({ ...editingTicket, description: v })} />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
             <Field label="Sortierung" value={editingTicket.sort_order} onChange={(v: string) => setEditingTicket({ ...editingTicket, sort_order: parseInt(v) || 0 })} type="number" />
             <div className="flex items-end pb-1 gap-4 flex-wrap">
               <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
@@ -443,7 +444,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             </div>
           </div>
           {/* Group size & Capacity */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Field label="Gruppengröße (1 = Einzelticket)" value={editingTicket.group_size || 1} onChange={(v: string) => setEditingTicket({ ...editingTicket, group_size: parseInt(v) || 1 })} type="number" />
             <Field label="Kapazität (max. Tickets)" value={editingTicket.max_capacity ?? ""} onChange={(v: string) => setEditingTicket({ ...editingTicket, max_capacity: v ? parseInt(v) : null })} type="number" placeholder="unbegrenzt" />
             <div className="flex items-end pb-1">
@@ -467,15 +468,15 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
             </div>
           )}
           {/* Sale Start / End */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Verkaufsstart (optional)</label>
               <input
                 type="datetime-local"
                 value={editingTicket.sale_start || ""}
                 onChange={(e) => setEditingTicket({ ...editingTicket, sale_start: e.target.value || null })}
-                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none min-h-[44px]"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark", WebkitAppearance: "none" }}
               />
             </div>
             <div>
@@ -484,11 +485,12 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
                 type="datetime-local"
                 value={editingTicket.sale_end || ""}
                 onChange={(e) => setEditingTicket({ ...editingTicket, sale_end: e.target.value || null })}
-                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)" }}
+                className="w-full px-3 py-2 rounded-lg text-sm outline-none min-h-[44px]"
+                style={{ background: "hsl(0 0% 100% / 0.06)", color: "hsl(0 0% 100%)", border: "1px solid hsl(0 0% 100% / 0.1)", colorScheme: "dark", WebkitAppearance: "none" }}
               />
             </div>
           </div>
+
           {/* Features */}
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>Features</label>
