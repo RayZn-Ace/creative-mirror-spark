@@ -637,3 +637,24 @@
   animation-duration: 5s;
   filter: blur(18px);
 }
+/* Featured "Nächstes Event" animated gradient frame */
+.featured-frame {
+  background: linear-gradient(
+    120deg,
+    hsl(270 80% 55%),
+    hsl(330 85% 60%),
+    hsl(45 90% 60%),
+    hsl(200 85% 60%),
+    hsl(270 80% 55%)
+  );
+  background-size: 300% 300%;
+  animation: featured-frame-flow 6s ease-in-out infinite;
+  box-shadow:
+    0 0 24px hsl(270 80% 55% / 0.35),
+    0 0 48px hsl(330 85% 60% / 0.25);
+}
+
+@keyframes featured-frame-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
