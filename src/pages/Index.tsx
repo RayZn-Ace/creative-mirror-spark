@@ -124,15 +124,15 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
         >
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Flyer image */}
-            <div className="relative overflow-hidden bg-card lg:aspect-auto lg:min-h-[500px]">
+            <div className="relative overflow-hidden bg-card">
               {nextEvent.image_url ? (
                 <img
                   src={nextEvent.image_url}
                   alt={nextEvent.title}
-                  className="w-full h-full max-h-[600px] object-contain group-hover:scale-[1.02] transition-transform duration-700 will-change-transform"
+                  className="w-full h-auto object-contain group-hover:scale-[1.02] transition-transform duration-700 will-change-transform"
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-card" />
+                <div className="w-full aspect-[16/9] bg-gradient-to-br from-primary/20 via-card to-card" />
               )}
             </div>
 
