@@ -160,21 +160,22 @@ export default function SocialProofToast() {
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md max-w-xs"
             style={{
-              background: "linear-gradient(135deg, hsl(230 80% 55% / 0.15), hsl(220 50% 12% / 0.9))",
-              border: "1px solid hsl(230 80% 55% / 0.3)",
+              background: "linear-gradient(135deg, hsl(270 80% 55% / 0.2), hsl(330 80% 55% / 0.15), hsl(270 40% 10% / 0.92))",
+              border: "1px solid hsl(280 80% 60% / 0.4)",
+              boxShadow: "0 8px 32px hsl(270 80% 55% / 0.25), 0 0 0 1px hsl(280 80% 60% / 0.1)",
             }}
           >
             <div
               className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "hsl(230 80% 55% / 0.25)" }}
+              style={{ background: "linear-gradient(135deg, hsl(270 80% 55% / 0.35), hsl(330 80% 55% / 0.35))" }}
             >
-              <Ticket className="w-4 h-4" style={{ color: "hsl(230 80% 55%)" }} />
+              <Ticket className="w-4 h-4" style={{ color: "hsl(290 90% 75%)" }} />
             </div>
             <div>
               <p className="text-xs font-semibold" style={{ color: "hsl(0 0% 100%)" }}>
                 {msg.name} hat gerade {msg.count} Tickets gekauft
               </p>
-              <p className="text-[11px] mt-0.5 font-medium" style={{ color: "hsl(230 80% 65%)" }}>
+              <p className="text-[11px] mt-0.5 font-medium" style={{ color: "hsl(290 90% 75%)" }}>
                 🎉 {msg.eventTitle}
               </p>
             </div>
