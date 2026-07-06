@@ -124,18 +124,16 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
         >
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Flyer image */}
-            <div className="relative overflow-hidden aspect-[4/5] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[500px]">
+            <div className="relative overflow-hidden bg-card lg:aspect-auto lg:min-h-[500px]">
               {nextEvent.image_url ? (
                 <img
                   src={nextEvent.image_url}
                   alt={nextEvent.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 will-change-transform"
+                  className="w-full h-full max-h-[600px] object-contain group-hover:scale-[1.02] transition-transform duration-700 will-change-transform"
                 />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-card" />
               )}
-              {/* Subtle fade only on desktop right edge */}
-              <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-card" />
             </div>
 
             {/* Info side */}
