@@ -559,14 +559,15 @@ export default function Termine() {
                       {featured.hasHighlight ? "Highlight" : (t.nextDate || "Nächstes Event")}
                     </span>
                   </div>
-                  <NeonGlowCard imageUrl={featured.imageUrl} index={0} className="rounded-2xl">
+                  <div className="relative rounded-2xl p-[2px] featured-frame">
+                  <NeonGlowCard imageUrl={featured.imageUrl} index={0} className="rounded-[14px]">
                     <Link
                       to={`/${featured.slug}`}
-                      className="group block rounded-2xl border border-primary/30 bg-card overflow-hidden hover:border-primary/60 transition-all duration-300 relative z-[2]"
+                      className="group block rounded-[14px] bg-card overflow-hidden transition-all duration-300 relative z-[2]"
                     >
-                      {/* Large hero image */}
-                      <div className="relative overflow-hidden" style={{ aspectRatio: "21 / 9" }}>
-                        {featured.imageUrl ? (
+                      {/* Image - same aspect ratio as regular cards */}
+                      {featured.imageUrl ? (
+                        <div className="relative overflow-hidden rounded-t-[14px]" style={{ aspectRatio: "1920 / 1080" }}>
                           <img
                             src={featured.imageUrl}
                             alt={featured.city}
@@ -576,101 +577,100 @@ export default function Termine() {
                               ...(allSoldOut && !anyBoxOffice ? { filter: "grayscale(100%)", opacity: 0.7 } : {}),
                             }}
                           />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-card" />
-                        )}
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-
-                        {allSoldOut && (
-                          <motion.div
-                            className="absolute inset-0 pointer-events-none z-10"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                          >
-                            <div
-                              className="absolute font-black uppercase text-center text-white text-lg sm:text-2xl tracking-widest"
-                             style={{
-                                background: anyBoxOffice ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
-                                width: "120%",
-                                top: "50%",
-                                left: "50%",
-                                transform: "translate(-50%, -50%) rotate(-35deg)",
-                                padding: "10px 0",
-                                boxShadow: "0 2px 12px hsl(0 0% 0% / 0.5)",
-                              }}
+                          {allSoldOut && (
+                            <motion.div
+                              className="absolute inset-0 pointer-events-none z-10"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.5, delay: 0.2 }}
                             >
-                              {anyBoxOffice ? "ABENDKASSE" : "AUSVERKAUFT"}
-                            </div>
-                          </motion.div>
-                        )}
-
-                        {featured.km !== null && (
-                          <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/90 text-sm font-medium z-20 backdrop-blur-sm">
-                            <MapPin className="w-3.5 h-3.5 text-primary" />
-                            {featured.km} {t.kmAway}
-                          </div>
-                        )}
-
-                        {/* Content overlay on image */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-10">
-                          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display uppercase tracking-wide text-foreground mb-2 drop-shadow-lg">
-                            {featured.city}
-                          </h2>
-                          {nextDate?.locationName && (
-                            <p className="text-sm md:text-base text-muted-foreground mb-4 drop-shadow-md">
-                              {nextDate.locationName}
-                            </p>
+                              <div
+                                className="absolute font-black uppercase text-center text-white text-lg sm:text-2xl tracking-widest"
+                                style={{
+                                  background: anyBoxOffice ? "hsl(45 80% 40%)" : "hsl(0 70% 45%)",
+                                  width: "120%",
+                                  top: "50%",
+                                  left: "50%",
+                                  transform: "translate(-50%, -50%) rotate(-35deg)",
+                                  padding: "10px 0",
+                                  boxShadow: "0 2px 12px hsl(0 0% 0% / 0.5)",
+                                }}
+                              >
+                                {anyBoxOffice ? "ABENDKASSE" : "AUSVERKAUFT"}
+                              </div>
+                            </motion.div>
                           )}
-
-                          <div className="flex flex-wrap items-center gap-3">
-                            {/* Date badges */}
-                            <div className="flex flex-wrap gap-1.5">
-                              {featured.events.map((ev) => (
-                                <span
-                                  key={ev.id}
-                                  className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-2 rounded-lg border backdrop-blur-sm ${
-                                    ev.soldOut
-                                      ? "border-destructive/30 bg-destructive/20 text-destructive line-through"
-                                      : ev.openAir
-                                      ? "border-amber-500/30 bg-amber-500/20 text-amber-400"
-                                      : "border-border/50 bg-background/60 text-foreground"
-                                  }`}
-                                >
-                                  {ev.openAir && <Sun className="w-3 h-3" />}
-                                  {ev.soldOut && <XCircle className="w-3 h-3" />}
-                                  {formatDate(ev.date)}
-                                </span>
-                              ))}
+                          {featured.km !== null && (
+                            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20 backdrop-blur-sm">
+                              <MapPin className="w-3 h-3 text-primary" />
+                              {featured.km} {t.kmAway}
                             </div>
+                          )}
+                        </div>
+                      ) : null}
 
-                            {/* CTA Button */}
-                            <div className="ml-auto">
-                              {allSoldOut ? (
-                                anyBoxOffice ? (
-                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(45 80% 40% / 0.2)", color: "hsl(45 80% 55%)" }}>
-                                    🎫 Abendkasse
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: "hsl(0 70% 45% / 0.2)", color: "hsl(0 70% 55%)" }}>
-                                    <XCircle className="w-4 h-4" />
-                                    Warteliste
-                                  </span>
-                                )
-                              ) : (
-                                <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold group-hover:shadow-[var(--shadow-glow)] transition-shadow duration-300">
-                                  <Ticket className="w-4 h-4" />
-                                  {t.tickets}
-                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </span>
-                              )}
-                            </div>
+                      {/* Content below image - same as regular cards */}
+                      <div className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-xl sm:text-2xl font-display uppercase tracking-wide group-hover:text-primary transition-colors">
+                              {featured.city}
+                            </h3>
+                            {nextDate?.locationName && (
+                              <p className="text-sm text-muted-foreground mt-0.5">{nextDate.locationName}</p>
+                            )}
                           </div>
+                          {!featured.imageUrl && featured.km !== null && (
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full shrink-0">
+                              <MapPin className="w-3 h-3 text-primary" />
+                              {featured.km} km
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {featured.events.map((ev) => (
+                            <span
+                              key={ev.id}
+                              className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border ${
+                                ev.soldOut
+                                  ? "border-destructive/30 bg-destructive/10 text-destructive line-through"
+                                  : ev.openAir
+                                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                                  : "border-border bg-muted/30 text-foreground"
+                              }`}
+                            >
+                              {ev.openAir && <Sun className="w-3 h-3" />}
+                              {ev.soldOut && <XCircle className="w-3 h-3" />}
+                              {formatDate(ev.date)}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          {allSoldOut ? (
+                            anyBoxOffice ? (
+                              <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "hsl(45 80% 55%)" }}>
+                                🎫 Abendkasse
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "hsl(0 70% 55%)" }}>
+                                <XCircle className="w-4 h-4" />
+                                Warteliste
+                              </span>
+                            )
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                              <Ticket className="w-4 h-4" />
+                              {t.tickets}
+                            </span>
+                          )}
+                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </div>
                       </div>
                     </Link>
                   </NeonGlowCard>
+                  </div>
                 </motion.div>
               );
             })()}
