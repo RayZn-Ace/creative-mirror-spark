@@ -1652,8 +1652,8 @@ const CityPage = () => {
     return {
       "@context": "https://schema.org",
       "@type": "Event",
-      name: `Event ${cityName} – partyticket.app`,
-      description: `Event in ${cityName}! Jetzt Tickets sichern auf partyticket.app.`,
+      name: `Event ${cityName} – Nightlife Generation`,
+      description: `Event in ${cityName}! Jetzt Tickets sichern auf nightlifeticket.app.`,
       startDate: selectedEvent.date ? `${selectedEvent.date.split('.').reverse().join('-')}T${selectedEvent.time || '20:00'}:00` : undefined,
       eventStatus: selectedEvent.soldOut ? "https://schema.org/EventPostponed" : "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
@@ -1668,13 +1668,13 @@ const CityPage = () => {
       },
       organizer: {
         "@type": "Organization",
-        name: "partyticket.app",
-        url: "https://partyticket.app",
+        name: "Nightlife Generation",
+        url: "https://nightlifeticket.app",
       },
       image: getCityLandmarkUrl(cityName),
       offers: {
         "@type": "AggregateOffer",
-        url: `https://partyticket.app/${citySlug}`,
+        url: `https://nightlifeticket.app/${citySlug}`,
         availability: selectedEvent.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
         priceCurrency: "EUR",
       },
@@ -1682,12 +1682,13 @@ const CityPage = () => {
   }, [cityName, selectedEvent, citySlug]);
 
   useSeoMeta({
-    title: cityName ? `Event ${cityName} – Tickets & Termine | partyticket.app` : "partyticket.app",
+    title: cityName ? `Event ${cityName} – Tickets & Termine | Nightlife Generation` : "Nightlife Generation",
     description: cityName
-      ? `Event in ${cityName} – Tickets ab sofort verfügbar auf partyticket.app. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
+      ? `Event in ${cityName} – Tickets ab sofort verfügbar. Jetzt Tickets sichern für ${selectedEvent?.venue || cityName}!`
       : "Dein Ticketshop für die besten Events!",
-    canonical: citySlug ? `https://partyticket.app/${citySlug}` : undefined,
-    ogImage: cityName ? `https://partyticket.app${getCityLandmarkUrl(cityName)}` : undefined,
+    canonical: citySlug ? `https://nightlifeticket.app/${citySlug}` : undefined,
+    ogImage: cityName ? `https://nightlifeticket.app${getCityLandmarkUrl(cityName)}` : undefined,
+
     ogType: "event",
     jsonLd: seoJsonLd,
   });
@@ -1889,10 +1890,11 @@ const CityPage = () => {
         
         {/* SEO crawlable text – visually hidden but readable by search engines */}
         <section className="sr-only" aria-hidden="false">
-          <h1>Events in {cityName} – partyticket.app</h1>
+          <h1>Events in {cityName} – Nightlife Generation</h1>
           <p>
-            Willkommen zu den besten Events in {cityName}! Auf partyticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
+            Willkommen zu den besten Events in {cityName}! Auf nightlifeticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
             Sichere dir jetzt deine Tickets!
+
           </p>
           <p>Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}</p>
         </section>
