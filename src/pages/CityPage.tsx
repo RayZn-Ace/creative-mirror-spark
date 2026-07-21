@@ -1890,10 +1890,11 @@ const CityPage = () => {
         
         {/* SEO crawlable text – visually hidden but readable by search engines */}
         <section className="sr-only" aria-hidden="false">
-          <h1>Events in {cityName} – partyticket.app</h1>
+          <h1>Events in {cityName} – Nightlife Generation</h1>
           <p>
-            Willkommen zu den besten Events in {cityName}! Auf partyticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
+            Willkommen zu den besten Events in {cityName}! Auf nightlifeticket.app findest du die angesagtesten Partys und Events in deiner Stadt.
             Sichere dir jetzt deine Tickets!
+
           </p>
           <p>Events {cityName} Tickets • Party {cityName} • Konzert {cityName} • Tickets {cityName}</p>
         </section>
