@@ -1215,6 +1215,7 @@ export type Database = {
           id: string
           invited_by: string | null
           role: Database["public"]["Enums"]["app_role"]
+          series_ids: string[]
         }
         Insert: {
           claimed?: boolean
@@ -1223,6 +1224,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role: Database["public"]["Enums"]["app_role"]
+          series_ids?: string[]
         }
         Update: {
           claimed?: boolean
@@ -1231,6 +1233,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          series_ids?: string[]
         }
         Relationships: []
       }
