@@ -105,7 +105,7 @@ const AdminLayout = () => {
         )}
       </div>
       <nav className="flex-1 px-3 space-y-1">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const active = item.href === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.href);
           return (
             <Link
