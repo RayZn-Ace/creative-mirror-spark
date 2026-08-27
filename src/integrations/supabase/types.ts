@@ -1215,6 +1215,7 @@ export type Database = {
           id: string
           invited_by: string | null
           role: Database["public"]["Enums"]["app_role"]
+          series_ids: string[]
         }
         Insert: {
           claimed?: boolean
@@ -1223,6 +1224,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role: Database["public"]["Enums"]["app_role"]
+          series_ids?: string[]
         }
         Update: {
           claimed?: boolean
@@ -1231,6 +1233,7 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          series_ids?: string[]
         }
         Relationships: []
       }
@@ -1451,6 +1454,35 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      series_managers: {
+        Row: {
+          created_at: string
+          id: string
+          series_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          series_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          series_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_managers_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
             referencedColumns: ["id"]
           },
         ]
@@ -2143,6 +2175,11 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_series_manager: { Args: { _user_id: string }; Returns: boolean }
+      manages_series: {
+        Args: { _series_id: string; _user_id: string }
         Returns: boolean
       }
     }

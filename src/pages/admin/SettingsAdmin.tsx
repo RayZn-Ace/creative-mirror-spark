@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import SeriesManagersSection from "@/components/admin/SeriesManagersSection";
 import { Settings, Building2, FileText, Mail, Save, Loader2, User, Users, Shield, Trash2, Plus, Lock, Check, X, Palette, Edit3, Sparkles } from "lucide-react";
 
 interface CompanyData {
@@ -717,6 +718,9 @@ const SettingsAdmin = () => {
           </div>
         </SectionCard>
       )}
+
+      {activeTab === "users" && <SeriesManagersSection />}
+
 
       {/* Permissions Tab */}
       {activeTab === "permissions" && (

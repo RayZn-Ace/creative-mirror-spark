@@ -1,10 +1,12 @@
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeriesAccess } from "@/hooks/useSeriesAccess";
 import {
   LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones, ClipboardList, ImageIcon, Upload, UserPlus, Briefcase, Gift, Armchair, Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -30,15 +32,21 @@ const navItems = [
   { label: "CSV-Import", href: "/admin/csv-import", icon: Upload },
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
   { label: "Year-in-Review", href: "/admin/wrapped", icon: Sparkles },
+  { label: "Ticket-Stand", href: "/admin/serien-stand", icon: Ticket },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
+];
+
+const seriesStaffNavItems = [
+  { label: "Ticket-Stand", href: "/admin/serien-stand", icon: Ticket },
 ];
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
+  const { isSeriesManager, loading: accessLoading } = useSeriesAccess();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (loading) {
+  if (loading || accessLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.5)" }}>Laden...</div>
@@ -47,7 +55,7 @@ const AdminLayout = () => {
   }
 
   if (!user) return <Navigate to="/admin/login" replace />;
-  if (!isAdmin) {
+  if (!isAdmin && !isSeriesManager) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 50% 8%)" }}>
         <div className="text-center">
@@ -64,6 +72,14 @@ const AdminLayout = () => {
       </div>
     );
   }
+
+  const items = isAdmin ? navItems : seriesStaffNavItems;
+
+  // Series staff may only access their own overview
+  if (!isAdmin && location.pathname !== "/admin/serien-stand") {
+    return <Navigate to="/admin/serien-stand" replace />;
+  }
+
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div
@@ -89,7 +105,7 @@ const AdminLayout = () => {
         )}
       </div>
       <nav className="flex-1 px-3 space-y-1">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const active = item.href === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.href);
           return (
             <Link

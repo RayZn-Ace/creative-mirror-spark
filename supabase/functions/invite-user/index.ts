@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!roleData) throw new Error("Keine Admin-Berechtigung");
 
-    const { email, role } = await req.json();
+    const { email, role, series_ids } = await req.json();
+    const seriesIds: string[] = Array.isArray(series_ids) ? series_ids.filter((x) => typeof x === "string") : [];
     if (!email || !role) throw new Error("E-Mail und Rolle sind erforderlich");
 
     const validAppRoles = ["admin", "moderator", "user", "scanner"];
@@ -53,6 +54,16 @@ Deno.serve(async (req) => {
         .upsert({ user_id: existingUser.id, role: appRole }, { onConflict: "user_id,role" });
       if (roleError) throw roleError;
 
+      if (seriesIds.length) {
+        const { error: smError } = await adminClient
+          .from("series_managers")
+          .upsert(
+            seriesIds.map((sid) => ({ user_id: existingUser.id, series_id: sid })),
+            { onConflict: "user_id,series_id" }
+          );
+        if (smError) throw smError;
+      }
+
       return new Response(
         JSON.stringify({ success: true, message: "Rolle direkt zugewiesen (Benutzer existiert bereits)" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -62,7 +73,7 @@ Deno.serve(async (req) => {
     // Store pending invitation
     const { error: invError } = await adminClient
       .from("pending_invitations")
-      .insert({ email: email.toLowerCase(), role: appRole, invited_by: user.id });
+      .insert({ email: email.toLowerCase(), role: appRole, invited_by: user.id, series_ids: seriesIds });
     if (invError) {
       console.error("Invitation insert error:", invError);
       throw new Error(`Einladung konnte nicht gespeichert werden: ${invError.message}`);
