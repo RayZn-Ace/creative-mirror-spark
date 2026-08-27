@@ -1455,6 +1455,35 @@ export type Database = {
           },
         ]
       }
+      series_managers: {
+        Row: {
+          created_at: string
+          id: string
+          series_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          series_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          series_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_managers_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           id: string
@@ -2143,6 +2172,11 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_series_manager: { Args: { _user_id: string }; Returns: boolean }
+      manages_series: {
+        Args: { _series_id: string; _user_id: string }
         Returns: boolean
       }
     }
