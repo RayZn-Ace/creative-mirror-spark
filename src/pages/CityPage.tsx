@@ -11,7 +11,7 @@ import { useSeoMeta } from "@/hooks/useSeoMeta";
 import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
 import FavoriteButton from "@/components/FavoriteButton";
-import WhoIsComing from "@/components/event/WhoIsComing";
+
 
 
 /* ─── Types ─── */
@@ -1870,7 +1870,7 @@ const CityPage = () => {
           <CityHero cityName={cityName} event={selectedEvent} events={events} selectedId={selectedEventId} onSelect={setSelectedEventId} t={t} headerImage={headerImageUrl} />
           <motion.div key={selectedEvent.id} initial={{ opacity: 0, x: 60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
-            <WhoIsComing eventId={selectedEvent.id} />
+            
           </motion.div>
         </div>
         <div className="md:hidden space-y-2">
@@ -1879,7 +1879,6 @@ const CityPage = () => {
           </motion.div>
           <motion.div key={`tickets-${selectedEvent.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="space-y-3">
             <CityTicketWidget event={selectedEvent} allEvents={events} citySlug={citySlug!} t={t} />
-            <WhoIsComing eventId={selectedEvent.id} />
           </motion.div>
         </div>
         {/* Interstitial ads */}
