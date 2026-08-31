@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Handshake, LogOut, Loader2, CalendarDays, Ticket, Euro, ScanLine,
-  Gauge, Sofa, Images, ListPlus, ArrowLeft,
+  Gauge, Sofa, Images, ListPlus, ArrowLeft, Users, ChevronRight,
 } from "lucide-react";
 import { PARTNER_PERMISSIONS } from "@/lib/partnerPermissions";
 
@@ -12,6 +12,7 @@ const PURPLE = "hsl(270 70% 55%)";
 const ICONS: Record<string, any> = {
   events: CalendarDays,
   tickets: Ticket,
+  customers: Users,
   revenue: Euro,
   checkins: ScanLine,
   capacity: Gauge,
@@ -51,6 +52,7 @@ const PartnerArea = () => {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<string | null>(null);
+  const [openEvent, setOpenEvent] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -91,6 +93,7 @@ const PartnerArea = () => {
     await supabase.auth.signOut();
     setData(null);
     setTab(null);
+    setOpenEvent(null);
   };
 
   const events = data?.events ?? [];
@@ -152,11 +155,93 @@ const PartnerArea = () => {
 
   const renderDetail = () => {
     switch (tab) {
-      case "events":
+      case "events": {
+        const ev = events.find((e: any) => e.id === openEvent);
+        if (ev) {
+          const cats = (data.categories ?? []).filter((c: any) => c.event_id === ev.id);
+          const now = Date.now();
+          const catState = (c: any) => {
+            if (c.sold_out) return { label: "Ausverkauft", color: "hsl(0 70% 65%)" };
+            if (c.coming_soon) return { label: "Kommt bald", color: "hsl(45 90% 60%)" };
+            if (c.sale_start && new Date(c.sale_start).getTime() > now) return { label: "Startet später", color: "hsl(45 90% 60%)" };
+            if (c.sale_end && new Date(c.sale_end).getTime() < now) return { label: "Beendet", color: "hsl(0 0% 60%)" };
+            return { label: "Im Verkauf", color: "hsl(140 60% 55%)" };
+          };
+          return (
+            <div className="space-y-4">
+              <button onClick={() => setOpenEvent(null)} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <ArrowLeft className="w-4 h-4" /> Alle Events
+              </button>
+              <div className="rounded-2xl overflow-hidden" style={card}>
+                {ev.image_url && <img src={ev.image_url} alt={ev.title} loading="lazy" className="w-full max-h-80 object-contain bg-black" />}
+                <div className="p-4 space-y-1">
+                  <p className="text-lg font-black text-foreground">{ev.title}</p>
+                  {ev.subtitle && <p className="text-sm text-muted-foreground">{ev.subtitle}</p>}
+                  <p className="text-xs text-muted-foreground">
+                    {dateStr(ev.date)} {ev.time ? `· ${ev.time}` : ""}{ev.end_time ? `–${ev.end_time}` : ""}
+                    {ev.city ? ` · ${ev.city}` : ""}{ev.location_name ? ` · ${ev.location_name}` : ""}
+                  </p>
+                  {ev.location_address && <p className="text-xs text-muted-foreground">{ev.location_address}</p>}
+                  {ev.description && <p className="pt-2 text-sm text-muted-foreground whitespace-pre-line">{ev.description}</p>}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {[
+                  ["Status", ev.status ?? "—"],
+                  ["Ausverkauft", ev.sold_out ? "Ja" : "Nein"],
+                  ["Open Air", ev.open_air ? "Ja" : "Nein"],
+                  ["Ab 16", ev.is_16plus ? "Ja" : "Nein"],
+                  ["Muttizettel", ev.muttizettel ? "Ja" : "Nein"],
+                  ["Abendkasse", ev.box_office_enabled ? (ev.box_office_price ? eur(Number(ev.box_office_price)) : "Ja") : "Nein"],
+                  ["Lounges", ev.lounge_enabled ? "Ja" : "Nein"],
+                  ["Versicherung", ev.insurance_enabled ? (ev.insurance_amount ? eur(Number(ev.insurance_amount)) : "Ja") : "Nein"],
+                  ["Servicegebühr", ev.service_fee_enabled ? `${ev.service_fee_value ?? 0}${ev.service_fee_type === "percent" ? "%" : " €"}` : "Nein"],
+                ].map(([k, v]: any) => (
+                  <span key={k} className="rounded-lg px-3 py-1.5 text-xs" style={card}>
+                    <span className="text-muted-foreground">{k}: </span>
+                    <span className="font-bold text-foreground">{v}</span>
+                  </span>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tickets</p>
+                {cats.length === 0 && <p className="text-sm text-muted-foreground">Keine Ticket-Kategorien angelegt.</p>}
+                {cats.map((c: any) => {
+                  const st = catState(c);
+                  return (
+                    <div key={c.id} className="rounded-xl p-4 space-y-1" style={card}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-foreground">
+                          {c.name}
+                          {c.badge ? <span className="ml-2 text-[10px] uppercase" style={{ color: PURPLE }}>{c.badge}</span> : null}
+                        </p>
+                        <span className="text-sm font-bold" style={{ color: PURPLE }}>{eur(Number(c.price ?? 0))}</span>
+                      </div>
+                      {c.description && <p className="text-xs text-muted-foreground">{c.description}</p>}
+                      <p className="text-xs" style={{ color: st.color }}>{st.label}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Verkauf: {c.sale_start ? dateStr(c.sale_start) : "sofort"} – {c.sale_end ? dateStr(c.sale_end) : "offen"}
+                        {c.max_capacity ? ` · Kontingent: ${c.max_capacity}` : ""}
+                        {c.internal_only ? " · nur intern" : ""}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="space-y-2">
             {events.map((e: any) => (
-              <div key={e.id} className="rounded-xl p-4 flex flex-wrap justify-between gap-2" style={card}>
+              <button
+                key={e.id}
+                onClick={() => setOpenEvent(e.id)}
+                className="w-full rounded-xl p-4 flex flex-wrap items-center justify-between gap-2 text-left transition-colors hover:bg-white/5"
+                style={card}
+              >
                 <div>
                   <p className="font-bold text-foreground">{e.title}</p>
                   <p className="text-xs text-muted-foreground">
@@ -164,28 +249,67 @@ const PartnerArea = () => {
                     {e.location_name ? ` · ${e.location_name}` : ""}
                   </p>
                 </div>
-                {e.sold_out && (
-                  <span className="self-center rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ background: "hsl(0 60% 55% / 0.15)", color: "hsl(0 70% 65%)" }}>
-                    Ausverkauft
-                  </span>
-                )}
-              </div>
+                <div className="flex items-center gap-2">
+                  {e.sold_out && (
+                    <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ background: "hsl(0 60% 55% / 0.15)", color: "hsl(0 70% 65%)" }}>
+                      Ausverkauft
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </button>
             ))}
           </div>
         );
+      }
       case "tickets": {
         const t = data.tickets;
         if (!t) return <p className="text-sm text-muted-foreground">Keine Daten.</p>;
         return (
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <Stat label="Tickets gesamt" value={String(t.total)} />
               <Stat label="Bestellungen" value={String(t.orders)} />
+              <Stat label="Tickets verfügbar" value={t.available == null ? "—" : String(t.available)} />
+              <Stat label="Kontingent" value={t.capacity ? String(t.capacity) : "—"} />
             </div>
             {Object.entries(t.byEvent ?? {}).map(([id, v]: any) => (
-              <div key={id} className="rounded-xl p-4 flex justify-between" style={card}>
+              <div key={id} className="rounded-xl p-4 flex flex-wrap justify-between gap-2" style={card}>
                 <span className="text-sm text-foreground">{eventTitle[id] ?? "Unbekannt"}</span>
-                <span className="text-sm font-bold" style={{ color: PURPLE }}>{v.tickets} Tickets</span>
+                <span className="text-sm font-bold" style={{ color: PURPLE }}>
+                  {v.tickets} verkauft
+                  {v.available != null ? ` · ${v.available} verfügbar` : ""}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case "customers": {
+        const c = data.customers;
+        if (!c) return <p className="text-sm text-muted-foreground">Keine Daten.</p>;
+        const entries = Object.entries(c.byEvent ?? {}) as any[];
+        if (!entries.length) return <p className="text-sm text-muted-foreground">Noch keine Käufe.</p>;
+        return (
+          <div className="space-y-5">
+            <Stat label="Käufe gesamt" value={String(c.total)} />
+            {entries.map(([id, list]: any) => (
+              <div key={id} className="space-y-2">
+                <p className="text-sm font-black text-foreground">{eventTitle[id] ?? "Unbekannt"}</p>
+                {list.map((o: any) => (
+                  <div key={o.id} className="rounded-xl p-4 flex flex-wrap justify-between gap-2" style={card}>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground">{o.name ?? "—"}</p>
+                      <p className="text-xs text-muted-foreground break-all">
+                        {o.email}{o.phone ? ` · ${o.phone}` : ""}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">{dateStr(o.date)}</p>
+                    </div>
+                    <span className="self-center text-sm font-bold" style={{ color: PURPLE }}>
+                      {o.tickets} Ticket{o.tickets === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -344,7 +468,7 @@ const PartnerArea = () => {
           </div>
         ) : tab ? (
           <div className="space-y-4">
-            <button onClick={() => setTab(null)} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <button onClick={() => { setTab(null); setOpenEvent(null); }} className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ArrowLeft className="w-4 h-4" /> Übersicht
             </button>
             <h2 className="text-xl font-black text-foreground">
