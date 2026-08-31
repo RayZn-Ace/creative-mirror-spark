@@ -67,14 +67,17 @@ const PartnerArea = () => {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<string | null>(null);
   const [openEvent, setOpenEvent] = useState<string | null>(null);
-  const [intro, setIntro] = useState(() => !sessionStorage.getItem("pp-intro-seen"));
+  const [intro, setIntro] = useState(false);
 
+  // Intro erst NACH erfolgreichem Login zeigen
   useEffect(() => {
-    if (!intro) return;
+    if (!session || error) return;
+    if (sessionStorage.getItem("pp-intro-seen")) return;
     sessionStorage.setItem("pp-intro-seen", "1");
+    setIntro(true);
     const t = setTimeout(() => setIntro(false), 3400);
     return () => clearTimeout(t);
-  }, [intro]);
+  }, [session, error]);
 
 
 
