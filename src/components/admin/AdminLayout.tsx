@@ -33,6 +33,7 @@ const navItems = [
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
   { label: "Year-in-Review", href: "/admin/wrapped", icon: Sparkles },
   { label: "Ticket-Stand", href: "/admin/serien-stand", icon: Ticket },
+  { label: "Partner-Portal", href: "/admin/partner", icon: Handshake },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
