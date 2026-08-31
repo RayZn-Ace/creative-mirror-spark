@@ -131,9 +131,19 @@ const PartnerAdmin = () => {
     patch(partner, { permissions: cur.includes(key) ? cur.filter((p) => p !== key) : [...cur, key] });
   };
 
-  const toggleSeries = (partner: Partner, id: string) => {
+  const toggleSeries = async (partner: Partner, id: string) => {
     const cur = partner.series_ids ?? [];
-    patch(partner, { series_ids: cur.includes(id) ? cur.filter((s) => s !== id) : [...cur, id] });
+    const next = cur.includes(id) ? cur.filter((s) => s !== id) : [...cur, id];
+    setPartners((prev) => prev.map((p) => (p.id === partner.id ? { ...p, series_ids: next } : p)));
+    try {
+      const res = await call({ action: "update", id: partner.id, series_ids: next });
+      const saved: string[] = res?.partner?.series_ids ?? next;
+      setPartners((prev) => prev.map((p) => (p.id === partner.id ? { ...p, series_ids: saved } : p)));
+      toast.success(saved.length ? `Reihen gespeichert (${saved.length})` : "Zugriff auf alle Reihen");
+    } catch (e) {
+      toast.error((e as Error).message);
+      load();
+    }
   };
 
   const toggleActive = async (partner: Partner) => {

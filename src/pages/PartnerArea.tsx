@@ -46,7 +46,7 @@ const inputStyle: React.CSSProperties = {
   color: "hsl(0 0% 100%)",
   borderRadius: "10px",
   padding: "12px 14px",
-  fontSize: "14px",
+  fontSize: "16px", // 16px verhindert Auto-Zoom auf iOS
   width: "100%",
   outline: "none",
 };
@@ -159,6 +159,7 @@ const PartnerArea = () => {
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
@@ -201,6 +202,7 @@ const PartnerArea = () => {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
