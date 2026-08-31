@@ -6,8 +6,21 @@ import {
   Gauge, Sofa, Images, ListPlus, ArrowLeft, Users, ChevronRight,
 } from "lucide-react";
 import { PARTNER_PERMISSIONS } from "@/lib/partnerPermissions";
+import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
 
 const PURPLE = "hsl(270 70% 55%)";
+
+const PartnerIntro = () => (
+  <div className="pp-intro">
+    <div className="pp-intro-sweep" />
+    <div className="pp-intro-ring" />
+    <div className="pp-intro-ring" style={{ animationDelay: "0.8s" }} />
+    <div className="pp-intro-ring" style={{ animationDelay: "1.6s" }} />
+    <img src={nightlifeLogo} alt="Nightlife Generation" className="pp-intro-logo relative z-10" />
+    <p className="pp-intro-word text-xs font-black uppercase pp-gradient-text">Partnerbereich</p>
+  </div>
+);
+
 
 const ICONS: Record<string, any> = {
   events: CalendarDays,
