@@ -130,6 +130,22 @@ const PartnerArea = () => {
   const perms: string[] = data?.partner?.permissions ?? [];
   const tiles = PARTNER_PERMISSIONS.filter((p) => perms.includes(p.key));
 
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? "Gute Nacht" : hour < 11 ? "Guten Morgen" : hour < 18 ? "Hey" : "Guten Abend";
+  const firstName = (data?.partner?.name ?? "Partner").split(" ")[0];
+
+  const heroChips = useMemo(() => {
+    const chips: { label: string; value: string }[] = [];
+    const upcoming = events.filter((e: any) => !e.date || new Date(e.date).getTime() >= Date.now() - 864e5);
+    chips.push({ label: "Events", value: String(upcoming.length || events.length) });
+    if (data?.tickets) chips.push({ label: "Tickets verkauft", value: String(data.tickets.total ?? 0) });
+    if (data?.revenue) chips.push({ label: "Umsatz gesamt", value: eur(data.revenue.total ?? 0) });
+    if (data?.checkins) chks(chips, data.checkins);
+    if (data?.partner?.series?.length) chips.push({ label: "Reihen", value: String(data.partner.series.length) });
+    return chips;
+  }, [events, data]);
+
+
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
