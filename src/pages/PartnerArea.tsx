@@ -568,8 +568,10 @@ const PartnerArea = () => {
                 </button>
               );
             })}
-          </div>
+            </div>
+          </>
         )}
+
       </main>
     </div>
   );
