@@ -69,26 +69,33 @@ const PartnerArea = () => {
   const [openEvent, setOpenEvent] = useState<string | null>(null);
   const [intro, setIntro] = useState(false);
 
-  // Intro erst NACH erfolgreichem Login zeigen
-  useEffect(() => {
-    if (!session || error) return;
-    if (sessionStorage.getItem("pp-intro-seen")) return;
-    sessionStorage.setItem("pp-intro-seen", "1");
+  // Intro erst NACH erfolgreichem Login zeigen (einmal pro App-Start)
+  const playIntro = useCallback(() => {
+    if ((window as any).__ppIntroShown) return;
+    (window as any).__ppIntroShown = true;
     setIntro(true);
-    const t = setTimeout(() => setIntro(false), 3400);
-    return () => clearTimeout(t);
-  }, [session, error]);
+    setTimeout(() => setIntro(false), 3400);
+  }, []);
 
-
+  useEffect(() => {
+    if (!intro) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [intro]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setChecking(false);
+      if (data.session) playIntro();
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((e, s) => {
+      setSession(s);
+      if (s && (e === "SIGNED_IN" || e === "INITIAL_SESSION")) playIntro();
+    });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [playIntro]);
 
   const load = useCallback(async () => {
     setError(null);
