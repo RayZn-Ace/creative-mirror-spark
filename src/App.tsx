@@ -66,6 +66,8 @@ const PushAdmin = lazy(() => import("./pages/admin/PushAdmin"));
 const GoodiesAdmin = lazy(() => import("./pages/admin/GoodiesAdmin"));
 const WrappedAdmin = lazy(() => import("./pages/admin/WrappedAdmin"));
 const SeriesStatsAdmin = lazy(() => import("./pages/admin/SeriesStatsAdmin"));
+const PartnerAdmin = lazy(() => import("./pages/admin/PartnerAdmin"));
+const PartnerArea = lazy(() => import("./pages/PartnerArea"));
 
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
@@ -123,6 +125,8 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
 
+              <Route path="/partnerbereich" element={<PartnerArea />} />
+
               {/* Admin */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/register" element={<AdminRegister />} />
@@ -153,6 +157,7 @@ const App = () => (
                 <Route path="push" element={<PushAdmin />} />
                 <Route path="goodies" element={<GoodiesAdmin />} />
                 <Route path="wrapped" element={<WrappedAdmin />} />
+                <Route path="partner" element={<PartnerAdmin />} />
               </Route>
 
               <Route path="/login" element={<Login />} />

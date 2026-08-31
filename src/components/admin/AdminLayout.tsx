@@ -2,7 +2,7 @@ import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeriesAccess } from "@/hooks/useSeriesAccess";
 import {
-  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones, ClipboardList, ImageIcon, Upload, UserPlus, Briefcase, Gift, Armchair, Sparkles,
+  LayoutDashboard, Calendar, Ticket, FileText, LogOut, Menu, X, ChevronRight, Layers, Activity, Users, Mail, QrCode, Settings, Palette, BarChart3, Tag, Megaphone, Headphones, ClipboardList, ImageIcon, Upload, UserPlus, Briefcase, Gift, Armchair, Sparkles, Handshake,
 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -33,6 +33,7 @@ const navItems = [
   { label: "Medien", href: "/admin/medien", icon: ImageIcon },
   { label: "Year-in-Review", href: "/admin/wrapped", icon: Sparkles },
   { label: "Ticket-Stand", href: "/admin/serien-stand", icon: Ticket },
+  { label: "Partner-Portal", href: "/admin/partner", icon: Handshake },
   { label: "Einstellungen", href: "/admin/settings", icon: Settings },
 ];
 
