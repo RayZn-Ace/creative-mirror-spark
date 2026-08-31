@@ -140,7 +140,7 @@ const AdminLayout = () => {
   );
 
   return (
-    <div className="min-h-screen flex" style={{ background: "hsl(220 50% 8%)" }}>
+    <div className="h-screen flex overflow-hidden" style={{ background: "hsl(220 50% 8%)" }}>
       <Sidebar />
 
       {/* Mobile sidebar */}
