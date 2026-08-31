@@ -66,6 +66,16 @@ const PartnerArea = () => {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<string | null>(null);
   const [openEvent, setOpenEvent] = useState<string | null>(null);
+  const [intro, setIntro] = useState(() => !sessionStorage.getItem("pp-intro-seen"));
+
+  useEffect(() => {
+    if (!intro) return;
+    sessionStorage.setItem("pp-intro-seen", "1");
+    const t = setTimeout(() => setIntro(false), 3400);
+    return () => clearTimeout(t);
+  }, [intro]);
+
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
