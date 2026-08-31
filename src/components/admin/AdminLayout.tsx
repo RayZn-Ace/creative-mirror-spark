@@ -84,13 +84,13 @@ const AdminLayout = () => {
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div
-      className={`${mobile ? "w-full" : "w-60 min-h-screen hidden lg:flex"} flex flex-col`}
+      className={`${mobile ? "w-full h-full" : "w-60 h-screen sticky top-0 shrink-0 hidden lg:flex"} flex flex-col overflow-hidden`}
       style={{
         background: "hsl(220 50% 6%)",
         borderRight: mobile ? "none" : "1px solid hsl(0 0% 100% / 0.06)",
       }}
     >
-      <div className="p-5 flex items-center justify-between">
+      <div className="p-5 flex items-center justify-between shrink-0">
         <Link to="/admin" onClick={() => setSidebarOpen(false)}>
           <span
             className="text-sm font-black uppercase tracking-wider"
@@ -105,7 +105,7 @@ const AdminLayout = () => {
           </button>
         )}
       </div>
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 space-y-1">
         {items.map((item) => {
           const active = item.href === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.href);
           return (
@@ -126,7 +126,7 @@ const AdminLayout = () => {
           );
         })}
       </nav>
-      <div className="p-3">
+      <div className="p-3 shrink-0">
         <button
           onClick={signOut}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all hover:bg-white/5"
@@ -140,7 +140,7 @@ const AdminLayout = () => {
   );
 
   return (
-    <div className="min-h-screen flex" style={{ background: "hsl(220 50% 8%)" }}>
+    <div className="h-screen flex overflow-hidden" style={{ background: "hsl(220 50% 8%)" }}>
       <Sidebar />
 
       {/* Mobile sidebar */}
@@ -155,9 +155,9 @@ const AdminLayout = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header
-          className="h-14 flex items-center gap-3 px-4 sm:px-6 lg:px-8"
+          className="h-14 shrink-0 flex items-center gap-3 px-4 sm:px-6 lg:px-8"
           style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}
         >
           <button
@@ -171,7 +171,7 @@ const AdminLayout = () => {
             {user.email}
           </span>
         </header>
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 overflow-auto">
+        <main className="flex-1 min-h-0 p-3 sm:p-6 lg:p-8 overflow-y-auto overscroll-contain">
           <Outlet />
         </main>
       </div>
