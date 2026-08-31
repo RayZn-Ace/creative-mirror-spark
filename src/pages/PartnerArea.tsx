@@ -542,16 +542,20 @@ const PartnerArea = () => {
 };
 
 const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-xl p-4" style={card}>
+  <div className="pp-tile pp-rise rounded-xl p-4 backdrop-blur-md" style={card}>
     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
-    <p className="mt-1 text-xl font-black" style={{ color: PURPLE }}>{value}</p>
+    <p className="mt-1 text-xl font-black pp-gradient-text">{value}</p>
   </div>
 );
 
 const Bar = ({ value }: { value: number }) => (
   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
-    <div className="h-full rounded-full" style={{ width: `${value}%`, background: PURPLE }} />
+    <div
+      className="h-full rounded-full transition-[width] duration-1000 ease-out"
+      style={{ width: `${value}%`, background: "linear-gradient(90deg, hsl(270 80% 55%), hsl(330 85% 62%))", boxShadow: "0 0 12px hsl(300 80% 60% / 0.6)" }}
+    />
   </div>
 );
+
 
 export default PartnerArea;
