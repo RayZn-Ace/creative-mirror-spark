@@ -84,7 +84,7 @@ const AdminLayout = () => {
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div
-      className={`${mobile ? "w-full" : "w-60 min-h-screen hidden lg:flex"} flex flex-col`}
+      className={`${mobile ? "w-full h-full" : "w-60 h-screen sticky top-0 shrink-0 hidden lg:flex"} flex flex-col overflow-hidden`}
       style={{
         background: "hsl(220 50% 6%)",
         borderRight: mobile ? "none" : "1px solid hsl(0 0% 100% / 0.06)",
