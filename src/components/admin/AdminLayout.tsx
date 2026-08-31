@@ -155,9 +155,9 @@ const AdminLayout = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header
-          className="h-14 flex items-center gap-3 px-4 sm:px-6 lg:px-8"
+          className="h-14 shrink-0 flex items-center gap-3 px-4 sm:px-6 lg:px-8"
           style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}
         >
           <button
@@ -171,7 +171,7 @@ const AdminLayout = () => {
             {user.email}
           </span>
         </header>
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 overflow-auto">
+        <main className="flex-1 min-h-0 p-3 sm:p-6 lg:p-8 overflow-y-auto overscroll-contain">
           <Outlet />
         </main>
       </div>
