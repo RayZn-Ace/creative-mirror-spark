@@ -284,7 +284,7 @@ const PartnerArea = () => {
               <button
                 key={e.id}
                 onClick={() => setOpenEvent(e.id)}
-                className="w-full rounded-xl p-4 flex flex-wrap items-center justify-between gap-2 text-left transition-colors hover:bg-white/5"
+                className="pp-tile w-full min-h-[68px] rounded-xl p-4 flex flex-wrap items-center justify-between gap-2 text-left active:scale-[0.98]"
                 style={card}
               >
                 <div>
