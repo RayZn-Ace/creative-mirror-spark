@@ -160,7 +160,6 @@ const PartnerArea = () => {
   if (!session || error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
-        {intro && <PartnerIntro />}
         <div className="pp-aurora" />
         <div className="pp-grid" />
         <form onSubmit={login} className="pp-rise relative z-10 w-full max-w-sm rounded-2xl p-6 space-y-4 backdrop-blur-xl" style={{ ...card, animationDelay: "0.1s" }}>
