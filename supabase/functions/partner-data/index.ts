@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     let eventQuery = admin
       .from("events")
-      .select("id, title, date, time, city, location_name, status, image_url, series_id, sold_out")
+      .select("id, title, subtitle, slug, description, date, time, end_time, city, location_name, location_address, status, image_url, series_id, sold_out, open_air, is_16plus, muttizettel, insurance_enabled, insurance_amount, box_office_enabled, box_office_price, lounge_enabled, service_fee_enabled, service_fee_type, service_fee_value, tag, highlight")
       .order("date", { ascending: false })
       .limit(200);
     if (seriesIds.length) eventQuery = eventQuery.in("series_id", seriesIds);
@@ -87,11 +87,22 @@ Deno.serve(async (req) => {
     if (can("events")) result.events = events;
     else result.events = events.map((e) => ({ id: e.id, title: e.title, date: e.date }));
 
-    if ((can("tickets") || can("revenue")) && eventIds.length) {
+    let categories: any[] = [];
+    if (eventIds.length && (can("events") || can("tickets") || can("capacity"))) {
+      const { data: cats } = await admin
+        .from("ticket_categories")
+        .select("id, event_id, name, description, price, currency, badge, sold_out, coming_soon, sale_start, sale_end, max_capacity, sort_order, internal_only, group_size")
+        .in("event_id", eventIds)
+        .order("sort_order", { ascending: true });
+      categories = cats ?? [];
+      if (can("events")) result.categories = categories;
+    }
+
+    if ((can("tickets") || can("revenue") || can("customers")) && eventIds.length) {
       const orders = await fetchAll((from, to) =>
         admin
           .from("orders")
-          .select("id, event_id, status, total_amount, items, created_at, paid_at")
+          .select("id, event_id, status, total_amount, items, created_at, paid_at, name, email, phone")
           .in("event_id", eventIds)
           .range(from, to),
       );
@@ -109,11 +120,51 @@ Deno.serve(async (req) => {
           byEvent[k].tickets += ticketCount(o);
           byEvent[k].orders += 1;
         });
+        const capByEvent: Record<string, number> = {};
+        categories.forEach((c) => {
+          if (!c.max_capacity) return;
+          capByEvent[c.event_id] = (capByEvent[c.event_id] ?? 0) + Number(c.max_capacity);
+        });
+        let availableTotal = 0;
+        Object.entries(capByEvent).forEach(([eid, cap]) => {
+          availableTotal += Math.max(0, cap - (byEvent[eid]?.tickets ?? 0));
+        });
+        Object.keys(byEvent).forEach((eid) => {
+          (byEvent[eid] as any).available =
+            capByEvent[eid] != null ? Math.max(0, capByEvent[eid] - byEvent[eid].tickets) : null;
+        });
+        Object.keys(capByEvent).forEach((eid) => {
+          byEvent[eid] ??= { tickets: 0, orders: 0 } as any;
+          (byEvent[eid] as any).available = Math.max(0, capByEvent[eid] - byEvent[eid].tickets);
+        });
         result.tickets = {
           total: paid.reduce((s, o) => s + ticketCount(o), 0),
           orders: paid.length,
+          available: Object.keys(capByEvent).length ? availableTotal : null,
+          capacity: Object.values(capByEvent).reduce((s, v) => s + v, 0),
           byEvent,
         };
+      }
+
+      if (can("customers")) {
+        const byEvent: Record<string, any[]> = {};
+        paid
+          .slice()
+          .sort((a, b) => String(b.paid_at ?? b.created_at).localeCompare(String(a.paid_at ?? a.created_at)))
+          .forEach((o) => {
+            const k = o.event_id ?? "none";
+            byEvent[k] ??= [];
+            byEvent[k].push({
+              id: o.id,
+              name: o.name ?? null,
+              email: o.email,
+              phone: o.phone ?? null,
+              tickets: ticketCount(o),
+              amount: Number(o.total_amount ?? 0),
+              date: o.paid_at ?? o.created_at,
+            });
+          });
+        result.customers = { total: paid.length, byEvent };
       }
 
       if (can("revenue")) {
@@ -163,16 +214,13 @@ Deno.serve(async (req) => {
       }
 
       if (can("capacity")) {
-        const { data: cats } = await admin
-          .from("ticket_categories")
-          .select("id, event_id, name, max_capacity, sold_out")
-          .in("event_id", eventIds);
+        const cats = categories;
         const soldByCat: Record<string, number> = {};
         valid.forEach((t) => {
           if (!t.ticket_category_id) return;
           soldByCat[t.ticket_category_id] = (soldByCat[t.ticket_category_id] ?? 0) + 1;
         });
-        result.capacity = (cats ?? []).map((c) => ({
+        result.capacity = cats.map((c) => ({
           id: c.id,
           event_id: c.event_id,
           name: c.name,
