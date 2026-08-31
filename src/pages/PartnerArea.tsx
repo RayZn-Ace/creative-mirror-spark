@@ -132,6 +132,7 @@ const PartnerArea = () => {
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
@@ -139,11 +140,14 @@ const PartnerArea = () => {
 
   if (!session || error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <form onSubmit={login} className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={card}>
-          <div className="text-center space-y-1">
-            <Handshake className="w-8 h-8 mx-auto" style={{ color: PURPLE }} />
-            <h1 className="text-xl font-black text-foreground">Partnerbereich</h1>
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
+        {intro && <PartnerIntro />}
+        <div className="pp-aurora" />
+        <div className="pp-grid" />
+        <form onSubmit={login} className="pp-rise relative z-10 w-full max-w-sm rounded-2xl p-6 space-y-4 backdrop-blur-xl" style={{ ...card, animationDelay: "0.1s" }}>
+          <div className="text-center space-y-2">
+            <img src={nightlifeLogo} alt="Nightlife Generation" className="mx-auto h-14 object-contain" style={{ filter: "drop-shadow(0 0 18px hsl(270 80% 60% / 0.6))" }} />
+            <h1 className="text-xl font-black pp-gradient-text">Partnerbereich</h1>
             <p className="text-xs text-muted-foreground">
               {error ?? "Bitte mit deinen Partner-Zugangsdaten anmelden"}
             </p>
@@ -153,8 +157,8 @@ const PartnerArea = () => {
           <button
             type="submit"
             disabled={busy}
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold disabled:opacity-50"
-            style={{ background: PURPLE, color: "#fff" }}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold disabled:opacity-50 transition-transform hover:scale-[1.02]"
+            style={{ background: "linear-gradient(100deg, hsl(270 80% 55%), hsl(330 85% 60%))", color: "#fff", boxShadow: "0 10px 30px -12px hsl(270 80% 55% / 0.9)" }}
           >
             {busy && <Loader2 className="w-4 h-4 animate-spin" />} Anmelden
           </button>
@@ -167,6 +171,7 @@ const PartnerArea = () => {
       </div>
     );
   }
+
 
   if (!data) {
     return (
