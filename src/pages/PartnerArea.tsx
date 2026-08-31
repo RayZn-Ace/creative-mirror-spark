@@ -140,7 +140,7 @@ const PartnerArea = () => {
     chips.push({ label: "Events", value: String(upcoming.length || events.length) });
     if (data?.tickets) chips.push({ label: "Tickets verkauft", value: String(data.tickets.total ?? 0) });
     if (data?.revenue) chips.push({ label: "Umsatz gesamt", value: eur(data.revenue.total ?? 0) });
-    if (data?.checkins) chks(chips, data.checkins);
+    if (data?.checkins) chips.push({ label: "Eingecheckt", value: `${data.checkins.checked ?? 0}/${data.checkins.total ?? 0}` });
     if (data?.partner?.series?.length) chips.push({ label: "Reihen", value: String(data.partner.series.length) });
     return chips;
   }, [events, data]);
