@@ -512,8 +512,43 @@ const PartnerArea = () => {
             {renderDetail()}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <>
+            <section
+              className="pp-rise relative mb-6 overflow-hidden rounded-3xl p-6 sm:p-8 backdrop-blur-xl"
+              style={{
+                ...card,
+                background: "linear-gradient(135deg, hsl(270 80% 55% / 0.18), hsl(330 85% 60% / 0.10) 55%, hsl(0 0% 100% / 0.03))",
+                borderColor: "hsl(270 70% 60% / 0.25)",
+                boxShadow: "0 30px 80px -40px hsl(270 80% 55% / 0.8)",
+              }}
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
+                style={{ background: "hsl(270 80% 55% / 0.2)", color: "hsl(285 90% 80%)", border: "1px solid hsl(270 70% 60% / 0.3)" }}>
+                <Sparkles className="w-3 h-3" /> Partner Cockpit
+              </span>
+              <h2 className="mt-4 text-3xl sm:text-4xl font-black leading-tight">
+                <span className="pp-gradient-text">{greeting}, {firstName}.</span>
+                <br />
+                <span className="text-foreground">Deine Nacht in Zahlen.</span>
+              </h2>
+              <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+                Live-Einblick in Verkäufe, Auslastung und Gäste – exakt für deine Reihen freigeschaltet.
+                Kein Rätselraten mehr: Du siehst, was auf der Tanzfläche passiert, bevor die erste Nebelmaschine anspringt.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {heroChips.map((c) => (
+                  <span key={c.label} className="rounded-xl px-3 py-2 text-xs backdrop-blur-md" style={card}>
+                    <span className="text-muted-foreground">{c.label} </span>
+                    <span className="font-black pp-gradient-text">{c.value}</span>
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <p className="mb-3 text-[10px] uppercase tracking-widest text-muted-foreground">Deine Bereiche</p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tiles.map((t, i) => {
+
               const Icon = ICONS[t.key] ?? CalendarDays;
               return (
                 <button
