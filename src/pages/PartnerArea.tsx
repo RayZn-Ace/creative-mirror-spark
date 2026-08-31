@@ -490,15 +490,15 @@ const PartnerArea = () => {
       <div className="pp-aurora" />
       <div className="pp-grid" />
 
-      <header className="sticky top-0 z-20 border-b backdrop-blur-xl" style={{ borderColor: "hsl(0 0% 100% / 0.07)", background: "hsl(240 20% 4% / 0.55)" }}>
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <img src={nightlifeLogo} alt="Nightlife Generation" className="h-9 object-contain" style={{ filter: "drop-shadow(0 0 12px hsl(270 80% 60% / 0.6))" }} />
-            <div>
-              <h1 className="flex items-center gap-2 text-lg font-black pp-gradient-text">
-                <Handshake className="w-5 h-5" style={{ color: PURPLE }} /> Partnerbereich
+      <header className="sticky top-0 z-20 border-b backdrop-blur-xl" style={{ borderColor: "hsl(0 0% 100% / 0.07)", background: "hsl(240 20% 4% / 0.65)" }}>
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <img src={nightlifeLogo} alt="Nightlife Generation" className="h-8 shrink-0 object-contain sm:h-9" style={{ filter: "drop-shadow(0 0 12px hsl(270 80% 60% / 0.6))" }} />
+            <div className="min-w-0">
+              <h1 className="flex items-center gap-1.5 text-base font-black pp-gradient-text sm:text-lg">
+                <Handshake className="w-4 h-4 shrink-0 sm:w-5 sm:h-5" style={{ color: PURPLE }} /> Partnerbereich
               </h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                 {data.partner?.name}
                 {data.partner?.company ? ` · ${data.partner.company}` : ""}
                 {data.partner?.series?.length
@@ -507,23 +507,32 @@ const PartnerArea = () => {
               </p>
             </div>
           </div>
-          <button onClick={logout} className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
-            <LogOut className="w-4 h-4" /> Abmelden
+          <button
+            onClick={logout}
+            aria-label="Abmelden"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs text-muted-foreground transition-colors hover:text-foreground active:scale-95"
+            style={card}
+          >
+            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Abmelden</span>
           </button>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-5xl px-4 py-6">
+      <main className="relative z-10 mx-auto max-w-5xl px-4 pb-14 pt-5 sm:py-6">
         {tiles.length === 0 ? (
           <div className="pp-rise rounded-2xl p-10 text-center text-sm text-muted-foreground" style={card}>
             Für deinen Zugang wurden noch keine Bereiche freigeschaltet.
           </div>
         ) : tab ? (
           <div key={tab + (openEvent ?? "")} className="space-y-4 animate-fade-in">
-            <button onClick={() => { setTab(null); setOpenEvent(null); }} className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
+            <button
+              onClick={() => { setTab(null); setOpenEvent(null); }}
+              className="inline-flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs text-muted-foreground transition-colors hover:text-foreground active:scale-95"
+              style={card}
+            >
               <ArrowLeft className="w-4 h-4" /> Übersicht
             </button>
-            <h2 className="text-2xl font-black pp-gradient-text">
+            <h2 className="text-2xl font-black pp-gradient-text sm:text-3xl">
               {PARTNER_PERMISSIONS.find((p) => p.key === tab)?.label}
             </h2>
             {renderDetail()}
@@ -531,7 +540,7 @@ const PartnerArea = () => {
         ) : (
           <>
             <section
-              className="pp-rise relative mb-6 overflow-hidden rounded-3xl p-6 sm:p-8 backdrop-blur-xl"
+              className="pp-rise relative mb-6 overflow-hidden rounded-3xl p-5 sm:p-8 backdrop-blur-xl"
               style={{
                 ...card,
                 background: "linear-gradient(135deg, hsl(270 80% 55% / 0.18), hsl(330 85% 60% / 0.10) 55%, hsl(0 0% 100% / 0.03))",
@@ -543,18 +552,18 @@ const PartnerArea = () => {
                 style={{ background: "hsl(270 80% 55% / 0.2)", color: "hsl(285 90% 80%)", border: "1px solid hsl(270 70% 60% / 0.3)" }}>
                 <Sparkles className="w-3 h-3" /> Partner Cockpit
               </span>
-              <h2 className="mt-4 text-3xl sm:text-4xl font-black leading-tight">
+              <h2 className="mt-4 text-[26px] leading-[1.15] font-black sm:text-4xl sm:leading-tight">
                 <span className="pp-gradient-text">{greeting}, {firstName}.</span>
                 <br />
                 <span className="text-foreground">Deine Nacht in Zahlen.</span>
               </h2>
-              <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+              <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
                 Live-Einblick in Verkäufe, Auslastung und Gäste – exakt für deine Reihen freigeschaltet.
                 Kein Rätselraten mehr: Du siehst, was auf der Tanzfläche passiert, bevor die erste Nebelmaschine anspringt.
               </p>
-              <div className="mt-5 flex flex-wrap gap-2">
+              <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {heroChips.map((c) => (
-                  <span key={c.label} className="rounded-xl px-3 py-2 text-xs backdrop-blur-md" style={card}>
+                  <span key={c.label} className="shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-xs backdrop-blur-md" style={card}>
                     <span className="text-muted-foreground">{c.label} </span>
                     <span className="font-black pp-gradient-text">{c.value}</span>
                   </span>
@@ -563,7 +572,7 @@ const PartnerArea = () => {
             </section>
 
             <p className="mb-3 text-[10px] uppercase tracking-widest text-muted-foreground">Deine Bereiche</p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {tiles.map((t, i) => {
 
               const Icon = ICONS[t.key] ?? CalendarDays;
@@ -571,23 +580,27 @@ const PartnerArea = () => {
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className="pp-tile pp-rise rounded-2xl p-5 text-left backdrop-blur-md"
+                  className="pp-tile pp-rise flex min-h-[76px] w-full items-center gap-4 rounded-2xl p-4 text-left backdrop-blur-md active:scale-[0.98] sm:min-h-0 sm:flex-col sm:items-start sm:gap-0 sm:p-5"
                   style={{ ...card, animationDelay: `${0.08 * i + (intro ? 2.9 : 0)}s` }}
                 >
                   <span
-                    className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl"
+                    className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl sm:mb-3 sm:h-11 sm:w-11"
                     style={{ background: "linear-gradient(135deg, hsl(270 80% 55% / 0.25), hsl(330 85% 60% / 0.18))", border: "1px solid hsl(270 70% 55% / 0.3)" }}
                   >
                     <Icon className="w-5 h-5" style={{ color: PURPLE }} />
                   </span>
-                  <p className="font-black text-foreground">{t.label}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-black text-foreground sm:text-base">{t.label}</span>
+                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground sm:mt-1">{t.description}</span>
+                  </span>
+                  <ChevronRight className="w-5 h-5 shrink-0 text-muted-foreground sm:hidden" />
                 </button>
               );
             })}
             </div>
           </>
         )}
+
 
       </main>
     </div>
