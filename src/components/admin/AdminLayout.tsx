@@ -126,7 +126,7 @@ const AdminLayout = () => {
           );
         })}
       </nav>
-      <div className="p-3">
+      <div className="p-3 shrink-0">
         <button
           onClick={signOut}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all hover:bg-white/5"
