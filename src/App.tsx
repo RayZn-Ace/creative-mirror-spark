@@ -66,6 +66,8 @@ const PushAdmin = lazy(() => import("./pages/admin/PushAdmin"));
 const GoodiesAdmin = lazy(() => import("./pages/admin/GoodiesAdmin"));
 const WrappedAdmin = lazy(() => import("./pages/admin/WrappedAdmin"));
 const SeriesStatsAdmin = lazy(() => import("./pages/admin/SeriesStatsAdmin"));
+const PartnerAdmin = lazy(() => import("./pages/admin/PartnerAdmin"));
+const PartnerArea = lazy(() => import("./pages/PartnerArea"));
 
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
