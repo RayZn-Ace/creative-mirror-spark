@@ -46,7 +46,7 @@ const inputStyle: React.CSSProperties = {
   color: "hsl(0 0% 100%)",
   borderRadius: "10px",
   padding: "12px 14px",
-  fontSize: "14px",
+  fontSize: "16px", // 16px verhindert Auto-Zoom auf iOS
   width: "100%",
   outline: "none",
 };
