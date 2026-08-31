@@ -90,7 +90,7 @@ const AdminLayout = () => {
         borderRight: mobile ? "none" : "1px solid hsl(0 0% 100% / 0.06)",
       }}
     >
-      <div className="p-5 flex items-center justify-between">
+      <div className="p-5 flex items-center justify-between shrink-0">
         <Link to="/admin" onClick={() => setSidebarOpen(false)}>
           <span
             className="text-sm font-black uppercase tracking-wider"
