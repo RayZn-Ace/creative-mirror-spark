@@ -67,14 +67,17 @@ const PartnerArea = () => {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<string | null>(null);
   const [openEvent, setOpenEvent] = useState<string | null>(null);
-  const [intro, setIntro] = useState(() => !sessionStorage.getItem("pp-intro-seen"));
+  const [intro, setIntro] = useState(false);
 
+  // Intro erst NACH erfolgreichem Login zeigen
   useEffect(() => {
-    if (!intro) return;
+    if (!session || error) return;
+    if (sessionStorage.getItem("pp-intro-seen")) return;
     sessionStorage.setItem("pp-intro-seen", "1");
+    setIntro(true);
     const t = setTimeout(() => setIntro(false), 3400);
     return () => clearTimeout(t);
-  }, [intro]);
+  }, [session, error]);
 
 
 
@@ -149,7 +152,6 @@ const PartnerArea = () => {
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
@@ -158,7 +160,6 @@ const PartnerArea = () => {
   if (!session || error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
-        {intro && <PartnerIntro />}
         <div className="pp-aurora" />
         <div className="pp-grid" />
         <form onSubmit={login} className="pp-rise relative z-10 w-full max-w-sm rounded-2xl p-6 space-y-4 backdrop-blur-xl" style={{ ...card, animationDelay: "0.1s" }}>
