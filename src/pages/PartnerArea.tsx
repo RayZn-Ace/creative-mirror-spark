@@ -468,54 +468,66 @@ const PartnerArea = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
+      {intro && <PartnerIntro />}
+      <div className="pp-aurora" />
+      <div className="pp-grid" />
+
+      <header className="sticky top-0 z-20 border-b backdrop-blur-xl" style={{ borderColor: "hsl(0 0% 100% / 0.07)", background: "hsl(240 20% 4% / 0.55)" }}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-lg font-black text-foreground">
-              <Handshake className="w-5 h-5" style={{ color: PURPLE }} /> Partnerbereich
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {data.partner?.name}
-              {data.partner?.company ? ` · ${data.partner.company}` : ""}
-              {data.partner?.series?.length
-                ? ` · ${data.partner.series.map((s: any) => s.title).join(", ")}`
-                : ""}
-            </p>
+          <div className="flex items-center gap-3">
+            <img src={nightlifeLogo} alt="Nightlife Generation" className="h-9 object-contain" style={{ filter: "drop-shadow(0 0 12px hsl(270 80% 60% / 0.6))" }} />
+            <div>
+              <h1 className="flex items-center gap-2 text-lg font-black pp-gradient-text">
+                <Handshake className="w-5 h-5" style={{ color: PURPLE }} /> Partnerbereich
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                {data.partner?.name}
+                {data.partner?.company ? ` · ${data.partner.company}` : ""}
+                {data.partner?.series?.length
+                  ? ` · ${data.partner.series.map((s: any) => s.title).join(", ")}`
+                  : ""}
+              </p>
+            </div>
           </div>
-          <button onClick={logout} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <button onClick={logout} className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
             <LogOut className="w-4 h-4" /> Abmelden
           </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="relative z-10 mx-auto max-w-5xl px-4 py-6">
         {tiles.length === 0 ? (
-          <div className="rounded-2xl p-10 text-center text-sm text-muted-foreground" style={card}>
+          <div className="pp-rise rounded-2xl p-10 text-center text-sm text-muted-foreground" style={card}>
             Für deinen Zugang wurden noch keine Bereiche freigeschaltet.
           </div>
         ) : tab ? (
-          <div className="space-y-4">
-            <button onClick={() => { setTab(null); setOpenEvent(null); }} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div key={tab + (openEvent ?? "")} className="space-y-4 animate-fade-in">
+            <button onClick={() => { setTab(null); setOpenEvent(null); }} className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="w-4 h-4" /> Übersicht
             </button>
-            <h2 className="text-xl font-black text-foreground">
+            <h2 className="text-2xl font-black pp-gradient-text">
               {PARTNER_PERMISSIONS.find((p) => p.key === tab)?.label}
             </h2>
             {renderDetail()}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tiles.map((t) => {
+            {tiles.map((t, i) => {
               const Icon = ICONS[t.key] ?? CalendarDays;
               return (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className="rounded-2xl p-5 text-left transition-transform hover:-translate-y-0.5"
-                  style={card}
+                  className="pp-tile pp-rise rounded-2xl p-5 text-left backdrop-blur-md"
+                  style={{ ...card, animationDelay: `${0.08 * i + (intro ? 2.9 : 0)}s` }}
                 >
-                  <Icon className="w-6 h-6 mb-3" style={{ color: PURPLE }} />
+                  <span
+                    className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl"
+                    style={{ background: "linear-gradient(135deg, hsl(270 80% 55% / 0.25), hsl(330 85% 60% / 0.18))", border: "1px solid hsl(270 70% 55% / 0.3)" }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: PURPLE }} />
+                  </span>
                   <p className="font-black text-foreground">{t.label}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
                 </button>
@@ -526,6 +538,7 @@ const PartnerArea = () => {
       </main>
     </div>
   );
+
 };
 
 const Stat = ({ label, value }: { label: string; value: string }) => (
