@@ -770,7 +770,7 @@
   position: absolute;
   border-radius: 9999px;
   border: 1px solid hsl(270 80% 65% / 0.5);
-  width: 220px; height: 220px;
+  width: min(180px, 42vw); height: min(180px, 42vw);
   animation: pp-ring 2.4s cubic-bezier(.2,.8,.2,1) infinite;
 }
 @keyframes pp-ring {
