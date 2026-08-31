@@ -159,6 +159,7 @@ const PartnerArea = () => {
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
@@ -201,6 +202,7 @@ const PartnerArea = () => {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+        {intro && <PartnerIntro />}
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} />
       </div>
     );
