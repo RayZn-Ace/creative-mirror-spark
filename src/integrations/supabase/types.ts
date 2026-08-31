@@ -1207,6 +1207,51 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          active: boolean
+          company: string | null
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          permissions: string[]
+          series_ids: string[]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          permissions?: string[]
+          series_ids?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          permissions?: string[]
+          series_ids?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       pending_invitations: {
         Row: {
           claimed: boolean
@@ -2180,6 +2225,10 @@ export type Database = {
       is_series_manager: { Args: { _user_id: string }; Returns: boolean }
       manages_series: {
         Args: { _series_id: string; _user_id: string }
+        Returns: boolean
+      }
+      partner_has_permission: {
+        Args: { _permission: string; _user_id: string }
         Returns: boolean
       }
     }
