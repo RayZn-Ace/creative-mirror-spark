@@ -105,7 +105,7 @@ const AdminLayout = () => {
           </button>
         )}
       </div>
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 space-y-1">
         {items.map((item) => {
           const active = item.href === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.href);
           return (
