@@ -157,6 +157,7 @@ const App = () => (
                 <Route path="push" element={<PushAdmin />} />
                 <Route path="goodies" element={<GoodiesAdmin />} />
                 <Route path="wrapped" element={<WrappedAdmin />} />
+                <Route path="partner" element={<PartnerAdmin />} />
               </Route>
 
               <Route path="/login" element={<Login />} />
