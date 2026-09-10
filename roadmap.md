@@ -6,4 +6,4 @@
 - [x] Partnerbereich: Hero-Text/Begrüßung auf der Startseite
 - [x] Social-Proof-Toast im Partnerbereich ausblenden
 
-- [ ] Newsletter-Abmeldelink zeigt eine echte Bestätigungsseite statt HTML-Quelltext
+- [x] Newsletter-Abmeldelink zeigt eine echte Bestätigungsseite statt HTML-Quelltext
