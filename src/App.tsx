@@ -35,6 +35,7 @@ const PartnerWerden = lazy(() => import("./pages/PartnerWerden"));
 const InfluencerPage = lazy(() => import("./pages/Influencer"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPostPage = lazy(() => import("./pages/BlogPost"));
+const NewsletterUnsubscribe = lazy(() => import("./pages/NewsletterUnsubscribe"));
 
 // Admin
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -124,6 +125,7 @@ const App = () => (
               <Route path="/termine" element={<Termine />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/newsletter-abmelden" element={<NewsletterUnsubscribe />} />
 
               <Route path="/partnerbereich" element={<PartnerArea />} />
 

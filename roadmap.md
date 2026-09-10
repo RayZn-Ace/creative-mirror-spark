@@ -5,3 +5,5 @@
 - [x] Partnerbereich: Events anklickbar -> interne Eventinfos (Tickets, Einstellungen, Bild)
 - [x] Partnerbereich: Hero-Text/Begrüßung auf der Startseite
 - [x] Social-Proof-Toast im Partnerbereich ausblenden
+
+- [ ] Newsletter-Abmeldelink zeigt eine echte Bestätigungsseite statt HTML-Quelltext

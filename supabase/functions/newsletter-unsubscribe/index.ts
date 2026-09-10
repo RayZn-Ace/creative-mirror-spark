@@ -13,7 +13,18 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const email = url.searchParams.get("email") || (req.method === "POST" ? (await req.json()).email : null);
+    const queryEmail = url.searchParams.get("email");
+
+    // Edge gateways deliberately serve returned HTML as plain text. Redirect old
+    // newsletter links to the branded app page, which then submits the request.
+    if (req.method === "GET" && queryEmail) {
+      const destination = new URL("/newsletter-abmelden", "https://nightlifeticket.app");
+      destination.searchParams.set("email", queryEmail);
+      return Response.redirect(destination.toString(), 302);
+    }
+
+    const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    const email = typeof body.email === "string" ? body.email : null;
 
     if (!email) {
       return new Response(JSON.stringify({ error: "Email required" }), {
@@ -22,8 +33,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceKey) {
+      throw new Error("Missing backend configuration");
+    }
     const adminClient = createClient(supabaseUrl, serviceKey);
 
     // Update newsletter_subscribers: set unsubscribed = true
@@ -36,33 +50,11 @@ Deno.serve(async (req) => {
       console.error("Unsubscribe error:", error);
     }
 
-    // Return a styled HTML page confirming unsubscription
-    const safeEmail = email.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const html = `<!DOCTYPE html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Newsletter abgemeldet</title>
-<style>
-  body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background: #0a0a0f; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  .card { background: #111118; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 48px 40px; max-width: 440px; text-align: center; }
-  h1 { font-size: 24px; margin: 0 0 12px 0; }
-  p { color: #999; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0; }
-  .icon { font-size: 48px; margin-bottom: 16px; }
-  .email { color: #8b5cf6; font-weight: 600; }
-  a { color: #8b5cf6; text-decoration: none; font-size: 13px; }
-</style>
-</head><body>
-<div class="card">
-  <div class="icon">&#128236;</div>
-  <h1>Abmeldung erfolgreich</h1>
-  <p>Die E-Mail-Adresse <span class="email">${safeEmail}</span> wurde vom Newsletter abgemeldet. Du wirst keine weiteren Newsletter von uns erhalten.</p>
-  <a href="https://nightlifeticket.app">&larr; Zur&uuml;ck zur Website</a>
-</div>
-</body></html>`;
-
-    return new Response(html, {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
-        "Content-Type": "text/html; charset=utf-8",
+        ...corsHeaders,
+        "Content-Type": "application/json",
       },
     });
   } catch (err) {
