@@ -10,6 +10,10 @@ export default function NewsletterUnsubscribe() {
   const [state, setState] = useState<UnsubscribeState>("loading");
 
   useEffect(() => {
+    document.title = "Newsletter abmelden | Nightlife Generation";
+  }, []);
+
+  useEffect(() => {
     const email = searchParams.get("email")?.trim();
     if (!email) {
       setState("error");
@@ -73,6 +77,9 @@ export default function NewsletterUnsubscribe() {
             </Link>
           </>
         )}
+        <p className="mt-8 text-xs text-muted-foreground">
+          Nightlife Generation · nightlifeticket.app
+        </p>
       </section>
     </main>
   );
