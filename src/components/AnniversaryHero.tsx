@@ -40,6 +40,10 @@ const AnniversaryHero = ({ ticketLabel }: { ticketLabel: string }) => (
       ))}
     </div>
 
+    {/* Feuerwerk */}
+    <AnniversaryFireworks />
+
+
     <div className="relative z-10 container text-center px-4 py-20">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
