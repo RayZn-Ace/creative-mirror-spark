@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { isAnniversaryActive } from "@/lib/anniversary";
 
 // 80% female, 20% male — age-appropriate names (16-20)
 const FEMALE_NAMES = [
