@@ -2,7 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Ticket, Sparkles } from "lucide-react";
 import { ANNIVERSARY_TITLE, ANNIVERSARY_SUBTITLE, ANNIVERSARY_BADGE } from "@/lib/anniversary";
-import anniversaryHero from "@/assets/hero-club.jpg";
+import anniversaryHeroAsset from "@/assets/anniversary-hero.jpg.asset.json";
+
+const anniversaryHero = anniversaryHeroAsset.url;
 
 /**
  * Jubiläums-Startbild.
