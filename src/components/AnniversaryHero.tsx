@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Ticket, Sparkles } from "lucide-react";
 import { ANNIVERSARY_TITLE, ANNIVERSARY_SUBTITLE, ANNIVERSARY_BADGE } from "@/lib/anniversary";
 import anniversaryHeroAsset from "@/assets/anniversary-hero.jpg.asset.json";
+import AnniversaryFireworks from "@/components/AnniversaryFireworks";
 
 const anniversaryHero = anniversaryHeroAsset.url;
 
@@ -40,6 +41,10 @@ const AnniversaryHero = ({ ticketLabel }: { ticketLabel: string }) => (
       ))}
     </div>
 
+    {/* Feuerwerk */}
+    <AnniversaryFireworks />
+
+
     <div className="relative z-10 container text-center px-4 py-20">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -75,11 +80,13 @@ const AnniversaryHero = ({ ticketLabel }: { ticketLabel: string }) => (
         transition={{ duration: 0.8, delay: 0.4 }}
         className="flex flex-col sm:flex-row gap-4 justify-center"
       >
-        <Link
-          to="/termine"
-          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg animate-pulse-glow hover:opacity-90 transition-all"
-        >
-          <Ticket className="w-5 h-5" /> {ticketLabel}
+        <Link to="/termine" className="anniv-cta group">
+          <span className="anniv-cta-shine" aria-hidden />
+          <span className="relative z-10 inline-flex items-center gap-2">
+            <Ticket className="w-5 h-5 transition-transform group-hover:-rotate-12" />
+            {ticketLabel}
+            <Sparkles className="w-4 h-4 opacity-80" />
+          </span>
         </Link>
       </motion.div>
     </div>
