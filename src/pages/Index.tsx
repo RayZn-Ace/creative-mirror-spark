@@ -10,6 +10,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import SupportChatbot from "@/components/SupportChatbot";
+import AnniversaryHero from "@/components/AnniversaryHero";
+import { useAnniversary } from "@/hooks/useAnniversary";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
@@ -391,12 +393,13 @@ const Reviews = ({ gt }: { gt: GlobalTranslations }) => (
 /* ─── Page ─── */
 export default function Index() {
   const gt = useMemo(() => getGlobalTranslations(), []);
+  const anniversary = useAnniversary();
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar gt={gt} />
       <main className="flex-1 pt-16 md:pt-20 pb-20 lg:pb-0">
-        <Hero gt={gt} />
+        {anniversary ? <AnniversaryHero ticketLabel={gt.heroTicketBtn} /> : <Hero gt={gt} />}
         <EventCountdown gt={gt} />
         <UpcomingEvents gt={gt} />
         <CrowdSlideshow gt={gt} />

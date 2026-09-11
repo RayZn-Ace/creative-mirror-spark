@@ -4,6 +4,7 @@ import { Menu, X, Ticket, ChevronDown, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
+import AnniversaryBanner from "@/components/AnniversaryBanner";
 
 interface DropdownItem {
   label: string;
@@ -92,6 +93,7 @@ export default function Navbar({ gt: gtProp }: { gt?: GlobalTranslations }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <AnniversaryBanner />
       <div className="container relative flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group shrink-0">

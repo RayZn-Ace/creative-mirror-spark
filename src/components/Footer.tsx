@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Instagram, Youtube, MessageCircle, Facebook } from "lucide-react";
 import { getGlobalTranslations, type GlobalTranslations } from "@/lib/i18n";
 import nightlifeLogo from "@/assets/nightlife-generation-logo.png";
+import { isAnniversaryActive, ANNIVERSARY_BADGE } from "@/lib/anniversary";
 
 const socialLinks = [
   { icon: Instagram, href: "https://www.instagram.com/nightlifegeneration_de/", label: "Instagram" },
@@ -20,6 +21,11 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
             <div className="mb-4">
               <img src={nightlifeLogo} alt="Nightlife Generation" className="h-10 w-auto" />
             </div>
+            {isAnniversaryActive() && (
+              <p className="inline-block mb-3 px-3 py-1 rounded-full anniv-badge text-[10px] font-black uppercase tracking-[0.2em]">
+                {ANNIVERSARY_BADGE}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mb-4">{gt.footerAboutDesc}</p>
             <div className="flex gap-3">
               {socialLinks.map(s => (
