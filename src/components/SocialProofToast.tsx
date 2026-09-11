@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { isAnniversaryActive } from "@/lib/anniversary";
 
 // 80% female, 20% male — age-appropriate names (16-20)
 const FEMALE_NAMES = [
@@ -153,7 +154,11 @@ export default function SocialProofToast() {
   if (isAdmin) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-50 pointer-events-none">
+    <div
+      className={`fixed right-4 z-40 pointer-events-none ${
+        isAnniversaryActive() ? "top-32 sm:top-36" : "top-20"
+      }`}
+    >
       <AnimatePresence>
         {msg && (
           <motion.div
