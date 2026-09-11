@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Ticket, Sparkles } from "lucide-react";
 import { ANNIVERSARY_TITLE, ANNIVERSARY_SUBTITLE, ANNIVERSARY_BADGE } from "@/lib/anniversary";
 import anniversaryHeroAsset from "@/assets/anniversary-hero.jpg.asset.json";
+import AnniversaryFireworks from "@/components/AnniversaryFireworks";
 
 const anniversaryHero = anniversaryHeroAsset.url;
 
