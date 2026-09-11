@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, Bot, User, Send, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { isAnniversaryActive } from "@/lib/anniversary";
 
 interface ChatMsg {
   from: "bot" | "user" | "admin" | "system";
