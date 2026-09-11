@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, Bot, User, Send, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { isAnniversaryActive } from "@/lib/anniversary";
 
 interface ChatMsg {
   from: "bot" | "user" | "admin" | "system";
@@ -443,6 +444,26 @@ export default function SupportChatbot() {
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
             <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
+            {isAnniversaryActive() && (
+              <>
+                {/* Partyhut */}
+                <motion.span
+                  className="anniv-hat"
+                  aria-hidden
+                  animate={{ rotate: [-14, -6, -14] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <span className="anniv-hat-pom" />
+                </motion.span>
+                {/* Partytröte */}
+                <motion.span
+                  className="anniv-blower"
+                  aria-hidden
+                  animate={{ scaleX: [0.35, 1, 0.35], rotate: [4, -6, 4] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </>
+            )}
           </button>
         </div>
       )}
