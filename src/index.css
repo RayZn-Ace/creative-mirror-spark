@@ -919,7 +919,8 @@ body.anniversary main { padding-top: 4.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .anniv-strip, .anniv-strip .anniv-shine, .anniv-badge, .anniv-title, .anniv-glow, .anniv-confetti {
+  .anniv-strip, .anniv-strip .anniv-shine, .anniv-badge, .anniv-title, .anniv-glow, .anniv-confetti,
+  .anniv-cta, .anniv-cta-shine, .anniv-firework-spark {
     animation: none !important;
   }
 }
