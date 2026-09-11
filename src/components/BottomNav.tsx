@@ -2,6 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Calendar, Ticket, Image, User } from "lucide-react";
 import { getGlobalTranslations } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { isAnniversaryActive } from "@/lib/anniversary";
+import sophiaParty from "@/assets/sophia-party.png";
 
 type Tab =
   | { type: "link"; icon: typeof Calendar; label: string; path: string; center?: boolean }
@@ -58,9 +60,18 @@ export default function BottomNav() {
                 className="flex flex-col items-center gap-1 px-3 py-1 text-muted-foreground hover:text-primary transition-colors"
                 aria-label={tab.label}
               >
-                <span className="text-lg leading-none" role="img" aria-hidden>
-                  {tab.emoji}
-                </span>
+                {isAnniversaryActive() ? (
+                  <img
+                    src={sophiaParty}
+                    alt=""
+                    aria-hidden
+                    className="w-7 h-7 object-contain -my-1 drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
+                  />
+                ) : (
+                  <span className="text-lg leading-none" role="img" aria-hidden>
+                    {tab.emoji}
+                  </span>
+                )}
                 <span className="text-[10px] font-medium">{tab.label}</span>
               </button>
             );
