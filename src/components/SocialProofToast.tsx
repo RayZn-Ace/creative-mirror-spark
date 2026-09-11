@@ -167,7 +167,7 @@ export default function SocialProofToast() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 80, scale: 0.9 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md max-w-xs"
+            className="flex items-center gap-2 sm:gap-3 px-2.5 py-1.5 sm:px-4 sm:py-3 rounded-lg sm:rounded-xl shadow-lg sm:shadow-2xl backdrop-blur-md max-w-[210px] sm:max-w-xs"
             style={{
               background: "linear-gradient(135deg, hsl(270 80% 55% / 0.2), hsl(330 80% 55% / 0.15), hsl(270 40% 10% / 0.92))",
               border: "1px solid hsl(280 80% 60% / 0.4)",
