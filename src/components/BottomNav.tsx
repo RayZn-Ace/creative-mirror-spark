@@ -2,6 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Calendar, Ticket, Image, User } from "lucide-react";
 import { getGlobalTranslations } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
+import { isAnniversaryActive } from "@/lib/anniversary";
+import sophiaParty from "@/assets/sophia-party.png";
 
 type Tab =
   | { type: "link"; icon: typeof Calendar; label: string; path: string; center?: boolean }
