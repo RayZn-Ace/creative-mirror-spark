@@ -445,24 +445,22 @@ export default function SupportChatbot() {
             <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
             {isAnniversaryActive() && (
               <>
+                {/* Partyhut */}
                 <motion.span
-                  className="absolute -top-3 left-1.5 z-20 text-xl origin-bottom"
-                  role="img"
-                  aria-label="Partyhut"
-                  animate={{ rotate: [-12, -4, -12] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  className="anniv-hat"
+                  aria-hidden
+                  animate={{ rotate: [-14, -6, -14] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  🎉
+                  <span className="anniv-hat-pom" />
                 </motion.span>
+                {/* Partytröte */}
                 <motion.span
-                  className="absolute -right-2 bottom-2 z-20 text-lg origin-left"
-                  role="img"
-                  aria-label="Partytröte"
-                  animate={{ rotate: [0, -18, 0], scale: [1, 1.15, 1] }}
-                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  🥳
-                </motion.span>
+                  className="anniv-blower"
+                  aria-hidden
+                  animate={{ scaleX: [0.35, 1, 0.35], rotate: [4, -6, 4] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                />
               </>
             )}
           </button>
