@@ -10,7 +10,12 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "mobile:sync": "vite build && cap sync",
+    "ios:init": "cap add ios",
+    "ios:open": "cap open ios",
+    "android:init": "cap add android",
+    "android:open": "cap open android"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "^8.2.0",
