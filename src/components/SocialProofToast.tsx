@@ -153,7 +153,11 @@ export default function SocialProofToast() {
   if (isAdmin) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-50 pointer-events-none">
+    <div
+      className={`fixed right-4 z-40 pointer-events-none ${
+        isAnniversaryActive() ? "top-32 sm:top-36" : "top-20"
+      }`}
+    >
       <AnimatePresence>
         {msg && (
           <motion.div
