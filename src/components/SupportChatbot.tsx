@@ -443,6 +443,28 @@ export default function SupportChatbot() {
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
             <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
+            {isAnniversaryActive() && (
+              <>
+                <motion.span
+                  className="absolute -top-3 left-1.5 z-20 text-xl origin-bottom"
+                  role="img"
+                  aria-label="Partyhut"
+                  animate={{ rotate: [-12, -4, -12] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  🎉
+                </motion.span>
+                <motion.span
+                  className="absolute -right-2 bottom-2 z-20 text-lg origin-left"
+                  role="img"
+                  aria-label="Partytröte"
+                  animate={{ rotate: [0, -18, 0], scale: [1, 1.15, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  🥳
+                </motion.span>
+              </>
+            )}
           </button>
         </div>
       )}
