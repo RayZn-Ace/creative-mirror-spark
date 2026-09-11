@@ -443,26 +443,19 @@ export default function SupportChatbot() {
             aria-label="Sophia Support Chat öffnen"
           >
             <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "hsl(270 90% 55% / 0.3)" }} />
-            <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
-            {isAnniversaryActive() && (
-              <>
-                {/* Partyhut */}
-                <motion.span
-                  className="anniv-hat"
-                  aria-hidden
-                  animate={{ rotate: [-14, -6, -14] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <span className="anniv-hat-pom" />
-                </motion.span>
-                {/* Partytröte */}
-                <motion.span
-                  className="anniv-blower"
-                  aria-hidden
-                  animate={{ scaleX: [0.35, 1, 0.35], rotate: [4, -6, 4] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </>
+            {isAnniversaryActive() ? (
+              <motion.img
+                src={sophiaParty}
+                alt="Sophia mit Partyhut"
+                width={816}
+                height={816}
+                loading="lazy"
+                className="relative z-10 w-14 h-14 object-contain drop-shadow-lg"
+                animate={{ rotate: [-3, 3, -3] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              />
+            ) : (
+              <span className="relative z-10 text-2xl" role="img" aria-label="Sophia">👩‍💼</span>
             )}
           </button>
         </div>
