@@ -796,3 +796,76 @@
   0% { opacity: 0; letter-spacing: .2em; }
   100% { opacity: 1; letter-spacing: .5em; }
 }
+
+/* ===== 2 Jahre Jubiläum (endet automatisch am 20.09.) ===== */
+.anniv-strip {
+  background: linear-gradient(120deg,
+    hsl(270 80% 55%), hsl(330 85% 60%), hsl(45 90% 60%), hsl(270 80% 55%));
+  background-size: 300% 300%;
+  animation: featured-frame-flow 6s ease-in-out infinite;
+}
+.anniv-strip .anniv-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 40%, hsl(0 0% 100% / 0.45) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: anniv-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes anniv-shine {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+
+/* Menü ist durch den Streifen etwas höher */
+body.anniversary main { padding-top: 4.25rem; }
+@media (min-width: 768px) { body.anniversary main { padding-top: 5.25rem; } }
+
+.anniv-badge {
+  background: linear-gradient(120deg, hsl(270 80% 55%), hsl(330 85% 60%), hsl(45 90% 60%));
+  background-size: 250% 250%;
+  animation: featured-frame-flow 5s ease-in-out infinite;
+  color: hsl(0 0% 100%);
+  box-shadow: 0 0 18px hsl(330 85% 60% / 0.35);
+}
+
+.anniv-title {
+  background: linear-gradient(100deg, hsl(45 95% 65%), hsl(330 85% 65%), hsl(270 85% 65%), hsl(45 95% 65%));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: featured-frame-flow 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 24px hsl(330 85% 60% / 0.35));
+}
+
+.anniv-glow {
+  pointer-events: none;
+  background:
+    radial-gradient(45% 45% at 20% 25%, hsl(270 85% 60% / 0.32), transparent 65%),
+    radial-gradient(40% 40% at 80% 30%, hsl(330 85% 60% / 0.28), transparent 65%),
+    radial-gradient(50% 50% at 50% 90%, hsl(45 90% 60% / 0.18), transparent 65%);
+  animation: anniv-glow-pulse 8s ease-in-out infinite;
+}
+@keyframes anniv-glow-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+.anniv-confetti {
+  position: absolute;
+  top: -5%;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, hsl(45 95% 65%), hsl(330 85% 62%));
+  opacity: 0.8;
+}
+.anniv-confetti:nth-child(3n) { background: linear-gradient(180deg, hsl(270 85% 65%), hsl(200 85% 60%)); }
+.anniv-confetti:nth-child(4n) { width: 6px; height: 6px; border-radius: 999px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anniv-strip, .anniv-strip .anniv-shine, .anniv-badge, .anniv-title, .anniv-glow, .anniv-confetti {
+    animation: none !important;
+  }
+}
