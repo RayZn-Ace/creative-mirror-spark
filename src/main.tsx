@@ -7,16 +7,22 @@ declare global {
   interface Window {
     __APP_BOOT_DONE__?: () => void;
     __APP_BOOT_FAIL__?: (msg?: string) => void;
+    __APP_BOOT_STARTED__?: boolean;
     __APP_MOUNTED__?: boolean;
   }
 }
 
-// Never let an async/native error kill the app shell in the native webview.
+// Tells the boot shell in index.html that the bundle really executed.
 if (typeof window !== "undefined") {
+  window.__APP_BOOT_STARTED__ = true;
+
+  // Never let an async/native error kill the app shell in the native webview.
   window.addEventListener("unhandledrejection", (e) => {
     console.warn("Unhandled promise rejection", e.reason);
   });
 }
+
+const hideBootShell = () => window.__APP_BOOT_DONE__?.();
 
 try {
   const container = document.getElementById("root");
@@ -28,10 +34,10 @@ try {
     </AppErrorBoundary>
   );
 
-  // Remove the boot screen only once the first frame is actually painted.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => window.__APP_BOOT_DONE__?.());
-  });
+  // Prefer the painted frame, but always hide the shell even if rAF is throttled
+  // (happens in a backgrounded native webview).
+  requestAnimationFrame(() => requestAnimationFrame(hideBootShell));
+  setTimeout(hideBootShell, 1200);
 } catch (e) {
   console.error("App bootstrap failed", e);
   window.__APP_BOOT_FAIL__?.(e instanceof Error ? e.message : String(e));
