@@ -2,6 +2,8 @@ import { Component, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
+  /** Render nothing instead of a full screen (for non-essential subtrees). */
+  silent?: boolean;
 }
 
 interface State {
@@ -25,6 +27,7 @@ export default class AppErrorBoundary extends Component<Props, State> {
 
   render() {
     if (!this.state.hasError) return this.props.children;
+    if (this.props.silent) return null;
 
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4 p-6 text-center">

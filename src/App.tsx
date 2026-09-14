@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
 import VisitorTracker from "@/components/VisitorTracker";
 import SocialProofToast from "@/components/SocialProofToast";
+import AppErrorBoundary from "@/components/AppErrorBoundary";
 import Index from "./pages/Index";
 const CityPage = lazy(() => import("./pages/CityPage"));
 import NotFound from "./pages/NotFound";
@@ -99,6 +100,15 @@ const isNativeApp = (() => {
 })();
 const Router = isNativeApp ? HashRouter : BrowserRouter;
 
+/** Visible placeholder while a lazy page chunk loads – never an empty screen. */
+const StartupFallback = () => (
+  <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+    <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    <p className="text-sm text-muted-foreground">Wird geladen…</p>
+  </div>
+);
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -107,10 +117,14 @@ const App = () => (
       <Router>
         <AuthProvider>
           
-          <Suspense fallback={<div className="min-h-screen bg-background" />}>
-            <TrackingProvider />
-            <VisitorTracker />
-            <SocialProofToast />
+          <Suspense fallback={<StartupFallback />}>
+            {/* Non-essential background helpers: isolated so a failure can never
+                blank the app shell. */}
+            <AppErrorBoundary silent>
+              <TrackingProvider />
+              <VisitorTracker />
+              <SocialProofToast />
+            </AppErrorBoundary>
             <Routes>
               <Route path="/" element={<Index />} />
               

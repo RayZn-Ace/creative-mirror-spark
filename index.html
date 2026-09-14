@@ -80,11 +80,21 @@
           }
         }, true);
 
-        // Watchdog: if React never mounts, show something readable instead of black.
-        setTimeout(function () { if (!window.__APP_MOUNTED__) fail('Zeitüberschreitung beim Start.'); }, 12000);
+        // Watchdogs: never leave a black/empty screen behind.
+        setTimeout(function () {
+          if (!window.__APP_MOUNTED__ && !window.__APP_BOOT_STARTED__) {
+            fail('Programmdatei wurde nicht ausgeführt (Start abgebrochen).');
+          }
+        }, 6000);
+        setTimeout(function () {
+          if (!window.__APP_MOUNTED__) fail('Zeitüberschreitung beim Start.');
+        }, 10000);
       })();
     </script>
 
     <script type="module" src="/src/main.tsx"></script>
+    <script nomodule>
+      window.__APP_BOOT_FAIL__ && window.__APP_BOOT_FAIL__('Dieses Gerät unterstützt die App-Version nicht (bitte iOS aktualisieren).');
+    </script>
   </body>
 </html>
