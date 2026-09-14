@@ -36,8 +36,55 @@
   <meta name="twitter:description" content="Nightlife Generation – Dein Ticketshop für die besten Events und Partys! Tickets für Hamburg, Berlin, Köln, München &amp; mehr. Jetzt sichern!">
 </head>
 
-  <body>
+  <body style="background:#0f0f14;color:#f1f5f9;margin:0">
     <div id="root"></div>
+
+    <!-- Visible startup screen: stays until React mounts, and turns into a
+         readable error screen if the app bundle or a startup provider fails. -->
+    <div id="app-boot" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0f0f14;color:#f1f5f9;font-family:system-ui,-apple-system,sans-serif;text-align:center;padding:24px;z-index:2147483647">
+      <div style="font-size:22px;font-weight:800;letter-spacing:.08em">NIGHTLIFE</div>
+      <div id="app-boot-msg" style="font-size:14px;opacity:.7">Wird geladen…</div>
+      <pre id="app-boot-detail" style="display:none;max-width:90vw;max-height:35vh;overflow:auto;font-size:11px;text-align:left;opacity:.6;white-space:pre-wrap"></pre>
+      <button id="app-boot-retry" style="display:none;border:0;border-radius:999px;padding:12px 26px;font-size:15px;font-weight:700;color:#fff;background:#7c3aed">Neu laden</button>
+    </div>
+
+    <script>
+      (function () {
+        var boot = document.getElementById('app-boot');
+        var msg = document.getElementById('app-boot-msg');
+        var detail = document.getElementById('app-boot-detail');
+        var retry = document.getElementById('app-boot-retry');
+        var failed = false;
+        retry.addEventListener('click', function () { window.location.reload(); });
+
+        function fail(text) {
+          if (failed || window.__APP_MOUNTED__) return;
+          failed = true;
+          boot.style.display = 'flex';
+          msg.textContent = 'Die App konnte nicht starten.';
+          if (text) { detail.textContent = String(text).slice(0, 600); detail.style.display = 'block'; }
+          retry.style.display = 'inline-block';
+        }
+        window.__APP_BOOT_FAIL__ = fail;
+        window.__APP_BOOT_DONE__ = function () {
+          window.__APP_MOUNTED__ = true;
+          if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+        };
+
+        window.addEventListener('error', function (e) {
+          var t = e && e.target;
+          if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+            fail('Konnte Programmdatei nicht laden: ' + (t.src || t.href));
+          } else if (e && e.message) {
+            fail(e.message);
+          }
+        }, true);
+
+        // Watchdog: if React never mounts, show something readable instead of black.
+        setTimeout(function () { if (!window.__APP_MOUNTED__) fail('Zeitüberschreitung beim Start.'); }, 12000);
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
