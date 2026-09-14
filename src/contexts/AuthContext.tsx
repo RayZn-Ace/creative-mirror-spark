@@ -38,16 +38,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // Safety net: never keep the app in a loading state if the auth/storage
+    // layer stalls (can happen in the native webview without network).
+    const failsafe = window.setTimeout(() => setLoading(false), 6000);
+
     // First get existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id);
-      } else {
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          checkAdmin(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        console.warn("Session konnte nicht geladen werden", e);
         setLoading(false);
-      }
-    });
+      });
 
     // Then listen for changes - DO NOT use await inside this callback
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -63,7 +73,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(failsafe);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import TrackingProvider from "@/components/TrackingProvider";
@@ -87,13 +87,24 @@ const AccountMemories = lazy(() => import("./pages/account/Memories"));
 
 const queryClient = new QueryClient();
 
+// In the native app the page is served from a custom scheme (capacitor://localhost),
+// where History-API routing can leave the webview on a URL the bundle can't restore.
+// Hash routing is reliable there; the web app keeps clean URLs.
+const isNativeApp = (() => {
+  try {
+    return !!(window as any).Capacitor?.isNativePlatform?.();
+  } catch {
+    return false;
+  }
+})();
+const Router = isNativeApp ? HashRouter : BrowserRouter;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <Router>
         <AuthProvider>
           
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
@@ -185,7 +196,7 @@ const App = () => (
             </Routes>
           </Suspense>
         </AuthProvider>
-      </BrowserRouter>
+      </Router>
     </TooltipProvider>
   </QueryClientProvider>
 );
