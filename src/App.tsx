@@ -107,10 +107,14 @@ const App = () => (
       <Router>
         <AuthProvider>
           
-          <Suspense fallback={<div className="min-h-screen bg-background" />}>
-            <TrackingProvider />
-            <VisitorTracker />
-            <SocialProofToast />
+          <Suspense fallback={<StartupFallback />}>
+            {/* Non-essential background helpers: isolated so a failure can never
+                blank the app shell. */}
+            <AppErrorBoundary silent>
+              <TrackingProvider />
+              <VisitorTracker />
+              <SocialProofToast />
+            </AppErrorBoundary>
             <Routes>
               <Route path="/" element={<Index />} />
               
