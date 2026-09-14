@@ -99,6 +99,15 @@ const isNativeApp = (() => {
 })();
 const Router = isNativeApp ? HashRouter : BrowserRouter;
 
+/** Visible placeholder while a lazy page chunk loads – never an empty screen. */
+const StartupFallback = () => (
+  <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+    <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    <p className="text-sm text-muted-foreground">Wird geladen…</p>
+  </div>
+);
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
