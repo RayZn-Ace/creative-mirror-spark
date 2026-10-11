@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
                   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
                   await fetch(`${SUPABASE_URL}/functions/v1/send-tickets`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
                     body: JSON.stringify({ order_id: orderId }),
                   });
                   console.log(`Ticket email triggered for order ${orderId}`);

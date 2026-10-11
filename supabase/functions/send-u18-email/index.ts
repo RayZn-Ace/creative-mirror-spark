@@ -288,7 +288,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("Clubzettel email sent to:", form.email);
+    console.log("Clubzettel email sent for form:", form_id);
 
     return new Response(JSON.stringify({ success: true, email: form.email }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

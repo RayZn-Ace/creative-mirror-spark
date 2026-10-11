@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
       console.error("Failed to rewrite invite link URL:", e);
     }
 
-    console.log("Generated invite link for:", email);
+    console.log("Generated invite link");
 
     // Send invite email via Resend
     if (!resendApiKey) {
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
       throw new Error(`E-Mail konnte nicht gesendet werden: ${JSON.stringify(resendData)}`);
     }
 
-    console.log("Invite email sent via Resend:", resendData);
+    console.log("Invite email sent via Resend");
 
     return new Response(
       JSON.stringify({ success: true, message: `Einladung an ${email} gesendet` }),

@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("Job application email sent for:", name);
+    console.log("Job application email sent");
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

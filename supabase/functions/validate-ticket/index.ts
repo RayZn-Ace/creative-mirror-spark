@@ -6,6 +6,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+
+// Server-side authorization: service role (internal calls) or signed-in user with one of the allowed roles
+async function authorize(req: Request, roles: string[]): Promise<boolean> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.replace(/^Bearer\s+/i, "");
+  if (!token) return false;
+  const srk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  if (token === srk) return true;
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return false;
+  const admin = createClient(url, srk);
+  const { data } = await admin.from("user_roles").select("role").eq("user_id", user.id).in("role", roles);
+  return !!data?.length;
+}
+const forbidden = (h: Record<string, string>) =>
+  new Response(JSON.stringify({ error: "Nicht autorisiert" }), { status: 403, headers: { ...h, "Content-Type": "application/json" } });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -26,6 +45,9 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Without a scanner link, only admins/scanners may validate or check in
+    if (!scanner_token && !(await authorize(req, ["admin", "scanner"]))) return forbidden(corsHeaders);
 
     // If using scanner token, validate it
     if (scanner_token) {
