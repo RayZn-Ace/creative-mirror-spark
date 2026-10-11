@@ -153,7 +153,9 @@ const Muttizettel = () => {
     setSubmitting(true);
     const selectedEv = events.find((e) => e.id === selectedEvent);
 
-    const { data, error } = await supabase.from("u18_forms").insert({
+    const newFormId = crypto.randomUUID();
+    const { error } = await supabase.from("u18_forms").insert({
+      id: newFormId,
       event_id: selectedEvent,
       event_title: selectedEv?.title || "",
       event_date: selectedEv?.date || null,
@@ -185,7 +187,8 @@ const Muttizettel = () => {
       accept_newsletter: acceptNewsletter,
       parent_signature: !skipSignature ? parentSignature : null,
       supervisor_signature: !skipSignature && !skipSupervisor ? supervisorSignature : null,
-    } as any).select("id").single();
+    } as any);
+    const data = error ? null : { id: newFormId };
 
     if (error) { toast.error("Fehler beim Speichern: " + error.message); }
     else if (data) {

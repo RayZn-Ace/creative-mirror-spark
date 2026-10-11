@@ -44,11 +44,9 @@ const OrderConfirmation = () => {
     if (!orderId) return;
 
     const fetchOrder = async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", orderId)
-        .maybeSingle();
+      const { data: res } = await supabase.rpc("get_order_confirmation" as any, { _order_id: orderId });
+      const data = (res as any)?.order ?? null;
+      if ((res as any)?.tickets?.length) setTickets((res as any).tickets as TicketData[]);
 
       if (data) {
         const orderData = data as unknown as OrderData;
@@ -76,21 +74,16 @@ const OrderConfirmation = () => {
     };
 
     const fetchTickets = async () => {
-      const { data } = await supabase
-        .from("tickets")
-        .select("*")
-        .eq("order_id", orderId);
-      if (data) setTickets(data as unknown as TicketData[]);
+      const { data: res } = await supabase.rpc("get_order_confirmation" as any, { _order_id: orderId });
+      const list = (res as any)?.tickets;
+      if (Array.isArray(list)) setTickets(list as TicketData[]);
     };
 
     fetchOrder();
 
     const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", orderId)
-        .maybeSingle();
+      const { data: res } = await supabase.rpc("get_order_confirmation" as any, { _order_id: orderId });
+      const data = (res as any)?.order ?? null;
       if (data) {
         const updated = data as unknown as OrderData;
         setOrder(updated);
