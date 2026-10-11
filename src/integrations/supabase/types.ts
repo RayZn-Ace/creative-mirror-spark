@@ -2210,7 +2210,9 @@ export type Database = {
       }
       claim_birthday_bonus: { Args: { _user_id: string }; Returns: Json }
       claim_referral: { Args: { _code: string }; Returns: Json }
+      count_paid_orders: { Args: { _event_id: string }; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      get_order_confirmation: { Args: { _order_id: string }; Returns: Json }
       has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
@@ -2230,6 +2232,21 @@ export type Database = {
       partner_has_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
+      }
+      recent_purchases_public: {
+        Args: { _limit?: number }
+        Returns: {
+          event_id: string
+          first_name: string
+          ticket_count: number
+        }[]
+      }
+      sold_tickets_by_category: {
+        Args: { _event_id: string }
+        Returns: {
+          sold: number
+          ticket_category_id: string
+        }[]
       }
     }
     Enums: {
