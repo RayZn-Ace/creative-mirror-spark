@@ -42,7 +42,6 @@ function wrapText(text: string, font: any, size: number, maxWidth: number): stri
 
 function formatDate(dateStr: string): string {
   try {
-    if (!(await authorize(req, ["admin"]))) return forbidden(corsHeaders);
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
   } catch {
@@ -883,6 +882,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (!(await authorize(req, ["admin"]))) return forbidden(corsHeaders);
     const body = await req.json();
     const { order_id, download_only } = body;
     if (!order_id) {
