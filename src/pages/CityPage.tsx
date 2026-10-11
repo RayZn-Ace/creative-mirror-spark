@@ -1143,16 +1143,14 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
     Promise.all([
       supabase.from("ticket_categories").select("*").eq("event_id", event.id).order("sort_order"),
-      supabase.from("tickets").select("ticket_category_id").eq("event_id", event.id).in("status", ["valid", "checked_in"]),
+      supabase.rpc("sold_tickets_by_category" as any, { _event_id: event.id }),
     ]).then(([{ data }, { data: soldTickets }]) => {
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
 
         // Count sold tickets per category
         const soldMap = new Map<string, number>();
-        (soldTickets || []).forEach((t: any) => {
-          if (t.ticket_category_id) {
-            soldMap.set(t.ticket_category_id, (soldMap.get(t.ticket_category_id) || 0) + 1);
-          }
+        ((soldTickets as any[]) || []).forEach((t: any) => {
+          if (t.ticket_category_id) soldMap.set(t.ticket_category_id, Number(t.sold) || 0);
         });
 
         const groups: Record<string, TicketItem[]> = {};

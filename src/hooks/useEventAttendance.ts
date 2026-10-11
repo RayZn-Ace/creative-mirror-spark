@@ -23,12 +23,8 @@ export function useEventAttendance(eventId?: string | null) {
       }
       setLoading(true);
 
-      const { count } = await supabase
-        .from("orders")
-        .select("id", { count: "exact", head: true })
-        .eq("event_id", eventId)
-        .eq("status", "paid");
-      if (!cancelled) setTotalCount(count ?? 0);
+      const { data: count } = await supabase.rpc("count_paid_orders" as any, { _event_id: eventId });
+      if (!cancelled) setTotalCount(Number(count ?? 0));
 
       if (user) {
         const { data } = await supabase.functions.invoke("social-lookup", {

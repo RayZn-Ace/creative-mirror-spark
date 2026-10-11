@@ -102,20 +102,15 @@ export default function SocialProofToast() {
   useEffect(() => {
     if (isAdmin || events.length === 0) return;
     supabase
-      .from("orders")
-      .select("name, items, event_id")
-      .eq("status", "paid")
-      .order("created_at", { ascending: false })
-      .limit(5)
+      .rpc("recent_purchases_public" as any, { _limit: 5 })
       .then(({ data }) => {
         if (data) {
-          data.forEach((order: any) => {
+          (data as any[]).forEach((order: any) => {
             const ev = events.find((e) => e.id === order.event_id);
-            if (ev && order.name) {
-              const items = Array.isArray(order.items) ? order.items : [];
-              const count = items.reduce((sum: number, i: any) => sum + (i.quantity || 1), 0) || 1;
+            if (ev && order.first_name) {
+              const count = Number(order.ticket_count) || 1;
               realOrdersQueue.current.push({
-                name: order.name.split(" ")[0],
+                name: order.first_name,
                 count,
                 eventTitle: ev.title,
                 id: Date.now() + Math.random(),
