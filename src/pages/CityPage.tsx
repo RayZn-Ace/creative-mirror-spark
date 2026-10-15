@@ -1228,6 +1228,10 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       setCheckoutError(t.invalidEmail);
       return;
     }
+    if (totalItems === 0) {
+      setCheckoutError("Bitte wähle mindestens ein Ticket aus.");
+      return;
+    }
     setCheckoutLoading(true);
     setCheckoutError("");
 
@@ -1269,7 +1273,25 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         },
       });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        let serverMsg = "";
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            serverMsg = body?.error || "";
+          }
+        } catch { /* ignore */ }
+        if (serverMsg && serverMsg !== "Missing required fields" && !/failed|unknown/i.test(serverMsg)) {
+          setCheckoutError(serverMsg);
+        } else if (serverMsg === "Missing required fields") {
+          setCheckoutError("Bitte wähle mindestens ein Ticket aus.");
+        } else {
+          setCheckoutError("Zahlung konnte gerade nicht gestartet werden. Bitte versuche es in einer Minute erneut.");
+        }
+        setCheckoutLoading(false);
+        return;
+      }
       if (data?.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
