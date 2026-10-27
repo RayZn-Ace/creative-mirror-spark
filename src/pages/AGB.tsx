@@ -1,5 +1,6 @@
 import { PageLayout } from "@/components/PageLayout";
 import { usePageContent } from "@/hooks/usePageContent";
+import { TicketProtectionTerms } from "@/components/TicketProtectionTerms";
 
 const headingClass = "text-foreground font-display";
 
@@ -37,6 +38,11 @@ const AGB = () => {
           ))
         )}
       </div>
+      <section id="ticketschutz" className="mt-8 space-y-4 border-t border-border pt-6">
+        <h2 className={`text-lg font-bold uppercase ${headingClass}`}>Ticketschutz-AGB</h2>
+        <p className="text-sm text-muted-foreground">Ergänzende Bedingungen bei mitgebuchtem Ticketschutz; gesetzliche Erstattungsansprüche bleiben unberührt.</p>
+        <TicketProtectionTerms />
+      </section>
     </PageLayout>
   );
 };
