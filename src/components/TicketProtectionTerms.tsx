@@ -33,7 +33,8 @@ export function TicketProtectionTerms() {
 
 export function TicketProtectionTermsButton() {
   return (
-    <Dialog>
+    <div onClick={(event) => event.stopPropagation()}>
+      <Dialog>
       <DialogTrigger asChild>
         <Button type="button" variant="link" size="sm" className="h-auto min-h-9 whitespace-normal text-xs">
           <FileText aria-hidden="true" /> Ticketschutz-AGB lesen
@@ -46,6 +47,7 @@ export function TicketProtectionTermsButton() {
         </DialogHeader>
         <TicketProtectionTerms />
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </div>
   );
 }
