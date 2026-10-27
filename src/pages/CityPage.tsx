@@ -11,6 +11,7 @@ import { useSeoMeta } from "@/hooks/useSeoMeta";
 import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
 import FavoriteButton from "@/components/FavoriteButton";
+import { TicketProtectionTermsButton } from "@/components/TicketProtectionTerms";
 
 
 
@@ -1464,8 +1465,9 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
                   Ticket versichern?
                 </h3>
                 <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-                  Schütze dein Ticket gegen Krankheit, Unfall oder andere unvorhergesehene Ereignisse. Bei Stornierung erhältst du den vollen Ticketpreis zurück.
+                  Bei unerwarteter Krankheit, Unfall oder einem Todesfall in der nahen Familie kannst du den Eintrittspreis zurückerhalten – nur mit geeignetem Beleg und abzüglich der Gebühren. Der Ticketschutz-Beitrag wird nicht erstattet. Es gelten die Ticketschutz-AGB.
                 </p>
+                <TicketProtectionTermsButton />
               </div>
 
               <div className="rounded-xl p-4 text-center" style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.1)" }}>
@@ -1506,7 +1508,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           style={{ background: "hsl(210 80% 55% / 0.1)", border: "1px solid hsl(210 80% 55% / 0.25)", color: "hsl(210 80% 70%)" }}>
           <span className="flex items-center gap-2">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Ticketversicherung
+            Ticketversicherung <TicketProtectionTermsButton />
           </span>
           <span className="font-bold">+{event.insuranceAmount.toFixed(2).replace(".", ",")} €</span>
         </div>
