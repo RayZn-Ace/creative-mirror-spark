@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 const Impressum = lazy(() => import("./pages/Impressum"));
 const Datenschutz = lazy(() => import("./pages/Datenschutz"));
 const AGB = lazy(() => import("./pages/AGB"));
+const TicketschutzAGB = lazy(() => import("./pages/TicketschutzAGB"));
 const Kontakt = lazy(() => import("./pages/Kontakt"));
 const UeberUns = lazy(() => import("./pages/UeberUns"));
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -131,6 +132,7 @@ const App = () => (
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/agb" element={<AGB />} />
+              <Route path="/ticketschutz-agb" element={<TicketschutzAGB />} />
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/ticket-umbuchung" element={<TicketUmbuchung />} />
               <Route path="/ueber-uns" element={<UeberUns />} />
