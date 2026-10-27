@@ -158,6 +158,14 @@ const OrderConfirmation = () => {
             {isPending && "Bitte warte einen Moment, deine Zahlung wird noch verarbeitet."}
             {isFailed && "Die Zahlung konnte nicht abgeschlossen werden. Bitte versuche es erneut."}
           </p>
+          {isPending && (
+            <div
+              className="rounded-xl p-4 mb-6 text-sm text-center font-semibold"
+              style={{ background: "hsl(45 100% 60% / 0.15)", border: "1px solid hsl(45 100% 60% / 0.5)", color: "hsl(0 0% 100%)" }}
+            >
+              ⚠️ Bitte schließe diese Seite nicht und kaufe nicht erneut. Sobald die Zahlung bestätigt ist, bekommst du deine Tickets per E-Mail – das kann ein paar Minuten dauern. Schau auch im Spam-Ordner nach.
+            </div>
+          )}
 
           {/* Order Details */}
           <div className="space-y-3 mb-6">
