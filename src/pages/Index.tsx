@@ -12,6 +12,8 @@ import BottomNav from "@/components/BottomNav";
 import SupportChatbot from "@/components/SupportChatbot";
 import AnniversaryHero from "@/components/AnniversaryHero";
 import { useAnniversary } from "@/hooks/useAnniversary";
+import EventAgeBadge from "@/components/EventAgeBadge";
+import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang, type GlobalTranslations } from "@/lib/i18n";
@@ -58,7 +60,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
   const [nextEvent, setNextEvent] = useState<{
     title: string; subtitle: string | null; city: string | null; date: string;
     time: string | null; location_name: string | null; slug: string; image_url: string | null;
-    highlight?: boolean;
+    highlight?: boolean; is_16plus: boolean | null;
   } | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [isHighlight, setIsHighlight] = useState(false);
@@ -66,7 +68,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     // First try to find a highlight event
-    supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight")
+    supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight, is_16plus")
       .eq("status", "published").eq("highlight", true).gte("date", today)
       .order("date", { ascending: true }).limit(1)
       .then(({ data }) => {
@@ -75,7 +77,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
           setIsHighlight(true);
         } else {
           // Fallback: next upcoming event
-          supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight")
+          supabase.from("events").select("title, subtitle, city, date, time, location_name, slug, image_url, highlight, is_16plus")
             .eq("status", "published").gte("date", today)
             .order("date", { ascending: true }).limit(1)
             .then(({ data: fallback }) => {
@@ -127,6 +129,7 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Flyer image */}
             <div className="relative overflow-hidden bg-card">
+              <EventAgeBadge is16plus={nextEvent.is_16plus} className="absolute top-3 right-3 z-10" />
               {nextEvent.image_url ? (
                 <img
                   src={nextEvent.image_url}
@@ -203,11 +206,11 @@ const EventCountdown = ({ gt }: { gt: GlobalTranslations }) => {
 
 /* ─── Upcoming Events ─── */
 const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
-  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; city: string | null; date: string | null; location_name: string | null; slug: string }[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<{ id: string; title: string; city: string | null; date: string | null; location_name: string | null; slug: string; is_16plus: boolean | null }[]>([]);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
-    supabase.from("events").select("id, title, city, date, location_name, slug")
+    supabase.from("events").select("id, title, city, date, location_name, slug, is_16plus")
       .eq("status", "published").gte("date", today)
       .order("date", { ascending: true }).limit(4)
       .then(({ data }) => setUpcomingEvents(data ?? []));
@@ -224,8 +227,9 @@ const UpcomingEvents = ({ gt }: { gt: GlobalTranslations }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {upcomingEvents.map((ev, i) => (
             <motion.div key={ev.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              className="flex items-center justify-between p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
-              <div className="flex gap-4 items-center">
+              className="relative flex flex-wrap items-center justify-between gap-4 p-5 pt-16 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+              <EventAgeBadge is16plus={ev.is_16plus} className="absolute top-3 right-3" />
+              <div className="flex gap-4 items-center min-w-0">
                 <div className="text-center min-w-[50px]">
                   <span className="font-display text-2xl text-primary">{ev.date ? new Date(ev.date).getDate() : "?"}</span>
                   <p className="text-xs text-muted-foreground uppercase">{ev.date ? new Date(ev.date).toLocaleDateString("de-DE", { month: "short" }) : ""}</p>
@@ -314,7 +318,7 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
     <section className="py-16 md:py-24 overflow-hidden">
       <div className="container">
         <h2 className="font-display text-4xl md:text-5xl text-center mb-10 text-foreground">
-          {gt.vibesTitle1} <span className="text-gradient-primary">{gt.vibesTitle2}</span>
+          So feiert <span className="text-gradient-primary">Nightlife</span>
         </h2>
         <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden aspect-[16/9] bg-card">
           <AnimatePresence initial={false} custom={direction}>
@@ -346,6 +350,7 @@ const CrowdSlideshow = ({ gt }: { gt: GlobalTranslations }) => {
             ))}
           </div>
         </div>
+        <div className="text-center mt-6"><Button asChild size="lg"><Link to="/fotos">Alle Fotos ansehen <ArrowRight className="ml-2 h-4 w-4" /></Link></Button></div>
       </div>
     </section>
   );

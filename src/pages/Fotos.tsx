@@ -8,35 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-// Fallback static images
-import crowdAerial from "@/assets/crowd-aerial.jpg";
-import crowdGlowsticks from "@/assets/crowd-glowsticks.jpg";
-import crowdGlowsticks2 from "@/assets/crowd-glowsticks2.jpg";
-import crowdHands from "@/assets/crowd-hands.jpg";
-import crowdWide from "@/assets/crowd-wide.jpg";
-import dancerHappy from "@/assets/dancer-happy.jpg";
-import crowdParty from "@/assets/crowd-party.jpg";
-import crowdVertical from "@/assets/crowd-vertical.jpg";
-
-const fallbackPhotos = [
-  { src: crowdAerial, alt: "Party Crowd von oben" },
-  { src: crowdGlowsticks, alt: "Crowd mit Leuchtstäben" },
-  { src: crowdWide, alt: "Volle Venue Panorama" },
-  { src: crowdHands, alt: "Crowd mit Händen in der Luft" },
-  { src: dancerHappy, alt: "Happy Dancer" },
-  { src: crowdParty, alt: "Party Atmosphäre" },
-  { src: crowdGlowsticks2, alt: "Leuchtstäbe Meer" },
-  { src: crowdVertical, alt: "Party Crowd" },
-];
-
-const fallbackVideos = [
-  { id: "53dTybHhlaw", title: "Video 1" },
-  { id: "LrTjwGo_6Z4", title: "Video 2" },
-  { id: "s8-6TQHgslw", title: "Video 3" },
-  { id: "zNJMzCW0qVk", title: "Video 4" },
-  { id: "1GTESLgRtvk", title: "Video 5" },
-];
+import { fetchAll } from "@/lib/fetchAll";
+import { ArrowLeft } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 type ViewMode = "grid" | "slideshow" | "masonry";
 
@@ -89,47 +63,33 @@ const Fotos = () => {
   const [speed, setSpeed] = useState(3000);
   const [shuffled, setShuffled] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedAlbumId = searchParams.get("album");
+  const setSelectedAlbumId = (id: string | null) => {
+    setLightbox(null); setPlayingVideo(null);
+    setSearchParams(id ? { album: id } : {});
+  };
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch albums
-  const { data: albums = [] } = useQuery({
+  const { data: albums = [], isLoading: albumsLoading, isError: albumsError, refetch: reloadAlbums } = useQuery({
     queryKey: ["public-media-albums"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("media_albums")
-        .select("*")
-        .eq("status", "published")
-        .order("event_date", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      return fetchAll((from, to) => supabase.from("media_albums").select("*")
+        .eq("status", "published").order("event_date", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false }).order("id").range(from, to));
     },
   });
 
-  // Fetch all media (for "Alle") or media for selected album
-  const { data: albumMedia = [] } = useQuery({
+  // Fetch only the selected published album; the overview never loads all photos.
+  const { data: albumMedia = [], isLoading: mediaLoading, isError: mediaError, refetch: reloadMedia } = useQuery({
     queryKey: ["public-media-photos", selectedAlbumId],
     queryFn: async () => {
-      // Get album IDs to filter by
-      const publishedAlbumIds = albums.map((a: any) => a.id);
-      if (publishedAlbumIds.length === 0) return [];
-
-      let query = supabase
-        .from("media_photos")
-        .select("*")
-        .order("sort_order", { ascending: true });
-
-      if (selectedAlbumId) {
-        query = query.eq("album_id", selectedAlbumId);
-      } else {
-        query = query.in("album_id", publishedAlbumIds);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data ?? [];
+      if (!selectedAlbumId || !albums.some(a => a.id === selectedAlbumId)) return [];
+      return fetchAll((from, to) => supabase.from("media_photos").select("*")
+        .eq("album_id", selectedAlbumId).order("sort_order").order("id").range(from, to));
     },
-    enabled: albums.length > 0,
+    enabled: !!selectedAlbumId && albums.some(a => a.id === selectedAlbumId),
   });
 
   // Separate photos and videos from album
@@ -150,10 +110,9 @@ const Fotos = () => {
     [albumMedia]
   );
 
-  // Use DB data if we have albums, else fallback
-  const hasDbData = albums.length > 0;
-  const photos = hasDbData && dbPhotos.length > 0 ? dbPhotos : (!hasDbData ? fallbackPhotos : []);
-  const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
+  // Only display existing album assignments, never invented fallback albums.
+  const photos = dbPhotos;
+  const videos = dbVideos;
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
   const [visibleCount, setVisibleCount] = useState(20);
@@ -218,8 +177,29 @@ const Fotos = () => {
     4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
   }[gridCols];
 
+  const selectedAlbum = albums.find(album => album.id === selectedAlbumId);
+  if (!selectedAlbumId || albumsLoading || albumsError || !selectedAlbum) {
+    return <PageLayout title="Partymomente">
+      <h2 className="font-display text-xl text-foreground">Fotoalben</h2>
+      {albumsLoading ? <p role="status">Fotoalben werden geladen…</p> : albumsError ? <div role="alert"><p>Die Fotoalben konnten nicht geladen werden.</p><Button variant="outline" onClick={() => reloadAlbums()}>Erneut versuchen</Button></div> : <>
+        {selectedAlbumId && <p>Dieses Album ist derzeit nicht verfügbar.</p>}
+        {albums.length === 0 && <p>Noch keine Fotoalben veröffentlicht.</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {albums.map(album => <Button key={album.id} variant="ghost" onClick={() => setSelectedAlbumId(album.id)} className="group h-auto w-full flex-col items-stretch p-0 overflow-hidden rounded-lg border border-border bg-card text-left whitespace-normal hover:bg-card">
+            {album.cover_image_url ? <img src={getThumbUrl(album.cover_image_url, 600)} alt={album.title} loading="lazy" className="w-full aspect-[4/3] object-cover" /> : <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center"><Image className="h-10 w-10 text-muted-foreground" /></div>}
+            <div className="p-4 space-y-2"><h3 className="font-display text-lg text-foreground break-words">{album.title}</h3><p className="text-sm text-muted-foreground">{album.event_date ? new Date(album.event_date + "T00:00:00").toLocaleDateString("de-DE") : "Veranstaltungsdatum nicht hinterlegt"}</p></div>
+          </Button>)}
+        </div>
+      </>}
+    </PageLayout>;
+  }
+
   return (
-    <PageLayout title="Partymomente">
+    <PageLayout title={selectedAlbum.title}>
+      <Button variant="outline" onClick={() => setSelectedAlbumId(null)}><ArrowLeft className="mr-2 h-4 w-4" />Zurück zur Albumübersicht</Button>
+      {selectedAlbum.event_date && <p>{new Date(selectedAlbum.event_date + "T00:00:00").toLocaleDateString("de-DE")}</p>}
+      {mediaLoading && <p role="status">Fotos werden geladen…</p>}
+      {mediaError && <div role="alert"><p>Die Fotos konnten nicht geladen werden.</p><Button variant="outline" onClick={() => reloadMedia()}>Erneut versuchen</Button></div>}
       {/* Lightbox */}
       <AnimatePresence>
         {lightbox !== null && (
@@ -271,50 +251,10 @@ const Fotos = () => {
         )}
       </AnimatePresence>
 
-      {/* Album selector */}
-      {albums.length > 0 && (
-        <div className="mb-8">
-          <h2
-            className="text-lg sm:text-xl font-black uppercase tracking-wider mb-4"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
-          >
-            Alben
-          </h2>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-            <button
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${!selectedAlbumId ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setSelectedAlbumId(null)}
-            >
-              Alle
-            </button>
-            {albums.map((album: any) => (
-              <button
-                key={album.id}
-                className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedAlbumId === album.id ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-                onClick={() => setSelectedAlbumId(album.id)}
-              >
-                {album.cover_image_url && (
-                  <img src={album.cover_image_url} alt="" className="w-6 h-6 rounded-md object-cover" />
-                )}
-                <div className="flex flex-col items-start leading-tight">
-                  <span>{album.title}</span>
-                  {album.event_date && (
-                    <span className="text-[10px] opacity-70">
-                      {new Date(album.event_date + "T00:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Fotos Header + Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h2
-          className="text-xl sm:text-2xl font-black uppercase tracking-wider"
-          style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
+          className="font-display text-xl sm:text-2xl font-black uppercase text-foreground"
         >
           Fotos
         </h2>
@@ -614,7 +554,7 @@ const Fotos = () => {
       )}
 
       {/* No photos message */}
-      {displayPhotos.length === 0 && selectedAlbumId && (
+      {displayPhotos.length === 0 && selectedAlbumId && !mediaLoading && !mediaError && (
         <div className="text-center py-16 text-muted-foreground mb-16">
           <Image className="w-12 h-12 mx-auto mb-4 opacity-40" />
           <p className="text-lg font-medium">Keine Fotos in diesem Album</p>
@@ -625,8 +565,7 @@ const Fotos = () => {
       {videos.length > 0 && (
         <>
           <h2
-            className="text-xl sm:text-2xl font-black uppercase tracking-wider mb-6"
-            style={{ fontFamily: "'Orbitron', sans-serif", color: "hsl(220 20% 15%)" }}
+            className="font-display text-xl sm:text-2xl font-black uppercase mb-6 text-foreground"
           >
             Videos
           </h2>

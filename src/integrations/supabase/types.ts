@@ -2211,6 +2211,15 @@ export type Database = {
       claim_birthday_bonus: { Args: { _user_id: string }; Returns: Json }
       claim_referral: { Args: { _code: string }; Returns: Json }
       count_paid_orders: { Args: { _event_id: string }; Returns: number }
+      create_missing_ticket_request: {
+        Args: {
+          _email: string
+          _first_name: string
+          _last_name: string
+          _order_number: string
+        }
+        Returns: Json
+      }
       generate_referral_code: { Args: never; Returns: string }
       get_order_confirmation: { Args: { _order_id: string }; Returns: Json }
       has_permission: {

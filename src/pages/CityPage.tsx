@@ -12,6 +12,7 @@ import LoungeSection from "@/components/lounge/LoungeSection";
 import NeonGlowCard from "@/components/NeonGlowCard";
 import FavoriteButton from "@/components/FavoriteButton";
 import { TicketProtectionTermsButton } from "@/components/TicketProtectionTerms";
+import EventAgeBadge from "@/components/EventAgeBadge";
 
 
 
@@ -29,6 +30,7 @@ interface GalleryConfig {
 }
 interface CityEvent {
   id: string;
+  is16plus: boolean | null;
   date: string;
   dateShort: string;
   weekday: string;
@@ -1558,7 +1560,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 const CityHero = ({ cityName, event, events, selectedId, onSelect, t, headerImage }: { cityName: string; event: CityEvent; events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations; headerImage?: string | null }) => (
   <motion.div className="flex flex-col items-center text-center relative"
     initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-    <div className="absolute top-0 right-0 z-10">
+    <div className="self-end flex items-center gap-2 mb-2 z-10">
+      <EventAgeBadge is16plus={event.is16plus} />
       <FavoriteButton eventId={event.id} size="lg" />
     </div>
     {headerImage && (
@@ -1791,6 +1794,7 @@ const CityPage = () => {
 
       const mapped: CityEvent[] = eventsData.map((e: any) => ({
         id: e.id,
+        is16plus: e.is_16plus,
         date: e.date ? formatDateDE(e.date) : "TBA",
         dateShort: e.date ? formatDateShort(e.date) : "TBA",
         weekday: e.date ? getWeekday(e.date, translations.weekdays) : "",

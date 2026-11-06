@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import NeonGlowCard from "@/components/NeonGlowCard";
 import Footer from "@/components/Footer";
 import SupportChatbot from "@/components/SupportChatbot";
+import EventAgeBadge from "@/components/EventAgeBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { getGlobalTranslations, getBrowserLang } from "@/lib/i18n";
 
@@ -187,7 +188,7 @@ interface CityGroup {
   slug: string;
   coords: [number, number] | null;
   km: number | null;
-  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean; highlight: boolean }[];
+  events: { id: string; date: string; time: string | null; locationName: string | null; soldOut: boolean; openAir: boolean; highlight: boolean; is16plus: boolean | null }[];
   imageUrl: string | null;
   category: string;
   hasHighlight: boolean;
@@ -218,7 +219,7 @@ export default function Termine() {
 
       const { data: events } = await supabase
         .from("events")
-        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight, box_office_enabled")
+        .select("id, series_id, date, time, location_name, sold_out, open_air, city, status, slug, title, subtitle, image_url, tag, highlight, box_office_enabled, is_16plus")
         .eq("status", "published")
         .gte("date", new Date().toISOString().split("T")[0])
         .order("date", { ascending: true });
@@ -266,6 +267,7 @@ export default function Termine() {
               boxOfficeEnabled: (e as any).box_office_enabled === true,
               openAir: e.open_air || false,
               highlight: e.highlight || false,
+              is16plus: e.is_16plus,
             })),
             imageUrl: s.image_url || firstEvent?.image_url || null,
             category: firstEvent?.tag || s.title || "Sonstige",
@@ -300,6 +302,7 @@ export default function Termine() {
             boxOfficeEnabled: (e as any).box_office_enabled === true,
             openAir: e.open_air || false,
             highlight: e.highlight || false,
+            is16plus: e.is_16plus,
           })),
           imageUrl: first.image_url,
           category: first.tag || first.title || "Sonstige",
@@ -566,6 +569,7 @@ export default function Termine() {
                       className="group block rounded-[14px] bg-card overflow-hidden transition-all duration-300 relative z-[2]"
                     >
                       {/* Image - same aspect ratio as regular cards */}
+                      <EventAgeBadge is16plus={nextDate?.is16plus} className="absolute top-3 right-3 z-20" />
                       {featured.imageUrl ? (
                         <div className="relative overflow-hidden rounded-t-[14px]" style={{ aspectRatio: "1920 / 1080" }}>
                           <img
@@ -601,7 +605,7 @@ export default function Termine() {
                             </motion.div>
                           )}
                           {featured.km !== null && (
-                            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20 backdrop-blur-sm">
+                            <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20 backdrop-blur-sm">
                               <MapPin className="w-3 h-3 text-primary" />
                               {featured.km} {t.kmAway}
                             </div>
@@ -610,7 +614,7 @@ export default function Termine() {
                       ) : null}
 
                       {/* Content below image - same as regular cards */}
-                      <div className="p-5">
+                      <div className={`p-5 ${!featured.imageUrl ? "pt-16" : ""}`}>
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h3 className="text-xl sm:text-2xl font-display uppercase tracking-wide group-hover:text-primary transition-colors">
@@ -643,6 +647,7 @@ export default function Termine() {
                               {ev.openAir && <Sun className="w-3 h-3" />}
                               {ev.soldOut && <XCircle className="w-3 h-3" />}
                               {formatDate(ev.date)}
+                              <EventAgeBadge is16plus={ev.is16plus} className="h-7 w-7 text-[10px]" />
                             </span>
                           ))}
                         </div>
@@ -691,6 +696,7 @@ export default function Termine() {
                       className="group block rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all duration-300 relative z-[2]"
                     >
                       {/* Image */}
+                      <EventAgeBadge is16plus={group.events[0]?.is16plus} className="absolute top-3 right-3 z-20" />
                       {group.imageUrl && (
                         <div className="relative overflow-hidden rounded-t-2xl" style={{ aspectRatio: "1920 / 1080" }}>
                           <img
@@ -729,7 +735,7 @@ export default function Termine() {
                           )}
 
                           {group.km !== null && (
-                            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20">
+                            <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-background/90 text-xs font-medium z-20">
                               <MapPin className="w-3 h-3 text-primary" />
                               {group.km} {t.kmAway}
                             </div>
@@ -737,7 +743,7 @@ export default function Termine() {
                         </div>
                       )}
 
-                      <div className="p-5">
+                      <div className={`p-5 ${!group.imageUrl ? "pt-16" : ""}`}>
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h3 className="text-xl font-display uppercase tracking-wide group-hover:text-primary transition-colors" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
@@ -770,6 +776,7 @@ export default function Termine() {
                               {ev.openAir && <Sun className="w-3 h-3" />}
                               {ev.soldOut && <XCircle className="w-3 h-3" />}
                               {formatDate(ev.date)}
+                              <EventAgeBadge is16plus={ev.is16plus} className="h-7 w-7 text-[10px]" />
                             </span>
                           ))}
                         </div>
