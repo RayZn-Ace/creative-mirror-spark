@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAll } from "@/lib/fetchAll";
+import { ArrowLeft } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 // Fallback static images
 import crowdAerial from "@/assets/crowd-aerial.jpg";
@@ -89,25 +92,26 @@ const Fotos = () => {
   const [speed, setSpeed] = useState(3000);
   const [shuffled, setShuffled] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedAlbumId = searchParams.get("album");
+  const setSelectedAlbumId = (id: string | null) => {
+    setLightbox(null); setPlayingVideo(null);
+    setSearchParams(id ? { album: id } : {});
+  };
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch albums
-  const { data: albums = [] } = useQuery({
+  const { data: albums = [], isLoading: albumsLoading, isError: albumsError, refetch: reloadAlbums } = useQuery({
     queryKey: ["public-media-albums"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("media_albums")
-        .select("*")
-        .eq("status", "published")
-        .order("event_date", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      return fetchAll((from, to) => supabase.from("media_albums").select("*")
+        .eq("status", "published").order("event_date", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false }).order("id").range(from, to));
     },
   });
 
   // Fetch all media (for "Alle") or media for selected album
-  const { data: albumMedia = [] } = useQuery({
+  const { data: albumMedia = [], isLoading: mediaLoading, isError: mediaError, refetch: reloadMedia } = useQuery({
     queryKey: ["public-media-photos", selectedAlbumId],
     queryFn: async () => {
       // Get album IDs to filter by
@@ -125,11 +129,9 @@ const Fotos = () => {
         query = query.in("album_id", publishedAlbumIds);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data ?? [];
+      return fetchAll((from, to) => query.order("id").range(from, to));
     },
-    enabled: albums.length > 0,
+    enabled: !!selectedAlbumId && albums.some(a => a.id === selectedAlbumId),
   });
 
   // Separate photos and videos from album
@@ -152,8 +154,8 @@ const Fotos = () => {
 
   // Use DB data if we have albums, else fallback
   const hasDbData = albums.length > 0;
-  const photos = hasDbData && dbPhotos.length > 0 ? dbPhotos : (!hasDbData ? fallbackPhotos : []);
-  const videos = hasDbData ? dbVideos : fallbackVideos.map((v) => ({ ...v, isYoutube: true, url: `https://youtube.com/watch?v=${v.id}` }));
+  const photos = dbPhotos;
+  const videos = dbVideos;
 
   const [displayPhotos, setDisplayPhotos] = useState(photos);
   const [visibleCount, setVisibleCount] = useState(20);
@@ -218,8 +220,29 @@ const Fotos = () => {
     4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
   }[gridCols];
 
+  const selectedAlbum = albums.find(album => album.id === selectedAlbumId);
+  if (!selectedAlbumId || albumsLoading || albumsError || !selectedAlbum) {
+    return <PageLayout title="Partymomente">
+      <h2 className="font-display text-xl text-foreground">Fotoalben</h2>
+      {albumsLoading ? <p role="status">Fotoalben werden geladen…</p> : albumsError ? <div role="alert"><p>Die Fotoalben konnten nicht geladen werden.</p><Button variant="outline" onClick={() => reloadAlbums()}>Erneut versuchen</Button></div> : <>
+        {selectedAlbumId && <p>Dieses Album ist derzeit nicht verfügbar.</p>}
+        {albums.length === 0 && <p>Noch keine Fotoalben veröffentlicht.</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {albums.map(album => <Button key={album.id} variant="ghost" onClick={() => setSelectedAlbumId(album.id)} className="group h-auto w-full flex-col items-stretch p-0 overflow-hidden rounded-lg border border-border bg-card text-left whitespace-normal hover:bg-card">
+            {album.cover_image_url ? <img src={getThumbUrl(album.cover_image_url, 600)} alt={album.title} loading="lazy" className="w-full aspect-[4/3] object-cover" /> : <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center"><Image className="h-10 w-10 text-muted-foreground" /></div>}
+            <div className="p-4 space-y-2"><h3 className="font-display text-lg text-foreground break-words">{album.title}</h3><p className="text-sm text-muted-foreground">{album.event_date ? new Date(album.event_date + "T00:00:00").toLocaleDateString("de-DE") : "Veranstaltungsdatum nicht hinterlegt"}</p></div>
+          </Button>)}
+        </div>
+      </>}
+    </PageLayout>;
+  }
+
   return (
-    <PageLayout title="Partymomente">
+    <PageLayout title={selectedAlbum.title}>
+      <Button variant="outline" onClick={() => setSelectedAlbumId(null)}><ArrowLeft className="mr-2 h-4 w-4" />Zurück zur Albumübersicht</Button>
+      {selectedAlbum.event_date && <p>{new Date(selectedAlbum.event_date + "T00:00:00").toLocaleDateString("de-DE")}</p>}
+      {mediaLoading && <p role="status">Fotos werden geladen…</p>}
+      {mediaError && <div role="alert"><p>Die Fotos konnten nicht geladen werden.</p><Button variant="outline" onClick={() => reloadMedia()}>Erneut versuchen</Button></div>}
       {/* Lightbox */}
       <AnimatePresence>
         {lightbox !== null && (
@@ -272,7 +295,7 @@ const Fotos = () => {
       </AnimatePresence>
 
       {/* Album selector */}
-      {albums.length > 0 && (
+      {false && (
         <div className="mb-8">
           <h2
             className="text-lg sm:text-xl font-black uppercase tracking-wider mb-4"
@@ -614,7 +637,7 @@ const Fotos = () => {
       )}
 
       {/* No photos message */}
-      {displayPhotos.length === 0 && selectedAlbumId && (
+      {displayPhotos.length === 0 && selectedAlbumId && !mediaLoading && !mediaError && (
         <div className="text-center py-16 text-muted-foreground mb-16">
           <Image className="w-12 h-12 mx-auto mb-4 opacity-40" />
           <p className="text-lg font-medium">Keine Fotos in diesem Album</p>
