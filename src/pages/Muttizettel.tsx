@@ -10,6 +10,8 @@ import BirthdayPicker from "@/components/BirthdayPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, ShieldCheck, Lock, Download, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
+import { printMuttizettel } from "@/lib/printMuttizettel";
 import {
   Select,
   SelectContent,
@@ -38,6 +40,8 @@ const calcAge = (birthday: string, refDate?: Date): number => {
 };
 
 const Muttizettel = () => {
+  const [searchParams] = useSearchParams();
+  const linkedEventId = searchParams.get("event");
   const [step, setStep] = useState(1);
   const totalSteps = 6;
 
@@ -90,6 +94,10 @@ const Muttizettel = () => {
       .order("date", { ascending: true })
       .then(({ data }) => { if (data) setEvents(data); });
   }, []);
+
+  useEffect(() => {
+    if (linkedEventId && events.some(event => event.id === linkedEventId)) setSelectedEvent(linkedEventId);
+  }, [linkedEventId, events]);
 
   useEffect(() => {
     if (copyParentAddress) {
@@ -432,6 +440,24 @@ const Muttizettel = () => {
 
               {step === 6 && (
                 <div className="space-y-6">
+                  <div className="space-y-3 border-b border-border pb-5">
+                    <Button variant="outline" className="w-full whitespace-normal h-auto min-h-10" onClick={() => {
+                      const event = events.find(item => item.id === selectedEvent);
+                      if (!event) { toast.error("Bitte wähle eine Veranstaltung aus."); return; }
+                      const address = (street: string, zip: string, city: string, country: string) => [street, [zip, city].filter(Boolean).join(" "), country].filter(Boolean).join(", ");
+                      try {
+                        printMuttizettel({
+                          eventTitle: event.title, eventDate: new Date(event.date + "T00:00:00").toLocaleDateString("de-DE"),
+                          parent: { name: parentName, address: address(parentAddress, parentZip, parentCity, parentCountry), phone: parentPhone, birthday: parentBirthday },
+                          minor: { name: minorName, address: address(minorAddress, minorZip, minorCity, minorCountry), phone: minorPhone, birthday: minorBirthday },
+                          supervisor: skipSupervisor ? { name: "", address: "", phone: "", birthday: "" } : { name: supervisorName, address: address(supervisorAddress, supervisorZip, supervisorCity, supervisorCountry), phone: supervisorPhone, birthday: supervisorBirthday, email: supervisorEmail },
+                          parentSignature: skipSignature ? null : parentSignature,
+                          supervisorSignature: skipSignature || skipSupervisor ? null : supervisorSignature,
+                        });
+                      } catch { toast.error("Druckausgabe konnte nicht geöffnet werden. Bitte erneut versuchen."); }
+                    }}><Download className="mr-2 h-4 w-4" />Muttizettel drucken / als PDF speichern</Button>
+                    <p className="text-xs text-muted-foreground">Ohne Speicherung und ohne E-Mail-Versand. Fehlende Angaben und Unterschriften vor dem Einlass handschriftlich ergänzen.</p>
+                  </div>
                   <p className="text-muted-foreground text-sm">Wohin soll der Clubzettel geschickt werden?</p>
                   <div><Label>✉️ E-Mail-Adresse *</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-card border-border" placeholder="deine@email.de" /></div>
                   <div className="space-y-4">
