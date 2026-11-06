@@ -5,3 +5,4 @@
 - Keep event age in the existing is_16plus field with explicit selection and a shared badge/validator; this preserves historical limits without a competing source of truth.
 - Missing-ticket intake uses a validated write-only edge function and service-only RPC into the existing support inbox; it must not reveal orders or send tickets automatically.
 - Public photos open with published album cards and fetch media only for the selected album; pagination preserves access to large existing albums.
+- Event-linked Muttizettel prompts use the shared event-age mapping; the existing wizard also offers a temporary browser-only print document so preparation does not depend on storage or email delivery.

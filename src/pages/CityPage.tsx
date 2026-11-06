@@ -13,6 +13,7 @@ import NeonGlowCard from "@/components/NeonGlowCard";
 import FavoriteButton from "@/components/FavoriteButton";
 import { TicketProtectionTermsButton } from "@/components/TicketProtectionTerms";
 import EventAgeBadge from "@/components/EventAgeBadge";
+import MuttizettelPrompt from "@/components/MuttizettelPrompt";
 
 
 
@@ -1438,6 +1439,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           )}
         </>
       )}
+
+      <MuttizettelPrompt is16plus={event.is16plus} eventId={event.id} />
 
       {/* Insurance Popup */}
       <AnimatePresence>
