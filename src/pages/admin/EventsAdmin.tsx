@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import BulkEditDialog from "@/components/admin/BulkEditDialog";
 import ImportedDataDialog from "@/components/admin/ImportedDataDialog";
 import { FileSpreadsheet } from "lucide-react";
+import { eventAgeSelection } from "@/lib/eventAge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 
 interface GalleryConfig {
@@ -145,7 +148,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   status: "draft", highlight: false, open_air: false, sold_out: false, box_office_enabled: false, box_office_price: null, ticket_link: "", sort_order: 0, series_id: null,
   service_fee_enabled: false, service_fee_type: "absolute", service_fee_value: 0, service_fee_vat: 19, service_fee_mode: "per_order",
   info_sections: [...DEFAULT_INFO_SECTIONS],
-  is_16plus: true, muttizettel: true,
+  is_16plus: null, muttizettel: true,
   insurance_enabled: false, insurance_amount: 0,
 };
 
@@ -1500,11 +1503,17 @@ const EventEditView = ({
               </select>
             </div>
             <Field label="Sortierung" value={editing.sort_order} onChange={(v: string) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
+            <fieldset className="space-y-3 text-foreground">
+              <legend className="text-sm font-bold mb-2">Mindestalter *</legend>
+              <RadioGroup aria-label="Mindestalter" value={editing.is_16plus === true ? "16" : editing.is_16plus === false ? "18" : ""} onValueChange={value => setEditing({ ...editing, is_16plus: value === "16" })} className="flex gap-6">
+                <div className="flex items-center gap-2"><RadioGroupItem value="16" id="event-age-16" /><Label htmlFor="event-age-16">16 Jahre</Label></div>
+                <div className="flex items-center gap-2"><RadioGroupItem value="18" id="event-age-18" /><Label htmlFor="event-age-18">18 Jahre</Label></div>
+              </RadioGroup>
+            </fieldset>
             {[
               { label: "Highlight-Event", checked: editing.highlight || false, onChange: (v: boolean) => setEditing({ ...editing, highlight: v }) },
               { label: "🌞 Open Air", checked: editing.open_air || false, onChange: (v: boolean) => setEditing({ ...editing, open_air: v }) },
               { label: "🚫 Ausverkauft", checked: editing.sold_out || false, onChange: (v: boolean) => setEditing({ ...editing, sold_out: v }) },
-              { label: "🔞 16+ Event", checked: editing.is_16plus !== false, onChange: (v: boolean) => setEditing({ ...editing, is_16plus: v }) },
               { label: "📋 Mit Muttizettel", checked: editing.muttizettel !== false, onChange: (v: boolean) => setEditing({ ...editing, muttizettel: v }) },
             ].map((item) => (
               <label key={item.label} className="flex items-center justify-between text-sm cursor-pointer pt-1" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
@@ -1940,6 +1949,8 @@ const EventsAdmin = () => {
 
   const save = async () => {
     if (!editing) return;
+    const age = eventAgeSelection.safeParse(editing.is_16plus);
+    if (!age.success) { toast.error("Bitte 16 oder 18 Jahre auswählen."); return; }
     const { id, ...rest } = editing as EventRow;
     if (!rest.title || !rest.slug) { toast.error("Titel und Slug sind Pflichtfelder"); return; }
     if (id) {

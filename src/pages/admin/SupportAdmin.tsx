@@ -244,6 +244,14 @@ export default function SupportAdmin() {
 
         {/* Messages */}
         <div className="flex-1 overflow-auto py-4 space-y-3">
+          {selectedTicket.source === "ticket-not-received-form" && (
+            <div className="border border-primary/30 bg-primary/10 rounded-lg p-4 text-foreground space-y-2 break-words">
+              <h2 className="font-bold">Ticket nicht erhalten – manuelle Prüfung</h2>
+              <p>Bestellnummer: {String(selectedTicket.metadata?.order_number || "—")}</p>
+              <p>Name: {selectedTicket.customer_name}</p>
+              <p>E-Mail: {selectedTicket.customer_email}</p>
+            </div>
+          )}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender_type === "admin" ? "justify-end" : "justify-start"}`}>
               <div

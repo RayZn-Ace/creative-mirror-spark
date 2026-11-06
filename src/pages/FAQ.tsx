@@ -127,6 +127,10 @@ const FAQ = () => {
           </motion.div>
 
           <div className="space-y-6">
+            <div className="py-5 border-y border-border">
+              <h2 className="font-display text-xl text-foreground mb-3">Ticket nicht erhalten?</h2>
+              <Button asChild><Link to="/ticket-nicht-erhalten">Bestellung prüfen lassen</Link></Button>
+            </div>
             {filteredCategories.map((cat, catIdx) => (
               <motion.div key={cat.title} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 + catIdx * 0.05 }}>
                 <div className="flex items-center gap-2.5 mb-3">
