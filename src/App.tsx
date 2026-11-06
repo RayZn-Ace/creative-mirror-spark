@@ -20,6 +20,7 @@ const TicketschutzAGB = lazy(() => import("./pages/TicketschutzAGB"));
 const Kontakt = lazy(() => import("./pages/Kontakt"));
 const UeberUns = lazy(() => import("./pages/UeberUns"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const TicketNichtErhalten = lazy(() => import("./pages/TicketNichtErhalten"));
 const Promoter = lazy(() => import("./pages/Promoter"));
 const Fotos = lazy(() => import("./pages/Fotos"));
 const MeineTickets = lazy(() => import("./pages/MeineTickets"));
@@ -138,6 +139,7 @@ const App = () => (
               <Route path="/ueber-uns" element={<UeberUns />} />
               <Route path="/fuer-wen" element={<FuerWen />} />
               <Route path="/faq" element={<FAQ />} />
+              <Route path="/ticket-nicht-erhalten" element={<TicketNichtErhalten />} />
               <Route path="/promoter" element={<Promoter />} />
               <Route path="/location-anmelden" element={<LocationAnmelden />} />
               <Route path="/partner" element={<PartnerWerden />} />

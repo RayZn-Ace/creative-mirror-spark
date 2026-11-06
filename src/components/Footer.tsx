@@ -43,6 +43,7 @@ export default function Footer({ gt: gtProp }: { gt?: GlobalTranslations }) {
             <div className="flex flex-col gap-2">
               <Link to="/termine" className="text-sm text-muted-foreground hover:text-primary transition-colors">Termine & Tickets</Link>
               <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQ & Support</Link>
+              <Link to="/ticket-nicht-erhalten" className="text-sm text-muted-foreground hover:text-primary transition-colors">Ticket nicht erhalten?</Link>
               <Link to="/jobs" className="text-sm text-muted-foreground hover:text-primary transition-colors">Jobs</Link>
               <Link to="/kontakt" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontakt</Link>
             </div>

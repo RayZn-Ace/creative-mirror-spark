@@ -4,6 +4,8 @@ import { ChevronDown, Search, HelpCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { usePageContent } from "@/hooks/usePageContent";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface FAQItem {
   q: string;
