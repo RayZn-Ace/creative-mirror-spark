@@ -4,6 +4,7 @@
 - [x] Altersauswahl und Alterszeichen ohne Überschreiben vorhandener Grenzen
 - [x] Ticket nicht erhalten: Anfrage im bestehenden Support mit Validierung
 - [x] Fotoseite: Albumübersicht und einzelne Alben
+- [ ] Muttizettel-Hinweis nur bei gespeicherten 16+; Button bis zur druckbaren Ausgabe prüfen
 - [x] 21 Tests, Speicherung, öffentliche Zugriffssperren und Mobilansicht geprüft; nicht veröffentlicht
 - [ ] Verwaltungsabläufe als eingeloggter Admin prüfen (blockiert: kein prüfbarer Zugang für anfragenden Nutzer)
 
