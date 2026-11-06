@@ -81,7 +81,7 @@ const Fotos = () => {
     },
   });
 
-  // Fetch all media (for "Alle") or media for selected album
+  // Fetch only the selected published album; the overview never loads all photos.
   const { data: albumMedia = [], isLoading: mediaLoading, isError: mediaError, refetch: reloadMedia } = useQuery({
     queryKey: ["public-media-photos", selectedAlbumId],
     queryFn: async () => {
@@ -110,7 +110,7 @@ const Fotos = () => {
     [albumMedia]
   );
 
-  // Use DB data if we have albums, else fallback
+  // Only display existing album assignments, never invented fallback albums.
   const photos = dbPhotos;
   const videos = dbVideos;
 

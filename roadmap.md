@@ -1,10 +1,11 @@
 # Roadmap
 
-- [ ] Startseite: So feiert Nightlife und Link zu allen Fotos
-- [ ] Altersauswahl und Alterszeichen ohne Überschreiben vorhandener Grenzen
-- [ ] Ticket nicht erhalten: Anfrage im bestehenden Support mit Validierung
-- [ ] Fotoseite: Albumübersicht und einzelne Alben
-- [ ] Tests, Speicherung und Mobilansicht prüfen; nicht veröffentlichen
+- [x] Startseite: So feiert Nightlife und Link zu allen Fotos
+- [x] Altersauswahl und Alterszeichen ohne Überschreiben vorhandener Grenzen
+- [x] Ticket nicht erhalten: Anfrage im bestehenden Support mit Validierung
+- [x] Fotoseite: Albumübersicht und einzelne Alben
+- [x] 21 Tests, Speicherung, öffentliche Zugriffssperren und Mobilansicht geprüft; nicht veröffentlicht
+- [ ] Verwaltungsabläufe als eingeloggter Admin prüfen (blockiert: kein prüfbarer Zugang für anfragenden Nutzer)
 
 - [x] Partnerbereich: "Tickets verfügbar" in der Tickets-Kachel anzeigen
 - [x] Partnerbereich: neue Kachel "Kundendaten" (je Event, als Berechtigung freischaltbar)
