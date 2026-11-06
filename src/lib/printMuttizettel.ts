@@ -15,6 +15,17 @@ export function printMuttizettel(data: PrintMuttizettelData) {
   const printWindow = frame.contentWindow;
   if (!doc || !printWindow) { frame.remove(); throw new Error("Druckausgabe konnte nicht geöffnet werden."); }
   doc.title = `Muttizettel – ${data.eventTitle}`;
+  const style = doc.createElement("style");
+  style.textContent = `
+    :root { color-scheme: light; --paper: #fff; --ink: #111; }
+    @page { size: A4; margin: 16mm; }
+    html, body { background: var(--paper); color: var(--ink); }
+    body { font: 12px/1.4 Arial, sans-serif; margin: 20px; }
+    h1 { font-size: 20px; } h2 { font-size: 16px; } h3 { font-size: 14px; margin: 16px 0 6px; }
+    p { margin: 7px 0; } img { display: block; object-fit: contain; }
+    @media print { body { margin: 0; } }
+  `;
+  doc.head.append(style);
   const add = (tag: string, text: string) => {
     const node = doc.createElement(tag); node.textContent = text; doc.body.append(node); return node;
   };
