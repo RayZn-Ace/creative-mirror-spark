@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Aktueller Rollout: Zod 4.6.6 und ruhender Ablaufjob geprüft; Website veröffentlichen und reales Live-Bundle lesend abgleichen.
+- [x] Aktueller Rollout: Zod 4.6.6, ruhender Ablaufjob und Website 108668c ausgeliefert; reales Live-Bundle auf drei Domains identisch, 84/84 lesende Checks.
 
 - [x] 28.11: Dauerhafter 20-Minuten-Deckel unter 10 %, gemeinsame Personenbestände/Abgleichanzeigen; 117 Tests und drei echte Parallelregressionen bestanden
 - [x] 28.11: Authentifizierter Minutenjob mit fairen Batches, Ruhemodus und sichtbarer Quarantäne; keine Garantie harter 20:00-Freigabe
