@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
-import { z } from "npm:zod@3";
+import { z } from "npm:zod@4.6.6";
 
 const schema = z.object({
   orderNumber: z.string().trim().min(1).max(100).regex(/^[\p{L}\p{N}\s._/#-]+$/u),

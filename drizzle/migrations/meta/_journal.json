@@ -71,6 +71,27 @@
       "when": 1795822664443,
       "tag": "0009_claim_expired_reservation_verification",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795823365386,
+      "tag": "0010_scheduled_reservation_reconciliation",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795823456904,
+      "tag": "0011_reservation_job_claim_leases",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795823599089,
+      "tag": "0012_private_reservation_job_grants",
+      "breakpoints": true
     }
   ]
 }

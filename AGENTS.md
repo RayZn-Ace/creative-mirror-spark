@@ -14,3 +14,4 @@
 - Generate ticket QR images locally and persist invoice references once per order; downloads must not contact external QR services or advance financial counters.
 - Never automatically reload or delete caches/storage on version errors; protected purchase, entry and form routes must retain their state.
 - Run operational smoke checks with GET/OPTIONS only and isolated PostgreSQL regression fixtures; tests must never send production mail, take payment or check in a real ticket.
+- Wake the managed reservation callback on enqueue and pause it after drain; use service-only fair claims, bounded concurrency and separate quarantine fields so uncertain payments cannot block verified finalization or release seats.

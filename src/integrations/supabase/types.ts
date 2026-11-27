@@ -1104,7 +1104,9 @@ export type Database = {
           provider_amount_minor: number | null
           redirect_url: string | null
           reservation_expires_at: string | null
+          reservation_next_verify_at: string | null
           reservation_released_at: string | null
+          reservation_review_reason: string | null
           reservation_scarcity_expires_at: string | null
           reservation_verification_claimed_at: string | null
           service_fee: number
@@ -1138,7 +1140,9 @@ export type Database = {
           provider_amount_minor?: number | null
           redirect_url?: string | null
           reservation_expires_at?: string | null
+          reservation_next_verify_at?: string | null
           reservation_released_at?: string | null
+          reservation_review_reason?: string | null
           reservation_scarcity_expires_at?: string | null
           reservation_verification_claimed_at?: string | null
           service_fee?: number
@@ -1172,7 +1176,9 @@ export type Database = {
           provider_amount_minor?: number | null
           redirect_url?: string | null
           reservation_expires_at?: string | null
+          reservation_next_verify_at?: string | null
           reservation_released_at?: string | null
+          reservation_review_reason?: string | null
           reservation_scarcity_expires_at?: string | null
           reservation_verification_claimed_at?: string | null
           service_fee?: number
@@ -1480,6 +1486,21 @@ export type Database = {
           reward_points_referrer?: number
           rewarded_at?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      reservation_job_control: {
+        Row: {
+          job_id: number | null
+          singleton: boolean
+        }
+        Insert: {
+          job_id?: number | null
+          singleton?: boolean
+        }
+        Update: {
+          job_id?: number | null
+          singleton?: boolean
         }
         Relationships: []
       }
@@ -2292,7 +2313,9 @@ export type Database = {
           provider_amount_minor: number | null
           redirect_url: string | null
           reservation_expires_at: string | null
+          reservation_next_verify_at: string | null
           reservation_released_at: string | null
+          reservation_review_reason: string | null
           reservation_scarcity_expires_at: string | null
           reservation_verification_claimed_at: string | null
           service_fee: number
@@ -2310,6 +2333,51 @@ export type Database = {
         }
       }
       claim_referral: { Args: { _code: string }; Returns: Json }
+      claim_reservation_batch: {
+        Args: never
+        Returns: {
+          birth_date: string | null
+          checkout_attempt_id: string | null
+          checkout_request_hash: string | null
+          coupon_id: string | null
+          created_at: string
+          currency: string
+          email: string
+          event_id: string | null
+          id: string
+          insurance_fee: number | null
+          invoice_number: string | null
+          items: Json
+          mollie_payment_id: string | null
+          name: string | null
+          owner_user_id: string | null
+          paid_at: string | null
+          payment_provider: string | null
+          payment_reconciliation_required: boolean
+          payment_started_at: string | null
+          phone: string | null
+          provider_amount_minor: number | null
+          redirect_url: string | null
+          reservation_expires_at: string | null
+          reservation_next_verify_at: string | null
+          reservation_released_at: string | null
+          reservation_review_reason: string | null
+          reservation_scarcity_expires_at: string | null
+          reservation_verification_claimed_at: string | null
+          service_fee: number
+          status: string
+          stripe_payment_id: string | null
+          ticket_email_state: string | null
+          total_amount: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       count_paid_orders: { Args: { _event_id: string }; Returns: number }
       create_missing_ticket_request: {
         Args: {
@@ -2403,6 +2471,7 @@ export type Database = {
           ticket_category_id: string
         }[]
       }
+      sync_reservation_job: { Args: never; Returns: undefined }
       ticket_inventory: {
         Args: { p_event: string }
         Returns: {

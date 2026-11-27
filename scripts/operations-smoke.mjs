@@ -39,9 +39,13 @@ try {
   }
   const res = await request(`${api}/rest/v1/settings?select=key&key=eq.company`, 'GET', headers);
   const values = await res.json(); record('anonymous company settings denied',res.ok && Array.isArray(values) && values.length===0,{status:res.status});
-  for (const name of ['create-mollie-payment','create-stripe-payment','validate-ticket','ticket-not-received']) {
+  for (const name of ['create-mollie-payment','create-stripe-payment','validate-ticket','ticket-not-received','reconcile-reservations']) {
    const health = await request(`${api}/functions/v1/${name}`, 'OPTIONS', { ...headers, Origin:origin.origin });record(`function reachable ${name}`,health.ok,{status:health.status});
   }
+  const queue = await request(`${api}/rest/v1/reservation_job_control?select=singleton`, 'GET', headers);
+  record('anonymous reservation job control denied', [401,403].includes(queue.status), {status:queue.status});
+  const worker = await request(`${api}/functions/v1/reconcile-reservations`, 'GET', headers);
+  record('anonymous scheduled callback denied', worker.status===401, {status:worker.status});
  }
 } catch (error) { record('network completion',false,{error:error.name}); }
 console.log(JSON.stringify({ time:new Date().toISOString(), origin:origin.origin, readOnly:true, renderedBrowserCheck:false, checks },null,2));

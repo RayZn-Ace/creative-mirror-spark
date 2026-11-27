@@ -20,6 +20,10 @@ try {
  control=postgres(options);a=postgres(options);b=postgres(options);
  await control.unsafe(readFileSync(new URL('../src/test/fixtures/security.sql',import.meta.url),'utf8'));
  for(const f of ['0002_secure_checkout_and_private_capabilities.sql','0003_verified_owners_scoped_counts_and_invoice_numbers.sql','0004_protect_public_payloads_and_invoice_fallback.sql','0005_idempotent_checkout_attempts.sql','0006_preserve_public_settings_reads.sql','0007_scarcity_twenty_minute_reservations.sql','0008_preserve_legacy_group_stock_and_status_refresh.sql','0009_claim_expired_reservation_verification.sql'])await control.unsafe(readFileSync(new URL(`../drizzle/migrations/${f}`,import.meta.url),'utf8'));
+ await control.unsafe(`CREATE SCHEMA cron; CREATE TABLE cron.fixture_job(id bigint primary key,active boolean); INSERT INTO cron.fixture_job VALUES(1,false); CREATE FUNCTION cron.alter_job(job_id bigint,active boolean) RETURNS void LANGUAGE sql AS $$ UPDATE cron.fixture_job SET active=$2 WHERE id=$1 $$;`);
+ for(const f of ['0010_scheduled_reservation_reconciliation.sql','0011_reservation_job_claim_leases.sql'])await control.unsafe(readFileSync(new URL(`../drizzle/migrations/${f}`,import.meta.url),'utf8'));
+ await control.unsafe('GRANT ALL ON reservation_job_control TO anon,authenticated');
+ await control.unsafe(readFileSync(new URL('../drizzle/migrations/0012_private_reservation_job_grants.sql',import.meta.url),'utf8'));
  const event='11111111-1111-4111-8111-111111111111',cat='22222222-2222-4222-8222-222222222222';
  const setup=async()=>{await control.unsafe('TRUNCATE events,ticket_categories,orders,tickets');await control`INSERT INTO events(id,title,date,status,is_16plus,max_capacity) VALUES(${event},'Fixture',CURRENT_DATE+7,'published',true,1)`;await control`INSERT INTO ticket_categories(id,event_id,name,price,max_capacity,group_size) VALUES(${cat},${event},'Fixture',10,1,1)`;};
  const body={eventId:event,email:'fixture@example.invalid',items:[{ticketId:cat,quantity:1}],currency:'EUR',insuranceAccepted:false};
@@ -49,6 +53,13 @@ try {
  assert.equal(oldState.status,'paid');assert.equal(oldState.payment_reconciliation_required,true);
  assert.equal(Number((await control`SELECT count(*) n FROM tickets`)[0].n),0);
  console.log('PASS: late paid callback vs new last-ticket reservation: payment retained, manual reconciliation, no extra ticket');
+ await setup(); await control.unsafe('UPDATE events SET max_capacity=null; UPDATE ticket_categories SET max_capacity=null');
+ for(let i=0;i<14;i++) await control`INSERT INTO orders(email,event_id,items,total_amount,currency,status,mollie_payment_id,payment_provider,payment_started_at,reservation_expires_at) VALUES('fixture@example.invalid',${event},${control.json([{ticketId:cat,quantity:1,group_size:1}])},10,'EUR','pending','tr_fixture','mollie',now(),now()-interval '1 second')`;
+ let signalClaimed; const claimed=new Promise(resolve=>{signalClaimed=resolve;});
+ const firstBatch=a.begin(async tx=>{const rows=await tx`SELECT id FROM claim_reservation_batch()`;signalClaimed();await tx`SELECT pg_sleep(0.15)`;return rows;});
+ await claimed; const batches=await Promise.all([firstBatch,b.begin(tx=>tx`SELECT id FROM claim_reservation_batch()`)]);
+ assert.equal(batches[0].length,12); assert.equal(batches[1].length,2); assert.equal(new Set(batches.flat().map(row=>row.id)).size,14);
+ console.log('PASS: concurrent queue workers claim 12 + 2 distinct holds without duplication or starvation');
 } finally {
  await Promise.all([a?.end(),b?.end(),control?.end()]);
  if(started)command('pg_ctl',['-D',join(dir,'data'),'-m','immediate','-w','stop']);

@@ -42,12 +42,12 @@ export async function refreshExpiredReservations(admin: ReturnType<typeof adminC
     } catch { console.warn('Reservation provider verification unavailable'); }
   }));
 }
-export async function finalize(provider: string, paymentId: string, orderId: unknown, currency: string, amount: number, status: string, paidAt: string | null) {
+export async function finalize(provider: string, paymentId: string, orderId: unknown, currency: string, amount: number, status: string, paidAt: string | null, deliver = true) {
   if (typeof orderId !== 'string' || !UUID.test(orderId) || !Number.isSafeInteger(amount) || amount < 0) return new Response('Invalid payment', { status: 400, headers: corsHeaders });
   const admin = adminClient();
   const { data, error } = await admin.rpc('finalize_ticket_payment', { p_order: orderId, p_provider: provider, p_payment_id: paymentId, p_currency: currency, p_amount: amount, p_status: status, p_paid_at: paidAt });
   if (error) { console.error('Payment reconciliation failed', error.code); return new Response('Payment reconciliation required', { status: 500, headers: corsHeaders }); }
-  if (data?.send_email) {
+  if (data?.send_email && deliver) {
     // One durable claim; uncertain mail outcomes are NOT automatically resent.
     const { data: claim, error: claimError } = await admin.from('orders').update({ ticket_email_state: 'sending' }).eq('id', orderId).eq('ticket_email_state', 'pending').select('id').maybeSingle();
     if (claimError) return new Response('Delivery claim failed', { status: 500, headers: corsHeaders });
