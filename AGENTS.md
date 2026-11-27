@@ -7,6 +7,8 @@
 - Public photos open with published album cards and fetch media only for the selected album; pagination preserves access to large existing albums.
 - Event-linked Muttizettel prompts use the shared event-age mapping; the existing wizard also offers a temporary browser-only print document so preparation does not depend on storage or email delivery.
 - Reserve checkout and finalize payment/ticket issuance in service-only database transactions; database prices and locked category rows prevent client price tampering and concurrent over-allocation.
+- Serialize inventory changes on the event row and use the shared inventory RPC for stock displays; durable deadline caps and verified provider termination prevent retries or uncertain payments from reusing seats unsafely.
+- Run reservation concurrency regressions in a temporary Unix-socket PostgreSQL instance, never the managed Cloud database; this provides real multi-session evidence without production side effects.
 - Bind order/ticket ownership to verified account IDs; series staff use scoped aggregates rather than raw ticket access, so names, codes and revenue are not exposed.
 - New U18 document access requires a separately hashed browser capability; legacy random-ID capabilities expire after 30 minutes to keep old native submissions usable without indefinite private reads.
 - Generate ticket QR images locally and persist invoice references once per order; downloads must not contact external QR services or advance financial counters.

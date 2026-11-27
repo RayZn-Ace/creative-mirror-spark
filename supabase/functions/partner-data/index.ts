@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     let eventQuery = admin
       .from("events")
-      .select("id, title, subtitle, slug, description, date, time, end_time, city, location_name, location_address, status, image_url, series_id, sold_out, open_air, is_16plus, muttizettel, insurance_enabled, insurance_amount, box_office_enabled, box_office_price, lounge_enabled, service_fee_enabled, service_fee_type, service_fee_value, tag, highlight")
+      .select("id, title, subtitle, slug, description, date, time, end_time, city, location_name, location_address, status, image_url, series_id, sold_out, open_air, is_16plus, muttizettel, insurance_enabled, insurance_amount, box_office_enabled, box_office_price, lounge_enabled, service_fee_enabled, service_fee_type, service_fee_value, tag, highlight, max_capacity")
       .order("date", { ascending: false })
       .limit(200);
     if (seriesIds.length) eventQuery = eventQuery.in("series_id", seriesIds);
@@ -88,6 +88,14 @@ Deno.serve(async (req) => {
     else result.events = events.map((e) => ({ id: e.id, title: e.title, date: e.date }));
 
     let categories: any[] = [];
+    const stockByEvent: Record<string, any[]> = {};
+    if (can('tickets') || can('capacity')) {
+      for (const eventId of eventIds) {
+        const { error } = await admin.rpc('apply_reservation_scarcity', {p_event:eventId});
+        if (error) throw new Error('Kontingent konnte nicht geprüft werden');
+        stockByEvent[eventId] = await fetchAll((from,to) => admin.rpc('reservation_inventory', {p_event:eventId}).range(from,to));
+      }
+    }
     if (eventIds.length && (can("events") || can("tickets") || can("capacity"))) {
       const { data: cats } = await admin
         .from("ticket_categories")
@@ -102,14 +110,14 @@ Deno.serve(async (req) => {
       const orders = await fetchAll((from, to) =>
         admin
           .from("orders")
-          .select("id, event_id, status, total_amount, items, created_at, paid_at, name, email, phone")
+          .select("id, event_id, status, total_amount, items, created_at, paid_at, name, email, phone, payment_reconciliation_required")
           .in("event_id", eventIds)
           .range(from, to),
       );
       const paid = orders.filter((o) => o.status === "paid");
       const ticketCount = (o: any) =>
         Array.isArray(o.items)
-          ? o.items.reduce((s: number, i: any) => s + Math.max(1, Number(i?.quantity ?? 1)), 0)
+          ? o.items.reduce((s: number, i: any) => s + Math.max(1, Number(i?.quantity ?? 1)) * Math.max(1, Number(i?.group_size ?? categories.find(c=>c.id===i?.ticketId)?.group_size ?? 1)), 0)
           : 0;
 
       if (can("tickets")) {
@@ -144,6 +152,18 @@ Deno.serve(async (req) => {
           capacity: Object.values(capByEvent).reduce((s, v) => s + v, 0),
           byEvent,
         };
+        // Shared event limit is not the sum of overlapping category availability.
+        let stockAvailable = 0;
+        let allLimited = true;
+        for (const eid of eventIds) {
+          const stock = stockByEvent[eid] ?? [];
+          const first = stock[0];
+          const available = first?.event_available != null ? Number(first.event_available) : stock.length && stock.every(s=>s.available!=null) ? stock.reduce((n,s)=>n+Number(s.available),0) : null;
+          byEvent[eid] ??= {tickets:0,orders:0};
+          Object.assign(byEvent[eid],{available,reserved:Number(first?.event_reserved ?? 0),tickets:Number(first?.event_sold ?? byEvent[eid].tickets)});
+          if (available === null) allLimited=false; else stockAvailable+=available;
+        }
+        Object.assign(result.tickets as object,{available:allLimited?stockAvailable:null,total:Object.values(byEvent).reduce((n,e)=>n+e.tickets,0)});
       }
 
       if (can("customers")) {
@@ -227,6 +247,7 @@ Deno.serve(async (req) => {
           max_capacity: c.max_capacity,
           sold_out: c.sold_out,
           sold: soldByCat[c.id] ?? 0,
+          ...(stockByEvent[c.event_id]?.find(s=>s.ticket_category_id===c.id) ?? {}),
         }));
       }
     }

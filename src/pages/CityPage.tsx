@@ -14,6 +14,8 @@ import FavoriteButton from "@/components/FavoriteButton";
 import { TicketProtectionTermsButton } from "@/components/TicketProtectionTerms";
 import EventAgeBadge from "@/components/EventAgeBadge";
 import MuttizettelPrompt from "@/components/MuttizettelPrompt";
+import { useTicketInventory } from "@/hooks/useTicketInventory";
+import { availableBundles } from "@/lib/reservation";
 
 
 
@@ -113,36 +115,6 @@ const makeInfoSections = (event: CityEvent, t: Translations) => [
 const instagramHandle = "@nightlifegeneration_de";
 const instagramUrl = "https://instagram.com/nightlifegeneration_de";
 const whatsappNumber = "49123456789";
-
-/* ─── Cart Timer ─── */
-const CART_TIMER_SECONDS = 600;
-
-const useCartTimer = (onExpire?: () => void) => {
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [isActive, setIsActive] = useState(false);
-
-  useEffect(() => {
-    if (!isActive || timeLeft === null || timeLeft <= 0) return;
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev === null || prev <= 1) { setIsActive(false); onExpire?.(); return null; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft, onExpire]);
-
-  const startTimer = useCallback(() => { setTimeLeft(CART_TIMER_SECONDS); setIsActive(true); }, []);
-  const stopTimer = useCallback(() => { setTimeLeft(null); setIsActive(false); }, []);
-  const formatTime = () => {
-    if (timeLeft === null) return "";
-    const mins = Math.floor(timeLeft / 60);
-    const secs = timeLeft % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  return { timeLeft, isActive, startTimer, stopTimer, formatTime };
-};
 
 /* ─── Event Date Tiles ─── */
 const EventDateTiles = ({ events, selectedId, onSelect, t }: { events: CityEvent[]; selectedId: string; onSelect: (id: string) => void; t: Translations }) => (
@@ -1134,6 +1106,10 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   const [saveInfo, setSaveInfo] = useState(!!savedInfo.email);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [checkoutOrderId, setCheckoutOrderId] = useState<string | null>(null);
+  const stock = useTicketInventory(event.id);
+  const groupSizes = useRef(new Map<string, number>());
+  const manualSoldOut = useRef(new Set<string>());
   const checkoutAttempt = useRef<{ id: string; key: string } | null>(null);
   const [showInsurancePopup, setShowInsurancePopup] = useState(false);
   const [insuranceAccepted, setInsuranceAccepted] = useState(false);
@@ -1142,8 +1118,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
     // version reload while the payment result may still be unknown.
     window.__NIGHTLIFE_CHECKOUT_ACTIVE__ = showCheckout || checkoutLoading || showInsurancePopup;
   }, [showCheckout, checkoutLoading, showInsurancePopup]);
-  const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
-  const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
+
 
   useEffect(() => {
     setQuantities({});
@@ -1153,9 +1128,10 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
     Promise.all([
       supabase.from("ticket_categories").select("*").eq("event_id", event.id).order("sort_order"),
-      supabase.rpc("sold_tickets_by_category" as any, { _event_id: event.id }),
+      supabase.rpc("ticket_inventory", { p_event: event.id }),
     ]).then(([{ data }, { data: soldTickets }]) => {
         if (!data || data.length === 0) { setTicketCategories([]); setLoadingTickets(false); return; }
+        if (!soldTickets) { setCheckoutError('Ticketverfügbarkeit konnte nicht geprüft werden. Bitte lade die Seite später erneut.'); setTicketCategories([]); setLoadingTickets(false); return; }
 
         // Count sold tickets per category
         const soldMap = new Map<string, number>();
@@ -1172,7 +1148,10 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         }
         const seedNum = parseFloat(sessionSeed);
 
+        manualSoldOut.current.clear();
         for (const row of data) {
+          groupSizes.current.set(row.id, Math.max(1, row.group_size ?? 1));
+          if (row.sold_out) manualSoldOut.current.add(row.id);
           if (row.internal_only) continue;
           if (row.sale_start && new Date(row.sale_start) > now) continue;
           if (row.sale_end && new Date(row.sale_end) < now) continue;
@@ -1184,10 +1163,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
           // Compute real remaining capacity
           let remaining: number | null = null;
-          if (row.max_capacity != null && row.max_capacity > 0) {
-            const sold = soldMap.get(row.id) || 0;
-            remaining = Math.max(0, row.max_capacity - sold);
-          }
+          const live = soldTickets.find(stock => stock.ticket_category_id === row.id);
+          remaining = live ? availableBundles(live.available, row.group_size) : null;
 
           // KVK scarcity (fake display only)
           let scarcityCount: number | null = null;
@@ -1223,14 +1200,16 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   }, [event.id]);
 
   const totalItems = Object.values(quantities).reduce((a, b) => a + b, 0);
+  const displayedCategories = ticketCategories.map(category => ({ ...category, items: category.items.map(item => {
+    const live = stock.find(s => s.ticket_category_id === item.id);
+    if (!live) return item;
+    const remaining = availableBundles(live.available, groupSizes.current.get(item.id) ?? 1);
+    return { ...item, remaining, soldOut: manualSoldOut.current.has(item.id) || remaining === 0 };
+  }) }));
 
   const handleQtyChange = (id: string, val: number) => {
-    const prev = quantities[id] || 0;
     const newQuantities = { ...quantities, [id]: val };
     setQuantities(newQuantities);
-    const newTotal = Object.values(newQuantities).reduce((a, b) => a + b, 0);
-    if (newTotal === 0 && isActive) stopTimer();
-    else if (val > prev && !isActive) startTimer();
   };
 
   const handleCheckout = async () => {
@@ -1294,6 +1273,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           if (ctx && typeof ctx.json === "function") {
             const body = await ctx.json();
             serverMsg = body?.error || "";
+            if (body?.orderId) setCheckoutOrderId(body.orderId);
           }
         } catch { /* ignore */ }
         if (serverMsg && serverMsg !== "Missing required fields" && !/failed|unknown/i.test(serverMsg)) {
@@ -1323,15 +1303,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
 
   return (
     <div className="space-y-5 sm:space-y-7">
-      <AnimatePresence>
-        {isActive && timeLeft !== null && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold"
-            style={{ background: timeLeft < 60 ? "hsl(0 70% 50% / 0.3)" : "hsl(0 0% 100% / 0.15)", border: `1px solid ${timeLeft < 60 ? "hsl(0 70% 50% / 0.5)" : "hsl(0 0% 100% / 0.25)"}`, color: "hsl(0 0% 100%)" }}>
-            <Timer className="w-4 h-4" /><span>{t.reservedFor} {formatTime()}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {totalItems > 0 && <p className="text-xs text-foreground flex items-start gap-2"><Timer className="h-4 w-4 shrink-0" />Bei weniger als 10 % freien Plätzen gilt ab Reservierungsbeginn eine Frist von höchstens 20 Minuten. Deine genaue Frist steht auf der Bestellseite. Die Auswahl allein reserviert noch keine Plätze.</p>}
+      {checkoutOrderId && <Link className="text-sm underline text-foreground" to={`/bestellung/${checkoutOrderId}`}>Bestehende Bestellung und Zahlungsstatus prüfen</Link>}
 
       <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue + ", " + event.address)}`}
         target="_blank" rel="noopener noreferrer"
@@ -1348,7 +1321,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
         <div className="text-center py-8"><div className="text-sm" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{t.ticketsLoading}</div></div>
       ) : (
         <>
-          {ticketCategories.map((category) => {
+          {displayedCategories.map((category) => {
             // Hide category title if only 1 item and the item name contains the category title (redundant)
             const hideTitle = category.items.length === 1 && category.items[0].name.toUpperCase().includes(category.title.toUpperCase());
             return (

@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] 28.11: Dauerhafter 20-Minuten-Deckel unter 10 %, gemeinsame Personenbestände/Abgleichanzeigen; 117 Tests und drei echte Parallelregressionen bestanden
+- [ ] 28.11: Tatsächliche Anbieterfreigabe minutengenau und Veröffentlichung (blockiert: kein Ablauf-Scheduler, unklare/nicht stornierbare Zahlungen und Anbieter-Testmodus-Abnahme; hohe Altbefunde offen)
+
 - [x] 27.11: Zahlungs-/Preisprüfung, atomare Ticketvergabe und Einlass absichern; isolierte Tests bestanden
 - [x] 27.11: Minderjährigen-Daten, direkte Rechte und Upload-Einstellungen überprüft; Restabnahme im Sicherheitsnachweis
 - [x] 27.11: kompatible Abhängigkeiten aktualisiert, sichere Web-Versions-/Sessionwechsel getestet

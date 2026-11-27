@@ -426,9 +426,11 @@ const PartnerArea = () => {
                     <span style={{ color: PURPLE }}>
                       {c.sold}
                       {c.max_capacity ? ` / ${c.max_capacity}` : ""}
+                      {c.available != null ? ` · ${c.available} frei` : ' · unbegrenzt'}
                     </span>
                   </div>
                   {!!c.max_capacity && <Bar value={pct} />}
+                  <p className="mt-2 text-xs text-muted-foreground">{c.reserved ?? 0} reserviert{c.scarce ? ' · Frist höchstens 20 Minuten' : ''}</p>
                 </div>
               );
             })}

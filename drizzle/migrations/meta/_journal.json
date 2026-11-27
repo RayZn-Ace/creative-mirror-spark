@@ -50,6 +50,27 @@
       "when": 1795821389422,
       "tag": "0006_preserve_public_settings_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795822450008,
+      "tag": "0007_scarcity_twenty_minute_reservations",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795822625882,
+      "tag": "0008_preserve_legacy_group_stock_and_status_refresh",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795822664443,
+      "tag": "0009_claim_expired_reservation_verification",
+      "breakpoints": true
     }
   ]
 }

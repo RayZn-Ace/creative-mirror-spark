@@ -15,6 +15,8 @@ import { FileSpreadsheet } from "lucide-react";
 import { eventAgeSelection } from "@/lib/eventAge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import ReservationStatus from "@/components/admin/ReservationStatus";
+import { useTicketInventory } from "@/hooks/useTicketInventory";
 
 
 interface GalleryConfig {
@@ -71,6 +73,7 @@ interface EventRow {
   muttizettel: boolean | null;
   insurance_enabled: boolean | null;
   insurance_amount: number | null;
+  max_capacity: number | null;
 }
 
 interface TicketRow {
@@ -150,6 +153,7 @@ const emptyEvent: Omit<EventRow, "id"> = {
   info_sections: [...DEFAULT_INFO_SECTIONS],
   is_16plus: null, muttizettel: true,
   insurance_enabled: false, insurance_amount: 0,
+  max_capacity: null,
 };
 
 const emptyTicket = { name: "", description: "", price: 0, currency: "EUR", sold_out: false, sort_order: 0, features: [] as string[], badge: "", coming_soon: false, category_group: "REGULAR", sale_start: null as string | null, sale_end: null as string | null, internal_only: false, group_size: 1, max_capacity: null as number | null, kvk_enabled: false, kvk_min_percent: 5, kvk_max_percent: 25 };
@@ -185,6 +189,7 @@ const Section = ({ title, icon: Icon, children }: { title: string; icon: any; ch
 
 /* ─── Ticket Editor Inline ─── */
 const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets: TicketRow[]; onReload: () => void }) => {
+  const inventory = useTicketInventory(eventId);
   const [editingTicket, setEditingTicket] = useState<Partial<TicketRow> | null>(null);
   const [featuresInput, setFeaturesInput] = useState("");
   const [categoryDesigns, setCategoryDesigns] = useState<Array<{ key: string; label: string }>>([]);
@@ -330,6 +335,7 @@ const TicketEditor = ({ eventId, tickets, onReload }: { eventId: string; tickets
               </span>
               <span className="text-sm font-bold" style={{ color: "hsl(0 0% 100%)" }}>{t.name}</span>
               {t.max_capacity && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(200 80% 55% / 0.15)", color: "hsl(200 80% 55%)" }}>Max: {t.max_capacity}</span>}
+              {inventory.filter(i => i.ticket_category_id === t.id).map(i => <span key={i.ticket_category_id} className="text-xs text-foreground">{i.available ?? "∞"} Plätze frei · {i.reserved} reserviert{i.scarce ? " · höchstens 20 Min." : ""}</span>)}
               {t.kvk_enabled && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(270 70% 55% / 0.15)", color: "hsl(270 70% 55%)" }}>🤖 KVK</span>}
               {t.sold_out && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 55%)" }}>Ausverkauft</span>}
               {t.coming_soon && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(45 80% 50% / 0.15)", color: "hsl(45 80% 55%)" }}>Coming Soon</span>}
@@ -1297,13 +1303,17 @@ const EventEditView = ({
             <div className="grid grid-cols-2 gap-4">
               <Field label="Stadt" value={editing.city} onChange={(v: string) => setEditing({ ...editing, city: v })} placeholder="z.B. Hannover" />
               <Field label="Location" value={editing.location_name} onChange={(v: string) => setEditing({ ...editing, location_name: v })} placeholder="z.B. Baggi / Osho" />
+              <Field label="Event-Gesamtkontingent (Personen)" value={editing.max_capacity ?? ""} onChange={(v: string) => setEditing({ ...editing, max_capacity: v ? parseInt(v,10) : null })} type="number" placeholder="unbegrenzt" />
             </div>
             <Field label="Location (Komplette Adresse)" value={editing.location_address} onChange={(v: string) => setEditing({ ...editing, location_address: v })} placeholder="Raschpl. 7L, 30161 Hannover" />
           </Section>
 
           <Section title="Tickets" icon={Ticket}>
             {editing.id ? (
+              <>
               <TicketEditor eventId={editing.id} tickets={tickets} onReload={onReloadTickets} />
+              <ReservationStatus eventId={editing.id} />
+              </>
             ) : (
               <p className="text-xs py-4 text-center" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                 Speichere das Event zuerst, um Ticket-Varianten hinzuzufügen.

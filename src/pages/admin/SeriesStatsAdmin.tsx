@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Layers, Ticket, CheckCircle2, Loader2 } from "lucide-react";
+import type { TicketInventory } from '@/lib/reservation';
+import { fetchAll as fetchEveryPage } from '@/lib/fetchAll';
 
 interface SeriesRow {
   id: string;
@@ -52,6 +54,7 @@ const SeriesStatsAdmin = () => {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [tickets, setTickets] = useState<TicketRow[]>([]);
+  const [inventory, setInventory] = useState<Array<TicketInventory & {event_id:string}>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -95,6 +98,9 @@ const SeriesStatsAdmin = () => {
       }
 
       if (!mounted) return;
+      const stock = (await Promise.all(ids.map(async eventId => (await fetchEveryPage<TicketInventory>((from,to) => supabase.rpc('ticket_inventory', {p_event:eventId}).range(from,to))).map(row => ({...row,event_id:eventId}))))).flat();
+      if (!mounted) return;
+      setInventory(stock);
       setEvents(eventList);
       setCategories(cats);
       setTickets(tix);
@@ -113,6 +119,7 @@ const SeriesStatsAdmin = () => {
         .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
         .map((c) => ({
           ...c,
+          stock: inventory.find(row => row.event_id===ev.id && row.ticket_category_id===c.id),
           sold: evTickets.filter((t) => t.ticket_category_id === c.id).reduce((sum, t) => sum + Number(t.sold), 0),
         }));
       return {
@@ -122,7 +129,7 @@ const SeriesStatsAdmin = () => {
         cats,
       };
     });
-  }, [events, categories, tickets]);
+  }, [events, categories, tickets, inventory]);
 
   const totals = useMemo(
     () => ({
@@ -265,6 +272,7 @@ const SeriesStatsAdmin = () => {
                       >
                         {c.name}: <strong style={{ color: "hsl(0 0% 100%)" }}>{c.sold}</strong>
                         {c.max_capacity ? ` / ${c.max_capacity}` : ""}
+                        {c.stock && ` · ${c.stock.available ?? '∞'} frei · ${c.stock.reserved} reserviert${c.stock.scarce ? ' · höchstens 20 Min.' : ''}`}
                       </span>
                     ))}
                   </div>

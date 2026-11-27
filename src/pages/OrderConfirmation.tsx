@@ -5,6 +5,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
+import { remainingSeconds } from "@/lib/reservation";
+
 interface OrderData {
   id: string;
   status: string;
@@ -18,6 +20,8 @@ interface OrderData {
   insurance_fee: number;
   created_at: string;
   paid_at: string | null;
+  reservation_expires_at: string | null;
+  payment_reconciliation_required: boolean;
 }
 
 interface TicketData {
@@ -35,6 +39,8 @@ const OrderConfirmation = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const [eventMuttizettel, setEventMuttizettel] = useState(false);
@@ -123,7 +129,9 @@ const OrderConfirmation = () => {
     );
   }
 
-  const isPaid = order.status === "paid";
+  const needsReconciliation = order.payment_reconciliation_required;
+  const isPaid = order.status === "paid" && !needsReconciliation;
+  const seconds = remainingSeconds(order.reservation_expires_at, now);
   const isPending = order.status === "pending";
   const isFailed = order.status === "failed" || order.status === "cancelled";
 
@@ -153,11 +161,13 @@ const OrderConfirmation = () => {
             {isPaid && "Zahlung erfolgreich!"}
             {isPending && "Zahlung wird verarbeitet..."}
             {isFailed && "Zahlung fehlgeschlagen"}
+            {needsReconciliation && "Zahlung erhalten – Ticketabgleich"}
           </h1>
           <p className="text-sm text-center mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
             {isPaid && "Deine Tickets stehen unten bereit. Der E-Mail-Versand kann noch einen Moment dauern."}
             {isPending && "Bitte warte einen Moment, deine Zahlung wird noch verarbeitet."}
             {isFailed && "Die Zahlung konnte nicht abgeschlossen werden. Bitte versuche es erneut."}
+            {needsReconciliation && "Deine Zahlung ist gespeichert, aber die Plätze müssen nach Ablauf der Reservierung vom Team geprüft werden. Bitte nicht erneut kaufen. Wende dich mit deiner Bestellnummer an unseren Support."}
           </p>
           {isPending && (
             <div
@@ -167,6 +177,12 @@ const OrderConfirmation = () => {
               ⚠️ Bitte schließe diese Seite nicht und kaufe nicht erneut. Sobald die Zahlung bestätigt ist, bekommst du deine Tickets per E-Mail – das kann ein paar Minuten dauern. Schau auch im Spam-Ordner nach.
             </div>
           )}
+
+          {isPending && order.reservation_expires_at && <div className="mb-6 space-y-1 text-sm text-foreground border border-border rounded-lg p-3" role="status">
+            <p className="font-semibold">Reservierung bis {new Date(order.reservation_expires_at).toLocaleString('de-DE')}</p>
+            <p>{seconds === 0 ? 'Die Reservierungsfrist ist abgelaufen. Eine laufende oder unklare Zahlung wird zuerst geprüft; bitte nicht erneut kaufen.' : seconds !== null ? `Noch ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2,'0')} Minuten` : 'Zahlungsstatus wird geprüft.'}</p>
+          </div>}
+          {needsReconciliation && <Link to="/ticket-nicht-erhalten" className="block mb-6 text-center underline text-foreground">Ticket nicht erhalten? Support kontaktieren</Link>}
 
           {/* Order Details */}
           <div className="space-y-3 mb-6">

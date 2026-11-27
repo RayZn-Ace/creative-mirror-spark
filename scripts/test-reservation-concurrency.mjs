@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+// Isolated local PostgreSQL only: no Cloud connection, mail, provider or scanner.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir, userInfo } from 'node:os';
+import { join } from 'node:path';
+import assert from 'node:assert/strict';
+import postgres from 'postgres';
+const dir = mkdtempSync(join(tmpdir(),'nightlife-reservation-'));
+const root = process.getuid?.() === 0;
+const user = root ? 'lovable' : userInfo().username;
+const env = { PATH: process.env.PATH, HOME: dir, LC_ALL: 'C' };
+const command = (name,args) => execFileSync(root ? 'setpriv' : name,root ? ['--reuid=1000','--regid=1000','--clear-groups',name,...args] : args,{env,stdio:'pipe'});
+let a,b,control,started=false;
+try {
+ if(root)execFileSync('chown',['1000:1000',dir]);
+ command('initdb',['-D',join(dir,'data'),'-A','trust','--no-locale']);
+ command('pg_ctl',['-D',join(dir,'data'),'-l',join(dir,'server.log'),'-o',`-h '' -k ${dir} -p 55439`,'-w','start']);started=true;
+ const options={host:dir,port:55439,username:user,database:'postgres',max:1,connect_timeout:5,onnotice:()=>{}};
+ control=postgres(options);a=postgres(options);b=postgres(options);
+ await control.unsafe(readFileSync(new URL('../src/test/fixtures/security.sql',import.meta.url),'utf8'));
+ for(const f of ['0002_secure_checkout_and_private_capabilities.sql','0003_verified_owners_scoped_counts_and_invoice_numbers.sql','0004_protect_public_payloads_and_invoice_fallback.sql','0005_idempotent_checkout_attempts.sql','0006_preserve_public_settings_reads.sql','0007_scarcity_twenty_minute_reservations.sql','0008_preserve_legacy_group_stock_and_status_refresh.sql','0009_claim_expired_reservation_verification.sql'])await control.unsafe(readFileSync(new URL(`../drizzle/migrations/${f}`,import.meta.url),'utf8'));
+ const event='11111111-1111-4111-8111-111111111111',cat='22222222-2222-4222-8222-222222222222';
+ const setup=async()=>{await control.unsafe('TRUNCATE events,ticket_categories,orders,tickets');await control`INSERT INTO events(id,title,date,status,is_16plus,max_capacity) VALUES(${event},'Fixture',CURRENT_DATE+7,'published',true,1)`;await control`INSERT INTO ticket_categories(id,event_id,name,price,max_capacity,group_size) VALUES(${cat},${event},'Fixture',10,1,1)`;};
+ const body={eventId:event,email:'fixture@example.invalid',items:[{ticketId:cat,quantity:1}],currency:'EUR',insuranceAccepted:false};
+ const reserve=sql=>sql`SELECT reserve_ticket_order(${sql.json(body)},'mollie') r`;
+ await setup();
+ const results=await Promise.allSettled([a.begin(async tx=>{const r=await reserve(tx);await tx`SELECT pg_sleep(0.15)`;return r;}),b.begin(tx=>reserve(tx))]);
+ for(const result of results)if(result.status==='rejected')console.log('Isolated fixture diagnostic:',result.reason.code,result.reason.message);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+ assert.equal(Number((await control`SELECT count(*) n FROM orders`)[0].n),1);
+ console.log('PASS: two PostgreSQL sessions, last-ticket race: one winner, no oversell');
+ const id=(await control`SELECT id FROM orders`)[0].id;
+ await control`UPDATE orders SET mollie_payment_id='tr_fixture',provider_amount_minor=1000,payment_started_at=now() WHERE id=${id}`;
+ const finish=sql=>sql`SELECT finalize_ticket_payment(${id},'mollie','tr_fixture','EUR',1000::bigint,'paid',now()) r`;
+ const callbacks=await Promise.all([a.begin(async tx=>{const r=await finish(tx);await tx`SELECT pg_sleep(0.15)`;return r;}),b.begin(tx=>finish(tx))]);
+ assert.equal(callbacks.length,2);assert.equal(Number((await control`SELECT count(*) n FROM tickets`)[0].n),1);
+ console.log('PASS: two simultaneous paid callbacks: exactly one ticket');
+ await setup();const old=(await reserve(control))[0].r.id;
+ await control`UPDATE orders SET mollie_payment_id='tr_old',provider_amount_minor=1000 WHERE id=${old}`;
+ await control`SELECT finalize_ticket_payment(${old},'mollie','tr_old','EUR',1000::bigint,'cancelled',now())`;
+ let signalReserved;
+ const reached=new Promise(resolve=>{signalReserved=resolve;});
+ const racingReservation=a.begin(async tx=>{const r=await reserve(tx);signalReserved();await tx`SELECT pg_sleep(0.15)`;return r;});
+ await reached;
+ const race=await Promise.allSettled([racingReservation,b.begin(tx=>tx`SELECT finalize_ticket_payment(${old},'mollie','tr_old','EUR',1000::bigint,'paid',now()) r`)]);
+ assert.equal(race.filter(r=>r.status==='fulfilled').length,2);
+ const oldState=(await control`SELECT status,payment_reconciliation_required FROM orders WHERE id=${old}`)[0];
+ assert.equal(oldState.status,'paid');assert.equal(oldState.payment_reconciliation_required,true);
+ assert.equal(Number((await control`SELECT count(*) n FROM tickets`)[0].n),0);
+ console.log('PASS: late paid callback vs new last-ticket reservation: payment retained, manual reconciliation, no extra ticket');
+} finally {
+ await Promise.all([a?.end(),b?.end(),control?.end()]);
+ if(started)command('pg_ctl',['-D',join(dir,'data'),'-m','immediate','-w','stop']);
+ rmSync(dir,{recursive:true,force:true});
+}

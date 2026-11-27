@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { InputError, checkoutInput, UUID } from './paymentSafety.ts';
+import { verifyExpiredPayment } from './reservationProvider.ts';
 export { corsHeaders };
 export const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 export function adminClient() {
@@ -15,12 +16,31 @@ export async function readCheckout(req: Request) {
   try { return checkoutInput(JSON.parse(raw)); } catch (e) { if (e instanceof InputError) throw e; throw new InputError('Ungültige Bestelldaten.'); }
 }
 export async function reserve(admin: ReturnType<typeof adminClient>, input: ReturnType<typeof checkoutInput>, provider: string) {
+  await refreshExpiredReservations(admin, input.eventId);
   const { data, error } = await admin.rpc('reserve_checkout_attempt', { p_body: input, p_provider: provider });
   if (error) { console.warn('Checkout reservation refused', error.code); throw new InputError(error.code === 'P0001' ? error.message : 'Bestellung konnte nicht reserviert werden.'); }
   if (!data?.id) throw new Error('Reservation unavailable');
+  // The just-created lease can make older leases scarce. Reconcile those before
+  // returning a retry, without moving anybody's original deadline.
+  await refreshExpiredReservations(admin, input.eventId);
   const { data: order, error: readError } = await admin.from('orders').select('*').eq('id', data.id).single();
   if (readError || !order) throw new Error('Reservation unavailable');
   return order;
+}
+export async function refreshExpiredReservations(admin: ReturnType<typeof adminClient>, eventId: string) {
+  const { error: capError } = await admin.rpc('apply_reservation_scarcity', { p_event: eventId });
+  if (capError) throw new Error('Stock verification unavailable');
+  const { data, error } = await admin.rpc('claim_expired_reservations', { p_event: eventId });
+  if (error) throw new Error('Stock verification unavailable');
+  await Promise.all((data ?? []).map(async (order: any) => {
+    try {
+      const paymentProvider = order.payment_provider ?? (order.mollie_payment_id ? 'mollie' : 'stripe');
+      const verified = await verifyExpiredPayment({ ...order, payment_provider: paymentProvider }, { mollie: Deno.env.get('MOLLIE_API_KEY'), stripe: Deno.env.get('STRIPE_SECRET_KEY') });
+      if (verified.status === 'pending') return;
+      const response = await finalize(paymentProvider, verified.paymentId, order.id, verified.currency, verified.amount, verified.status, verified.paidAt);
+      if (!response.ok) console.warn('Reservation requires reconciliation');
+    } catch { console.warn('Reservation provider verification unavailable'); }
+  }));
 }
 export async function finalize(provider: string, paymentId: string, orderId: unknown, currency: string, amount: number, status: string, paidAt: string | null) {
   if (typeof orderId !== 'string' || !UUID.test(orderId) || !Number.isSafeInteger(amount) || amount < 0) return new Response('Invalid payment', { status: 400, headers: corsHeaders });

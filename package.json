@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:reservation-concurrency": "node scripts/test-reservation-concurrency.mjs",
     "mobile:sync": "vite build && cap sync",
     "ios:init": "cap add ios",
     "ios:open": "cap open ios",

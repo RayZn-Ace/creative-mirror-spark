@@ -419,6 +419,7 @@ export type Database = {
           location_name: string | null
           lounge_enabled: boolean | null
           lounge_view_mode: string | null
+          max_capacity: number | null
           muttizettel: boolean | null
           open_air: boolean | null
           series_id: string | null
@@ -457,6 +458,7 @@ export type Database = {
           location_name?: string | null
           lounge_enabled?: boolean | null
           lounge_view_mode?: string | null
+          max_capacity?: number | null
           muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
@@ -495,6 +497,7 @@ export type Database = {
           location_name?: string | null
           lounge_enabled?: boolean | null
           lounge_view_mode?: string | null
+          max_capacity?: number | null
           muttizettel?: boolean | null
           open_air?: boolean | null
           series_id?: string | null
@@ -1095,10 +1098,15 @@ export type Database = {
           owner_user_id: string | null
           paid_at: string | null
           payment_provider: string | null
+          payment_reconciliation_required: boolean
+          payment_started_at: string | null
           phone: string | null
           provider_amount_minor: number | null
           redirect_url: string | null
           reservation_expires_at: string | null
+          reservation_released_at: string | null
+          reservation_scarcity_expires_at: string | null
+          reservation_verification_claimed_at: string | null
           service_fee: number
           status: string
           stripe_payment_id: string | null
@@ -1124,10 +1132,15 @@ export type Database = {
           owner_user_id?: string | null
           paid_at?: string | null
           payment_provider?: string | null
+          payment_reconciliation_required?: boolean
+          payment_started_at?: string | null
           phone?: string | null
           provider_amount_minor?: number | null
           redirect_url?: string | null
           reservation_expires_at?: string | null
+          reservation_released_at?: string | null
+          reservation_scarcity_expires_at?: string | null
+          reservation_verification_claimed_at?: string | null
           service_fee?: number
           status?: string
           stripe_payment_id?: string | null
@@ -1153,10 +1166,15 @@ export type Database = {
           owner_user_id?: string | null
           paid_at?: string | null
           payment_provider?: string | null
+          payment_reconciliation_required?: boolean
+          payment_started_at?: string | null
           phone?: string | null
           provider_amount_minor?: number | null
           redirect_url?: string | null
           reservation_expires_at?: string | null
+          reservation_released_at?: string | null
+          reservation_scarcity_expires_at?: string | null
+          reservation_verification_claimed_at?: string | null
           service_fee?: number
           status?: string
           stripe_payment_id?: string | null
@@ -2238,12 +2256,59 @@ export type Database = {
     }
     Functions: {
       allocate_order_invoice: { Args: { p_order: string }; Returns: string }
+      apply_reservation_scarcity: {
+        Args: { p_event: string }
+        Returns: undefined
+      }
       award_loyalty_for_paid_order_backfill: {
         Args: { r: Database["public"]["Tables"]["orders"]["Row"] }
         Returns: undefined
       }
       claim_birthday_bonus: { Args: { _user_id: string }; Returns: Json }
       claim_customer_orders: { Args: never; Returns: undefined }
+      claim_expired_reservations: {
+        Args: { p_event: string }
+        Returns: {
+          birth_date: string | null
+          checkout_attempt_id: string | null
+          checkout_request_hash: string | null
+          coupon_id: string | null
+          created_at: string
+          currency: string
+          email: string
+          event_id: string | null
+          id: string
+          insurance_fee: number | null
+          invoice_number: string | null
+          items: Json
+          mollie_payment_id: string | null
+          name: string | null
+          owner_user_id: string | null
+          paid_at: string | null
+          payment_provider: string | null
+          payment_reconciliation_required: boolean
+          payment_started_at: string | null
+          phone: string | null
+          provider_amount_minor: number | null
+          redirect_url: string | null
+          reservation_expires_at: string | null
+          reservation_released_at: string | null
+          reservation_scarcity_expires_at: string | null
+          reservation_verification_claimed_at: string | null
+          service_fee: number
+          status: string
+          stripe_payment_id: string | null
+          ticket_email_state: string | null
+          total_amount: number
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_referral: { Args: { _code: string }; Returns: Json }
       count_paid_orders: { Args: { _event_id: string }; Returns: number }
       create_missing_ticket_request: {
@@ -2297,6 +2362,23 @@ export type Database = {
           ticket_count: number
         }[]
       }
+      reservation_fits: {
+        Args: { p_event: string; p_exclude?: string; p_items: Json }
+        Returns: boolean
+      }
+      reservation_inventory: {
+        Args: { p_event: string; p_exclude?: string; p_now?: string }
+        Returns: {
+          available: number
+          event_available: number
+          event_reserved: number
+          event_sold: number
+          reserved: number
+          scarce: boolean
+          sold: number
+          ticket_category_id: string
+        }[]
+      }
       reserve_checkout_attempt: {
         Args: { p_body: Json; p_provider: string }
         Returns: Json
@@ -2317,6 +2399,19 @@ export type Database = {
       sold_tickets_by_category: {
         Args: { _event_id: string }
         Returns: {
+          sold: number
+          ticket_category_id: string
+        }[]
+      }
+      ticket_inventory: {
+        Args: { p_event: string }
+        Returns: {
+          available: number
+          event_available: number
+          event_reserved: number
+          event_sold: number
+          reserved: number
+          scarce: boolean
           sold: number
           ticket_category_id: string
         }[]
