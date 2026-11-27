@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,8 +18,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const currentUser = useRef<string | null>(null);
 
   const checkAdmin = (userId: string) => {
+    setIsAdmin(false);
     supabase
       .from("user_roles")
       .select("role")
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq("role", "admin")
       .maybeSingle()
       .then(({ data, error }) => {
+        if (currentUser.current !== userId) return;
         if (error) {
           console.error("Error checking admin role:", error);
           setIsAdmin(false);
@@ -48,7 +51,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .then(({ data: { session } }) => {
         setSession(session);
         setUser(session?.user ?? null);
+        currentUser.current = session?.user.id ?? null;
         if (session?.user) {
+          void supabase.rpc("claim_customer_orders");
           checkAdmin(session.user.id);
         } else {
           setLoading(false);
@@ -64,8 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        currentUser.current = session?.user.id ?? null;
         if (session?.user) {
-          checkAdmin(session.user.id);
+          // Leave the auth callback before issuing further auth-backed calls.
+          const userId = session.user.id;
+          setTimeout(() => {
+            if (currentUser.current !== userId) return;
+            void supabase.rpc("claim_customer_orders");
+            checkAdmin(userId);
+          }, 0);
         } else {
           setIsAdmin(false);
           setLoading(false);

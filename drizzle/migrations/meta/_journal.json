@@ -15,6 +15,41 @@
       "when": 1793967269443,
       "tag": "0001_explicit_event_age_and_missing_ticket_support",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795820579355,
+      "tag": "0002_secure_checkout_and_private_capabilities",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795820824266,
+      "tag": "0003_verified_owners_scoped_counts_and_invoice_numbers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795821224704,
+      "tag": "0004_protect_public_payloads_and_invoice_fallback",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795821321457,
+      "tag": "0005_idempotent_checkout_attempts",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795821389422,
+      "tag": "0006_preserve_public_settings_reads",
+      "breakpoints": true
     }
   ]
 }

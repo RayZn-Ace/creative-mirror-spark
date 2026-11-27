@@ -1,3 +1,4 @@
+import QRCode from 'npm:qrcode@1.5.4';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
@@ -9,10 +10,8 @@ const corsHeaders = {
 
 /* ─── QR Code ─── */
 async function fetchQRCode(data: string): Promise<Uint8Array> {
-  const url = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}&format=png`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("QR code generation failed");
-  return new Uint8Array(await res.arrayBuffer());
+  // Encode locally: ticket access codes must never leave our infrastructure.
+  return new Uint8Array(await QRCode.toBuffer(data, { type: 'png', width: 200, margin: 2 }));
 }
 
 /* ─── Strip non-WinAnsi characters (emojis etc.) ─── */
@@ -942,18 +941,13 @@ Deno.serve(async (req) => {
 
     const invoiceTemplate = settingsMap.invoice_template || {};
 
-    // ─── Generate invoice number ───
-    const year = new Date().getFullYear();
-    const invoiceNumber = `${invoiceSettings.prefix}-${year}-${String(invoiceSettings.next_number).padStart(4, "0")}`;
-
-    // Increment next_number atomically
-    await supabase
-      .from("settings")
-      .update({
-        value: { ...invoiceSettings, next_number: invoiceSettings.next_number + 1 },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("key", "invoice");
+    // Ticket-only downloads do not allocate or change financial identifiers.
+    let invoiceNumber = order.invoice_number ?? '';
+    if (!download_only) {
+      const { data: number, error: invoiceError } = await supabase.rpc('allocate_order_invoice', { p_order: order_id });
+      if (invoiceError || !number) throw new Error('Invoice allocation unavailable');
+      invoiceNumber = number;
+    }
 
     // ─── Build ticket data ───
     const ticketData = tickets.map((t: any) => {
@@ -1079,20 +1073,20 @@ Deno.serve(async (req) => {
     const resendData = await resendRes.json();
 
     if (!resendRes.ok) {
-      console.error("Resend error:", JSON.stringify(resendData));
-      return new Response(JSON.stringify({ error: "Email sending failed", details: resendData }), {
+      console.error("Ticket delivery refused", resendRes.status);
+      return new Response(JSON.stringify({ error: "E-Mail-Versand nicht bestätigt" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log(`Tickets + invoice email sent for order ${order_id} (${invoiceNumber})`);
+    
 
     return new Response(JSON.stringify({ success: true, email_id: resendData.id, invoice_number: invoiceNumber }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Send tickets error:", err);
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }), {
+    console.error("Send tickets failed");
+    return new Response(JSON.stringify({ error: "Ticketausgabe nicht verfügbar" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

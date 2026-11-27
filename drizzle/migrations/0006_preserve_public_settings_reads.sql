@@ -1,0 +1,1 @@
+CREATE POLICY "Public presentation keys" ON public.settings FOR SELECT TO anon,authenticated USING(key IN ('features','alfred_butler','support_online','wrapped_config','wrapped_fallback_song','instagram_posts','ticket_template'));

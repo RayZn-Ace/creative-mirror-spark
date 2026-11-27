@@ -85,11 +85,13 @@ const Muttizettel = () => {
   const [acceptNewsletter, setAcceptNewsletter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submittedFormId, setSubmittedFormId] = useState<string | null>(null);
+  const [documentToken, setDocumentToken] = useState<string | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     supabase.from("events").select("id, title, date")
       .eq("status", "published")
+      .eq("is_16plus", true)
       .gte("date", new Date().toISOString().split("T")[0])
       .order("date", { ascending: true })
       .then(({ data }) => { if (data) setEvents(data); });
@@ -162,8 +164,12 @@ const Muttizettel = () => {
     const selectedEv = events.find((e) => e.id === selectedEvent);
 
     const newFormId = crypto.randomUUID();
+    const accessToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, "0")).join("");
+    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(accessToken));
+    const accessTokenHash = Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, "0")).join("");
     const { error } = await supabase.from("u18_forms").insert({
       id: newFormId,
+      access_token_hash: accessTokenHash,
       event_id: selectedEvent,
       event_title: selectedEv?.title || "",
       event_date: selectedEv?.date || null,
@@ -201,6 +207,7 @@ const Muttizettel = () => {
     if (error) { toast.error("Fehler beim Speichern: " + error.message); }
     else if (data) {
       setSubmittedFormId(data.id);
+      setDocumentToken(accessToken);
       toast.success("Clubzettel wurde erfolgreich erstellt! 🎉");
 
       // Send email with PDF in background
@@ -209,16 +216,16 @@ const Muttizettel = () => {
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const emailRes = await fetch(
           `https://${projectId}.supabase.co/functions/v1/send-u18-email`,
-          { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: data.id }) }
+          { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: data.id, access_token: accessToken }) }
         );
         if (emailRes.ok) {
           toast.success("Clubzettel wurde per E-Mail versendet! 📧");
         } else {
-          console.error("Email send failed:", await emailRes.text());
+          console.error("Clubzettel-Versand nicht bestätigt", emailRes.status);
           toast.error("E-Mail-Versand fehlgeschlagen. Du kannst den PDF trotzdem herunterladen.");
         }
       } catch (emailErr) {
-        console.error("Email send error:", emailErr);
+        console.error("Clubzettel-Versand nicht bestätigt");
       }
     }
     setSubmitting(false);
@@ -232,7 +239,7 @@ const Muttizettel = () => {
       const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const res = await fetch(
         `https://${projectId}.supabase.co/functions/v1/generate-u18-pdf`,
-        { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: submittedFormId }) }
+        { method: "POST", headers: { "Content-Type": "application/json", apikey: anonKey }, body: JSON.stringify({ form_id: submittedFormId, access_token: documentToken }) }
       );
       if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "PDF-Generierung fehlgeschlagen"); }
       const blob = await res.blob();
@@ -285,7 +292,7 @@ const Muttizettel = () => {
             <div className="pt-4 border-t border-border">
               <button
                 onClick={() => {
-                  setSubmittedFormId(null); setStep(1); setSelectedEvent("");
+                  setSubmittedFormId(null); setDocumentToken(null); setStep(1); setSelectedEvent("");
                   setParentName(""); setParentAddress(""); setParentZip(""); setParentCity(""); setParentPhone(""); setParentBirthday("");
                   setMinorName(""); setMinorAddress(""); setMinorZip(""); setMinorCity(""); setMinorPhone(""); setMinorBirthday("");
                   setSupervisorName(""); setSupervisorAddress(""); setSupervisorZip(""); setSupervisorCity(""); setSupervisorEmail(""); setSupervisorPhone(""); setSupervisorBirthday("");

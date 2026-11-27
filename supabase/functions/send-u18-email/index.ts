@@ -1,3 +1,5 @@
+import { canReadU18 } from '../_shared/privateAccess.ts';
+import { UUID } from '../_shared/paymentSafety.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
@@ -180,8 +182,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { form_id } = await req.json();
-    if (!form_id) {
+    const { form_id, access_token } = await req.json();
+    if (typeof form_id !== 'string' || !UUID.test(form_id)) {
       return new Response(JSON.stringify({ error: "form_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -199,11 +201,8 @@ Deno.serve(async (req) => {
       .eq("id", form_id)
       .single();
 
-    if (formErr || !form) {
-      return new Response(JSON.stringify({ error: "Form not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (formErr || !form || !await canReadU18(req, access_token, form.access_token_hash, form.created_at)) {
+      return new Response(JSON.stringify({ error: 'Dokumentzugang nicht autorisiert.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
 
     // Generate PDF
@@ -262,6 +261,7 @@ Deno.serve(async (req) => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${resendApiKey}`,
+        "Idempotency-Key": `u18-${form_id}`,
       },
       body: JSON.stringify({
         from: "Nightlife Generation <noreply@nightlifeticket.app>",
@@ -281,21 +281,21 @@ Deno.serve(async (req) => {
     const resendBody = await resendRes.text();
 
     if (!resendRes.ok) {
-      console.error("Resend error:", resendBody);
-      return new Response(JSON.stringify({ error: "Email sending failed", details: resendBody }), {
+      console.error("U18 delivery refused", resendRes.status);
+      return new Response(JSON.stringify({ error: "Email sending failed",  }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("Clubzettel email sent for form:", form_id);
+    
 
-    return new Response(JSON.stringify({ success: true, email: form.email }), {
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("send-u18-email error:", err);
-    return new Response(JSON.stringify({ error: "Failed to send email", details: String(err) }), {
+    console.error("send-u18-email failed");
+    return new Response(JSON.stringify({ error: "Failed to send email",  }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

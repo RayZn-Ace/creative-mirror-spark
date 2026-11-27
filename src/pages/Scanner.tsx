@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
+import { scannerCall } from "@/lib/scannerSession";
 import { Html5Qrcode } from "html5-qrcode";
 import { Camera, Keyboard, CheckCircle2, XCircle, AlertTriangle, RotateCcw, Loader2, QrCode, Flashlight, FlashlightOff } from "lucide-react";
 
@@ -34,6 +36,8 @@ const Scanner = () => {
   const [stats, setStats] = useState({ total: 0, checkedIn: 0 });
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+  const scanInFlight = useRef(false);
+  const lastCodeRef = useRef<string | null>(null);
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
@@ -41,62 +45,20 @@ const Scanner = () => {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = "qr-reader";
 
-  // Load event info from scanner token
-  useEffect(() => {
-    if (!scannerToken) return;
-    (async () => {
-      const { data } = await supabase
-        .from("scanner_links")
-        .select("event_id, label")
-        .eq("token", scannerToken)
-        .eq("active", true)
-        .single();
-      if (data) {
-        if (data.event_id) {
-          const { data: event } = await supabase
-            .from("events")
-            .select("title, id")
-            .eq("id", data.event_id)
-            .single();
-          if (event) setEventInfo({ title: event.title, id: event.id });
-        } else {
-          // All-events scanner
-          setEventInfo({ title: data.label || "Alle Events", id: "__ALL__" });
-        }
-      }
-    })();
+  const loadInfo = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke("validate-ticket", {
+      body: { action: "info", scanner_token: scannerToken },
+    });
+    if (!error && data?.event) { setEventInfo(data.event); setStats(data.stats); }
   }, [scannerToken]);
 
-  // Load stats
+  // Scanner capabilities are resolved by the server, never publicly listed.
   useEffect(() => {
-    if (!eventInfo?.id) return;
-    const isAll = eventInfo.id === "__ALL__";
-    const loadStats = async () => {
-      let totalQuery = supabase.from("tickets").select("*", { count: "exact", head: true });
-      let checkedQuery = supabase.from("tickets").select("*", { count: "exact", head: true }).eq("status", "checked_in");
-      if (!isAll) {
-        totalQuery = totalQuery.eq("event_id", eventInfo.id);
-        checkedQuery = checkedQuery.eq("event_id", eventInfo.id);
-      }
-      const { count: total } = await totalQuery;
-      const { count: checkedIn } = await checkedQuery;
-      setStats({ total: total || 0, checkedIn: checkedIn || 0 });
-    };
-    loadStats();
-
-    // Realtime updates
-    const channelConfig = isAll
-      ? { event: "*" as const, schema: "public", table: "tickets" }
-      : { event: "*" as const, schema: "public", table: "tickets", filter: `event_id=eq.${eventInfo.id}` };
-    const channel = supabase
-      .channel("scanner-tickets")
-      .on("postgres_changes", channelConfig, () => {
-        loadStats();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [eventInfo?.id]);
+    void loadInfo();
+    const onFocus = () => { if (!scanInFlight.current) void loadInfo(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [loadInfo]);
 
   const stopCamera = useCallback(async () => {
     if (html5QrCodeRef.current) {
@@ -132,7 +94,8 @@ const Scanner = () => {
         { fps: 10, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 },
         (decodedText) => {
           // Prevent duplicate scans
-          if (decodedText && decodedText !== lastScannedCode) {
+          if (decodedText && decodedText !== lastCodeRef.current && !scanInFlight.current) {
+            lastCodeRef.current = decodedText;
             setLastScannedCode(decodedText);
             validateTicket(decodedText);
           }
@@ -174,12 +137,13 @@ const Scanner = () => {
   }, [mode, result]);
 
   const validateTicket = async (code: string) => {
-    if (scanning || !code.trim()) return;
+    if (scanInFlight.current || !code.trim()) return;
+    scanInFlight.current = true;
     setScanning(true);
     setResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("validate-ticket", {
+      const operation = () => supabase.functions.invoke("validate-ticket", {
         body: {
           qr_code: code.trim().toUpperCase(),
           event_id: eventInfo?.id === "__ALL__" ? null : eventInfo?.id,
@@ -187,18 +151,27 @@ const Scanner = () => {
           action: "checkin",
         },
       });
+      const { data, error } = await scannerCall(operation, async () => {
+        if (scannerToken) return false;
+        const { data: session } = await supabase.auth.getSession();
+        if (!session.session) return false;
+        const refreshed = await supabase.auth.refreshSession();
+        return !refreshed.error && !!refreshed.data.session;
+      }, response => response.error instanceof FunctionsHttpError && [401, 403].includes(response.error.context.status));
 
       if (error) throw error;
       setResult(data as ScanResult);
+      void loadInfo();
 
       // Vibrate on result
       if (navigator.vibrate) {
         navigator.vibrate(data?.valid ? [100] : [100, 50, 100, 50, 100]);
       }
     } catch (err) {
-      setResult({ valid: false, status: "error", error: "Netzwerkfehler" });
+      setResult({ valid: false, status: "error", error: "Einlass nicht bestätigt. Bitte Verbindung prüfen und dieses Ticket erneut prüfen." });
     } finally {
       setScanning(false);
+      scanInFlight.current = false;
     }
   };
 
@@ -211,6 +184,7 @@ const Scanner = () => {
     setResult(null);
     setManualCode("");
     setLastScannedCode(null);
+    lastCodeRef.current = null;
   };
 
   const toggleTorch = async () => {

@@ -17,8 +17,13 @@ if (typeof window !== "undefined") {
   window.__APP_BOOT_STARTED__ = true;
 
   // Never let an async/native error kill the app shell in the native webview.
-  window.addEventListener("unhandledrejection", (e) => {
-    console.warn("Unhandled promise rejection", e.reason);
+  window.addEventListener("unhandledrejection", () => {
+    console.warn("App operation failed");
+  });
+  // Stale lazy chunks must not cause automatic reloads during payment/entry.
+  window.addEventListener("vite:preloadError", (event) => {
+    event.preventDefault();
+    console.warn("App asset unavailable; no automatic reload");
   });
 }
 

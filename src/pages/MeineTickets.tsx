@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ticket, Search, CheckCircle, Mail, ShieldCheck, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -188,7 +189,7 @@ const MeineTickets = () => {
                     {order.tickets.map((ticket) => (
                       <div key={ticket.id} className="flex items-center gap-4 p-3 rounded-xl" style={{ background: "hsl(220 15% 97%)", border: "1px solid hsl(220 15% 90%)" }}>
                         <div className="bg-white p-2 rounded-lg shrink-0 shadow-sm">
-                          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(ticket.qr_code)}`} alt="QR Code" className="w-20 h-20" />
+                          <QRCodeSVG value={ticket.qr_code} title="QR Code" className="w-20 h-20" />
                         </div>
                         <div className="flex-1 min-w-0">
                           {ticket.holder_name && <p className="text-sm font-bold truncate" style={{ color: "hsl(220 20% 15%)" }}>{ticket.holder_name}</p>}

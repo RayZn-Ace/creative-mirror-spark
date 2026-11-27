@@ -1,3 +1,5 @@
+import { canReadU18 } from '../_shared/privateAccess.ts';
+import { UUID } from '../_shared/paymentSafety.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 
@@ -17,8 +19,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { form_id } = await req.json();
-    if (!form_id) {
+    const { form_id, access_token } = await req.json();
+    if (typeof form_id !== 'string' || !UUID.test(form_id)) {
       return new Response(JSON.stringify({ error: "form_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -35,11 +37,8 @@ Deno.serve(async (req) => {
       .eq("id", form_id)
       .single();
 
-    if (formErr || !form) {
-      return new Response(JSON.stringify({ error: "Form not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (formErr || !form || !await canReadU18(req, access_token, form.access_token_hash, form.created_at)) {
+      return new Response(JSON.stringify({ error: 'Dokumentzugang nicht autorisiert.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
 
     // Sanitize all string fields in the form to prevent WinAnsi encoding errors
@@ -203,16 +202,17 @@ Deno.serve(async (req) => {
 
     const pdfBytes = await pdfDoc.save();
 
-    return new Response(pdfBytes, {
+    return new Response(new Uint8Array(pdfBytes).buffer, {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/pdf",
+        "Cache-Control": "no-store",
         "Content-Disposition": `attachment; filename="clubzettel-${form_id.slice(0, 8)}.pdf"`,
       },
     });
   } catch (err) {
-    console.error("generate-u18-pdf error:", err);
-    return new Response(JSON.stringify({ error: "PDF generation failed", details: String(err) }), {
+    console.error("generate-u18-pdf failed");
+    return new Response(JSON.stringify({ error: "PDF generation failed",  }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Clock, XCircle, ArrowLeft, Ticket, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
@@ -154,7 +155,7 @@ const OrderConfirmation = () => {
             {isFailed && "Zahlung fehlgeschlagen"}
           </h1>
           <p className="text-sm text-center mb-6" style={{ color: "hsl(0 0% 100% / 0.7)" }}>
-            {isPaid && "Deine Tickets wurden an deine E-Mail gesendet."}
+            {isPaid && "Deine Tickets stehen unten bereit. Der E-Mail-Versand kann noch einen Moment dauern."}
             {isPending && "Bitte warte einen Moment, deine Zahlung wird noch verarbeitet."}
             {isFailed && "Die Zahlung konnte nicht abgeschlossen werden. Bitte versuche es erneut."}
           </p>
@@ -250,9 +251,9 @@ const OrderConfirmation = () => {
                     style={{ background: "hsl(0 0% 100% / 0.1)", border: "1px solid hsl(0 0% 100% / 0.15)" }}
                   >
                     <div className="bg-white p-3 rounded-xl">
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tickets[activeTicketIndex].qr_code)}`}
-                        alt={`QR Code Ticket ${activeTicketIndex + 1}`}
+                      <QRCodeSVG
+                        value={tickets[activeTicketIndex].qr_code}
+                        title={`QR Code Ticket ${activeTicketIndex + 1}`}
                         className="w-44 h-44 sm:w-52 sm:h-52"
                       />
                     </div>

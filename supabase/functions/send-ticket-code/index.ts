@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const { email } = await req.json();
-    if (!email || !email.includes("@")) {
+    if (typeof email !== "string" || email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: "Ungültige E-Mail" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -26,7 +26,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // Generate 6-digit code
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const bytes = crypto.getRandomValues(new Uint32Array(1));
+    const code = String(100000 + (bytes[0] % 900000));
 
     // Store code
     const { error: insertError } = await supabase
@@ -54,7 +55,7 @@ serve(async (req) => {
         subject: "Dein Verifizierungscode – Nightlife Tickets",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #0a0a0a; color: #ffffff; border-radius: 16px;">
-            <h1 style="font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">GIMME</h1>
+            <h1 style="font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">NIGHTLIFE GENERATION</h1>
             <p style="color: #aaa; font-size: 14px; margin-bottom: 32px;">Dein Verifizierungscode für „Meine Tickets"</p>
             <div style="background: #1a1a2e; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
               <span style="font-size: 36px; font-weight: 900; letter-spacing: 12px; color: #e91e8c;">${code}</span>
@@ -68,7 +69,7 @@ serve(async (req) => {
 
     if (!emailRes.ok) {
       const errText = await emailRes.text();
-      console.error("Resend error:", errText);
+      console.error("Verification delivery refused", emailRes.status);
       return new Response(JSON.stringify({ error: "E-Mail konnte nicht gesendet werden" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -79,7 +80,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Verification request failed");
     return new Response(JSON.stringify({ error: "Interner Fehler" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

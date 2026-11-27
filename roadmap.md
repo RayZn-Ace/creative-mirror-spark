@@ -1,5 +1,12 @@
 # Roadmap
 
+- [x] 27.11: Zahlungs-/Preisprüfung, atomare Ticketvergabe und Einlass absichern; isolierte Tests bestanden
+- [x] 27.11: Minderjährigen-Daten, direkte Rechte und Upload-Einstellungen überprüft; Restabnahme im Sicherheitsnachweis
+- [x] 27.11: kompatible Abhängigkeiten aktualisiert, sichere Web-Versions-/Sessionwechsel getestet
+- [x] 27.11: Read-only Smoke-Test (75 Checks), 77 Tests, Typen/Build, Scans und Nachweis fertig
+- [ ] 27.11: Anbieter-/Admin-/Native-/Restore-/externe Abnahme (blockiert: Testmodus, prüfbare Zugänge, Geräte und externe Nachweise fehlen)
+- [ ] 27.11: Zod-/Router-Majorfix und individuelle verteilte Limits (blockiert: kompatibler Patch fehlt bzw. Tradeoff-Bestätigung nötig)
+
 - [x] Startseite: So feiert Nightlife und Link zu allen Fotos
 - [x] Altersauswahl und Alterszeichen ohne Überschreiben vorhandener Grenzen
 - [x] Ticket nicht erhalten: Anfrage im bestehenden Support mit Validierung

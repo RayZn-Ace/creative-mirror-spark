@@ -356,7 +356,7 @@ const TrackingAdmin = () => {
   };
 
   const togglePixel = async (id: string, field: "enabled" | "test_mode", value: boolean) => {
-    await supabase.from("tracking_pixels").update({ [field]: value }).eq("id", id);
+    await supabase.from("tracking_pixels").update(field === "enabled" ? { enabled: value } : { test_mode: value }).eq("id", id);
     loadPixels();
   };
 

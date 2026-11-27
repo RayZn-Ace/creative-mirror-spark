@@ -1134,8 +1134,14 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
   const [saveInfo, setSaveInfo] = useState(!!savedInfo.email);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const checkoutAttempt = useRef<{ id: string; key: string } | null>(null);
   const [showInsurancePopup, setShowInsurancePopup] = useState(false);
   const [insuranceAccepted, setInsuranceAccepted] = useState(false);
+  useEffect(() => {
+    // Keep this marker when an error unmounts the checkout: never force a
+    // version reload while the payment result may still be unknown.
+    window.__NIGHTLIFE_CHECKOUT_ACTIVE__ = showCheckout || checkoutLoading || showInsurancePopup;
+  }, [showCheckout, checkoutLoading, showInsurancePopup]);
   const resetCart = useCallback(() => { setQuantities({}); setDiscountCode(""); setDiscountApplied(false); setShowCheckout(false); }, []);
   const { timeLeft, isActive, startTimer, stopTimer, formatTime } = useCartTimer(resetCart);
 
@@ -1249,7 +1255,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       });
 
     const currency = getCurrencyForCity(event.city);
-    const redirectBase = window.location.origin;
+    const redirectBase = /^(capacitor|ionic):/.test(window.location.protocol) || window.location.hostname === "localhost"
+      ? "https://nightlifeticket.app" : window.location.origin;
 
     // Save or clear checkout info
     if (saveInfo) {
@@ -1261,6 +1268,8 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
     try {
       const provider = getPaymentProvider(currency);
       const functionName = provider === "stripe" ? "create-stripe-payment" : "create-mollie-payment";
+      const key = JSON.stringify([event.id, selectedItems.map(i => [i.ticketId, i.quantity]), checkoutEmail, checkoutName, checkoutBirthDate, checkoutPhone, currency, discountApplied ? discountCode : null, insuranceAccepted]);
+      if (checkoutAttempt.current?.key !== key) checkoutAttempt.current = { id: crypto.randomUUID(), key };
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
@@ -1274,6 +1283,7 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
           discountCode: discountApplied ? discountCode : null,
           redirectBase,
           insuranceAccepted,
+          attemptId: checkoutAttempt.current?.id,
         },
       });
 
@@ -1298,13 +1308,15 @@ const CityTicketWidget = ({ event, allEvents, citySlug, t }: { event: CityEvent;
       }
       if (data?.checkoutUrl) {
         window.location.href = data.checkoutUrl;
+      } else if (data?.orderId) {
+        window.location.href = `${redirectBase}/bestellung/${encodeURIComponent(data.orderId)}`;
       } else {
         setCheckoutError("Zahlung konnte nicht erstellt werden. Bitte versuche es erneut.");
         setCheckoutLoading(false);
       }
     } catch (err) {
-      console.error("Checkout error:", err);
-      setCheckoutError("Ein Fehler ist aufgetreten. Bitte versuche es erneut.");
+      console.error("Checkout result unavailable");
+      setCheckoutError("Zahlungsstart nicht bestätigt. Bitte vor einem weiteren Kauf den Bestellstatus prüfen.");
       setCheckoutLoading(false);
     }
   };

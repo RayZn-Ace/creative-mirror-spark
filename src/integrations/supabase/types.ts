@@ -1079,61 +1079,88 @@ export type Database = {
       orders: {
         Row: {
           birth_date: string | null
+          checkout_attempt_id: string | null
+          checkout_request_hash: string | null
+          coupon_id: string | null
           created_at: string
           currency: string
           email: string
           event_id: string | null
           id: string
           insurance_fee: number | null
+          invoice_number: string | null
           items: Json
           mollie_payment_id: string | null
           name: string | null
+          owner_user_id: string | null
           paid_at: string | null
+          payment_provider: string | null
           phone: string | null
+          provider_amount_minor: number | null
           redirect_url: string | null
+          reservation_expires_at: string | null
           service_fee: number
           status: string
           stripe_payment_id: string | null
+          ticket_email_state: string | null
           total_amount: number
           updated_at: string
         }
         Insert: {
           birth_date?: string | null
+          checkout_attempt_id?: string | null
+          checkout_request_hash?: string | null
+          coupon_id?: string | null
           created_at?: string
           currency?: string
           email: string
           event_id?: string | null
           id?: string
           insurance_fee?: number | null
+          invoice_number?: string | null
           items?: Json
           mollie_payment_id?: string | null
           name?: string | null
+          owner_user_id?: string | null
           paid_at?: string | null
+          payment_provider?: string | null
           phone?: string | null
+          provider_amount_minor?: number | null
           redirect_url?: string | null
+          reservation_expires_at?: string | null
           service_fee?: number
           status?: string
           stripe_payment_id?: string | null
+          ticket_email_state?: string | null
           total_amount?: number
           updated_at?: string
         }
         Update: {
           birth_date?: string | null
+          checkout_attempt_id?: string | null
+          checkout_request_hash?: string | null
+          coupon_id?: string | null
           created_at?: string
           currency?: string
           email?: string
           event_id?: string | null
           id?: string
           insurance_fee?: number | null
+          invoice_number?: string | null
           items?: Json
           mollie_payment_id?: string | null
           name?: string | null
+          owner_user_id?: string | null
           paid_at?: string | null
+          payment_provider?: string | null
           phone?: string | null
+          provider_amount_minor?: number | null
           redirect_url?: string | null
+          reservation_expires_at?: string | null
           service_fee?: number
           status?: string
           stripe_payment_id?: string | null
+          ticket_email_state?: string | null
           total_amount?: number
           updated_at?: string
         }
@@ -1826,6 +1853,7 @@ export type Database = {
           event_id: string
           holder_email: string | null
           holder_name: string | null
+          holder_user_id: string | null
           id: string
           order_id: string
           qr_code: string
@@ -1839,6 +1867,7 @@ export type Database = {
           event_id: string
           holder_email?: string | null
           holder_name?: string | null
+          holder_user_id?: string | null
           id?: string
           order_id: string
           qr_code: string
@@ -1852,6 +1881,7 @@ export type Database = {
           event_id?: string
           holder_email?: string | null
           holder_name?: string | null
+          holder_user_id?: string | null
           id?: string
           order_id?: string
           qr_code?: string
@@ -1962,6 +1992,7 @@ export type Database = {
       u18_forms: {
         Row: {
           accept_newsletter: boolean
+          access_token_hash: string | null
           created_at: string
           email: string
           event_date: string | null
@@ -1997,6 +2028,7 @@ export type Database = {
         }
         Insert: {
           accept_newsletter?: boolean
+          access_token_hash?: string | null
           created_at?: string
           email: string
           event_date?: string | null
@@ -2032,6 +2064,7 @@ export type Database = {
         }
         Update: {
           accept_newsletter?: boolean
+          access_token_hash?: string | null
           created_at?: string
           email?: string
           event_date?: string | null
@@ -2204,11 +2237,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      allocate_order_invoice: { Args: { p_order: string }; Returns: string }
       award_loyalty_for_paid_order_backfill: {
         Args: { r: Database["public"]["Tables"]["orders"]["Row"] }
         Returns: undefined
       }
       claim_birthday_bonus: { Args: { _user_id: string }; Returns: Json }
+      claim_customer_orders: { Args: never; Returns: undefined }
       claim_referral: { Args: { _code: string }; Returns: Json }
       count_paid_orders: { Args: { _event_id: string }; Returns: number }
       create_missing_ticket_request: {
@@ -2217,6 +2252,18 @@ export type Database = {
           _first_name: string
           _last_name: string
           _order_number: string
+        }
+        Returns: Json
+      }
+      finalize_ticket_payment: {
+        Args: {
+          p_amount: number
+          p_currency: string
+          p_order: string
+          p_paid_at: string
+          p_payment_id: string
+          p_provider: string
+          p_status: string
         }
         Returns: Json
       }
@@ -2250,12 +2297,38 @@ export type Database = {
           ticket_count: number
         }[]
       }
+      reserve_checkout_attempt: {
+        Args: { p_body: Json; p_provider: string }
+        Returns: Json
+      }
+      reserve_ticket_order: {
+        Args: { p_body: Json; p_provider: string }
+        Returns: Json
+      }
+      series_ticket_counts: {
+        Args: { p_series: string }
+        Returns: {
+          checked_in: number
+          event_id: string
+          sold: number
+          ticket_category_id: string
+        }[]
+      }
       sold_tickets_by_category: {
         Args: { _event_id: string }
         Returns: {
           sold: number
           ticket_category_id: string
         }[]
+      }
+      transfer_owned_ticket: {
+        Args: {
+          p_email: string
+          p_message: string
+          p_name: string
+          p_ticket: string
+        }
+        Returns: Json
       }
     }
     Enums: {

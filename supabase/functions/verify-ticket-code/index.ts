@@ -13,10 +13,10 @@ serve(async (req) => {
 
   try {
     const { email, code } = await req.json();
-    if (!email || !code) {
+    if (typeof email !== "string" || email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || typeof code !== "string" || !/^\d{6}$/.test(code)) {
       return new Response(JSON.stringify({ error: "E-Mail und Code erforderlich" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
 
@@ -39,15 +39,15 @@ serve(async (req) => {
     if (error || !data) {
       return new Response(JSON.stringify({ error: "Ungültiger oder abgelaufener Code" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
 
-    // Mark as verified
-    await supabase
-      .from("ticket_verification_codes")
-      .update({ verified: true })
-      .eq("id", data.id);
+    // A code can authorize just one retrieval, including concurrent attempts.
+    const { data: claimed, error: claimError } = await supabase.from('ticket_verification_codes')
+      .update({ verified: true }).eq('id', data.id).eq('verified', false)
+      .gte('expires_at', new Date().toISOString()).select('id').maybeSingle();
+    if (claimError || !claimed) return new Response(JSON.stringify({ error: 'Code bereits verwendet oder abgelaufen' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 
     // Fetch orders with tickets
     const { data: ordersData } = await supabase
@@ -59,15 +59,16 @@ serve(async (req) => {
 
     if (!ordersData || ordersData.length === 0) {
       return new Response(JSON.stringify({ verified: true, orders: [] }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
 
     const orderIds = ordersData.map((o: any) => o.id);
     const { data: ticketsData } = await supabase
       .from("tickets")
-      .select("*")
-      .in("order_id", orderIds);
+      .select("id,order_id,qr_code,status,holder_name,holder_email")
+      .in("order_id", orderIds)
+      .eq("holder_email", email.toLowerCase().trim());
 
     const orders = ordersData.map((o: any) => ({
       id: o.id,
@@ -92,13 +93,13 @@ serve(async (req) => {
     }));
 
     return new Response(JSON.stringify({ verified: true, orders }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Verification retrieval failed");
     return new Response(JSON.stringify({ error: "Interner Fehler" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
   }
 });

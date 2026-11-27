@@ -27,8 +27,8 @@ interface CategoryRow {
 interface TicketRow {
   event_id: string;
   ticket_category_id: string | null;
-  status: string;
-  checked_in_at: string | null;
+  sold: number;
+  checked_in: number;
 }
 
 const fetchAll = async <T,>(build: (from: number, to: number) => any): Promise<T[]> => {
@@ -90,13 +90,8 @@ const SeriesStatsAdmin = () => {
           .in("event_id", ids);
         cats = (catData ?? []) as CategoryRow[];
 
-        tix = await fetchAll<TicketRow>((from, to) =>
-          supabase
-            .from("tickets")
-            .select("event_id, ticket_category_id, status, checked_in_at")
-            .in("event_id", ids)
-            .range(from, to)
-        );
+        const { data: counts } = await supabase.rpc("series_ticket_counts", { p_series: activeSeries });
+        tix = (counts ?? []) as TicketRow[];
       }
 
       if (!mounted) return;
@@ -112,18 +107,18 @@ const SeriesStatsAdmin = () => {
 
   const perEvent = useMemo(() => {
     return events.map((ev) => {
-      const evTickets = tickets.filter((t) => t.event_id === ev.id && t.status !== "canceled");
+      const evTickets = tickets.filter((t) => t.event_id === ev.id);
       const cats = categories
         .filter((c) => c.event_id === ev.id)
         .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
         .map((c) => ({
           ...c,
-          sold: evTickets.filter((t) => t.ticket_category_id === c.id).length,
+          sold: evTickets.filter((t) => t.ticket_category_id === c.id).reduce((sum, t) => sum + Number(t.sold), 0),
         }));
       return {
         ...ev,
-        sold: evTickets.length,
-        checkedIn: evTickets.filter((t) => t.checked_in_at).length,
+        sold: evTickets.reduce((sum, t) => sum + Number(t.sold), 0),
+        checkedIn: evTickets.reduce((sum, t) => sum + Number(t.checked_in), 0),
         cats,
       };
     });

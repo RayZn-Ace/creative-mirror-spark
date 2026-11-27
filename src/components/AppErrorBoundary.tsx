@@ -1,4 +1,6 @@
 import { Component, ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { requestSafeReload } from "@/lib/reloadSafety";
 
 interface Props {
   children: ReactNode;
@@ -22,7 +24,7 @@ export default class AppErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: unknown, info: unknown) {
-    console.error("App crashed during render", error, info);
+    console.error("App render failed");
   }
 
   render() {
@@ -33,14 +35,14 @@ export default class AppErrorBoundary extends Component<Props, State> {
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4 p-6 text-center">
         <h1 className="text-xl font-bold">Da ist was schiefgelaufen</h1>
         <p className="text-sm text-muted-foreground max-w-sm">
-          Bitte lade die Seite neu. Wenn es weiterhin nicht klappt, schreib uns kurz.
+          Bei laufendem Kauf, Einlass oder Muttizettel bitte nicht neu laden. Prüfe zuerst den Vorgang oder kontaktiere uns.
         </p>
-        <button
-          onClick={() => window.location.reload()}
+        <Button
+          onClick={() => requestSafeReload()}
           className="rounded-full bg-primary px-6 py-2 font-semibold text-primary-foreground"
         >
           Neu laden
-        </button>
+        </Button>
       </div>
     );
   }

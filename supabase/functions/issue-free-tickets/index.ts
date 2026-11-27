@@ -1,3 +1,4 @@
+import { generateQRCode } from '../_shared/paymentSafety.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -5,19 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-function generateQRCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const segments: string[] = [];
-  for (let s = 0; s < 2; s++) {
-    let seg = "";
-    for (let i = 0; i < 4; i++) {
-      seg += chars[Math.floor(Math.random() * chars.length)];
-    }
-    segments.push(seg);
-  }
-  return segments.join("-");
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {

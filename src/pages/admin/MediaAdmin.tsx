@@ -217,7 +217,7 @@ const MediaAdmin = () => {
       }
 
       // Update photo count & set cover if none
-      const updates: Record<string, unknown> = { photo_count: currentCount + files.length };
+      const updates: { photo_count: number; cover_image_url?: string } = { photo_count: currentCount + files.length };
       if (!selectedAlbum.cover_image_url && firstUrl) {
         updates.cover_image_url = firstUrl;
       }
